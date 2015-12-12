@@ -1,6 +1,7 @@
 #include <config.h>
 #include "crypto.h"
 #include <ctype.h>
+#include "isc/string.h"
 
 struct key *key_ptr;
 size_t key_cnt = 0;
@@ -58,7 +59,7 @@ auth_md5(
 	if (!hash_len)
 		authentic = FALSE;
 	else
-		authentic = !memcmp(digest, pkt_data + pkt_size + 4,
+		authentic = !isc_tsmemcmp(digest, pkt_data + pkt_size + 4,
 				    hash_len);
 	return authentic;
 }
