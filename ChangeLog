@@ -1,4 +1,10 @@
 ---
+
+* [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
+  - integrated patches by Loganaden Velvidron <logan@ntp.org>
+    with some modifications & unit tests
+
+---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 2935] Deja Vu: Replay attack on authenticated broadcast mode. HStenn.
@@ -53,9 +59,6 @@
 * CID 1341682: Nit in libntp/authreadkeys.c.  HStenn.
 * CID 1341684: Nit in tests/ntpd/t-ntp_signd.c.  HStenn.
 * [Bug 2829] Look at pipe_fds in ntpd.c  (did so. perlinger@ntp.org)
-* [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
-  - integrated patches by Loganaden Velvidron <loganaden@gmail.com>
-    with some modifications & unit tests
 * [Bug 2887] stratum -1 config results as showing value 99
   - fudge stratum should only accept values [0..16]. perlinger@ntp.org
 * [Bug 2932] Update leapsecond file info in miscopt.html.  CWoodbury, HStenn.
@@ -95,6 +98,7 @@
 * Update scripts/calc_tickadj/Makefile.am.  Harlan Stenn.
 
 ---
+(4.2.8p4) 2015/10/21 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 2899] CVE-2014-9297  perlinger@ntp.org
 * [Sec 2901] Drop invalid packet before checking KoD. Check for all KoD's.
