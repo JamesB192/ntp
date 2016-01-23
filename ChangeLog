@@ -1,4 +1,14 @@
+---
+
+* [Sec 2901] KoD packets must have non-zero transmit timestamps.  HStenn.
+* [Sec 2936] Skeleton Key: Any system knowing the trusted key can serve
+  time. Include passive servers in this check. HStenn.
+* [Sec 2945] Additional KoD packet checks.  HStenn.
+* [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
+  - integrated patches by Loganaden Velvidron <logan@ntp.org>
+    with some modifications & unit tests
 * [Bug 2995] Fixes to compile on Windows
+
 ---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>
 
@@ -93,6 +103,7 @@
 * Update scripts/calc_tickadj/Makefile.am.  Harlan Stenn.
 
 ---
+(4.2.8p4) 2015/10/21 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 2899] CVE-2014-9297  perlinger@ntp.org
 * [Sec 2901] Drop invalid packet before checking KoD. Check for all KoD's.
