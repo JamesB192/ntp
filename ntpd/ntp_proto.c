@@ -1610,6 +1610,7 @@ receive(
 	    case MODE_SERVER:		/* server mode */
 	    case MODE_BROADCAST:	/* broadcast mode */
 	    case MODE_ACTIVE:		/* symmetric active mode */
+	    case MODE_PASSIVE:		/* symmetric passive mode */
 		if (   is_authentic == AUTH_OK
 		    && !authistrustedip(skeyid, &peer->srcadr)) {
 			report_event(PEVNT_AUTH, peer, "authIP");
@@ -1619,7 +1620,6 @@ receive(
 	    	break;
 
 	    case MODE_UNSPEC:		/* unspecified (old version) */
-	    case MODE_PASSIVE:		/* symmetric passive mode */
 	    case MODE_CLIENT:		/* client mode */
 #if 0		/* At this point, MODE_CONTROL is overloaded by MODE_BCLIENT */
 	    case MODE_CONTROL:		/* control mode */
