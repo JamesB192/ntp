@@ -1412,9 +1412,19 @@ receive(
 	 * Next comes a rigorous schedule of timestamp checking. If the
 	 * transmit timestamp is zero, the server has not initialized in
 	 * interleaved modes or is horribly broken.
+	 *
+	 * A KoD packet we pay attention to cannot have a 0 transmit
+	 * timestamp.
 	 */
 	if (L_ISZERO(&p_xmt)) {
 		peer->flash |= TEST3;			/* unsynch */
+		if (0 == hisstratum) {
+			peer->bogusorg++;	/* for TEST2 or TEST3 */
+			msyslog(LOG_INFO,
+				"receive: Unexpected zero transmit timestamp in KoD from %s",
+				ntoa(&peer->srcadr));
+			return;
+		}
 
 	/*
 	 * If the transmit timestamp duplicates a previous one, the
