@@ -57,11 +57,16 @@ auth_md5(
 	pkt_ptr = pkt_data;
 	hash_len = make_mac(pkt_ptr, pkt_size, sizeof(digest), cmp_key,
 			    digest);
-	if (!hash_len)
+	if (!hash_len) {
 		authentic = FALSE;
-	else
-		authentic = !isc_tsmemcmp(digest, pkt_data + pkt_size + 4,
+	} else {
+		/* isc_tsmemcmp will be better when its easy to link
+		 * with.  sntp is a 1-shot program, so snooping for
+		 * timing attacks is Harder.
+		 */
+		authentic = !memcmp(digest, pkt_data + pkt_size + 4,
 				    hash_len);
+	}
 	return authentic;
 }
 
