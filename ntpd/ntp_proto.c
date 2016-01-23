@@ -1452,6 +1452,58 @@ receive(
 		}
 
 	/*
+	 * Basic KoD validation checking:
+	 *
+	 * KoD packets are a mixed-blessing.  Forged KoD packets
+	 * are DoS attacks.  There are rare situations where we might
+	 * get a valid KoD response, though.  Since KoD packets are
+	 * a special case that can easily complicate the checks we do
+	 * next, we handle the special KoD cases here.
+	 *
+	 * Note that we expect the incoming KoD packet to have its
+	 * (nonzero) org, rec, and xmt timestamps set to the xmt timestamp
+	 * that we have previously sent out.  Watch interleave mode.
+	 */
+	} else if (0 == hisstratum) {
+		if (   L_ISZERO(&p_xmt)
+		    || L_ISZERO(&p_org)
+		    || L_ISZERO(&p_rec)) {
+			peer->bogusorg++;
+			msyslog(LOG_INFO,
+				"receive: KoD packet from %s has a zero xmt, org, or rec timestamp.  Ignoring.",
+				ntoa(&peer->srcadr));
+			return;
+		}
+
+		if (   !L_ISEQU(&p_xmt, &p_org)
+		    || !L_ISEQU(&p_xmt, &p_rec)) {
+			peer->bogusorg++;
+			msyslog(LOG_INFO,
+				"receive: KoD packet from %s has inconsistent xmt/org/rec timestamps.  Ignoring.",
+				ntoa(&peer->srcadr));
+			return;
+		}
+
+		/* Be conservative */
+		if (peer->flip == 0 && !L_ISEQU(&p_org, &peer->aorg)) {
+			peer->bogusorg++;
+			msyslog(LOG_INFO,
+				"receive: Unexpected KoD origin timestamp %#010x.%08x from %s does not match %#010x.%08x",
+				p_org.l_ui, p_org.l_uf,
+				ntoa(&peer->srcadr),
+				peer->aorg.l_ui, peer->aorg.l_uf);
+			return;
+		} else if (peer->flip == 1 && !L_ISEQU(&p_org, &peer->borg)) {
+			peer->bogusorg++;
+			msyslog(LOG_INFO,
+				"receive: Unexpected KoD origin timestamp %#010x.%08x from %s does not match interleave %#010x.%08x",
+				p_org.l_ui, p_org.l_uf,
+				ntoa(&peer->srcadr),
+				peer->borg.l_ui, peer->borg.l_uf);
+			return;
+		}
+	
+	/*
 	 * Basic mode checks:
 	 *
 	 * If there is no origin timestamp, it's either an initial packet
@@ -1470,6 +1522,7 @@ receive(
 	 * be from us, attempting to cause our server to KoD us.
 	 */
 	} else if (peer->flip == 0) {
+		/* HMS: we can simplify this now that we do KoD checks above */
 		if (0 < hisstratum && L_ISZERO(&p_org)) {
 			L_CLR(&peer->aorg);
 		} else if (    L_ISZERO(&peer->aorg)
