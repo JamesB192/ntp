@@ -1,5 +1,6 @@
 ---
 
+* [Sec 2901] KoD packets must have non-zero transmit timestamps.  HStenn.
 * [Sec 2936] Skeleton Key: Any system knowing the trusted key can serve
   time. Include passive servers in this check. HStenn.
 * [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
