@@ -4,6 +4,7 @@
 * [Sec 2936] Skeleton Key: Any system knowing the trusted key can serve
   time. Include passive servers in this check. HStenn.
 * [Sec 2945] Additional KoD packet checks.  HStenn.
+* [Bug 2858] bool support.  Use stdbool.h when available.  HStenn.
 * [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
   - integrated patches by Loganaden Velvidron <logan@ntp.org>
     with some modifications & unit tests
