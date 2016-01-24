@@ -302,7 +302,9 @@ AC_CHECK_HEADER(
 AC_CHECK_HEADERS([fcntl.h fnmatch.h ieeefp.h inttypes.h kvm.h math.h])
 
 AC_CHECK_HEADERS([memory.h netdb.h poll.h])
-AC_CHECK_HEADERS([sgtty.h stdatomic.h stdlib.h string.h termio.h])
+AC_CHECK_HEADERS([sgtty.h stdatomic.h])
+AC_HEADER_STDBOOL
+AC_CHECK_HEADERS([stdlib.h string.h termio.h])
 AC_CHECK_HEADERS([termios.h timepps.h timex.h unistd.h])
 
 case "$host" in
