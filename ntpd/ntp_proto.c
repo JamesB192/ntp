@@ -1401,6 +1401,7 @@ receive(
 		return;
 	}
 #endif	/* AUTOKEY */
+
 	peer->received++;
 	peer->flash &= ~PKT_TEST_MASK;
 	if (peer->flags & FLAG_XBOGUS) {
@@ -1418,8 +1419,8 @@ receive(
 	 */
 	if (L_ISZERO(&p_xmt)) {
 		peer->flash |= TEST3;			/* unsynch */
-		if (0 == hisstratum) {
-			peer->bogusorg++;	/* for TEST2 or TEST3 */
+		if (0 == hisstratum) {			/* KoD packet */
+			peer->bogusorg++;		/* for TEST2 or TEST3 */
 			msyslog(LOG_INFO,
 				"receive: Unexpected zero transmit timestamp in KoD from %s",
 				ntoa(&peer->srcadr));
@@ -1427,7 +1428,7 @@ receive(
 		}
 
 	/*
-	 * If the transmit timestamp duplicates a previous one, the
+	 * If the transmit timestamp duplicates our previous one, the
 	 * packet is a replay. This prevents the bad guys from replaying
 	 * the most recent packet, authenticated or not.
 	 */
@@ -1457,20 +1458,20 @@ receive(
 	 * KoD packets are a mixed-blessing.  Forged KoD packets
 	 * are DoS attacks.  There are rare situations where we might
 	 * get a valid KoD response, though.  Since KoD packets are
-	 * a special case that can easily complicate the checks we do
-	 * next, we handle the special KoD cases here.
+	 * a special case that complicate the checks we do next, we
+	 * handle the basic KoD checks here.
 	 *
 	 * Note that we expect the incoming KoD packet to have its
 	 * (nonzero) org, rec, and xmt timestamps set to the xmt timestamp
 	 * that we have previously sent out.  Watch interleave mode.
 	 */
 	} else if (0 == hisstratum) {
-		if (   L_ISZERO(&p_xmt)
-		    || L_ISZERO(&p_org)
+		DEBUG_INSIST(!L_ISZERO(&p_xmt));
+		if (   L_ISZERO(&p_org)		/* We checked p_xmt above */
 		    || L_ISZERO(&p_rec)) {
 			peer->bogusorg++;
 			msyslog(LOG_INFO,
-				"receive: KoD packet from %s has a zero xmt, org, or rec timestamp.  Ignoring.",
+				"receive: KoD packet from %s has a zero org or rec timestamp.  Ignoring.",
 				ntoa(&peer->srcadr));
 			return;
 		}
@@ -1488,7 +1489,7 @@ receive(
 		if (peer->flip == 0 && !L_ISEQU(&p_org, &peer->aorg)) {
 			peer->bogusorg++;
 			msyslog(LOG_INFO,
-				"receive: Unexpected KoD origin timestamp %#010x.%08x from %s does not match %#010x.%08x",
+				"receive: KoD origin timestamp %#010x.%08x from %s does not match %#010x.%08x - ignoring.",
 				p_org.l_ui, p_org.l_uf,
 				ntoa(&peer->srcadr),
 				peer->aorg.l_ui, peer->aorg.l_uf);
@@ -1496,7 +1497,7 @@ receive(
 		} else if (peer->flip == 1 && !L_ISEQU(&p_org, &peer->borg)) {
 			peer->bogusorg++;
 			msyslog(LOG_INFO,
-				"receive: Unexpected KoD origin timestamp %#010x.%08x from %s does not match interleave %#010x.%08x",
+				"receive: KoD origin timestamp %#010x.%08x from %s does not match interleave %#010x.%08x - ignoring.",
 				p_org.l_ui, p_org.l_uf,
 				ntoa(&peer->srcadr),
 				peer->borg.l_ui, peer->borg.l_uf);
@@ -1522,11 +1523,8 @@ receive(
 	 * be from us, attempting to cause our server to KoD us.
 	 */
 	} else if (peer->flip == 0) {
-		/* HMS: we can simplify this now that we do KoD checks above */
-		if (0 < hisstratum && L_ISZERO(&p_org)) {
-			L_CLR(&peer->aorg);
-		} else if (    L_ISZERO(&peer->aorg)
-			   || !L_ISEQU(&p_org, &peer->aorg)) {
+		if (    L_ISZERO(&peer->aorg)
+		    || !L_ISEQU(&p_org, &peer->aorg)) {
 			peer->bogusorg++;
 			peer->flash |= TEST2;	/* bogus */
 			msyslog(LOG_INFO,
@@ -1540,10 +1538,10 @@ receive(
 				peer->flip = 1;
 				report_event(PEVNT_XLEAVE, peer, NULL);
 			}
+			/* HMS: Do we want to return here if it's xleave? */
 			return; /* Bogus or possible interleave packet */
-		} else {
-			L_CLR(&peer->aorg);
 		}
+		L_CLR(&peer->aorg);
 
 	/*
 	 * Check for valid nonzero timestamp fields.
@@ -1682,7 +1680,6 @@ receive(
 		}
 	    	break;
 
-	    case MODE_UNSPEC:		/* unspecified (old version) */
 	    case MODE_CLIENT:		/* client mode */
 #if 0		/* At this point, MODE_CONTROL is overloaded by MODE_BCLIENT */
 	    case MODE_CONTROL:		/* control mode */
@@ -1690,7 +1687,12 @@ receive(
 	    case MODE_PRIVATE:		/* private mode */
 	    case MODE_BCLIENT:		/* broadcast client mode */
 	    	break;
+
+	    case MODE_UNSPEC:		/* unspecified (old version) */
 	    default:
+		msyslog(LOG_INFO,
+			"receive: Unexpected mode (%d) in packet from %s",
+			hismode, ntoa(&peer->srcadr));
 	    	break;
 	}
 
