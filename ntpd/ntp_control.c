@@ -911,18 +911,18 @@ is_safe_filename(const char * name)
 	};
 
 	u_int widx, bidx, mask;
-	if (!*name)
+	if ( ! (name && *name))
 		return FALSE;
 	
 	mask = 1u;
 	while (0 != (widx = (u_char)*name++)) {
 		bidx = (widx & 15) << 1;
 		widx = widx >> 4;
-		if (widx >= sizeof(chclass))
+		if (widx >= sizeof(chclass)/sizeof(chclass[0]))
 			return FALSE;
 		if (0 == ((chclass[widx] >> bidx) & mask))
 			return FALSE;
-		mask |= 2u;
+		mask = 2u;
 	}
 	return TRUE;
 }
