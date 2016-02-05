@@ -1,3 +1,4 @@
+* [Bug 3007] Validate crypto-NAKs
 ---
 
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
