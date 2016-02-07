@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntp.conf.texi)
 #
-# It has been AutoGen-ed  January 20, 2016 at 04:17:59 AM by AutoGen 5.18.5
+# It has been AutoGen-ed  February  6, 2016 at 07:23:05 AM by AutoGen 5.18.5
 # From the definitions    ntp.conf.def
 # and the template file   agtexi-file.tpl
 @end ignore
@@ -249,7 +249,9 @@ when the server is reachable, send a burst of eight packets
 instead of the usual one.
 The packet spacing is normally 2 s;
 however, the spacing between the first and second packets
-can be changed with the calldelay command to allow
+can be changed with the
+@code{calldelay}
+command to allow
 additional time for a modem or ISDN call to complete.
 This is designed to improve timekeeping quality
 with the
@@ -260,7 +262,9 @@ When the server is unreachable, send a burst of eight packets
 instead of the usual one.
 The packet spacing is normally 2 s;
 however, the spacing between the first two packets can be
-changed with the calldelay command to allow
+changed with the
+@code{calldelay}
+command to allow
 additional time for a modem or ISDN call to complete.
 This is designed to speed the initial synchronization
 acquisition with the
@@ -293,6 +297,10 @@ option to a lower limit of 4 (16 s).
 @item @code{noselect}
 Marks the server as unused, except for display purposes.
 The server is discarded by the selection algroithm.
+@item @code{preempt}
+Says the association can be preempted.
+@item @code{true}
+Marks the server as a truechimer.
 @item @code{prefer}
 Marks the server as preferred.
 All other things being equal,
@@ -323,6 +331,12 @@ Specifies the version number to be used for outgoing NTP
 packets.
 Versions 1-4 are the choices, with version 4 the
 default.
+@item @code{xleave}
+Valid in
+@code{peer}
+and
+@code{broadcast}
+modes only, this flag enables interleave mode.
 @end table
 @subsubsection Auxiliary Commands
 @table @asis
@@ -1363,7 +1377,9 @@ Source address based restrictions are easily circumvented
 by a determined cracker.
 
 Clients can be denied service because they are explicitly
-included in the restrict list created by the restrict command
+included in the restrict list created by the
+@code{restrict}
+command
 or implicitly as the result of cryptographic or rate limit
 violations.
 Cryptographic violations include certificate
@@ -1429,7 +1445,9 @@ Packets that violate these minima are discarded
 and a kiss-o'-death packet returned if enabled.
 The default
 minimum average and minimum are 5 and 2, respectively.
-The monitor subcommand specifies the probability of discard
+The
+@code{monitor}
+subcommand specifies the probability of discard
 for packets that overflow the rate-control window.
 @item @code{restrict} @code{address} @code{[@code{mask} @kbd{mask}]} @code{[@kbd{flag} @kbd{...}]}
 The
@@ -1485,7 +1503,9 @@ If another KoD packet occurs within one second after the
 last one, the packet is dropped.
 @item @code{limited}
 Deny service if the packet spacing violates the lower limits specified
-in the discard command.
+in the
+@code{discard}
+command.
 A history of clients is kept using the
 monitoring capability of
 @code{ntpd(1ntpdmdoc)}.
@@ -1613,8 +1633,11 @@ The library can also be used with other NTPv4 modes
 as well and is highly recommended, especially for broadcast modes.
 
 A persistent manycast client association is configured
-using the manycastclient command, which is similar to the
-server command but with a multicast (IPv4 class
+using the
+@code{manycastclient}
+command, which is similar to the
+@code{server}
+command but with a multicast (IPv4 class
 @code{D}
 or IPv6 prefix
 @code{FF})
@@ -1684,7 +1707,9 @@ command and, under normal circumstances, increments to the
 @code{maxpolll}
 value specified in this command.
 Initially, the TTL is
-set at the minimum hops specified by the ttl command.
+set at the minimum hops specified by the
+@code{ttl}
+command.
 At each retransmission the TTL is increased until reaching
 the maximum hops specified by this command or a sufficient
 number client associations have been found.
@@ -2526,7 +2551,9 @@ This command specifies the location of an alternate log file to
 be used instead of the default system
 @code{syslog(3)}
 facility.
-This is the same operation as the -l command line option.
+This is the same operation as the
+@code{-l}
+command line option.
 @item @code{setvar} @kbd{variable} @code{[@code{default}]}
 This command adds an additional system variable.
 These

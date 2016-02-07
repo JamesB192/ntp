@@ -1,9 +1,9 @@
-.Dd January 20 2016
+.Dd February 6 2016
 .Dt NTP_CONF 5mdoc File Formats
 .Os
 .\"  EDIT THIS FILE WITH CAUTION  (ntp.mdoc)
 .\"
-.\"  It has been AutoGen-ed  January 20, 2016 at 04:18:07 AM by AutoGen 5.18.5
+.\"  It has been AutoGen-ed  February  6, 2016 at 07:23:02 AM by AutoGen 5.18.5
 .\"  From the definitions    ntp.conf.def
 .\"  and the template file   agmdoc-cmd.tpl
 .Sh NAME
@@ -286,7 +286,9 @@ when the server is reachable, send a burst of eight packets
 instead of the usual one.
 The packet spacing is normally 2 s;
 however, the spacing between the first and second packets
-can be changed with the calldelay command to allow
+can be changed with the
+.Ic calldelay
+command to allow
 additional time for a modem or ISDN call to complete.
 This is designed to improve timekeeping quality
 with the
@@ -297,7 +299,9 @@ When the server is unreachable, send a burst of eight packets
 instead of the usual one.
 The packet spacing is normally 2 s;
 however, the spacing between the first two packets can be
-changed with the calldelay command to allow
+changed with the
+.Ic calldelay
+command to allow
 additional time for a modem or ISDN call to complete.
 This is designed to speed the initial synchronization
 acquisition with the
@@ -330,6 +334,10 @@ option to a lower limit of 4 (16 s).
 .It Cm noselect
 Marks the server as unused, except for display purposes.
 The server is discarded by the selection algroithm.
+.It Cm preempt
+Says the association can be preempted.
+.It Cm true
+Marks the server as a truechimer.
 .It Cm prefer
 Marks the server as preferred.
 All other things being equal,
@@ -360,6 +368,12 @@ Specifies the version number to be used for outgoing NTP
 packets.
 Versions 1\-4 are the choices, with version 4 the
 default.
+.It Cm xleave
+Valid in
+.Cm peer
+and
+.Cm broadcast
+modes only, this flag enables interleave mode.
 .El
 .Ss Auxiliary Commands
 .Bl -tag -width indent
@@ -1423,7 +1437,9 @@ Source address based restrictions are easily circumvented
 by a determined cracker.
 .Pp
 Clients can be denied service because they are explicitly
-included in the restrict list created by the restrict command
+included in the restrict list created by the
+.Ic restrict
+command
 or implicitly as the result of cryptographic or rate limit
 violations.
 Cryptographic violations include certificate
@@ -1493,7 +1509,9 @@ Packets that violate these minima are discarded
 and a kiss\-o'\-death packet returned if enabled.
 The default
 minimum average and minimum are 5 and 2, respectively.
-The monitor subcommand specifies the probability of discard
+The
+.Ic monitor
+subcommand specifies the probability of discard
 for packets that overflow the rate\-control window.
 .It Xo Ic restrict address
 .Op Cm mask Ar mask
@@ -1552,7 +1570,9 @@ If another KoD packet occurs within one second after the
 last one, the packet is dropped.
 .It Cm limited
 Deny service if the packet spacing violates the lower limits specified
-in the discard command.
+in the
+.Ic discard
+command.
 A history of clients is kept using the
 monitoring capability of
 .Xr ntpd 1ntpdmdoc .
@@ -1679,8 +1699,11 @@ The library can also be used with other NTPv4 modes
 as well and is highly recommended, especially for broadcast modes.
 .Pp
 A persistent manycast client association is configured
-using the manycastclient command, which is similar to the
-server command but with a multicast (IPv4 class
+using the
+.Ic manycastclient
+command, which is similar to the
+.Ic server
+command but with a multicast (IPv4 class
 .Cm D
 or IPv6 prefix
 .Cm FF )
@@ -1750,7 +1773,9 @@ command and, under normal circumstances, increments to the
 .Cm maxpolll
 value specified in this command.
 Initially, the TTL is
-set at the minimum hops specified by the ttl command.
+set at the minimum hops specified by the
+.Ic ttl
+command.
 At each retransmission the TTL is increased until reaching
 the maximum hops specified by this command or a sufficient
 number client associations have been found.
@@ -2651,7 +2676,9 @@ This command specifies the location of an alternate log file to
 be used instead of the default system
 .Xr syslog 3
 facility.
-This is the same operation as the \-l command line option.
+This is the same operation as the
+.Fl l
+command line option.
 .It Ic setvar Ar variable Op Cm default
 This command adds an additional system variable.
 These
