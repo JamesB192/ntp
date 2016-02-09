@@ -292,7 +292,10 @@ valid_NAK(
 	 * Only server responses can contain NAK's
 	 */
 
-	if (hismode != MODE_SERVER) {
+	if (hismode != MODE_SERVER &&
+	    hismode != MODE_ACTIVE &&
+	    hismode != MODE_PASSIVE
+	    ) {
 		return (INVALIDNAK);
 	}
 
@@ -838,8 +841,9 @@ receive(
 	 * Drop any invalid crypto-NAKs
 	 */
 	if (crypto_nak_test == INVALIDNAK) {
+		report_event(PEVNT_AUTH, peer, "Invalid_NAK");
 		peer->badNAK++;
-		msyslog(LOG_ERR, "crypto-NAK error at %ld %s<-%s", 
+		msyslog(LOG_ERR, "Invalid-NAK error at %ld %s<-%s", 
 			current_time, stoa(dstadr_sin), stoa(&rbufp->recv_srcadr));
 		return;
 	}
