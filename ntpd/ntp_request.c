@@ -1373,103 +1373,73 @@ do_unconf(
 	struct conf_unpeer	temp_cp;
 	struct peer *		p;
 	sockaddr_u		peeraddr;
-	int			bad;
-	int			found;
+	int			loops;
 
 	/*
 	 * This is a bit unstructured, but I like to be careful.
 	 * We check to see that every peer exists and is actually
 	 * configured.  If so, we remove them.  If not, we return
 	 * an error.
+	 *
+	 * [Bug 3011] Even if we checked all peers given in the request
+	 * in a dry run, there's still a chance that the caller played
+	 * unfair and gave the same peer multiple times. So we still
+	 * have to be prepared for nasty surprises in the second run ;)
 	 */
-	items = INFO_NITEMS(inpkt->err_nitems);
+
+	/* basic consistency checks */
 	item_sz = INFO_ITEMSIZE(inpkt->mbz_itemsize);
-	datap = inpkt->u.data;
 	if (item_sz > sizeof(temp_cp)) {
 		req_ack(srcadr, inter, inpkt, INFO_ERR_FMT);
 		return;
 	}
 
-	bad = FALSE;
-	while (items-- > 0 && !bad) {
-		ZERO(temp_cp);
-		memcpy(&temp_cp, datap, item_sz);
-		ZERO_SOCK(&peeraddr);
-		if (client_v6_capable && temp_cp.v6_flag) {
-			AF(&peeraddr) = AF_INET6;
-			SOCK_ADDR6(&peeraddr) = temp_cp.peeraddr6;
-		} else {
-			AF(&peeraddr) = AF_INET;
-			NSRCADR(&peeraddr) = temp_cp.peeraddr;
-		}
-		SET_PORT(&peeraddr, NTP_PORT);
+	/* now do two runs: first a dry run, then a busy one */
+	for (loops = 0; loops != 2; ++loops) {
+		items = INFO_NITEMS(inpkt->err_nitems);
+		datap = inpkt->u.data;
+		while (items-- > 0) {
+			/* copy from request to local */
+			ZERO(temp_cp);
+			memcpy(&temp_cp, datap, item_sz);
+			/* get address structure */
+			ZERO_SOCK(&peeraddr);
+			if (client_v6_capable && temp_cp.v6_flag) {
+				AF(&peeraddr) = AF_INET6;
+				SOCK_ADDR6(&peeraddr) = temp_cp.peeraddr6;
+			} else {
+				AF(&peeraddr) = AF_INET;
+				NSRCADR(&peeraddr) = temp_cp.peeraddr;
+			}
+			SET_PORT(&peeraddr, NTP_PORT);
 #ifdef ISC_PLATFORM_HAVESALEN
-		peeraddr.sa.sa_len = SOCKLEN(&peeraddr);
+			peeraddr.sa.sa_len = SOCKLEN(&peeraddr);
 #endif
-		found = FALSE;
-		p = NULL;
+			DPRINTF(1, ("searching for %s\n",
+				    stoa(&peeraddr)));
 
-		DPRINTF(1, ("searching for %s\n", stoa(&peeraddr)));
-
-		while (!found) {
-			p = findexistingpeer(&peeraddr, NULL, p, -1, 0);
-			if (NULL == p)
-				break;
-			if (FLAG_CONFIG & p->flags)
-				found = TRUE;
+			/* search for matching configred(!) peer */
+			p = NULL;
+			do {
+				p = findexistingpeer(
+					&peeraddr, NULL, p, -1, 0);
+			} while (p && !(FLAG_CONFIG & p->flags));
+			
+			if (!loops && !p) {
+				/* Item not found in dry run -- bail! */
+				req_ack(srcadr, inter, inpkt,
+					INFO_ERR_NODATA);
+				return;
+			} else if (loops && p) {
+				/* Item found in busy run -- remove! */
+				peer_clear(p, "GONE");
+				unpeer(p);
+			}
+			datap += item_sz;
 		}
-		if (!found)
-			bad = TRUE;
-
-		datap += item_sz;
 	}
 
-	if (bad) {
-		req_ack(srcadr, inter, inpkt, INFO_ERR_NODATA);
-		return;
-	}
-
-	/*
-	 * Now do it in earnest.
-	 */
-
-	items = INFO_NITEMS(inpkt->err_nitems);
-	datap = inpkt->u.data;
-
-	while (items-- > 0) {
-		ZERO(temp_cp);
-		memcpy(&temp_cp, datap, item_sz);
-		ZERO(peeraddr);
-		if (client_v6_capable && temp_cp.v6_flag) {
-			AF(&peeraddr) = AF_INET6;
-			SOCK_ADDR6(&peeraddr) = temp_cp.peeraddr6;
-		} else {
-			AF(&peeraddr) = AF_INET;
-			NSRCADR(&peeraddr) = temp_cp.peeraddr;
-		}
-		SET_PORT(&peeraddr, NTP_PORT);
-#ifdef ISC_PLATFORM_HAVESALEN
-		peeraddr.sa.sa_len = SOCKLEN(&peeraddr);
-#endif
-		found = FALSE;
-		p = NULL;
-
-		while (!found) {
-			p = findexistingpeer(&peeraddr, NULL, p, -1, 0);
-			if (NULL == p)
-				break;
-			if (FLAG_CONFIG & p->flags)
-				found = TRUE;
-		}
-		INSIST(found);
-		INSIST(NULL != p);
-
-		peer_clear(p, "GONE");
-		unpeer(p);
-
-		datap += item_sz;
-	}
-
+	/* report success */
 	req_ack(srcadr, inter, inpkt, INFO_OKAY);
 }
 
