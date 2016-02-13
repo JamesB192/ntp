@@ -53,7 +53,8 @@ following X low- and Y medium-severity vulnerabilities:
 	Upgrade to 4.2.8p6, or later, from the NTP Project Download Page
 	    or the NTP Public Services Project Download Page.
 	Monitor your 'ntpd= instances.
-   Credit: This weakness was discovered by Jonathan Gardner of Cisco ASIG.
+   Credit: This weakness was discovered by Matthey Van Gundy and
+	Jonathan Gardner of Cisco ASIG.
 
 * Stack exhaustion in recursive traversal of restriction list
    Date Resolved: Stable (4.2.8p6) 19 Jan 2016
@@ -689,7 +690,7 @@ Credit: This weakness was discovered by Aleksandar Nikolic of Cisco Talos.
 		Apply the patch to the bottom of the "authentic" check
 			block around line 1136 of ntp_proto.c. 
 	Monitor your ntpd instances. 
-  Credit: This weakness was discovered by Stephen Gray <stepgray@cisco.com>. 
+  Credit: This weakness was discovered by Matthew Van Gundy of Cisco ASIG. 
 
 Backward-Incompatible changes:
 * [Bug 2817] Default on Linux is now "rlimit memlock -1".
