@@ -2,6 +2,9 @@
 
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
+* [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
+  - A change related [Bug 2853] forbids trailing white space in
+    remote config command. perlinger@ntp.org
 
 ---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>
