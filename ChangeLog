@@ -10,6 +10,9 @@
     with some modifications & unit tests
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
+* [Bug 3008] ctl_getitem() return value not always checked.
+  - initial work by HSten
+  - cleanup of ctl_getitem by perlinger@ntp.org
 * Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
 * Update html/xleave.html documentation.  Harlan Stenn.
 * Update ntp.conf documentation.  Harlan Stenn.
