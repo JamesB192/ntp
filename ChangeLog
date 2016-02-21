@@ -2,6 +2,8 @@
 
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
+* [Bug 3009] Crafted addpeer with hmode > 7 causes OOB error. perlinger@ntp.org
+   - added more stringent checks on packet content
 
 ---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>
