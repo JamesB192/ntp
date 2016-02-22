@@ -14,6 +14,8 @@
 * [Bug 3007] Validate crypto-NAKs
 * [Bug 3009] Crafted addpeer with hmode > 7 causes OOB error. perlinger@ntp.org
    - added more stringent checks on packet content
+* [Bug 3011] Duplicate IPs on unconfig directives will cause an assertion botch
+  - graciously accept the same IP multiple times. perlinger@ntp.org
 * [Bug 3013] Fix for ssl_init.c SHA1 test. perlinger@ntp.org
   - Patch provided by Ch. Weisgerber
 * [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
