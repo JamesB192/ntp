@@ -391,6 +391,7 @@ struct peer {
 	u_long	received;	/* packets received */
 	u_long	processed;	/* packets processed */
 	u_long	badauth;	/* bad authentication (TEST5) */
+	u_long	badNAK;		/* invalid crypto-NAK */
 	u_long	bogusorg;	/* bogus origin (TEST2, TEST3) */
 	u_long	oldpkt;		/* old duplicate (TEST1) */
 	u_long	seldisptoolarge; /* bad header (TEST6, TEST7) */
@@ -545,6 +546,7 @@ struct pkt {
 	l_fp	rec;		/* receive time stamp */
 	l_fp	xmt;		/* transmit time stamp */
 
+#define	MIN_V4_PKT_LEN	(12 * sizeof(u_int32)) /* min header length */
 #define	LEN_PKT_NOMAC	(12 * sizeof(u_int32)) /* min header length */
 #define MIN_MAC_LEN	(1 * sizeof(u_int32))	/* crypto_NAK */
 #define MAX_MD5_LEN	(5 * sizeof(u_int32))	/* MD5 */
