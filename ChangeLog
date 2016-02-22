@@ -4,18 +4,32 @@
 * [Sec 2936] Skeleton Key: Any system knowing the trusted key can serve
   time. Include passive servers in this check. HStenn.
 * [Sec 2945] Additional KoD packet checks.  HStenn.
+* [Sec 3008] Always check the return value of ctl_getitem().
+  - initial work by HStenn
+  - Additional cleanup of ctl_getitem by perlinger@ntp.org
 * [Bug 2858] bool support.  Use stdbool.h when available.  HStenn.
 * [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
   - integrated patches by Loganaden Velvidron <logan@ntp.org>
     with some modifications & unit tests
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
-* [Bug 3008] ctl_getitem() return value not always checked.
-  - initial work by HSten
-  - cleanup of ctl_getitem by perlinger@ntp.org
+* [Bug 2999] out-of-bounds access in 'is_safe_filename()'. perlinger@ntp.org
+* [Bug 3007] Validate crypto-NAKs
+* [Bug 3009] Crafted addpeer with hmode > 7 causes OOB error. perlinger@ntp.org
+   - added more stringent checks on packet content
+* [Bug 3011] Duplicate IPs on unconfig directives will cause an assertion botch
+  - graciously accept the same IP multiple times. perlinger@ntp.org
+* [Bug 3013] Fix for ssl_init.c SHA1 test. perlinger@ntp.org
+  - Patch provided by Ch. Weisgerber
+* [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
+  - A change related to [Bug 2853] forbids trailing white space in
+    remote config commands. perlinger@ntp.org
+>>>>>>>
 * Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
 * Update html/xleave.html documentation.  Harlan Stenn.
 * Update ntp.conf documentation.  Harlan Stenn.
+* Fix some Credit: attributions in the NEWS file.  Harlan Stenn.
+* Fix typo in html/monopt.html.  Harlan Stenn.
 
 ---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>

@@ -50,6 +50,12 @@ enum kiss_codes {
 	UNKNOWNKISS			/* Unknown Kiss Code */
 };
 
+enum nak_error_codes {
+	NONAK,				/* No NAK seen */
+	INVALIDNAK,			/* NAK cannot be used */
+	VALIDNAK			/* NAK is valid */
+};
+
 /*
  * traffic shaping parameters
  */
@@ -249,6 +255,68 @@ kiss_code_check(
 		}
 	} else {
 		return (NOKISS);
+	}
+}
+
+
+/* 
+ * Check that NAK is valid
+ */
+enum nak_error_codes
+valid_NAK(
+	  struct peer *peer,
+	  struct recvbuf *rbufp,
+	  u_char hismode
+	  )
+{
+	int base_packet_length = MIN_V4_PKT_LEN;
+	int remainder_size;
+	struct pkt *rpkt;
+	int keyid;
+
+	/*
+	 * Check to see if there is something beyond the basic packet
+	 */
+	if (rbufp->recv_length == base_packet_length) {
+		return NONAK;
+	}
+
+	remainder_size = rbufp->recv_length - base_packet_length;
+	/*
+	 * Is this a potential NAK?
+	 */
+	if (remainder_size != 4) {
+		return NONAK;
+	}
+
+	/*
+	 * Only server responses can contain NAK's
+	 */
+
+	if (hismode != MODE_SERVER &&
+	    hismode != MODE_ACTIVE &&
+	    hismode != MODE_PASSIVE
+	    ) {
+		return (INVALIDNAK);
+	}
+
+	/* 
+	 * Make sure that the extra field in the packet is all zeros
+	 */
+	rpkt = &rbufp->recv_pkt;
+	keyid = ntohl(((u_int32 *)rpkt)[base_packet_length / 4]);
+	if (keyid != 0) {
+		return (INVALIDNAK);
+	}
+
+	/* 
+	 * Only valid if peer uses a key
+	 */
+	if (peer->keyid > 0 || peer->flags & FLAG_SKEY) {
+		return (VALIDNAK);
+	}
+	else {
+		return (INVALIDNAK);
 	}
 }
 
@@ -493,6 +561,7 @@ receive(
 	int	has_mac;		/* length of MAC field */
 	int	authlen;		/* offset of MAC field */
 	int	is_authentic = 0;	/* cryptosum ok */
+	int	crypto_nak_test;	/* result of crypto-NAK check */
 	int	retcode = AM_NOMATCH;	/* match code */
 	keyid_t	skeyid = 0;		/* key IDs */
 	u_int32	opcode = 0;		/* extension field opcode */
@@ -617,6 +686,7 @@ receive(
 	 * extension field is present, so we subtract the length of the
 	 * field and go around again.
 	 */
+
 	authlen = LEN_PKT_NOMAC;
 	has_mac = rbufp->recv_length - authlen;
 	while (has_mac > 0) {
@@ -767,6 +837,18 @@ receive(
 	 * is zero, acceptable outcomes of y are NONE and OK. If x is
 	 * one, the only acceptable outcome of y is OK.
 	 */
+	crypto_nak_test = valid_NAK(peer, rbufp, hismode);
+
+	/*
+	 * Drop any invalid crypto-NAKs
+	 */
+	if (crypto_nak_test == INVALIDNAK) {
+		report_event(PEVNT_AUTH, peer, "Invalid_NAK");
+		peer->badNAK++;
+		msyslog(LOG_ERR, "Invalid-NAK error at %ld %s<-%s", 
+			current_time, stoa(dstadr_sin), stoa(&rbufp->recv_srcadr));
+		return;
+	}
 
 	if (has_mac == 0) {
 		restrict_mask &= ~RES_MSSNTP;
@@ -777,7 +859,7 @@ receive(
 			    authlen,
 			    ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
 			    ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf)));
-	} else if (has_mac == 4) {
+	} else if (crypto_nak_test == VALIDNAK) {
 		restrict_mask &= ~RES_MSSNTP;
 		is_authentic = AUTH_CRYPTO; /* crypto-NAK */
 		DPRINTF(2, ("receive: at %ld %s<-%s mode %d/%s:%s keyid %08x len %d auth %d org %#010x.%08x xmt %#010x.%08x MAC4\n",
@@ -1568,7 +1650,7 @@ receive(
 	 * client packet. The server might have just changed keys. Clear
 	 * the association and restart the protocol.
 	 */
-	if (is_authentic == AUTH_CRYPTO) {
+	if (crypto_nak_test == VALIDNAK) {
 		report_event(PEVNT_AUTH, peer, "crypto_NAK");
 		peer->flash |= TEST5;		/* bad auth */
 		peer->badauth++;
@@ -4082,6 +4164,7 @@ group_test(
 	return (1);
 }
 #endif /* AUTOKEY */
+
 
 #ifdef WORKER
 void
