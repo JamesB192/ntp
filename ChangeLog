@@ -10,9 +10,17 @@
     with some modifications & unit tests
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
+* [Bug 2999] out-of-bounds access in 'is_safe_filename()'. perlinger@ntp.org
+* [Bug 3013] Fix for ssl_init.c SHA1 test. perlinger@ntp.org
+  - Patch provided by Ch. Weisgerber
+* [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
+  - A change related to [Bug 2853] forbids trailing white space in
+    remote config commands. perlinger@ntp.org
 * Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
 * Update html/xleave.html documentation.  Harlan Stenn.
 * Update ntp.conf documentation.  Harlan Stenn.
+* Fix some Credit: attributions in the NEWS file.  Harlan Stenn.
+* Fix typo in html/monopt.html.  Harlan Stenn.
 
 ---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>
