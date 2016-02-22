@@ -12,6 +12,8 @@
 * [Bug 2995] Fixes to compile on Windows
 * [Bug 2999] out-of-bounds access in 'is_safe_filename()'. perlinger@ntp.org
 * [Bug 3007] Validate crypto-NAKs
+* [Bug 3009] Crafted addpeer with hmode > 7 causes OOB error. perlinger@ntp.org
+   - added more stringent checks on packet content
 * [Bug 3013] Fix for ssl_init.c SHA1 test. perlinger@ntp.org
   - Patch provided by Ch. Weisgerber
 * [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"

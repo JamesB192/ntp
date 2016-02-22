@@ -1342,11 +1342,38 @@ do_conf(
 		peeraddr.sa.sa_len = SOCKLEN(&peeraddr);
 #endif
 
-		/* XXX W2DO? minpoll/maxpoll arguments ??? */
+		/* check mode value: 0 <= hmode <= 6
+		 *
+		 * There's no good global define for that limit, and
+		 * using a magic define is as good (or bad, actually) as
+		 * a magic number. So we use the highest possible peer
+		 * mode, and that is MODE_BCLIENT.
+		 *
+		 * [Bug 3009] claims that a problem occurs for hmode > 7,
+		 * but the code in ntp_peer.c indicates trouble for any
+		 * hmode > 6 ( --> MODE_BCLIENT).
+		 */
+		if (temp_cp.hmode > MODE_BCLIENT) {
+			req_ack(srcadr, inter, inpkt, INFO_ERR_FMT);
+			return;
+		}
+		
+		/* Any more checks on the values? Unchecked at this
+		 * point:
+		 *   - version
+		 *   - ttl
+		 *   - keyid
+		 *
+		 *   - minpoll/maxpoll, but they are treated properly
+		 *     for all cases internally. Checking not necessary.
+		 */
+		
+		/* finally create the peer */
 		if (peer_config(&peeraddr, NULL, NULL,
 		    temp_cp.hmode, temp_cp.version, temp_cp.minpoll, 
 		    temp_cp.maxpoll, fl, temp_cp.ttl, temp_cp.keyid,
-		    NULL) == 0) {
+		    NULL) == 0)
+		{
 			req_ack(srcadr, inter, inpkt, INFO_ERR_NODATA);
 			return;
 		}
