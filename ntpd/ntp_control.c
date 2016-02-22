@@ -3334,7 +3334,11 @@ read_sysvars(void)
 			gotvar = 1;
 		} else {
 			v = ctl_getitem(ext_sys_var, &valuep);
-			INSIST(v != NULL);
+			if (NULL == v) {
+				ctl_error(CERR_BADVALUE);
+				free(wants);
+				return;
+			}
 			if (EOV & v->flags) {
 				ctl_error(CERR_UNKNOWNVAR);
 				free(wants);
@@ -4575,7 +4579,12 @@ read_clockstatus(
 			gotvar = TRUE;
 		} else {
 			v = ctl_getitem(kv, &valuep);
-			INSIST(NULL != v);
+			if (NULL == v) {
+				ctl_error(CERR_BADVALUE);
+				free(wants);
+				free_varlist(cs.kv_list);
+				return;
+			}
 			if (EOV & v->flags) {
 				ctl_error(CERR_UNKNOWNVAR);
 				free(wants);

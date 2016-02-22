@@ -113,8 +113,14 @@ in some weird and even destructive behavior.
 If the Basic Socket Interface Extensions for IPv6 (RFC-2553)
 is detected, support for the IPv6 address family is generated
 in addition to the default support of the IPv4 address family.
-In a few cases, including the reslist billboard generated
-by ntpdc, IPv6 addresses are automatically generated.
+In a few cases, including the
+.Cm reslist
+billboard generated
+by
+.Xr ntpq 1ntpqmdoc
+or
+.Xr ntpdc 1ntpdcmdoc ,
+IPv6 addresses are automatically generated.
 IPv6 addresses can be identified by the presence of colons
 .Dq \&:
 in the address field.
@@ -149,6 +155,7 @@ equivalent classes for that address family.
 .Op Cm prefer
 .Op Cm minpoll Ar minpoll
 .Op Cm maxpoll Ar maxpoll
+.Op Cm true
 .Xc
 .It Xo Ic peer Ar address
 .Op Cm key Ar key \&| Cm autokey
@@ -156,6 +163,8 @@ equivalent classes for that address family.
 .Op Cm prefer
 .Op Cm minpoll Ar minpoll
 .Op Cm maxpoll Ar maxpoll
+.Op Cm true
+.Op Cm xleave
 .Xc
 .It Xo Ic broadcast Ar address
 .Op Cm key Ar key \&| Cm autokey
@@ -163,6 +172,7 @@ equivalent classes for that address family.
 .Op Cm prefer
 .Op Cm minpoll Ar minpoll
 .Op Cm ttl Ar ttl
+.Op Cm xleave
 .Xc
 .It Xo Ic manycastclient Ar address
 .Op Cm key Ar key \&| Cm autokey
@@ -340,6 +350,7 @@ The server is discarded by the selection algroithm.
 Says the association can be preempted.
 .It Cm true
 Marks the server as a truechimer.
+Use this option only for testing.
 .It Cm prefer
 Marks the server as preferred.
 All other things being equal,
@@ -352,6 +363,11 @@ page
 provided in
 .Pa /usr/share/doc/ntp )
 for further information.
+.It Cm true
+Forces the association to always survive the selection and clustering algorithms.
+This option should almost certainly
+.Em only
+be used while testing an association.
 .It Cm ttl Ar ttl
 This option is used only with broadcast server and manycast
 client modes.
@@ -521,7 +537,7 @@ and
 commands and also by remote
 configuration commands sent by a
 .Xr ntpdc 1ntpdcmdoc
-program running in
+program running on
 another machine.
 If this flag is enabled, which is the default
 case, new broadcast client and symmetric passive associations and
@@ -711,7 +727,7 @@ using the host name, network address and public keys,
 all of which are bound together by the protocol specifically
 to deflect masquerade attacks.
 For this reason Autokey
-includes the source and destinatino IP addresses in message digest
+includes the source and destination IP addresses in message digest
 computations and so the same addresses must be available
 at both the server and client.
 For this reason operation
@@ -909,8 +925,8 @@ the link
 .Pa ntpkey_key_ Ns Ar hostname
 in the keys directory.
 .It Cm iffpar Ar file
-Specifies the location of the optional IFF parameters file.This
-overrides the link
+Specifies the location of the optional IFF parameters file.
+This overrides the link
 .Pa ntpkey_iff_ Ns Ar hostname
 in the keys directory.
 .It Cm leap Ar file
@@ -920,8 +936,7 @@ This overrides the link
 in the keys directory.
 .It Cm mvpar Ar file
 Specifies the location of the optional MV parameters file.
-This
-overrides the link
+This overrides the link
 .Pa ntpkey_mv_ Ns Ar hostname
 in the keys directory.
 .It Cm pw Ar password
@@ -1062,7 +1077,7 @@ supported.
 Statistic files are managed using file generation sets
 and scripts in the
 .Pa ./scripts
-directory of this distribution.
+directory of the source code distribution.
 Using
 these facilities and
 .Ux
@@ -1396,7 +1411,9 @@ When there is already a file with this name and
 the number of links of this file is one, it is renamed appending a
 dot, the letter
 .Cm C ,
-and the pid of the ntpd server process.
+and the pid of the
+.Xr ntpd 1ntpdmdoc
+server process.
 When the
 number of links is greater than one, the file is unlinked.
 This
@@ -1451,9 +1468,9 @@ at abusive rates.
 Some violations cause denied service
 only for the offending packet, others cause denied service
 for a timed period and others cause the denied service for
-an indefinate period.
+an indefinite period.
 When a client or network is denied access
-for an indefinate period, the only way at present to remove
+for an indefinite period, the only way at present to remove
 the restrictions is by restarting the server.
 .Ss The Kiss-of-Death Packet
 Ordinarily, packets denied service are simply dropped with no
@@ -1634,7 +1651,9 @@ queries.
 .It Cm notrap
 Decline to provide mode 6 control message trap service to matching
 hosts.
-The trap service is a subsystem of the ntpdq control message
+The trap service is a subsystem of the
+.Xr ntpq 1ntpqmdoc
+control message
 protocol which is intended for use by remote event logging programs.
 .It Cm notrust
 Deny service unless the packet is cryptographically authenticated.
@@ -2415,7 +2434,8 @@ drift file is located in, and that file system links, symbolic or
 otherwise, should be avoided.
 .It Ic dscp Ar value
 This option specifies the Differentiated Services Control Point (DSCP) value,
-a 6-bit code.  The default value is 46, signifying Expedited Forwarding.
+a 6-bit code.
+The default value is 46, signifying Expedited Forwarding.
 .It Xo Ic enable
 .Oo
 .Cm auth | Cm bclient |
@@ -2654,7 +2674,8 @@ A
 message class may also be followed by the
 .Cm all
 keyword to enable/disable all
-messages of the respective message class.Thus, a minimal log configuration
+messages of the respective message class.
+Thus, a minimal log configuration
 could look like this:
 .Bd -literal
 logconfig =syncstatus +sysevents
@@ -2832,7 +2853,8 @@ Specifies the maximum size of the process stack on systems with the
 function.
 Defaults to 50 4k pages (200 4k pages in OpenBSD).
 .It Cm filenum Ar Nfiledescriptors
-Specifies the maximum number of file descriptors ntpd may have open at once. Defaults to the system default.
+Specifies the maximum number of file descriptors ntpd may have open at once.
+Defaults to the system default.
 .El
 .It Xo Ic trap Ar host_address
 .Op Cm port Ar port_number
