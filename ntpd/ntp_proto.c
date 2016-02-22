@@ -258,10 +258,11 @@ kiss_code_check(
 	}
 }
 
+
 /* 
  * Check that NAK is valid
  */
-BOOL
+enum nak_error_codes
 valid_NAK(
 	  struct peer *peer,
 	  struct recvbuf *rbufp,
@@ -318,6 +319,7 @@ valid_NAK(
 		return (INVALIDNAK);
 	}
 }
+
 
 /*
  * transmit - transmit procedure called by poll timeout
@@ -4162,6 +4164,7 @@ group_test(
 	return (1);
 }
 #endif /* AUTOKEY */
+
 
 #ifdef WORKER
 void
