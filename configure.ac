@@ -4160,6 +4160,24 @@ case "$ans" in
 esac
 
 
+AC_MSG_CHECKING([if we want the explicit 127.0.0.0/8 martian filter])
+AC_ARG_ENABLE(
+    [bug3020-fix],
+    [AS_HELP_STRING(
+	[--enable-bug3020-fix],
+	[+ Provide the explicit 127.0.0.0/8 martian filter]
+    )],
+    [ans=$enableval],
+    [ans=yes]
+)
+AC_MSG_RESULT([$ans])
+case "$ans" in
+ yes)
+    AC_DEFINE([ENABLE_BUG3020_FIX], [1],
+	[Provide the explicit 127.0.0.0/8 martian filter?])
+esac
+
+
 AC_MSG_CHECKING([if we should use the IRIG sawtooth filter])
 
 case "$host" in

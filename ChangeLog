@@ -7,6 +7,7 @@
 * [Sec 3008] Always check the return value of ctl_getitem().
   - initial work by HStenn
   - Additional cleanup of ctl_getitem by perlinger@ntp.org
+* [Sec 3020] Refclock impersonation.  HStenn.
 * [Bug 2858] bool support.  Use stdbool.h when available.  HStenn.
 * [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
   - integrated patches by Loganaden Velvidron <logan@ntp.org>
