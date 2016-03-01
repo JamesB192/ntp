@@ -25,7 +25,6 @@
 * [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
   - A change related to [Bug 2853] forbids trailing white space in
     remote config commands. perlinger@ntp.org
->>>>>>>
 * Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
 * Update html/xleave.html documentation.  Harlan Stenn.
 * Update ntp.conf documentation.  Harlan Stenn.
