@@ -8,6 +8,10 @@
 * [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
   - A change related to [Bug 2853] forbids trailing white space in
     remote config commands. perlinger@ntp.org
+* [Bug 3022] authkeys.c should be refactored. perlinger@ntp.org
+  - fixed memory leak in access list (auth[read]keys.c)
+  - refactored handling of key access lists (auth[read]keys.c)
+  - reduced number of error branches (authreadkeys.c)
 * Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
 * Fix some Credit: attributions in the NEWS file.  Harlan Stenn.
 * Fix typo in html/monopt.html.  Harlan Stenn.
