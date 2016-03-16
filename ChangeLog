@@ -30,11 +30,13 @@
   - refactored handling of key access lists (auth[read]keys.c)
   - reduced number of error branches (authreadkeys.c)
 * [Bug 3023] ntpdate cannot correct dates in the future. perlinger@ntp.org
+* [Bug 3030] ntpq needs a general way to specify refid output format.  HStenn.
 * Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
 * Update html/xleave.html documentation.  Harlan Stenn.
 * Update ntp.conf documentation.  Harlan Stenn.
 * Fix some Credit: attributions in the NEWS file.  Harlan Stenn.
 * Fix typo in html/monopt.html.  Harlan Stenn.
+* Add README.pullrequests.  Harlan Stenn.
 
 ---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>
