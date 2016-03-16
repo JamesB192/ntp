@@ -1679,7 +1679,8 @@ doprintpeers(
 		} else if (!strcmp("hmode", name)) {
 			decodeint(value, &hmode);
 		} else if (!strcmp("refid", name)) {
-			if (pvl == peervarlist) {
+			if (   (pvl == peervarlist)
+			    && (drefid == REFID_IPV4)) {
 				have_da_rid = TRUE;
 				drlen = strlen(value);
 				if (0 == drlen) {
@@ -1700,7 +1701,9 @@ doprintpeers(
 				} else {
 					have_da_rid = FALSE;
 				}
-			} else if (pvl == apeervarlist) {
+			} else if (   (pvl == apeervarlist)
+				   || (pvl == peervarlist)) {
+				/* no need to check drefid == REFID_HASH */
 				have_da_rid = TRUE;
 				drlen = strlen(value);
 				if (0 == drlen) {
@@ -2030,15 +2033,19 @@ peers(
 	FILE *fp
 	)
 {
-	int af = 0;
+	if (drefid == REFID_HASH) {
+		apeers(pcmd, fp);
+	} else {
+		int af = 0;
 
-	if (pcmd->nargs == 1) {
-		if (pcmd->argval->ival == 6)
-			af = AF_INET6;
-		else
-			af = AF_INET;
+		if (pcmd->nargs == 1) {
+			if (pcmd->argval->ival == 6)
+				af = AF_INET6;
+			else
+				af = AF_INET;
+		}
+		dopeers(0, fp, af);
 	}
-	dopeers(0, fp, af);
 }
 
 
