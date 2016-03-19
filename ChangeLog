@@ -10,6 +10,22 @@
     with some modifications & unit tests
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
+* [Bug 2999] out-of-bounds access in 'is_safe_filename()'. perlinger@ntp.org
+* [Bug 3013] Fix for ssl_init.c SHA1 test. perlinger@ntp.org
+  - Patch provided by Ch. Weisgerber
+* [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
+  - A change related to [Bug 2853] forbids trailing white space in
+    remote config commands. perlinger@ntp.org
+* [Bug 3022] authkeys.c should be refactored. perlinger@ntp.org
+  - fixed memory leak in access list (auth[read]keys.c)
+  - refactored handling of key access lists (auth[read]keys.c)
+  - reduced number of error branches (authreadkeys.c)
+* [Bug 3023] ntpdate cannot correct dates in the future. perlinger@ntp.org
+* [Bug 3030] ntpq needs a general way to specify refid output format.  HStenn.
+* Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
+* Fix some Credit: attributions in the NEWS file.  Harlan Stenn.
+* Fix typo in html/monopt.html.  Harlan Stenn.
+* Add README.pullrequests.  Harlan Stenn.
 
 ---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>
