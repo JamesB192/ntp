@@ -11,6 +11,10 @@
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
 * [Bug 2999] out-of-bounds access in 'is_safe_filename()'. perlinger@ntp.org
+* [Bug 3010] remote configuration trustedkey/requestkey values
+  are not properly validated. perlinger@ntp.org
+  - sidekick: Ignore keys that have an unsupported MAC algorithm
+    but are otherwise well-formed
 * [Bug 3013] Fix for ssl_init.c SHA1 test. perlinger@ntp.org
   - Patch provided by Ch. Weisgerber
 * [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
