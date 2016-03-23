@@ -113,8 +113,15 @@ free_keydata(
 	KeyDataT *node
 	)
 {
+	KeyAccT *kap;
+	
 	if (node) {
-		keyacc_all_free(node->keyacclist);
+		while (node->keyacclist) {
+			kap = node->keyacclist;
+			node->keyacclist = kap->next;
+			free(kap);
+		}
+
 		/* purge secrets from memory before free()ing it */
 		memset(node, 0, sizeof(*node) + node->seclen);
 		free(node);

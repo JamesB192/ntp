@@ -2297,7 +2297,47 @@ do_setclr_trap(
 	return;
 }
 
+/*
+ * Validate a request packet for a new request or control key:
+ *  - only one item allowed
+ *  - key must be valid (that is, known, and not in the autokey range)
+ */
+static void
+set_keyid_checked(
+	keyid_t        *into,
+	const char     *what,
+	sockaddr_u     *srcadr,
+	endpt          *inter,
+	struct req_pkt *inpkt
+	)
+{
+	keyid_t *pkeyid;
+	keyid_t  tmpkey;
 
+	/* restrict ourselves to one item only */
+	if (INFO_NITEMS(inpkt->err_nitems) > 1) {
+		msyslog(LOG_ERR, "set_keyid_checked[%s]: err_nitems > 1",
+			what);
+		req_ack(srcadr, inter, inpkt, INFO_ERR_FMT);
+		return;
+	}
+
+	/* plug the new key from the packet */
+	pkeyid = (keyid_t *)&inpkt->u;
+	tmpkey = ntohl(*pkeyid);
+
+	/* validate the new key id, claim data error on failure */
+	if (tmpkey < 1 || tmpkey > NTP_MAXKEY || !auth_havekey(tmpkey)) {
+		msyslog(LOG_ERR, "set_keyid_checked[%s]: invalid key id: %ld",
+			what, (long)tmpkey);
+		req_ack(srcadr, inter, inpkt, INFO_ERR_NODATA);
+		return;
+	}
+
+	/* if we arrive here, the key is good -- use it */
+	*into = tmpkey;
+	req_ack(srcadr, inter, inpkt, INFO_OKAY);
+}
 
 /*
  * set_request_keyid - set the keyid used to authenticate requests
@@ -2309,20 +2349,8 @@ set_request_keyid(
 	struct req_pkt *inpkt
 	)
 {
-	keyid_t *pkeyid;
-
-	/*
-	 * Restrict ourselves to one item only.
-	 */
-	if (INFO_NITEMS(inpkt->err_nitems) > 1) {
-		msyslog(LOG_ERR, "set_request_keyid: err_nitems > 1");
-		req_ack(srcadr, inter, inpkt, INFO_ERR_FMT);
-		return;
-	}
-
-	pkeyid = (keyid_t *)&inpkt->u;
-	info_auth_keyid = ntohl(*pkeyid);
-	req_ack(srcadr, inter, inpkt, INFO_OKAY);
+	set_keyid_checked(&info_auth_keyid, "request",
+			  srcadr, inter, inpkt);
 }
 
 
@@ -2337,20 +2365,8 @@ set_control_keyid(
 	struct req_pkt *inpkt
 	)
 {
-	keyid_t *pkeyid;
-
-	/*
-	 * Restrict ourselves to one item only.
-	 */
-	if (INFO_NITEMS(inpkt->err_nitems) > 1) {
-		msyslog(LOG_ERR, "set_control_keyid: err_nitems > 1");
-		req_ack(srcadr, inter, inpkt, INFO_ERR_FMT);
-		return;
-	}
-
-	pkeyid = (keyid_t *)&inpkt->u;
-	ctl_auth_keyid = ntohl(*pkeyid);
-	req_ack(srcadr, inter, inpkt, INFO_OKAY);
+	set_keyid_checked(&ctl_auth_keyid, "control",
+			  srcadr, inter, inpkt);
 }
 
 
