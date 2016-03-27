@@ -2,6 +2,8 @@
 
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
+* [Bug 3019] NTPD stops processing packets after ERROR_HOST_UNREACHABLE
+  - Overhaul of Windows IO completion port handling. perlinger@ntp.org
 
 ---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>
