@@ -175,6 +175,7 @@ typedef struct interface endpt;
 struct interface {
 	endpt *		elink;		/* endpt list link */
 	endpt *		mclink;		/* per-AF_* multicast list */
+	void *		ioreg_ctx;	/* IO registration context */
 	SOCKET		fd;		/* socket descriptor */
 	SOCKET		bfd;		/* for receiving broadcasts */
 	u_int32		ifnum;		/* endpt instance count */
