@@ -1308,9 +1308,9 @@ receive(
 #endif /* AUTOKEY */
 
 		if (MODE_BROADCAST == hismode) {
-			u_char poll;
-			int bail = 0;
-			l_fp tdiff;
+			int	bail = 0;
+			l_fp	tdiff;
+			u_long	deadband;
 
 			DPRINTF(2, ("receive: PROCPKT/BROADCAST: prev pkt %ld seconds ago, ppoll: %d, %d secs\n",
 				    (current_time - peer->timelastrec),
@@ -1332,27 +1332,28 @@ receive(
 					peer->ppoll, pkt->ppoll);
 			}
 
-			poll = min(peer->maxpoll,
-				   max(peer->minpoll, pkt->ppoll));
-
 			/* This is error-worthy */
-			if (pkt->ppoll != poll) {
+			if (pkt->ppoll < peer->minpoll ||
+			    pkt->ppoll > peer->maxpoll  ) {
 				msyslog(LOG_INFO, "receive: broadcast poll of %ud from %s is out-of-range (%d to %d)!",
 					pkt->ppoll, stoa(&rbufp->recv_srcadr),
 					peer->minpoll, peer->maxpoll);
 				++bail;
 			}
 
-			if (  (current_time - peer->timelastrec)
-			    < (1u << pkt->ppoll) - 1) {
-				msyslog(LOG_INFO, "receive: broadcast packet from %s arrived after %ld, not %d seconds!",
+			/* too early? worth an error, too! */
+			deadband = (1u << pkt->ppoll);
+			if (FLAG_BC_VOL & peer->flags)
+				deadband -= 3;	/* allow greater fuzz after volley */
+			if ((current_time - peer->timelastrec) < deadband) {
+				msyslog(LOG_INFO, "receive: broadcast packet from %s arrived after %lu, not %lu seconds!",
 					stoa(&rbufp->recv_srcadr),
 					(current_time - peer->timelastrec),
-					(1 << pkt->ppoll)
-					);
+					deadband);
 				++bail;
 			}
 
+			/* not monotonic? There's a trickser out there! */
 			tdiff = p_xmt;
 			L_SUB(&tdiff, &peer->bxmt);
 			if (tdiff.l_i < 0) {
