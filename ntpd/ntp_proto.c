@@ -25,6 +25,11 @@
 #include <unistd.h>
 #endif
 
+/*[Bug 3031] define automatic broadcastdelay cutoff preset */
+#ifndef BDELAY_DEFAULT
+# define BDELAY_DEFAULT (-0.050)
+#endif
+
 /*
  * This macro defines the authentication state. If x is 1 authentication
  * is required; othewise it is optional.
@@ -1144,7 +1149,7 @@ receive(
 		/*
 		 * Determine whether to execute the initial volley.
 		 */
-		if (sys_bdelay != 0) {
+		if (sys_bdelay > 0.0) {
 #ifdef AUTOKEY
 			/*
 			 * If a two-way exchange is not possible,
@@ -1339,7 +1344,7 @@ receive(
 			}
 
 			if (  (current_time - peer->timelastrec)
-			    < (1 << pkt->ppoll)) {
+			    < (1u << pkt->ppoll) - 1) {
 				msyslog(LOG_INFO, "receive: broadcast packet from %s arrived after %ld, not %d seconds!",
 					stoa(&rbufp->recv_srcadr),
 					(current_time - peer->timelastrec),
@@ -1993,8 +1998,11 @@ process_packet(
 		if (FLAG_BC_VOL & peer->flags) {
 			peer->flags &= ~FLAG_BC_VOL;
 			peer->delay = fabs(peer->offset - p_offset) * 2;
-			if (peer->delay > 0.05) {
-	bcc_init_volley_fail:
+			DPRINTF(2, ("broadcast volley: initial delay=%.6f\n",
+				peer->delay));
+			if (peer->delay > fabs(sys_bdelay)) {
+		bcc_init_volley_fail:
+				DPRINTF(2, ("%s", "broadcast volley: initial delay exceeds limit\n"));
 				unpeer(peer);
 				return;
 			}
@@ -4344,7 +4352,7 @@ init_proto(void)
 	sys_survivors = 0;
 	sys_manycastserver = 0;
 	sys_bclient = 0;
-	sys_bdelay = 0;
+	sys_bdelay = BDELAY_DEFAULT;	/*[Bug 3031] delay cutoff */
 	sys_authenticate = 1;
 	sys_stattime = current_time;
 	orphwait = current_time + sys_orphwait;
@@ -4437,7 +4445,7 @@ proto_config(
 		break;
 
 	case PROTO_BROADDELAY:	/* default broadcast delay (bdelay) */
-		sys_bdelay = dvalue;
+		sys_bdelay = (dvalue ? dvalue : BDELAY_DEFAULT);
 		break;
 
 	case PROTO_CEILING:	/* stratum ceiling (ceiling) */
