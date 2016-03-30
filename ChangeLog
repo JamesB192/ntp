@@ -12,6 +12,8 @@
 * [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
   - integrated patches by Loganaden Velvidron <logan@ntp.org>
     with some modifications & unit tests
+* [Bug 2960] async name resolution fixes for chroot() environments.
+  Reinhard Max.
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
 * [Bug 2999] out-of-bounds access in 'is_safe_filename()'. perlinger@ntp.org
