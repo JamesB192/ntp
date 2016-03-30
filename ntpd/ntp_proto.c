@@ -25,6 +25,11 @@
 #include <unistd.h>
 #endif
 
+/*[Bug 3031] define automatic broadcastdelay cutoff preset */
+#ifndef BDELAY_DEFAULT
+# define BDELAY_DEFAULT (-0.050)
+#endif
+
 /*
  * This macro defines the authentication state. If x is 1 authentication
  * is required; othewise it is optional.
@@ -1144,7 +1149,7 @@ receive(
 		/*
 		 * Determine whether to execute the initial volley.
 		 */
-		if (sys_bdelay != 0) {
+		if (sys_bdelay > 0.0) {
 #ifdef AUTOKEY
 			/*
 			 * If a two-way exchange is not possible,
@@ -1339,7 +1344,7 @@ receive(
 			}
 
 			if (  (current_time - peer->timelastrec)
-			    < (1 << pkt->ppoll)) {
+			    < (1u << pkt->ppoll) - 1) {
 				msyslog(LOG_INFO, "receive: broadcast packet from %s arrived after %ld, not %d seconds!",
 					stoa(&rbufp->recv_srcadr),
 					(current_time - peer->timelastrec),
@@ -1958,6 +1963,9 @@ process_packet(
 			peer->aorg = p_xmt;
 			peer->borg = peer->dst;
 			if (t34 < 0 || t34 > 1.) {
+				/* drop all if in the initial volley */
+				if (FLAG_BC_VOL & peer->flags)
+					goto bcc_init_volley_fail;
 				snprintf(statstr, sizeof(statstr),
 				    "offset %.6f delay %.6f", t21, t34);
 				report_event(PEVNT_XERR, peer, statstr);
@@ -1983,10 +1991,21 @@ process_packet(
 		 * between the unicast timestamp and the broadcast
 		 * timestamp. This works for both basic and interleaved
 		 * modes.
+		 * [Bug 3031] Don't keep this peer when the delay 
+		 * calculation gives reason to suspect clock steps.
+		 * This is assumed for delays > 50ms.
 		 */
 		if (FLAG_BC_VOL & peer->flags) {
 			peer->flags &= ~FLAG_BC_VOL;
 			peer->delay = fabs(peer->offset - p_offset) * 2;
+			DPRINTF(2, ("broadcast volley: initial delay=%.6f\n",
+				peer->delay));
+			if (peer->delay > fabs(sys_bdelay)) {
+		bcc_init_volley_fail:
+				DPRINTF(2, ("%s", "broadcast volley: initial delay exceeds limit\n"));
+				unpeer(peer);
+				return;
+			}
 		}
 		p_del = peer->delay;
 		p_offset += p_del / 2;
@@ -4333,7 +4352,7 @@ init_proto(void)
 	sys_survivors = 0;
 	sys_manycastserver = 0;
 	sys_bclient = 0;
-	sys_bdelay = 0;
+	sys_bdelay = BDELAY_DEFAULT;	/*[Bug 3031] delay cutoff */
 	sys_authenticate = 1;
 	sys_stattime = current_time;
 	orphwait = current_time + sys_orphwait;
@@ -4426,7 +4445,7 @@ proto_config(
 		break;
 
 	case PROTO_BROADDELAY:	/* default broadcast delay (bdelay) */
-		sys_bdelay = dvalue;
+		sys_bdelay = (dvalue ? dvalue : BDELAY_DEFAULT);
 		break;
 
 	case PROTO_CEILING:	/* stratum ceiling (ceiling) */
