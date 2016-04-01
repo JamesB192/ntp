@@ -2008,6 +2008,7 @@ process_packet(
 				return;
 			}
 		}
+		peer->nextdate = current_time + (1u << peer->ppoll) - 2u;
 		p_del = peer->delay;
 		p_offset += p_del / 2;
 
