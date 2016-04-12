@@ -1353,7 +1353,7 @@ receive(
 				++bail;
 			}
 
-			/* not monotonic? There's a trickser out there! */
+			/* Alert if time from the server is non-monotonic */
 			tdiff = p_xmt;
 			L_SUB(&tdiff, &peer->bxmt);
 			if (tdiff.l_i < 0) {
