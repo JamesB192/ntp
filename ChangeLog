@@ -43,6 +43,7 @@
 * Fix some Credit: attributions in the NEWS file.  Harlan Stenn.
 * Fix typo in html/monopt.html.  Harlan Stenn.
 * Add README.pullrequests.  Harlan Stenn.
+* Cleanup to include/ntp.h.  Harlan Stenn.
 
 ---
 (4.2.8p6) 2016/01/20 Released by Harlan Stenn <stenn@ntp.org>

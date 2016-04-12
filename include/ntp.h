@@ -242,6 +242,13 @@ struct interface {
 #define	PEER_TEST_MASK	(TEST10 | TEST11 | TEST12 | TEST13)
 
 /*
+ * Unused flags
+ */
+#define TEST14		0x2000
+#define TEST15		0x4000
+#define TEST16		0x8000
+
+/*
  * The peer structure. Holds state information relating to the guys
  * we are peering with. Most of this stuff is from section 3.2 of the
  * spec.
