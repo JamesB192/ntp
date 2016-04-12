@@ -33,6 +33,7 @@
   - A change related to [Bug 2853] forbids trailing white space in
     remote config commands. perlinger@ntp.org
 * [Bug 3019] NTPD stops processing packets after ERROR_HOST_UNREACHABLE
+  - report and patch from Aleksandr Kostikov.
   - Overhaul of Windows IO completion port handling. perlinger@ntp.org
 * [Bug 3022] authkeys.c should be refactored. perlinger@ntp.org
   - fixed memory leak in access list (auth[read]keys.c)
