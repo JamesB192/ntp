@@ -172,7 +172,8 @@ int unpeer_crypto_early		= 1;	/* bad crypto (TEST9) */
 int unpeer_crypto_nak_early	= 1;	/* crypto_NAK (TEST5) */
 int unpeer_digest_early		= 1;	/* bad digest (TEST5) */
 
-static int kiss_code_check(u_char hisleap, u_char hisstratum, u_char hismode, u_int32 refid);
+int kiss_code_check(u_char hisleap, u_char hisstratum, u_char hismode, u_int32 refid);
+enum nak_error_codes valid_NAK(struct peer *peer, struct recvbuf *rbufp, u_char hismode);
 static	double	root_distance	(struct peer *);
 static	void	clock_combine	(peer_select *, int, int);
 static	void	peer_xmit	(struct peer *);
@@ -1592,9 +1593,9 @@ receive(
 	 * If there is no origin timestamp, it's either an initial packet
 	 * or we've already received a response to our query.  Of course,
 	 * should 'aorg' be all-zero because this really was the original
-	 * transmit timestamp, we'll drop the reply.  There is a window of
-	 * one nanosecond once every 136 years' time where this is possible.
-	 * We currently ignore this situation.
+	 * transmit timestamp, we'll ignore this reply.  There is a window
+	 * of one nanosecond once every 136 years' time where this is
+	 * possible.  We currently ignore this situation.
 	 *
 	 * Otherwise, check for bogus packet in basic mode.
 	 * If it is bogus, switch to interleaved mode and resynchronize,
@@ -1605,14 +1606,23 @@ receive(
 	 * be from us, attempting to cause our server to KoD us.
 	 */
 	} else if (peer->flip == 0) {
-		if (    L_ISZERO(&peer->aorg)
-		    || !L_ISEQU(&p_org, &peer->aorg)) {
+		INSIST(0 != hisstratum);
+		if (0) {
+		} else if (L_ISZERO(&p_org)) {
+			msyslog(LOG_INFO,
+				"receive: Got 0 origin timestamp from %s@%s xmt %#010x.%08x",
+				hm_str, ntoa(&peer->srcadr),
+				ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf));
+			L_CLR(&peer->aorg);
+		} else if (!L_ISEQU(&p_org, &peer->aorg)) {
+			/* are there cases here where we should bail? */
+			/* Should we set TEST2 if we decide to try xleave? */
 			peer->bogusorg++;
 			peer->flash |= TEST2;	/* bogus */
 			msyslog(LOG_INFO,
-				"receive: Unexpected origin timestamp %#010x.%08x from %s xmt %#010x.%08x",
+				"receive: Unexpected origin timestamp %#010x.%08x from %s@%s xmt %#010x.%08x",
 				ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
-				ntoa(&peer->srcadr),
+				hm_str, ntoa(&peer->srcadr),
 				ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf));
 			if (  !L_ISZERO(&peer->dst)
 			    && L_ISEQU(&p_org, &peer->dst)) {
@@ -1620,10 +1630,9 @@ receive(
 				peer->flip = 1;
 				report_event(PEVNT_XLEAVE, peer, NULL);
 			}
-			/* HMS: Do we want to return here if it's xleave? */
-			return; /* Bogus or possible interleave packet */
+		} else {
+			L_CLR(&peer->aorg);
 		}
-		L_CLR(&peer->aorg);
 
 	/*
 	 * Check for valid nonzero timestamp fields.
