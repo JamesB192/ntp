@@ -1028,7 +1028,6 @@ remove_interface(
 #	    endif
 		close_and_delete_fd_from_list(ep->bfd);
 		ep->bfd = INVALID_SOCKET;
-		ep->flags &= ~INT_BCASTOPEN;
 	}
 #   ifdef HAVE_IO_COMPLETION_PORT
 	io_completion_port_remove_interface(ep);
@@ -2583,7 +2582,7 @@ io_setbclient(void)
 			continue;
 
 		/* Only IPv4 addresses are valid for broadcast */
-		REQUIRE(IS_IPV4(&interf->sin));
+		REQUIRE(IS_IPV4(&interf->bcast));
 
 		/* Do we already have the broadcast address open? */
 		if (interf->flags & INT_BCASTOPEN) {
@@ -2611,13 +2610,31 @@ io_setbclient(void)
 			msyslog(LOG_INFO,
 				"Listen for broadcasts to %s on interface #%d %s",
 				stoa(&interf->bcast), interf->ifnum, interf->name);
-		} else {
-			/* silently ignore EADDRINUSE as we probably opened
-			   the socket already for an address in the same network */
-			if (errno != EADDRINUSE)
-				msyslog(LOG_INFO,
-					"failed to listen for broadcasts to %s on interface #%d %s",
-					stoa(&interf->bcast), interf->ifnum, interf->name);
+		} else switch (errno) {
+			/* Silently ignore EADDRINUSE as we probably
+			 * opened the socket already for an address in
+			 * the same network */
+		case EADDRINUSE:
+			/* Some systems cannot bind a socket to a broadcast
+			 * address, as that is not a valid host address. */
+		case EADDRNOTAVAIL:
+#		    ifdef SYS_WINNT	/*TODO: use for other systems, too? */
+			/* avoid recurrence here -- if we already have a
+			 * regular socket, it's quite useless to try this
+			 * again.
+			 */
+			if (interf->fd != INVALID_SOCKET) {
+				interf->flags |= INT_BCASTOPEN;
+				nif++;
+			}
+#		    endif
+			break;
+
+		default:
+			msyslog(LOG_INFO,
+				"failed to listen for broadcasts to %s on interface #%d %s",
+				stoa(&interf->bcast), interf->ifnum, interf->name);
+			break;
 		}
 	}
 	set_reuseaddr(0);
@@ -2660,8 +2677,8 @@ io_unsetbclient(void)
 #		    endif
 			close_and_delete_fd_from_list(ep->bfd);
 			ep->bfd = INVALID_SOCKET;
-			ep->flags &= ~INT_BCASTOPEN;
 		}
+		ep->flags &= ~INT_BCASTOPEN;
 	}
 	broadcast_client_enabled = ISC_FALSE;
 }
