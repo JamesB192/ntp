@@ -22,6 +22,11 @@
   - reduced number of error branches (authreadkeys.c)
 * [Bug 3023] ntpdate cannot correct dates in the future. perlinger@ntp.org
 * [Bug 3030] ntpq needs a general way to specify refid output format.  HStenn.
+* [Bug 3031] ntp broadcastclient unable to synchronize to an server
+             when the time of server changed. perlinger@ntp.org
+  - Check the initial delay calculation and reject/unpeer the broadcast
+    server if the delay exceeds 50ms. Retry again after the next
+    broadcast packet.
 * Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
 * Fix some Credit: attributions in the NEWS file.  Harlan Stenn.
 * Fix typo in html/monopt.html.  Harlan Stenn.
