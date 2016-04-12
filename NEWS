@@ -1,6 +1,5 @@
 ---
-
-NTP 4.2.8p6
+NTP 4.2.8p7 (Harlan Stenn <stenn@ntp.org>, 2016/04/26) 
 
 Focus: Security, Bug fixes, enhancements.
 
@@ -8,6 +7,108 @@ Severity: MEDIUM
 
 In addition to bug fixes and enhancements, this release fixes the
 following X low- and Y medium-severity vulnerabilities:
+
+* Improve NTP security against buffer comparison timing attacks
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.XX) 26 Apr 2016
+   References: Sec 2879 / CVE-2016-1550
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
+	4.3.0 up to, but not including 4.3.XX
+   CVSS2: (AV:L/AC:H/Au:N/C:P/I:P/A:N) Base Score: 2.6 - LOW
+   CVSS3: (CVSS:3.0/AV:L/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N) Base Score: 4.0 - MEDIUM
+   Summary: Packet authentication tests have been performed using
+	memcmp() or possibly bcmp(), and it is potentially possible
+	for a local or perhaps LAN-based attacker to send a packet with
+	an authentication payload and indirectly observe how much of
+	the digest has matched.
+   Mitigation:
+	Upgrade to 4.2.8p7, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page.
+	Properly monitor your ntpd instances.
+   Credit: This weakness was discovered independently by Loganaden
+   	Velvindron, and Matthew Van Gundy and Stephen Gray of Cisco ASIG.
+
+XXX: HMS: the zero origin stuff is really not 2901.  But check to be sure.
+* Clients that receive a KoD should validate the origin timestamp field.
+    Date Resolved: Stable (4.2.8p4) 21 Oct 2015
+    References: Sec 2901 / CVE-2015-7704 / CVE-2015-7705
+    Affects: All ntp-4 releases up to, but not including 4.2.8p4, and 4.3.0 up to, but not including 4.3.77
+    CVSS: (AV:N/AC:M/Au:N/C:N/I:N/A:P) Base Score: 4.3-5.0 at worst
+    Summary: An ntpd client that honors Kiss-of-Death responses will honor KoD messages that have been forged by an attacker, causing it to delay or stop querying its servers for time updates. Also, an attacker can forge packets that claim to be from the target and send them to servers often enough that a server that implements KoD rate limiting will send the target machine a KoD response to attempt to reduce the rate of incoming packets, or it may also trigger a firewall block at the server for packets from the target machine. For either of these attacks to succeed, the attacker must know what servers the target is communicating with. An attacker can be anywhere on the Internet and can frequently learn the identity of the target's time source by sending the target a time query.
+    Mitigation:
+        Implement BCP-38.
+        Upgrade to 4.2.8p4, or later, from the NTP Project Download Page or the NTP Public Services Project Download Page
+        If you can't upgrade, restrict who can query ntpd to learn who its servers are, and what IPs are allowed to ask your system for the time. This mitigation is heavy-handed.
+        Monitor your ntpd instances. 
+    Note: 4.2.8p4 protects against the first attack. For the second attack, all we can do is warn when it is happening, which we do in 4.2.8p4.
+    Credit: This weakness was discovered by Aanchal Malhotra, Issac E. Cohen, and Sharon Goldberg of Boston University. 
+
+***
+* [Sec 2901] KoD packets must have non-zero transmit timestamps.  HStenn.
+* [Sec 2936] Skeleton Key: Any system knowing the trusted key can serve
+  time. Include passive servers in this check. HStenn.
+* [Sec 2945] Additional KoD packet checks.  HStenn.
+* [Sec 3008] Always check the return value of ctl_getitem().
+  - initial work by HStenn
+  - Additional cleanup of ctl_getitem by perlinger@ntp.org
+* [Sec 3020] Refclock impersonation.  HStenn.
+
+Other fixes:
+
+* [Bug 2858] bool support.  Use stdbool.h when available.  HStenn.
+* [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
+  - integrated patches by Loganaden Velvidron <logan@ntp.org>
+    with some modifications & unit tests
+* [Bug 2952] Symmetric active/passive mode is broken.  HStenn.
+* [Bug 2960] async name resolution fixes for chroot() environments.
+  Reinhard Max.
+* [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
+* [Bug 2995] Fixes to compile on Windows
+* [Bug 2999] out-of-bounds access in 'is_safe_filename()'. perlinger@ntp.org
+* [Bug 3007] Validate crypto-NAKs
+* [Bug 3009] Crafted addpeer with hmode > 7 causes OOB error. perlinger@ntp.org
+   - added more stringent checks on packet content
+* [Bug 3010] remote configuration trustedkey/requestkey values
+  are not properly validated. perlinger@ntp.org
+  - sidekick: Ignore keys that have an unsupported MAC algorithm
+    but are otherwise well-formed
+* [Bug 3011] Duplicate IPs on unconfig directives will cause an assertion botch
+  - graciously accept the same IP multiple times. perlinger@ntp.org
+* [Bug 3013] Fix for ssl_init.c SHA1 test. perlinger@ntp.org
+  - Patch provided by Ch. Weisgerber
+* [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
+  - A change related to [Bug 2853] forbids trailing white space in
+    remote config commands. perlinger@ntp.org
+* [Bug 3019] NTPD stops processing packets after ERROR_HOST_UNREACHABLE
+  - report and patch from Aleksandr Kostikov.
+  - Overhaul of Windows IO completion port handling. perlinger@ntp.org
+* [Bug 3022] authkeys.c should be refactored. perlinger@ntp.org
+  - fixed memory leak in access list (auth[read]keys.c)
+  - refactored handling of key access lists (auth[read]keys.c)
+  - reduced number of error branches (authreadkeys.c)
+* [Bug 3023] ntpdate cannot correct dates in the future. perlinger@ntp.org
+* [Bug 3030] ntpq needs a general way to specify refid output format.  HStenn.
+* [Bug 3031] ntp broadcastclient unable to synchronize to an server
+             when the time of server changed. perlinger@ntp.org
+  - Check the initial delay calculation and reject/unpeer the broadcast
+    server if the delay exceeds 50ms. Retry again after the next
+    broadcast packet.
+* Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
+* Update html/xleave.html documentation.  Harlan Stenn.
+* Update ntp.conf documentation.  Harlan Stenn.
+* Fix some Credit: attributions in the NEWS file.  Harlan Stenn.
+* Fix typo in html/monopt.html.  Harlan Stenn.
+* Add README.pullrequests.  Harlan Stenn.
+* Cleanup to include/ntp.h.  Harlan Stenn.
+
+---
+NTP 4.2.8p6 (Harlan Stenn <stenn@ntp.org>, 2016/01/20) 
+
+Focus: Security, Bug fixes, enhancements.
+
+Severity: MEDIUM
+
+In addition to bug fixes and enhancements, this release fixes the
+following 1 low- and 8 medium-severity vulnerabilities:
 
 * Potential Infinite Loop in 'ntpq'
    Date Resolved: Stable (4.2.8p6) 19 Jan 2016; Dev (4.3.90) 19 Jan 2016
@@ -253,8 +354,7 @@ Other fixes:
 * Make leapsec_query debug messages less verbose.  Harlan Stenn.
 
 ---
-
-NTP 4.2.8p5
+NTP 4.2.8p5 (Harlan Stenn <stenn@ntp.org>, 2016/01/07) 
 
 Focus: Security, Bug fixes, enhancements.
 
@@ -354,7 +454,7 @@ Other fixes:
 * Quiet a warning from clang.  Harlan Stenn.
 
 ---
-NTP 4.2.8p4
+NTP 4.2.8p4 (Harlan Stenn <stenn@ntp.org>, 2015/10/21) 
 
 Focus: Security, Bug fixes, enhancements.
 
