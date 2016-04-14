@@ -5,16 +5,19 @@ Focus: Security, Bug fixes, enhancements.
 
 Severity: MEDIUM
 
+When building NTP from source, there is a new configure option
+available, --enable-dynamic-interleave.  More information on this below.
+
 In addition to bug fixes and enhancements, this release fixes the
-following X low- and Y medium-severity vulnerabilities:
+following 9 low- and medium-severity vulnerabilities:
 
 * Improve NTP security against buffer comparison timing attacks
-   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.XX) 26 Apr 2016
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
    References: Sec 2879 / CVE-2016-1550
    Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
-	4.3.0 up to, but not including 4.3.XX
-   CVSS2: (AV:L/AC:H/Au:N/C:P/I:P/A:N) Base Score: 2.6 - LOW
-   CVSS3: (CVSS:3.0/AV:L/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N) Base Score: 4.0 - MEDIUM
+	4.3.0 up to, but not including 4.3.92
+   CVSSv2: 2.6 - (AV:L/AC:H/Au:N/C:P/I:P/A:N)
+   CVSSv3: 4.0 - CVSS:3.0/AV:L/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N
    Summary: Packet authentication tests have been performed using
 	memcmp() or possibly bcmp(), and it is potentially possible
 	for a local or perhaps LAN-based attacker to send a packet with
@@ -27,30 +30,142 @@ following X low- and Y medium-severity vulnerabilities:
    Credit: This weakness was discovered independently by Loganaden
    	Velvindron, and Matthew Van Gundy and Stephen Gray of Cisco ASIG.
 
-XXX: HMS: the zero origin stuff is really not 2901.  But check to be sure.
 * Clients that receive a KoD should validate the origin timestamp field.
-    Date Resolved: Stable (4.2.8p4) 21 Oct 2015
-    References: Sec 2901 / CVE-2015-7704 / CVE-2015-7705
-    Affects: All ntp-4 releases up to, but not including 4.2.8p4, and 4.3.0 up to, but not including 4.3.77
-    CVSS: (AV:N/AC:M/Au:N/C:N/I:N/A:P) Base Score: 4.3-5.0 at worst
-    Summary: An ntpd client that honors Kiss-of-Death responses will honor KoD messages that have been forged by an attacker, causing it to delay or stop querying its servers for time updates. Also, an attacker can forge packets that claim to be from the target and send them to servers often enough that a server that implements KoD rate limiting will send the target machine a KoD response to attempt to reduce the rate of incoming packets, or it may also trigger a firewall block at the server for packets from the target machine. For either of these attacks to succeed, the attacker must know what servers the target is communicating with. An attacker can be anywhere on the Internet and can frequently learn the identity of the target's time source by sending the target a time query.
+   References: Sec 2901 / CVE-2015-7704, CVE-2015-7705
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7,
+   Summary: Improvements to the fixes incorporated in t 4.2.8p4 and 4.3.77.
+
+* peer associations were broken by the fix for NtpBug2899
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   References: Sec 2952 / CVE-2015-7704
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
+   	4.3.0 up to, but not including 4.3.92
+   CVSSv2: 4.3 - (AV:N/AC:M/Au:N/C:N/I:N/A:P)
+   Summary: The fix for NtpBug2952 in ntp-4.2.8p5 to address broken peer
+   	associations did not address all of the issues.
+   Mitigation:
+        Implement BCP-38.
+        Upgrade to 4.2.8p7, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+        If you can't upgrade, use "server" associations instead of
+	    "peer" associations.
+        Monitor your ntpd instances. 
+   Credit: This problem was discovered by Michael Tatarinov.
+
+* Skeleton key: passive server with trusted key can serve time.
+   References: Sec 2936 / CVE-2015-7974
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7,
+   Summary: Improvements to the fixes incorporated in t 4.2.8p6 and 4.3.90.
+
+* Zero origin timestamp bypass: Additional KoD checks.
+   References: Sec 2945 / CVE-2015-8138
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7,
+   Summary: Improvements to the fixes incorporated in t 4.2.8p6 and 4.3.92.
+
+* ctl_getitem() return value not always checked
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   References: Sec 3008 / CVE-2016-2519
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
+	4.3.0 up to, but not including 4.3.92
+   CVSSv2: 4.9 - (AV:N/AC:H/Au:S/C:N/I:N/A:C)
+   CVSSv3: 4.2 - CVSS:3.0/AV:N/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:H
+   Summary: ntpq and ntpdc can be used to store and retrieve information
+   	in ntpd. It is possible to store a data value that is larger
+	than the size of the buffer that the ctl_getitem() function of
+	ntpd uses to report the return value. If the length of the
+	requested data value returned by ctl_getitem() is too large,
+	the value NULL is returned instead. There are 2 cases where the
+	return value from ctl_getitem() was not directly checked to make
+	sure it's not NULL, but there are subsequent INSIST() checks
+	that make sure the return value is not NULL. There are no data
+	values ordinarily stored in ntpd that would exceed this buffer
+	length. But if one has permission to store values and one stores
+	a value that is "too large", then ntpd will abort if an attempt
+	is made to read that oversized value.
     Mitigation:
         Implement BCP-38.
-        Upgrade to 4.2.8p4, or later, from the NTP Project Download Page or the NTP Public Services Project Download Page
-        If you can't upgrade, restrict who can query ntpd to learn who its servers are, and what IPs are allowed to ask your system for the time. This mitigation is heavy-handed.
-        Monitor your ntpd instances. 
-    Note: 4.2.8p4 protects against the first attack. For the second attack, all we can do is warn when it is happening, which we do in 4.2.8p4.
-    Credit: This weakness was discovered by Aanchal Malhotra, Issac E. Cohen, and Sharon Goldberg of Boston University. 
+        Upgrade to 4.2.8p7, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+        Properly monitor your ntpd instances.
+    Credit: This weakness was discovered by Yihan Lian of the Cloud
+    	Security Team, Qihoo 360. 
 
-***
-* [Sec 2901] KoD packets must have non-zero transmit timestamps.  HStenn.
-* [Sec 2936] Skeleton Key: Any system knowing the trusted key can serve
-  time. Include passive servers in this check. HStenn.
-* [Sec 2945] Additional KoD packet checks.  HStenn.
-* [Sec 3008] Always check the return value of ctl_getitem().
-  - initial work by HStenn
-  - Additional cleanup of ctl_getitem by perlinger@ntp.org
-* [Sec 3020] Refclock impersonation.  HStenn.
+* Refclock impersonation vulnerability
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   References: Sec 3020 / CVE-2016-1551
+   Affects: On a very limited number of OSes, all NTP releases up to but
+	not including 4.2.8p7, and 4.3.0 up to but not including 4.3.92.
+	By "very limited number of OSes" we mean no general-purpose OSes
+	have yet been identified that have this vulnerability.
+   CVSSv2: 2.6 - (AV:N/AC:H/Au:N/C:N/I:P/A:N)
+   CVSSv3: 3.7 - CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N
+   Summary: While most OSes implement martian packet filtering in their
+   	network stack, at least regarding 127.0.0.0/8, some will allow
+	packets claiming to be from 127.0.0.0/8 that arrive over a
+	physical network. On these OSes, if ntpd is configured to use a
+	reference clock an attacker can inject packets over the network
+	that look like they are coming from that reference clock.
+   Mitigation:
+        Implement martian packet filtering and BCP-38.
+        Configure ntpd to use an adequate number of time sources.
+        Upgrade to 4.2.8p7, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+        If you are unable to upgrade and if you are running an OS that
+	    has this vulnerability, implement martian packet filters and
+	    lobby your OS vendor to fix this problem, or run your
+	    refclocks on computers that use OSes that are not vulnerable
+	    to these attacks and have your vulnerable machines get their
+	    time from protected resources.
+        Properly monitor your ntpd instances.
+   Credit: This weakness was discovered by Matt Street and others of
+   	Cisco ASIG. 
+
+Two other vulnerabilities have been reported, and the mitigations
+for these are as follows:
+
+* Interleave-pivot
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   References: Sec 2978 / CVE-2016-1548
+   Affects: All ntp-4 releases.
+   CVSSv2: 6.4 - (AV:N/AC:L/Au:N/C:N/I:P/A:P)
+   CVSSv3: 7.2 - CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:L/A:L
+   Summary: It is possible to change the time of an ntpd client or deny
+   	service to an ntpd client by forcing it to change from basic
+	client/server mode to interleaved symmetric mode. An attacker
+	can spoof a packet from a legitimate ntpd server with an origin
+	timestamp that matches the peer->dst timestamp recorded for that
+	server. After making this switch, the client will reject all
+	future legitimate server responses. It is possible to force the
+	victim client to move time after the mode has been changed.
+	ntpq gives no indication that the mode has been switched.
+   Mitigation:
+        Implement BCP-38.
+        Upgrade to 4.2.8p7, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page.  These
+	    versions will not dynamically "flip" into interleave mode
+	    unless configured to do so.
+        Properly monitor your ntpd instances.
+   Credit: This weakness was discovered by Miroslav Lichvar of RedHat
+   	and separately by Jonathan Gardner of Cisco ASIG.
+
+* Sybil vulnerability: ephemeral association attack
+   -Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   References: Sec 3012 / CVE-2016-1549
+   -Affects: All ntp-4 releases up to, but not including 4.2.8p7, and 4.3.0 up to, but not including 4.3.92
+   CVSSv2: 3.5 - (AV:N/AC:M/Au:S/C:N/I:P/A:N)
+   CVSS3v: 5.3 - CVSS:3.0/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:N
+   Summary: ntpd can be vulnerable to Sybil attacks. If one is not using
+   	the feature introduced in ntp-4.2.8p6 allowing an optional 4th
+	field in the ntp.keys file to specify which IPs can serve time,
+	a malicious authenticated peer can create arbitrarily-many
+	ephemeral associations in order to win the clock selection of
+	ntpd and modify a victim's clock.
+   Mitigation:
+        Implement BCP-38.
+        Use the 4th field in the ntp.keys file to specify which IPs
+	    can be time servers.
+        Properly monitor your ntpd instances.
+   Credit: This weakness was discovered by Matthew Van Gundy of Cisco ASIG. 
 
 Other fixes:
 
@@ -99,6 +214,33 @@ Other fixes:
 * Fix typo in html/monopt.html.  Harlan Stenn.
 * Add README.pullrequests.  Harlan Stenn.
 * Cleanup to include/ntp.h.  Harlan Stenn.
+
+New option to 'configure':
+
+While looking in to the issues around Bug 2978, the "interleave pivot"
+issue, it became clear that there are some intricate and unresolved
+issues with interleave operations.  We also realized that the interleave
+protocol was never added to the NTPv4 Standard, and it should have been.
+
+Interleave mode was first released in July of 2008, and can be engaged
+in two ways.  Any 'peer' and 'broadcast' lines in the ntp.conf file may
+contain the 'xleave' option, which will expressly enable interlave mode
+for that association.  Additionally, if a time packet arrives and is
+found inconsistent with normal protocol behavior but has certain
+characteristics that are compatible with interleave mode, NTP will
+dynamically switch to interleave mode.  With sufficient knowledge, an
+attacker can send a crafted forged packet to an NTP instance that
+triggers only one side to enter interleaved mode.
+
+To prevent this attack until we can thoroughly document, describe,
+fix, and test the dynamic interleave mode, we've added a new
+'configure' option to the build process:
+
+ --enable-dynamic-interleave
+
+This option controls whether or not NTP will, if conditions are right,
+engage dynamic interleave mode.  Dynamic interleave mode is disabled by
+default in ntp-4.2.8p7.
 
 ---
 NTP 4.2.8p6 (Harlan Stenn <stenn@ntp.org>, 2016/01/20) 
