@@ -4342,6 +4342,28 @@ case "$ntp_ok" in
 esac
 AC_MSG_RESULT([$ntp_ok])
 
+###
+
+AC_MSG_CHECKING([if we want dynamic interleave support])
+AC_ARG_ENABLE(
+    [dynamic-interleave],
+    [AS_HELP_STRING(
+	[--enable-dynamic-interleave],
+	[- dynamic interleave support]
+    )],
+    [ntp_ok=$enableval],
+    [ntp_ok=no]
+)
+ntp_dynamic_interleave=0
+case "$ntp_ok" in
+ yes)
+    ntp_dynamic_interleave=1
+    ;;
+esac
+AC_DEFINE_UNQUOTED([DYNAMIC_INTERLEAVE], [$ntp_dynamic_interleave],
+    [support dynamic interleave?])
+AC_MSG_RESULT([$ntp_ok])
+
 NTP_UNITYBUILD
 
 dnl  gtest is needed for our tests subdirs. It would be nice if we could

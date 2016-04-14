@@ -25,7 +25,7 @@
 #include <unistd.h>
 #endif
 
-/*[Bug 3031] define automatic broadcastdelay cutoff preset */
+/* [Bug 3031] define automatic broadcastdelay cutoff preset */
 #ifndef BDELAY_DEFAULT
 # define BDELAY_DEFAULT (-0.050)
 #endif
@@ -176,6 +176,8 @@ u_long	sys_kodsent;		/* KoD sent */
 int unpeer_crypto_early		= 1;	/* bad crypto (TEST9) */
 int unpeer_crypto_nak_early	= 1;	/* crypto_NAK (TEST5) */
 int unpeer_digest_early		= 1;	/* bad digest (TEST5) */
+
+int dynamic_interleave = DYNAMIC_INTERLEAVE;	/* Bug 2978 mitigation */
 
 int kiss_code_check(u_char hisleap, u_char hisstratum, u_char hismode, u_int32 refid);
 enum nak_error_codes valid_NAK(struct peer *peer, struct recvbuf *rbufp, u_char hismode);
@@ -1633,8 +1635,14 @@ receive(
 			if (  !L_ISZERO(&peer->dst)
 			    && L_ISEQU(&p_org, &peer->dst)) {
 				/* Might be the start of an interleave */
-				peer->flip = 1;
-				report_event(PEVNT_XLEAVE, peer, NULL);
+				if (dynamic_interleave) {
+					peer->flip = 1;
+					report_event(PEVNT_XLEAVE, peer, NULL);
+				} else {
+					msyslog(LOG_INFO,
+						"receive: Dynamic interleave from %s@%s denied",
+						hm_str, ntoa(&peer->srcadr));
+				}
 			}
 		} else {
 			L_CLR(&peer->aorg);
