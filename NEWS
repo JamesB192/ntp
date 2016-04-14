@@ -8,6 +8,13 @@ Severity: MEDIUM
 When building NTP from source, there is a new configure option
 available, --enable-dynamic-interleave.  More information on this below.
 
+Also note that ntp-4.2.8p7 logs more "unexpected events" than previous
+versions of ntp.  These events have almost certainly happened in the
+past, it's just that they were silently counted and not logged.  With
+the increasing awareness around security, we feel it's better to clearly
+log these events to help detect abusive behavior.  This increased
+logging can also help detect other problems, too.
+
 In addition to bug fixes and enhancements, this release fixes the
 following 9 low- and medium-severity vulnerabilities:
 
