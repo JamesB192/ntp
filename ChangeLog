@@ -4,6 +4,7 @@
 * [Sec 2936] Skeleton Key: Any system knowing the trusted key can serve
   time. Include passive servers in this check. HStenn.
 * [Sec 2945] Additional KoD packet checks.  HStenn.
+* [Sec 2978] Interleave can be partially triggered.  HStenn.
 * [Sec 3008] Always check the return value of ctl_getitem().
   - initial work by HStenn
   - Additional cleanup of ctl_getitem by perlinger@ntp.org
