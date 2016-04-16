@@ -40,7 +40,7 @@ following 9 low- and medium-severity vulnerabilities:
 * Clients that receive a KoD should validate the origin timestamp field.
    References: Sec 2901 / CVE-2015-7704, CVE-2015-7705
    Affects: All ntp-4 releases up to, but not including 4.2.8p7,
-   Summary: Improvements to the fixes incorporated in t 4.2.8p4 and 4.3.77.
+   Summary: Improvements to the fixes incorporated into 4.2.8p4 and 4.3.77.
 
 * peer associations were broken by the fix for NtpBug2899
    Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
