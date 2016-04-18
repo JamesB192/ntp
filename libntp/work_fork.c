@@ -540,6 +540,11 @@ fork_blocking_child(
 }
 
 
+void worker_global_lock(int inOrOut)
+{
+	(void)inOrOut;
+}
+
 #else	/* !WORK_FORK follows */
 char work_fork_nonempty_compilation_unit;
 #endif
