@@ -171,6 +171,8 @@ extern	void	close_all_except(int);
 extern	void	kill_asyncio	(int);
 #endif
 
+extern void worker_global_lock(int inOrOut);
+
 # ifdef WORK_PIPE
 typedef	void	(*addremove_io_fd_func)(int, int, int);
 extern	addremove_io_fd_func		addremove_io_fd;
