@@ -1580,7 +1580,7 @@ receive(
 		if (peer->flip == 0 && !L_ISEQU(&p_org, &peer->aorg)) {
 			peer->bogusorg++;
 			msyslog(LOG_INFO,
-				"receive: KoD origin timestamp %#010x.%08x from %s does not match %#010x.%08x - ignoring.",
+				"receive: flip 0 KoD origin timestamp %#010x.%08x from %s does not match %#010x.%08x - ignoring.",
 				p_org.l_ui, p_org.l_uf,
 				ntoa(&peer->srcadr),
 				peer->aorg.l_ui, peer->aorg.l_uf);
@@ -1588,7 +1588,7 @@ receive(
 		} else if (peer->flip == 1 && !L_ISEQU(&p_org, &peer->borg)) {
 			peer->bogusorg++;
 			msyslog(LOG_INFO,
-				"receive: KoD origin timestamp %#010x.%08x from %s does not match interleave %#010x.%08x - ignoring.",
+				"receive: flip 1 KoD origin timestamp %#010x.%08x from %s does not match interleave %#010x.%08x - ignoring.",
 				p_org.l_ui, p_org.l_uf,
 				ntoa(&peer->srcadr),
 				peer->borg.l_ui, peer->borg.l_uf);
@@ -1628,8 +1628,9 @@ receive(
 			peer->bogusorg++;
 			peer->flash |= TEST2;	/* bogus */
 			msyslog(LOG_INFO,
-				"receive: Unexpected origin timestamp %#010x.%08x from %s@%s xmt %#010x.%08x",
+				"receive: Unexpected origin timestamp %#010x.%08x does not match aorg %#010x.%08x from %s@%s xmt %#010x.%08x",
 				ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
+				peer->aorg.l_ui, peer->aorg.l_uf,
 				hm_str, ntoa(&peer->srcadr),
 				ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf));
 			if (  !L_ISZERO(&peer->dst)
