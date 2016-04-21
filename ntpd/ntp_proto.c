@@ -852,7 +852,9 @@ receive(
 	 */
 	if (crypto_nak_test == INVALIDNAK) {
 		report_event(PEVNT_AUTH, peer, "Invalid_NAK");
-		peer->badNAK++;
+		if (0 != peer) {
+			peer->badNAK++;
+		}
 		msyslog(LOG_ERR, "Invalid-NAK error at %ld %s<-%s", 
 			current_time, stoa(dstadr_sin), stoa(&rbufp->recv_srcadr));
 		return;
