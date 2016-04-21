@@ -27,6 +27,7 @@
   - Check the initial delay calculation and reject/unpeer the broadcast
     server if the delay exceeds 50ms. Retry again after the next
     broadcast packet.
+* [Bug 3036] autokey trips an INSIST in authistrustedip().  Harlan Stenn.
 * Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
 * Fix some Credit: attributions in the NEWS file.  Harlan Stenn.
 * Fix typo in html/monopt.html.  Harlan Stenn.
