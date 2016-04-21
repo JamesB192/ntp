@@ -188,7 +188,7 @@ Other fixes:
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
 * [Bug 2999] out-of-bounds access in 'is_safe_filename()'. perlinger@ntp.org
-* [Bug 3007] Validate crypto-NAKs
+* [Bug 3007] Validate crypto-NAKs.  Danny Mayer.
 * [Bug 3009] Crafted addpeer with hmode > 7 causes OOB error. perlinger@ntp.org
    - added more stringent checks on packet content
 * [Bug 3010] remote configuration trustedkey/requestkey values
