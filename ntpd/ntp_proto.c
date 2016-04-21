@@ -1767,10 +1767,12 @@ receive(
 	/*
 	 * If:
 	 *	- this is a *cast (uni-, broad-, or m-) server packet
-	 *	- and it's authenticated
+	 *	- and it's symmetric-key authenticated
 	 * then see if the sender's IP is trusted for this keyid.
 	 * If it is, great - nothing special to do here.
 	 * Otherwise, we should report and bail.
+	 *
+	 * Autokey-authenticated packets are accepted.
 	 */
 
 	switch (hismode) {
@@ -1778,7 +1780,10 @@ receive(
 	    case MODE_BROADCAST:	/* broadcast mode */
 	    case MODE_ACTIVE:		/* symmetric active mode */
 	    case MODE_PASSIVE:		/* symmetric passive mode */
+		DEBUG_INSIST((is_authentic == AUTH_OK) && !skeyid);
 		if (   is_authentic == AUTH_OK
+		    && skeyid
+		    && skeyid <= NTP_MAXKEY
 		    && !authistrustedip(skeyid, &peer->srcadr)) {
 			report_event(PEVNT_AUTH, peer, "authIP");
 			peer->badauth++;
