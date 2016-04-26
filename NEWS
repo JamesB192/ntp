@@ -18,13 +18,14 @@ logging can also help detect other problems, too.
 In addition to bug fixes and enhancements, this release fixes the
 following 9 low- and medium-severity vulnerabilities:
 
-* Improve NTP security against buffer comparison timing attacks
+* Improve NTP security against buffer comparison timing attacks,
+  AKA: authdecrypt-timing
    Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
    References: Sec 2879 / CVE-2016-1550
    Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
 	4.3.0 up to, but not including 4.3.92
-   CVSSv2: 2.6 - (AV:L/AC:H/Au:N/C:P/I:P/A:N)
-   CVSSv3: 4.0 - CVSS:3.0/AV:L/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N
+   CVSSv2: LOW 2.6 - (AV:L/AC:H/Au:N/C:P/I:P/A:N)
+   CVSSv3: MED 4.0 - CVSS:3.0/AV:L/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N
    Summary: Packet authentication tests have been performed using
 	memcmp() or possibly bcmp(), and it is potentially possible
 	for a local or perhaps LAN-based attacker to send a packet with
@@ -37,17 +38,17 @@ following 9 low- and medium-severity vulnerabilities:
    Credit: This weakness was discovered independently by Loganaden
    	Velvindron, and Matthew Van Gundy and Stephen Gray of Cisco ASIG.
 
-* Clients that receive a KoD should validate the origin timestamp field.
-   References: Sec 2901 / CVE-2015-7704, CVE-2015-7705
+* Zero origin timestamp bypass: Additional KoD checks.
+   References: Sec 2945 / Sec 2901 / CVE-2015-8138
    Affects: All ntp-4 releases up to, but not including 4.2.8p7,
-   Summary: Improvements to the fixes incorporated into 4.2.8p4 and 4.3.77.
+   Summary: Improvements to the fixes incorporated in t 4.2.8p6 and 4.3.92.
 
 * peer associations were broken by the fix for NtpBug2899
    Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
    References: Sec 2952 / CVE-2015-7704
    Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
    	4.3.0 up to, but not including 4.3.92
-   CVSSv2: 4.3 - (AV:N/AC:M/Au:N/C:N/I:N/A:P)
+   CVSSv2: MED 4.3 - (AV:N/AC:M/Au:N/C:N/I:N/A:P)
    Summary: The fix for NtpBug2952 in ntp-4.2.8p5 to address broken peer
    	associations did not address all of the issues.
    Mitigation:
@@ -59,23 +60,43 @@ following 9 low- and medium-severity vulnerabilities:
         Monitor your ntpd instances. 
    Credit: This problem was discovered by Michael Tatarinov.
 
-* Skeleton key: passive server with trusted key can serve time.
-   References: Sec 2936 / CVE-2015-7974
-   Affects: All ntp-4 releases up to, but not including 4.2.8p7,
-   Summary: Improvements to the fixes incorporated in t 4.2.8p6 and 4.3.90.
+* Validate crypto-NAKs, AKA: CRYPTO-NAK DoS
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   References: Sec 3007 / CVE-2016-1547 / VU#718152
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
+	4.3.0 up to, but not including 4.3.92
+   CVSS2: MED 4.3 - (AV:N/AC:M/Au:N/C:N/I:N/A:P)
+   CVSS3: MED 3.7 - CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L
+   Summary: For ntp-4 versions up to but not including ntp-4.2.8p7, an
+	off-path attacker can cause a preemptable client association to
+	be demobilized by sending a crypto NAK packet to a victim client
+	with a spoofed source address of an existing associated peer.
+	This is true even if authentication is enabled.
 
-* Zero origin timestamp bypass: Additional KoD checks.
-   References: Sec 2945 / CVE-2015-8138
-   Affects: All ntp-4 releases up to, but not including 4.2.8p7,
-   Summary: Improvements to the fixes incorporated in t 4.2.8p6 and 4.3.92.
+	Furthermore, if the attacker keeps sending crypto NAK packets,
+	for example one every second, the victim never has a chance to
+	reestablish the association and synchronize time with that
+	legitimate server.
+
+	For ntp-4.2.8 thru ntp-4.2.8p6 there is less risk because more
+	stringent checks are performed on incoming packets, but there
+	are still ways to exploit this vulnerability in versions before
+	ntp-4.2.8p7.
+   Mitigation:
+	Implement BCP-38.
+	Upgrade to 4.2.8p7, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+	Properly monitor your =ntpd= instances
+   Credit: This weakness was discovered by Stephen Gray and
+   	Matthew Van Gundy of Cisco ASIG.
 
 * ctl_getitem() return value not always checked
    Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
    References: Sec 3008 / CVE-2016-2519
    Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
 	4.3.0 up to, but not including 4.3.92
-   CVSSv2: 4.9 - (AV:N/AC:H/Au:S/C:N/I:N/A:C)
-   CVSSv3: 4.2 - CVSS:3.0/AV:N/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:H
+   CVSSv2: MED 4.9 - (AV:N/AC:H/Au:S/C:N/I:N/A:C)
+   CVSSv3: MED 4.2 - CVSS:3.0/AV:N/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:H
    Summary: ntpq and ntpdc can be used to store and retrieve information
    	in ntpd. It is possible to store a data value that is larger
 	than the size of the buffer that the ctl_getitem() function of
@@ -97,6 +118,68 @@ following 9 low- and medium-severity vulnerabilities:
     Credit: This weakness was discovered by Yihan Lian of the Cloud
     	Security Team, Qihoo 360. 
 
+* Crafted addpeer with hmode > 7 causes array wraparound with MATCH_ASSOC 
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   References: Sec 3009 / CVE-2016-2518 / VU#718152
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
+	4.3.0 up to, but not including 4.3.92
+   CVSS2: LOW 2.1 - (AV:N/AC:H/Au:S/C:N/I:N/A:P)
+   CVSS3: LOW 2.0 - CVSS:3.0/AV:N/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:L
+   Summary: Using a crafted packet to create a peer association with
+   	hmode > 7 causes the MATCH_ASSOC() lookup to make an
+	out-of-bounds reference.
+   Mitigation:
+	Implement BCP-38.
+	Upgrade to 4.2.8p7, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+	Properly monitor your ntpd instances
+   Credit: This weakness was discovered by Yihan Lian of the Cloud
+   	Security Team, Qihoo 360.
+
+* remote configuration trustedkey/requestkey/controlkey values are not
+	properly validated
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   References: Sec 3010 / CVE-2016-2517 / VU#718152
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
+	4.3.0 up to, but not including 4.3.92
+   CVSS2: MED 4.9 - (AV:N/AC:H/Au:S/C:N/I:N/A:C)
+   CVSS3: MED 4.2 - CVSS:3.0/AV:N/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:H
+   Summary: If ntpd was expressly configured to allow for remote
+   	configuration, a malicious user who knows the controlkey for
+	ntpq or the requestkey for ntpdc (if mode7 is expressly enabled)
+	can create a session with ntpd and then send a crafted packet to
+	ntpd that will change the value of the trustedkey, controlkey,
+	or requestkey to a value that will prevent any subsequent
+	authentication with ntpd until ntpd is restarted.
+   Mitigation:
+	Implement BCP-38.
+	Upgrade to 4.2.8p7, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+	Properly monitor your =ntpd= instances
+   Credit: This weakness was discovered by Yihan Lian of the Cloud
+   	Security Team, Qihoo 360.
+
+* Duplicate IPs on unconfig directives will cause an assertion botch in ntpd
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   References: Sec 3011 / CVE-2016-2516 / VU#718152
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
+   	4.3.0 up to, but not including 4.3.92
+   CVSS2: MED 6.3 - (AV:N/AC:M/Au:S/C:N/I:N/A:C)
+   CVSS3: MED 4.2 - CVSS:3.0/AV:N/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:H
+   Summary: If ntpd was expressly configured to allow for remote
+   	configuration, a malicious user who knows the controlkey for
+	ntpq or the requestkey for ntpdc (if mode7 is expressly enabled)
+	can create a session with ntpd and if an existing association is
+	unconfigured using the same IP twice on the unconfig directive
+	line, ntpd will abort.
+   Mitigation:
+	Implement BCP-38.
+	Upgrade to 4.2.8p7, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+	Properly monitor your ntpd instances
+   Credit: This weakness was discovered by Yihan Lian of the Cloud
+   	Security Team, Qihoo 360.
+
 * Refclock impersonation vulnerability
    Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
    References: Sec 3020 / CVE-2016-1551
@@ -104,8 +187,8 @@ following 9 low- and medium-severity vulnerabilities:
 	not including 4.2.8p7, and 4.3.0 up to but not including 4.3.92.
 	By "very limited number of OSes" we mean no general-purpose OSes
 	have yet been identified that have this vulnerability.
-   CVSSv2: 2.6 - (AV:N/AC:H/Au:N/C:N/I:P/A:N)
-   CVSSv3: 3.7 - CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N
+   CVSSv2: LOW 2.6 - (AV:N/AC:H/Au:N/C:N/I:P/A:N)
+   CVSSv3: LOW 3.7 - CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N
    Summary: While most OSes implement martian packet filtering in their
    	network stack, at least regarding 127.0.0.0/8, some will allow
 	packets claiming to be from 127.0.0.0/8 that arrive over a
@@ -127,6 +210,19 @@ following 9 low- and medium-severity vulnerabilities:
    Credit: This weakness was discovered by Matt Street and others of
    	Cisco ASIG. 
 
+The following issues were fixed in earlier releases and contain
+improvements in 4.2.8p7:
+
+* Clients that receive a KoD should validate the origin timestamp field.
+   References: Sec 2901 / CVE-2015-7704, CVE-2015-7705
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7,
+   Summary: Improvements to the fixes incorporated into 4.2.8p4 and 4.3.77.
+
+* Skeleton key: passive server with trusted key can serve time.
+   References: Sec 2936 / CVE-2015-7974
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7,
+   Summary: Improvements to the fixes incorporated in t 4.2.8p6 and 4.3.90.
+
 Two other vulnerabilities have been reported, and the mitigations
 for these are as follows:
 
@@ -134,8 +230,8 @@ for these are as follows:
    Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
    References: Sec 2978 / CVE-2016-1548
    Affects: All ntp-4 releases.
-   CVSSv2: 6.4 - (AV:N/AC:L/Au:N/C:N/I:P/A:P)
-   CVSSv3: 7.2 - CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:L/A:L
+   CVSSv2: MED 6.4 - (AV:N/AC:L/Au:N/C:N/I:P/A:P)
+   CVSSv3: MED 7.2 - CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:L/A:L
    Summary: It is possible to change the time of an ntpd client or deny
    	service to an ntpd client by forcing it to change from basic
 	client/server mode to interleaved symmetric mode. An attacker
@@ -156,11 +252,12 @@ for these are as follows:
    	and separately by Jonathan Gardner of Cisco ASIG.
 
 * Sybil vulnerability: ephemeral association attack
-   -Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
+   Date Resolved: Stable (4.2.8p7) 26 Apr 2016; Dev (4.3.92) 26 Apr 2016
    References: Sec 3012 / CVE-2016-1549
-   -Affects: All ntp-4 releases up to, but not including 4.2.8p7, and 4.3.0 up to, but not including 4.3.92
-   CVSSv2: 3.5 - (AV:N/AC:M/Au:S/C:N/I:P/A:N)
-   CVSS3v: 5.3 - CVSS:3.0/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:N
+   Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
+   	4.3.0 up to, but not including 4.3.92
+   CVSSv2: LOW 3.5 - (AV:N/AC:M/Au:S/C:N/I:P/A:N)
+   CVSS3v: MED 5.3 - CVSS:3.0/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:N
    Summary: ntpd can be vulnerable to Sybil attacks. If one is not using
    	the feature introduced in ntp-4.2.8p6 allowing an optional 4th
 	field in the ntp.keys file to specify which IPs can serve time,
@@ -182,21 +279,11 @@ Other fixes:
 * [Bug 2879] Improve NTP security against timing attacks. perlinger@ntp.org
   - integrated patches by Loganaden Velvidron <logan@ntp.org>
     with some modifications & unit tests
-* [Bug 2952] Symmetric active/passive mode is broken.  HStenn.
 * [Bug 2960] async name resolution fixes for chroot() environments.
   Reinhard Max.
 * [Bug 2994] Systems with HAVE_SIGNALED_IO fail to compile. perlinger@ntp.org
 * [Bug 2995] Fixes to compile on Windows
 * [Bug 2999] out-of-bounds access in 'is_safe_filename()'. perlinger@ntp.org
-* [Bug 3007] Validate crypto-NAKs.  Danny Mayer.
-* [Bug 3009] Crafted addpeer with hmode > 7 causes OOB error. perlinger@ntp.org
-   - added more stringent checks on packet content
-* [Bug 3010] remote configuration trustedkey/requestkey values
-  are not properly validated. perlinger@ntp.org
-  - sidekick: Ignore keys that have an unsupported MAC algorithm
-    but are otherwise well-formed
-* [Bug 3011] Duplicate IPs on unconfig directives will cause an assertion botch
-  - graciously accept the same IP multiple times. perlinger@ntp.org
 * [Bug 3013] Fix for ssl_init.c SHA1 test. perlinger@ntp.org
   - Patch provided by Ch. Weisgerber
 * [Bug 3015] ntpq: config-from-file: "request contains an unprintable character"
