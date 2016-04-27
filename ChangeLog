@@ -1,4 +1,5 @@
 ---
+(4.2.8p7) 2016/04/26 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 2901] KoD packets must have non-zero transmit timestamps.  HStenn.
 * [Sec 2936] Skeleton Key: Any system knowing the trusted key can serve
