@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpq-opts.c)
  *
- *  It has been AutoGen-ed  January 24, 2016 at 12:04:52 PM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  April 27, 2016 at 11:59:19 AM by AutoGen 5.18.5
  *  From the definitions    ntpq-opts.def
  *  and the template file   options
  *
@@ -68,8 +68,8 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for ntpq options
  */
-static char const ntpq_opt_strs[1922] =
-/*     0 */ "ntpq 4.3.91\n"
+static char const ntpq_opt_strs[1979] =
+/*     0 */ "ntpq 4.3.92\n"
             "Copyright (C) 1992-2016 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
             "redistribution under the terms of the NTP License, copies of which\n"
@@ -113,29 +113,33 @@ static char const ntpq_opt_strs[1922] =
 /*  1403 */ "Print a list of the peers\0"
 /*  1429 */ "PEERS\0"
 /*  1435 */ "peers\0"
-/*  1441 */ "Display the full 'remote' value\0"
-/*  1473 */ "WIDE\0"
-/*  1478 */ "wide\0"
-/*  1483 */ "display extended usage information and exit\0"
-/*  1527 */ "help\0"
-/*  1532 */ "extended usage information passed thru pager\0"
-/*  1577 */ "more-help\0"
-/*  1587 */ "output version information and exit\0"
-/*  1623 */ "version\0"
-/*  1631 */ "save the option state to a config file\0"
-/*  1670 */ "save-opts\0"
-/*  1680 */ "load options from a config file\0"
-/*  1712 */ "LOAD_OPTS\0"
-/*  1722 */ "no-load-opts\0"
-/*  1735 */ "no\0"
-/*  1738 */ "NTPQ\0"
-/*  1743 */ "ntpq - standard NTP query program - Ver. 4.3.91\n"
+/*  1441 */ "Set default display type for S2+ refids\0"
+/*  1481 */ "REFID\0"
+/*  1487 */ "refid\0"
+/*  1493 */ "Display the full 'remote' value\0"
+/*  1525 */ "WIDE\0"
+/*  1530 */ "wide\0"
+/*  1535 */ "display extended usage information and exit\0"
+/*  1579 */ "help\0"
+/*  1584 */ "extended usage information passed thru pager\0"
+/*  1629 */ "more-help\0"
+/*  1639 */ "output version information and exit\0"
+/*  1675 */ "version\0"
+/*  1683 */ "save the option state to a config file\0"
+/*  1722 */ "save-opts\0"
+/*  1732 */ "load options from a config file\0"
+/*  1764 */ "LOAD_OPTS\0"
+/*  1774 */ "no-load-opts\0"
+/*  1787 */ "no\0"
+/*  1790 */ "NTPQ\0"
+/*  1795 */ "ntpq - standard NTP query program - Ver. 4.3.92\n"
             "Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]... [ host ...]\n\0"
-/*  1861 */ "$HOME\0"
-/*  1867 */ ".\0"
-/*  1869 */ ".ntprc\0"
-/*  1876 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  1910 */ "ntpq 4.3.91";
+/*  1913 */ "$HOME\0"
+/*  1919 */ ".\0"
+/*  1921 */ ".ntprc\0"
+/*  1928 */ "http://bugs.ntp.org, bugs@ntp.org\0"
+/*  1962 */ "ntpq 4.3.92\0"
+/*  1974 */ "hash";
 
 /**
  *  ipv4 option description with
@@ -265,25 +269,40 @@ static int const aPeersCantList[] = {
 #define PEERS_FLAGS     (OPTST_DISABLED)
 
 /**
+ *  refid option description:
+ */
+/** Descriptive text for the refid option */
+#define REFID_DESC      (ntpq_opt_strs+1441)
+/** Upper-cased name for the refid option */
+#define REFID_NAME      (ntpq_opt_strs+1481)
+/** Name string for the refid option */
+#define REFID_name      (ntpq_opt_strs+1487)
+/** The compiled in default value for the refid option argument */
+#define REFID_DFT_ARG   ((char const*)REFID_IPV4)
+/** Compiled in flag settings for the refid option */
+#define REFID_FLAGS     (OPTST_DISABLED \
+        | OPTST_SET_ARGTYPE(OPARG_TYPE_ENUMERATION))
+
+/**
  *  wide option description:
  */
 /** Descriptive text for the wide option */
-#define WIDE_DESC      (ntpq_opt_strs+1441)
+#define WIDE_DESC      (ntpq_opt_strs+1493)
 /** Upper-cased name for the wide option */
-#define WIDE_NAME      (ntpq_opt_strs+1473)
+#define WIDE_NAME      (ntpq_opt_strs+1525)
 /** Name string for the wide option */
-#define WIDE_name      (ntpq_opt_strs+1478)
+#define WIDE_name      (ntpq_opt_strs+1530)
 /** Compiled in flag settings for the wide option */
 #define WIDE_FLAGS     (OPTST_DISABLED)
 
 /*
  *  Help/More_Help/Version option descriptions:
  */
-#define HELP_DESC       (ntpq_opt_strs+1483)
-#define HELP_name       (ntpq_opt_strs+1527)
+#define HELP_DESC       (ntpq_opt_strs+1535)
+#define HELP_name       (ntpq_opt_strs+1579)
 #ifdef HAVE_WORKING_FORK
-#define MORE_HELP_DESC  (ntpq_opt_strs+1532)
-#define MORE_HELP_name  (ntpq_opt_strs+1577)
+#define MORE_HELP_DESC  (ntpq_opt_strs+1584)
+#define MORE_HELP_name  (ntpq_opt_strs+1629)
 #define MORE_HELP_FLAGS (OPTST_IMM | OPTST_NO_INIT)
 #else
 #define MORE_HELP_DESC  HELP_DESC
@@ -296,14 +315,14 @@ static int const aPeersCantList[] = {
 #  define VER_FLAGS     (OPTST_SET_ARGTYPE(OPARG_TYPE_STRING) | \
                          OPTST_ARG_OPTIONAL | OPTST_IMM | OPTST_NO_INIT)
 #endif
-#define VER_DESC        (ntpq_opt_strs+1587)
-#define VER_name        (ntpq_opt_strs+1623)
-#define SAVE_OPTS_DESC  (ntpq_opt_strs+1631)
-#define SAVE_OPTS_name  (ntpq_opt_strs+1670)
-#define LOAD_OPTS_DESC     (ntpq_opt_strs+1680)
-#define LOAD_OPTS_NAME     (ntpq_opt_strs+1712)
-#define NO_LOAD_OPTS_name  (ntpq_opt_strs+1722)
-#define LOAD_OPTS_pfx      (ntpq_opt_strs+1735)
+#define VER_DESC        (ntpq_opt_strs+1639)
+#define VER_name        (ntpq_opt_strs+1675)
+#define SAVE_OPTS_DESC  (ntpq_opt_strs+1683)
+#define SAVE_OPTS_name  (ntpq_opt_strs+1722)
+#define LOAD_OPTS_DESC     (ntpq_opt_strs+1732)
+#define LOAD_OPTS_NAME     (ntpq_opt_strs+1764)
+#define NO_LOAD_OPTS_name  (ntpq_opt_strs+1774)
+#define LOAD_OPTS_pfx      (ntpq_opt_strs+1787)
 #define LOAD_OPTS_name     (NO_LOAD_OPTS_name + 3)
 /**
  *  Declare option callback procedures
@@ -314,7 +333,7 @@ extern tOptProc
     optionResetOpt,          optionStackArg,          optionTimeDate,
     optionTimeVal,           optionUnstackArg,        optionVendorOption;
 static tOptProc
-    doOptDebug_Level, doUsageOpt;
+    doOptDebug_Level, doOptRefid, doUsageOpt;
 #define VER_PROC        ntpOptionPrintVersion
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -432,8 +451,20 @@ static tOptDesc optDesc[OPTION_CT] = {
      /* desc, NAME, name */ PEERS_DESC, PEERS_NAME, PEERS_name,
      /* disablement strs */ NULL, NULL },
 
-  {  /* entry idx, value */ 9, VALUE_OPT_WIDE,
-     /* equiv idx, value */ 9, VALUE_OPT_WIDE,
+  {  /* entry idx, value */ 9, VALUE_OPT_REFID,
+     /* equiv idx, value */ 9, VALUE_OPT_REFID,
+     /* equivalenced to  */ NO_EQUIVALENT,
+     /* min, max, act ct */ 0, 1, 0,
+     /* opt state flags  */ REFID_FLAGS, 0,
+     /* last opt argumnt */ { REFID_DFT_ARG },
+     /* arg list/cookie  */ NULL,
+     /* must/cannot opts */ NULL, NULL,
+     /* option proc      */ doOptRefid,
+     /* desc, NAME, name */ REFID_DESC, REFID_NAME, REFID_name,
+     /* disablement strs */ NULL, NULL },
+
+  {  /* entry idx, value */ 10, VALUE_OPT_WIDE,
+     /* equiv idx, value */ 10, VALUE_OPT_WIDE,
      /* equivalenced to  */ NO_EQUIVALENT,
      /* min, max, act ct */ 0, 1, 0,
      /* opt state flags  */ WIDE_FLAGS, 0,
@@ -512,24 +543,24 @@ static tOptDesc optDesc[OPTION_CT] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** Reference to the upper cased version of ntpq. */
-#define zPROGNAME       (ntpq_opt_strs+1738)
+#define zPROGNAME       (ntpq_opt_strs+1790)
 /** Reference to the title line for ntpq usage. */
-#define zUsageTitle     (ntpq_opt_strs+1743)
+#define zUsageTitle     (ntpq_opt_strs+1795)
 /** ntpq configuration file name. */
-#define zRcName         (ntpq_opt_strs+1869)
+#define zRcName         (ntpq_opt_strs+1921)
 /** Directories to search for ntpq config files. */
 static char const * const apzHomeList[3] = {
-    ntpq_opt_strs+1861,
-    ntpq_opt_strs+1867,
+    ntpq_opt_strs+1913,
+    ntpq_opt_strs+1919,
     NULL };
 /** The ntpq program bug email address. */
-#define zBugsAddr       (ntpq_opt_strs+1876)
+#define zBugsAddr       (ntpq_opt_strs+1928)
 /** Clarification/explanation of what ntpq does. */
 #define zExplain        (NULL)
 /** Extra detail explaining what ntpq does. */
 #define zDetail         (NULL)
 /** The full version string for ntpq. */
-#define zFullVersion    (ntpq_opt_strs+1910)
+#define zFullVersion    (ntpq_opt_strs+1962)
 /* extracted from optcode.tlib near line 364 */
 
 #if defined(ENABLE_NLS)
@@ -587,6 +618,30 @@ doOptDebug_Level(tOptions* pOptions, tOptDesc* pOptDesc)
 OPT_VALUE_SET_DEBUG_LEVEL++;
     (void)pOptDesc;
     (void)pOptions;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/**
+ * Code to handle the refid option.
+ * Set the default display format for S2+ refids.
+ * @param[in] pOptions the ntpq options data structure
+ * @param[in,out] pOptDesc the option descriptor for this option.
+ */
+static void
+doOptRefid(tOptions* pOptions, tOptDesc* pOptDesc)
+{
+
+/* extracted from optmain.tlib near line 945 */
+    static char const * const names[2] = {
+        ntpq_opt_strs+1974, ntpq_opt_strs+1043 };
+
+    if (pOptions <= OPTPROC_EMIT_LIMIT) {
+        (void) optionEnumerationVal(pOptions, pOptDesc, names, 2);
+        return; /* protect AutoOpts client code from internal callbacks */
+    }
+
+    pOptDesc->optArg.argEnum =
+        optionEnumerationVal(pOptions, pOptDesc, names, 2);
 }
 /* extracted from optmain.tlib near line 1250 */
 
@@ -651,7 +706,7 @@ tOptions ntpqOptions = {
       NO_EQUIVALENT, /* '-#' option index */
       NO_EQUIVALENT /* index of default opt */
     },
-    15 /* full option count */, 10 /* user option count */,
+    16 /* full option count */, 11 /* user option count */,
     ntpq_full_usage, ntpq_short_usage,
     NULL, NULL,
     PKGDATADIR, ntpq_packager_info
@@ -786,7 +841,7 @@ static void bogus_function(void) {
      translate option names.
    */
   /* referenced via ntpqOptions.pzCopyright */
-  puts(_("ntpq 4.3.91\n\
+  puts(_("ntpq 4.3.92\n\
 Copyright (C) 1992-2016 The University of Delaware and Network Time Foundation, all rights reserved.\n\
 This is free software. It is licensed for use, modification and\n\
 redistribution under the terms of the NTP License, copies of which\n\
@@ -834,6 +889,9 @@ implied warranty.\n"));
   puts(_("Print a list of the peers"));
 
   /* referenced via ntpqOptions.pOptDesc->pzText */
+  puts(_("Set default display type for S2+ refids"));
+
+  /* referenced via ntpqOptions.pOptDesc->pzText */
   puts(_("Display the full 'remote' value"));
 
   /* referenced via ntpqOptions.pOptDesc->pzText */
@@ -852,11 +910,11 @@ implied warranty.\n"));
   puts(_("load options from a config file"));
 
   /* referenced via ntpqOptions.pzUsageTitle */
-  puts(_("ntpq - standard NTP query program - Ver. 4.3.91\n\
+  puts(_("ntpq - standard NTP query program - Ver. 4.3.92\n\
 Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]... [ host ...]\n"));
 
   /* referenced via ntpqOptions.pzFullVersion */
-  puts(_("ntpq 4.3.91"));
+  puts(_("ntpq 4.3.92"));
 
   /* referenced via ntpqOptions.pzFullUsage */
   puts(_("<<<NOT-FOUND>>>"));

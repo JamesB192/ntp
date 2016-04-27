@@ -10,11 +10,11 @@
 .ds B-Font B
 .ds I-Font I
 .ds R-Font R
-.TH summary 1summaryman "24 Jan 2016" "ntp (4.3.91)" "User Commands"
+.TH summary 1summaryman "27 Apr 2016" "ntp (4.3.92)" "User Commands"
 .\"
-.\" EDIT THIS FILE WITH CAUTION (/tmp/.ag-IOaybf/ag-VOaGaf)
+.\" EDIT THIS FILE WITH CAUTION (/tmp/.ag-HNayZE/ag-UNaGYE)
 .\"
-.\" It has been AutoGen-ed January 24, 2016 at 12:00:44 PM by AutoGen 5.18.5
+.\" It has been AutoGen-ed April 27, 2016 at 11:55:18 AM by AutoGen 5.18.5
 .\" From the definitions summary-opts.def
 .\" and the template file agman-cmd.tpl
 .SH NAME
