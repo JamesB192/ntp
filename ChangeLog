@@ -1,4 +1,10 @@
 ---
+* [Bug 3038] NTP fails to build in VS2015. perlinger@ntp.org
+  - provide build environment
+  - 'wint_t' and 'struct timespec' defined by VS2015
+  - fixed print()/scanf() format issues
+  
+---
 (4.2.8p7) 2016/04/26 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 2901] KoD packets must have non-zero transmit timestamps.  HStenn.
