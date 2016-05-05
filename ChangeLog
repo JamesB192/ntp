@@ -1,4 +1,5 @@
 ---
+
 * [Bug 3038] NTP fails to build in VS2015. perlinger@ntp.org
   - provide build environment
   - 'wint_t' and 'struct timespec' defined by VS2015
