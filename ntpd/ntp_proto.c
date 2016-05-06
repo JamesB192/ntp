@@ -320,7 +320,8 @@ valid_NAK(
 	/* 
 	 * Only valid if peer uses a key
 	 */
-	if (peer->keyid > 0 || peer->flags & FLAG_SKEY) {
+	if (   peer
+	    && (peer->keyid > 0 || peer->flags & FLAG_SKEY)) {
 		return (VALIDNAK);
 	}
 	else {
