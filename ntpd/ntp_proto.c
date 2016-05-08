@@ -277,10 +277,12 @@ valid_NAK(
 	  u_char hismode
 	  )
 {
-	int base_packet_length = MIN_V4_PKT_LEN;
-	int remainder_size;
-	struct pkt *rpkt;
-	int keyid;
+	int 		base_packet_length = MIN_V4_PKT_LEN;
+	int		remainder_size;
+	struct pkt *	rpkt;
+	int		keyid;
+	l_fp		p_org;	/* origin timestamp */
+	const l_fp *	myorg;	/* selected peer origin */
 
 	/*
 	 * Check to see if there is something beyond the basic packet
@@ -320,13 +322,29 @@ valid_NAK(
 	/* 
 	 * Only valid if peer uses a key
 	 */
-	if (   peer
-	    && (peer->keyid > 0 || peer->flags & FLAG_SKEY)) {
-		return (VALIDNAK);
-	}
-	else {
+	if (!peer || !peer->keyid || !(peer->flags & FLAG_SKEY)) {
 		return (INVALIDNAK);
 	}
+
+	/*
+	 * The ORIGIN must match, or this cannot be a valid NAK, either.
+	 */
+	NTOHL_FP(&rpkt->org, &p_org);
+	if (peer->flip > 0)
+		myorg = &peer->borg;
+	else
+		myorg = &peer->aorg;
+	
+	if (L_ISZERO(&p_org) ||
+	    L_ISZERO( myorg) ||
+	    !L_ISEQU(&p_org, myorg)) {
+		return (INVALIDNAK);
+	}
+
+	/* If we ever passed all that checks, we should be safe. Well,
+	 * as safe as we can ever be with an unauthenticated crypto-nak.
+	 */
+	return (VALIDNAK);
 }
 
 
@@ -1682,13 +1700,11 @@ receive(
 		peer->flash |= TEST5;		/* bad auth */
 		peer->badauth++;
 		if (peer->flags & FLAG_PREEMPT) {
-			if (unpeer_crypto_nak_early) {
+			if (unpeer_crypto_nak_early)
 				unpeer(peer);
-			}
-			return;
 		}
 #ifdef AUTOKEY
-		if (peer->crypto)
+		else if (peer->crypto)
 			peer_clear(peer, "AUTH");
 #endif	/* AUTOKEY */
 		return;
@@ -1709,16 +1725,6 @@ receive(
 		if (   has_mac
 		    && (hismode == MODE_ACTIVE || hismode == MODE_PASSIVE))
 			fast_xmit(rbufp, MODE_ACTIVE, 0, restrict_mask);
-		if (peer->flags & FLAG_PREEMPT) {
-			if (unpeer_digest_early) {
-				unpeer(peer);
-			}
-			return;
-		}
-#ifdef AUTOKEY
-		if (peer->crypto)
-			peer_clear(peer, "AUTH");
-#endif	/* AUTOKEY */
 		return;
 	}
 
