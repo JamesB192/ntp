@@ -51,6 +51,8 @@
     server if the delay exceeds 50ms. Retry again after the next
     broadcast packet.
 * [Bug 3036] autokey trips an INSIST in authistrustedip().  Harlan Stenn.
+* [Bug 3047] Fix refclock_jjy C-DEX JST2000. abe@ntp.org
+  - Patch provided by Kuramatsu.
 * Document ntp.key's optional IP list in authenetic.html.  Harlan Stenn.
 * Update html/xleave.html documentation.  Harlan Stenn.
 * Update ntp.conf documentation.  Harlan Stenn.
