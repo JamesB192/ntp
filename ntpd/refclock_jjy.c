@@ -106,7 +106,7 @@
 /*  2015/05/15							      */
 /*    [Add]    Support the SEIKO TIME SYSTEMS TDC-300		      */
 /*								      */
-/*  2015/05/08							      */
+/*  2016/05/08							      */
 /*    [Fix]    C-DEX JST2000                                          */
 /*             Thanks to Mr. Kuramatsu for the report and the patch.  */
 /*								      */
