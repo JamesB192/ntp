@@ -86,7 +86,7 @@ is($ret, 1, 'fails on invalid leap status');
 
 stdout_like(
     sub { $ret = run_ntp_wait(vars => [{}], opts => [qw(-n 2 -s 0 -v)]) },
-    qr/Leap status not avalaible/,
+    qr/Leap status not available/,
     'print debug information when no leap returned'
 );
 is($ret, 1, 'fails if not leap returned');
