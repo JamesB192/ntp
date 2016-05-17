@@ -4,6 +4,7 @@
   - provide build environment
   - 'wint_t' and 'struct timespec' defined by VS2015
   - fixed print()/scanf() format issues
+* [Bug 3052] Add a .gitignore file.  Edmund Wong.
 * Fix typo in ntp-wait and plot_summary.  HStenn.
   
 ---
