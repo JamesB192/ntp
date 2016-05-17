@@ -5,6 +5,7 @@
   - 'wint_t' and 'struct timespec' defined by VS2015
   - fixed print()/scanf() format issues
 * [Bug 3052] Add a .gitignore file.  Edmund Wong.
+* [Bug 3054] miscopt.html documents the allan intercept in seconds. SWhite.
 * Fix typo in ntp-wait and plot_summary.  HStenn.
   
 ---
