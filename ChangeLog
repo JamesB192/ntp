@@ -1,6 +1,6 @@
 ---
 
-* [Sec 3043]  Autokey association reset. perlinger@ntp.org
+* [Sec 3043]  Autokey association reset. perlinger@ntp.org, stenn@ntp.org
   (fixes [Sec 3044] and [Sec 3045], too)
 * [Sec 3046] CRYPTO_NAK crash.  stenn@ntp.org
 * [Bug 3038] NTP fails to build in VS2015. perlinger@ntp.org

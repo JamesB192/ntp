@@ -165,7 +165,7 @@ u_long	sys_limitrejected;	/* rate exceeded */
 u_long	sys_kodsent;		/* KoD sent */
 
 /*
- * Mechanism knobs: how soon do we unpeer()?
+ * Mechanism knobs: how soon do we peer_clear() or unpeer()?
  *
  * The default way is "on-receipt".  If this was a packet from a
  * well-behaved source, on-receipt will offer the fastest recovery.
@@ -173,6 +173,7 @@ u_long	sys_kodsent;		/* KoD sent */
  * for a bad-guy to DoS us.  So look and see what bites you harder
  * and choose according to your environment.
  */
+int peer_clear_digest_early	= 1;	/* bad digest (TEST5) and Autokey */
 int unpeer_crypto_early		= 1;	/* bad crypto (TEST9) */
 int unpeer_crypto_nak_early	= 1;	/* crypto_NAK (TEST5) */
 int unpeer_digest_early		= 1;	/* bad digest (TEST5) */
@@ -307,7 +308,7 @@ valid_NAK(
 	    hismode != MODE_ACTIVE &&
 	    hismode != MODE_PASSIVE
 	    ) {
-		return (INVALIDNAK);
+		return INVALIDNAK;
 	}
 
 	/* 
@@ -316,14 +317,14 @@ valid_NAK(
 	rpkt = &rbufp->recv_pkt;
 	keyid = ntohl(((u_int32 *)rpkt)[base_packet_length / 4]);
 	if (keyid != 0) {
-		return (INVALIDNAK);
+		return INVALIDNAK;
 	}
 
 	/* 
 	 * Only valid if peer uses a key
 	 */
 	if (!peer || !peer->keyid || !(peer->flags & FLAG_SKEY)) {
-		return (INVALIDNAK);
+		return INVALIDNAK;
 	}
 
 	/*
@@ -338,13 +339,13 @@ valid_NAK(
 	if (L_ISZERO(&p_org) ||
 	    L_ISZERO( myorg) ||
 	    !L_ISEQU(&p_org, myorg)) {
-		return (INVALIDNAK);
+		return INVALIDNAK;
 	}
 
 	/* If we ever passed all that checks, we should be safe. Well,
 	 * as safe as we can ever be with an unauthenticated crypto-nak.
 	 */
-	return (VALIDNAK);
+	return VALIDNAK;
 }
 
 
@@ -1700,11 +1701,13 @@ receive(
 		peer->flash |= TEST5;		/* bad auth */
 		peer->badauth++;
 		if (peer->flags & FLAG_PREEMPT) {
-			if (unpeer_crypto_nak_early)
+			if (unpeer_crypto_nak_early) {
 				unpeer(peer);
+			}
+			return;
 		}
 #ifdef AUTOKEY
-		else if (peer->crypto)
+		if (peer->crypto)
 			peer_clear(peer, "AUTH");
 #endif	/* AUTOKEY */
 		return;
@@ -1725,6 +1728,16 @@ receive(
 		if (   has_mac
 		    && (hismode == MODE_ACTIVE || hismode == MODE_PASSIVE))
 			fast_xmit(rbufp, MODE_ACTIVE, 0, restrict_mask);
+		if (peer->flags & FLAG_PREEMPT) {
+			if (unpeer_digest_early) {
+				unpeer(peer);
+			}
+			return;
+		}
+#ifdef AUTOKEY
+		if (peer_clear_digest_early && peer->crypto)
+			peer_clear(peer, "AUTH");
+#endif	/* AUTOKEY */
 		return;
 	}
 
@@ -4686,6 +4699,14 @@ proto_config(
 	case PROTO_MULTICAST_DEL: /* delete group address */
 		if (svalue != NULL)
 			io_multicast_del(svalue);
+		break;
+
+	/*
+	 * Peer_clear Early policy choices
+	 */
+
+	case PROTO_PCEDIGEST:	/* Digest */
+		peer_clear_digest_early = value;
 		break;
 
 	/*
