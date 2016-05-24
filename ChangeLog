@@ -1,6 +1,8 @@
 ---
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
+* Make sure we have an "author" file for git imports.  HStenn.
+* Update the sntp problem tests for MacOS.  HStenn.
 
 ---
 (4.2.8p7) 2016/04/26 Released by Harlan Stenn <stenn@ntp.org>
