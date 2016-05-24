@@ -568,7 +568,7 @@ receive(
 	int	kissCode = NOKISS;	/* Kiss Code */
 	int	has_mac;		/* length of MAC field */
 	int	authlen;		/* offset of MAC field */
-	int	is_authentic = 0;	/* cryptosum ok */
+	int	is_authentic = AUTH_NONE;	/* cryptosum ok */
 	int	crypto_nak_test;	/* result of crypto-NAK check */
 	int	retcode = AM_NOMATCH;	/* match code */
 	keyid_t	skeyid = 0;		/* key IDs */
@@ -616,6 +616,8 @@ receive(
 	hisleap = PKT_LEAP(pkt->li_vn_mode);
 	hismode = (int)PKT_MODE(pkt->li_vn_mode);
 	hisstratum = PKT_TO_STRATUM(pkt->stratum);
+	INSIST(0 != hisstratum);
+
 	if (restrict_mask & RES_IGNORE) {
 		sys_restricted++;
 		return;				/* ignore everything */
@@ -1512,7 +1514,7 @@ receive(
 	 */
 	if (L_ISZERO(&p_xmt)) {
 		peer->flash |= TEST3;			/* unsynch */
-		if (0 == hisstratum) {			/* KoD packet */
+		if (STRATUM_UNSPEC == hisstratum) {	/* KoD packet */
 			peer->bogusorg++;		/* for TEST2 or TEST3 */
 			msyslog(LOG_INFO,
 				"receive: Unexpected zero transmit timestamp in KoD from %s",
@@ -1531,17 +1533,22 @@ receive(
 		return;
 
 	/*
-	 * If this is a broadcast mode packet, skip further checking. If
-	 * an initial volley, bail out now and let the client do its
-	 * stuff. If the origin timestamp is nonzero, this is an
-	 * interleaved broadcast. so restart the protocol.
+	 * If this is a broadcast mode packet, make sure hisstratum
+	 * is appropriate.  Don't do anything else here - we wait to
+	 * see if this is an interleave broadcast packet until after
+	 * we've validated the MAC that SHOULD be provided.
+	 *
+	 * hisstratum should never be 0.
+	 * If hisstratum is 15, then we'll advertise as UNSPEC but
+	 * at least we'll be able to sync with the broadcast server.
 	 */
 	} else if (hismode == MODE_BROADCAST) {
-		if (!L_ISZERO(&p_org) && !(peer->flags & FLAG_XB)) {
-			peer->flags |= FLAG_XB;
-			peer->aorg = p_xmt;
-			peer->borg = rbufp->recv_time;
-			report_event(PEVNT_XLEAVE, peer, NULL);
+		if (   0 == hisstratum
+		    || STRATUM_UNSPEC <= hisstratum) {
+			/* Is this a ++sys_declined or ??? */
+			msyslog(LOG_INFO,
+				"receive: Unexpected stratum (%d) in broadcast from %s",
+				hisstratum, ntoa(&peer->srcadr));
 			return;
 		}
 
@@ -1558,7 +1565,7 @@ receive(
 	 * (nonzero) org, rec, and xmt timestamps set to the xmt timestamp
 	 * that we have previously sent out.  Watch interleave mode.
 	 */
-	} else if (0 == hisstratum) {
+	} else if (STRATUM_UNSPEC == hisstratum) {
 		DEBUG_INSIST(!L_ISZERO(&p_xmt));
 		if (   L_ISZERO(&p_org)		/* We checked p_xmt above */
 		    || L_ISZERO(&p_rec)) {
@@ -1617,6 +1624,7 @@ receive(
 	 */
 	} else if (peer->flip == 0) {
 		INSIST(0 != hisstratum);
+		INSIST(STRATUM_UNSPEC != hisstratum);
 		if (0) {
 		} else if (L_ISZERO(&p_org)) {
 			msyslog(LOG_INFO,
@@ -1722,8 +1730,49 @@ receive(
 	}
 
 	/*
-	 * Update the state variables.
+	 * For broadcast packets:
+	 *
+	 * HMS: This next line never made much sense to me, even
+	 * when it was up higher:
+	 *   If an initial volley, bail out now and let the
+	 *   client do its stuff.
+	 *
+	 * If the packet has not failed authentication, then
+	 * - if the origin timestamp is nonzero this is an
+	 *   interleaved broadcast, so restart the protocol.
+	 * - else, this is not an interleaved broadcast packet.
 	 */
+	if (hismode == MODE_BROADCAST) {
+		if (   is_authentic == AUTH_OK
+		    || is_authentic == AUTH_NONE) {
+			if (!L_ISZERO(&p_org)) {
+				if (!(peer->flags & FLAG_XB)) {
+					msyslog(LOG_INFO,
+						"receive: Broadcast server at %s is in interleave mode",
+						ntoa(&peer->srcadr));
+					peer->flags |= FLAG_XB;
+					peer->aorg = p_xmt;
+					peer->borg = rbufp->recv_time;
+					report_event(PEVNT_XLEAVE, peer, NULL);
+					return;
+				}
+			} else if (peer->flags & FLAG_XB) {
+				msyslog(LOG_INFO,
+					"receive: Broadcast server at %s is no longer in interleave mode",
+					ntoa(&peer->srcadr));
+				peer->flags &= ~FLAG_XB;
+			}
+		} else {
+			msyslog(LOG_INFO,
+				"receive: Bad broadcast auth (%d) from %s",
+				is_authentic, ntoa(&peer->srcadr));
+		}
+	}
+
+
+	/*
+	** Update the state variables.
+	*/
 	if (peer->flip == 0) {
 		if (hismode != MODE_BROADCAST)
 			peer->rec = p_xmt;
@@ -1765,6 +1814,12 @@ receive(
 		peer->selbroken++;	/* Increment the KoD count */
 		return;		/* Drop any other kiss code packets */
 	}
+
+
+	/*
+	 * XXX
+	 */
+
 
 	/*
 	 * If:
