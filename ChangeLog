@@ -1,5 +1,6 @@
 ---
 
+* [Sec 3042] Broadcast Interleave.  HStenn.
 * [Bug 3038] NTP fails to build in VS2015. perlinger@ntp.org
   - provide build environment
   - 'wint_t' and 'struct timespec' defined by VS2015
@@ -7,6 +8,8 @@
 * [Bug 3052] Add a .gitignore file.  Edmund Wong.
 * [Bug 3054] miscopt.html documents the allan intercept in seconds. SWhite.
 * Fix typo in ntp-wait and plot_summary.  HStenn.
+* Make sure we have an "author" file for git imports.  HStenn.
+* Update the sntp problem tests for MacOS.  HStenn.
   
 ---
 (4.2.8p7) 2016/04/26 Released by Harlan Stenn <stenn@ntp.org>
