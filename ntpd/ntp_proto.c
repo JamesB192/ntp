@@ -2038,9 +2038,9 @@ receive(
 
 
 /*
- * process_packet - Packet Procedure, a la Section 3.4.4 of the
- *	specification. Or almost, at least. If we're in here we have a
- *	reasonable expectation that we will be having a long term
+ * process_packet - Packet Procedure, a la Section 3.4.4 of RFC-1305
+ *	Or almost, at least.  If we're in here we have a reasonable
+ *	expectation that we will be having a long term
  *	relationship with this host.
  */
 void
@@ -2060,8 +2060,10 @@ process_packet(
 	double	etemp, ftemp, td;
 #endif /* ASSYM */
 
+#if 0
 	sys_processed++;
 	peer->processed++;
+#endif
 	p_del = FPTOD(NTOHS_FP(pkt->rootdelay));
 	p_offset = 0;
 	p_disp = FPTOD(NTOHS_FP(pkt->rootdisp));
@@ -2073,6 +2075,39 @@ process_packet(
 	pleap = PKT_LEAP(pkt->li_vn_mode);
 	pversion = PKT_VERSION(pkt->li_vn_mode);
 	pstratum = PKT_TO_STRATUM(pkt->stratum);
+
+	/**/
+
+	/**/
+
+	/*
+	 * Verify the server is synchronized; that is, the leap bits,
+	 * stratum and root distance are valid.
+	 */
+	if (   pleap == LEAP_NOTINSYNC		/* test 6 */
+	    || pstratum < sys_floor || pstratum >= sys_ceiling)
+		peer->flash |= TEST6;		/* bad synch or strat */
+	if (p_del / 2 + p_disp >= MAXDISPERSE)	/* test 7 */
+		peer->flash |= TEST7;		/* bad header */
+
+	/*
+	 * If any tests fail at this point, the packet is discarded.
+	 * Note that some flashers may have already been set in the
+	 * receive() routine.
+	 */
+	if (peer->flash & PKT_TEST_MASK) {
+		peer->seldisptoolarge++;
+		DPRINTF(1, ("packet: flash header %04x\n",
+			    peer->flash));
+		return;
+	}
+
+	/**/
+
+#if 1
+	sys_processed++;
+	peer->processed++;
+#endif
 
 	/*
 	 * Capture the header values in the client/peer association..
@@ -2108,27 +2143,7 @@ process_packet(
 	}
 	poll_update(peer, peer->hpoll);
 
-	/*
-	 * Verify the server is synchronized; that is, the leap bits,
-	 * stratum and root distance are valid.
-	 */
-	if (   pleap == LEAP_NOTINSYNC		/* test 6 */
-	    || pstratum < sys_floor || pstratum >= sys_ceiling)
-		peer->flash |= TEST6;		/* bad synch or strat */
-	if (p_del / 2 + p_disp >= MAXDISPERSE)	/* test 7 */
-		peer->flash |= TEST7;		/* bad header */
-
-	/*
-	 * If any tests fail at this point, the packet is discarded.
-	 * Note that some flashers may have already been set in the
-	 * receive() routine.
-	 */
-	if (peer->flash & PKT_TEST_MASK) {
-		peer->seldisptoolarge++;
-		DPRINTF(1, ("packet: flash header %04x\n",
-			    peer->flash));
-		return;
-	}
+	/**/
 
 	/*
 	 * If the peer was previously unreachable, raise a trap. In any
