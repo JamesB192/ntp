@@ -1,5 +1,6 @@
 ---
 
+* [Sec 3042] Broadcast Interleave.  HStenn.
 * [Sec 3043]  Autokey association reset. perlinger@ntp.org, stenn@ntp.org
   (fixes [Sec 3044] and [Sec 3045], too)
 * [Sec 3046] CRYPTO_NAK crash.  stenn@ntp.org
@@ -10,7 +11,9 @@
 * [Bug 3052] Add a .gitignore file.  Edmund Wong.
 * [Bug 3054] miscopt.html documents the allan intercept in seconds. SWhite.
 * Fix typo in ntp-wait and plot_summary.  HStenn.
-
+* Make sure we have an "author" file for git imports.  HStenn.
+* Update the sntp problem tests for MacOS.  HStenn.
+  
 ---
 (4.2.8p7) 2016/04/26 Released by Harlan Stenn <stenn@ntp.org>
 
