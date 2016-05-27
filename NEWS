@@ -10,7 +10,7 @@ following 1 high- and 4 low-severity vulnerabilities"
 
 * CRYPTO_NAK crash
    Date Resolved: 02 June 2016; Dev (4.3.93) 02 June 2016
-   References: Sec 3046 / CVE-2016-4957 / VU#BBBBB
+   References: Sec 3046 / CVE-2016-4957 / VU#321640
    Affects: ntp-4.2.8p7, and ntp-4.3.92.
    CVSS2: HIGH 7.8 (AV:N/AC:L/Au:N/C:N/I:N/A:C)
    CVSS3: HIGH 7.5 CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
@@ -28,7 +28,7 @@ following 1 high- and 4 low-severity vulnerabilities"
 
 * Bad authentication demobilizes ephemeral associations
    Date Resolved: 02 June 2016; Dev (4.3.93) 02 June 2016
-   References: Sec 3045 / CVE-2016-4953
+   References: Sec 3045 / CVE-2016-4953 / VU#321640
    Affects: ntp-4, up to but not including ntp-4.2.8p8, and
 	ntp-4.3.0 up to, but not including ntp-4.3.93.
    CVSS2: LOW 2.6 (AV:N/AC:H/Au:N/C:N/I:N/A:P)
@@ -46,7 +46,7 @@ following 1 high- and 4 low-severity vulnerabilities"
 
 * Processing spoofed server packets
    Date Resolved: 02 June 2016; Dev (4.3.93) 02 June 2016
-   References: Sec 3044 / CVE-2016-4954
+   References: Sec 3044 / CVE-2016-4954 / VU#321640
    Affects: ntp-4, up to but not including ntp-4.2.8p8, and
 	ntp-4.3.0 up to, but not including ntp-4.3.93.
    CVSS2: LOW 2.6 (AV:N/AC:H/Au:N/C:N/I:N/A:P)
@@ -60,20 +60,20 @@ following 1 high- and 4 low-severity vulnerabilities"
 	Upgrade to 4.2.8p8, or later, from the NTP Project Download Page
 	    or the NTP Public Services Project Download Page
 	Properly monitor your ntpd instances. 
-   Credit: This weakness was discovered by Miroslav Lichvar of Red Hat. 
+   Credit: This weakness was discovered by Jakub Prokes of Red Hat. 
 
 * Autokey association reset
    Date Resolved: 02 June 2016; Dev (4.3.93) 02 June 2016
-   References: Sec 3043 / CVE-2016-4955
+   References: Sec 3043 / CVE-2016-4955 / VU#321640
    Affects: ntp-4, up to but not including ntp-4.2.8p8, and
 	ntp-4.3.0 up to, but not including ntp-4.3.93.
    CVSS2: LOW 2.6 (AV:N/AC:H/Au:N/C:N/I:N/A:P)
    CVSS3: LOW 3.7 CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L
    Summary: An attacker who is able to spoof a packet with a correct
 	origin timestamp before the expected response packet arrives at
-	the target machine can send a CRYPTO_NAK and cause the
-	association's peer variables to be cleared. If this can be done
-	often enough, it will prevent that association from working.
+	the target machine can send a CRYPTO_NAK or a bad MAC and cause
+	the association's peer variables to be cleared. If this can be
+	done often enough, it will prevent that association from working.
    Mitigation:
 	Implement BCP-38.
 	Upgrade to 4.2.8p8, or later, from the NTP Project Download Page
@@ -83,7 +83,7 @@ following 1 high- and 4 low-severity vulnerabilities"
  
 * Broadcast interleave
    Date Resolved: 02 June 2016; Dev (4.3.93) 02 June 2016
-   References: Sec 3042 / CVE-2016-4956
+   References: Sec 3042 / CVE-2016-4956 / VU#321640
    Affects: ntp-4, up to but not including ntp-4.2.8p8, and
    	ntp-4.3.0 up to, but not including ntp-4.3.93.
    CVSS2: LOW 2.6 (AV:N/AC:H/Au:N/C:N/I:N/A:P)

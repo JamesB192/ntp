@@ -1682,8 +1682,9 @@ receive(
 	/*
 	 * Check for valid nonzero timestamp fields.
 	 */
-	} else if (L_ISZERO(&p_org) || L_ISZERO(&p_rec) ||
-	    L_ISZERO(&peer->dst)) {
+	} else if (   L_ISZERO(&p_org)
+		   || L_ISZERO(&p_rec)
+		   || L_ISZERO(&peer->dst)) {
 		peer->flash |= TEST3;		/* unsynch */
 
 	/*
@@ -1698,6 +1699,8 @@ receive(
 		peer->flash |= TEST2;		/* bogus */
 		return; /* Bogus packet, we are done */
 	}
+
+	/**/
 
 	/*
 	 * If this is a crypto_NAK, the server cannot authenticate a
@@ -1715,8 +1718,9 @@ receive(
 			return;
 		}
 #ifdef AUTOKEY
-		if (peer->crypto)
+		if (peer->crypto) {
 			peer_clear(peer, "AUTH");
+		}
 #endif	/* AUTOKEY */
 		return;
 
@@ -1730,21 +1734,30 @@ receive(
 	 */
 	} else if (!AUTH(peer->keyid || has_mac ||
 			 (restrict_mask & RES_DONTTRUST), is_authentic)) {
+
+		if (peer->flash & PKT_TEST_MASK) {
+			msyslog(LOG_INFO,
+				"receive: Bad auth in packet with bad timestamps from %s denied - spoof?",
+				ntoa(&peer->srcadr));
+			return;
+		}
+
 		report_event(PEVNT_AUTH, peer, "digest");
 		peer->flash |= TEST5;		/* bad auth */
 		peer->badauth++;
 		if (   has_mac
-		    && (hismode == MODE_ACTIVE || hismode == MODE_PASSIVE))
+		    && (   hismode == MODE_ACTIVE
+			|| hismode == MODE_PASSIVE))
 			fast_xmit(rbufp, MODE_ACTIVE, 0, restrict_mask);
 		if (peer->flags & FLAG_PREEMPT) {
 			if (unpeer_digest_early) {
 				unpeer(peer);
 			}
-			return;
 		}
 #ifdef AUTOKEY
-		if (peer_clear_digest_early && peer->crypto)
+		else if (peer_clear_digest_early && peer->crypto) {
 			peer_clear(peer, "AUTH");
+		}
 #endif	/* AUTOKEY */
 		return;
 	}
