@@ -6,7 +6,7 @@ Focus: Security, Bug fixes, enhancements.
 Severity: HIGH
 
 In addition to bug fixes and enhancements, this release fixes the
-following 1 high- and 4 low-severity vulnerabilities"
+following 1 high- and 4 low-severity vulnerabilities:
 
 * CRYPTO_NAK crash
    Date Resolved: 02 June 2016; Dev (4.3.93) 02 June 2016
