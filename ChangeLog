@@ -12,6 +12,8 @@
   - fixed print()/scanf() format issues
 * [Bug 3052] Add a .gitignore file.  Edmund Wong.
 * [Bug 3054] miscopt.html documents the allan intercept in seconds. SWhite.
+* [Bug 3058] fetch_timestamp() mishandles 64-bit alignment. Brian Utterback,
+  JPerlinger, HStenn.
 * Update the NEWS file for 4.2.8p8.  HStenn.
 * Fix typo in ntp-wait and plot_summary.  HStenn.
 * Make sure we have an "author" file for git imports.  HStenn.
