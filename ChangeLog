@@ -1,3 +1,4 @@
+(4.3.93) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 From ntp-4.2.8p8:
 * [Sec 3042] Broadcast Interleave.  HStenn.
 * [Sec 3043] Autokey association reset.  perlinger@ntp.org, stenn@ntp.org
