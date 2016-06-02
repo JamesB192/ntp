@@ -1,0 +1,9 @@
+**/Makefile.in
+**/Makefile
+**/configure
+**/*.m4
+**/*.in
+**/*cache
+**/version.*
+**/*.mf
+sntp/libevent/build-aux
