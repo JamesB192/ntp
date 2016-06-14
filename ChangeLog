@@ -1,3 +1,6 @@
+From ntp-4.2.8p9:
+* git author attribution cleanup
+* bk ignore file cleanup
 (4.3.93) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 From ntp-4.2.8p8:
 * [Sec 3042] Broadcast Interleave.  HStenn.
@@ -694,7 +697,13 @@ From 4.2.8p2:
 ntp-4.3 begins.
 
 ---
-(4.2.8p8)  Released by Harlan Stenn <stenn@ntp.org>
+(4.2.8p9)
+
+* git author attribution cleanup
+* bk ignore file cleanup
+
+---
+(4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
 * [Sec 3043] Autokey association reset.  perlinger@ntp.org, stenn@ntp.org
