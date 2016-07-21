@@ -1,7 +1,12 @@
 ---
+* [Sec 3075] Malicious crafted read_mru_list() packet will crash ntpd.
+  - added missing paramter validation in read_mru_list(). perlinger@ntp.org
+* [Sec 3082] (title too long -- Variation of [Sec 3075].)
+  - more hardening to read_mru_list(). perlinger@ntp.org
 
 * git author attribution cleanup
 * bk ignore file cleanup
+
 ---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
@@ -23,7 +28,7 @@
 * Fix typo in ntp-wait and plot_summary.  HStenn.
 * Make sure we have an "author" file for git imports.  HStenn.
 * Update the sntp problem tests for MacOS.  HStenn.
-  
+
 ---
 (4.2.8p7) 2016/04/26 Released by Harlan Stenn <stenn@ntp.org>
 
