@@ -1,4 +1,8 @@
 ---
+* [Bug 3021] unity_fixture.c needs pragma weak <perlinger@ntp.org>
+  - removed unnecessary & harmful decls of 'setUp()' & 'tearDown()'
+
+---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
