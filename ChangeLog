@@ -1,4 +1,8 @@
 ---
+* [Bug 2951] ntpd tests fail: multiple definition of `send_via_ntp_signd'
+  - fixed Makefile.am <perlinger@ntp.org>
+
+---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
