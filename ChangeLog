@@ -1,4 +1,9 @@
 ---
+* [Bug 3050]  Fix for bug #2960 causes [...] spurious error message.
+  <perlinger@ntp.org>
+  - patches by Reinhard Max <max@suse.com> and Havard Eidnes <he@uninett.no>
+
+---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
