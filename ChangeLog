@@ -1,4 +1,6 @@
 ---
+* [Bug 3059] Potential buffer overrun from oversized hash <perlinger@ntp.org>
+  - applied patch by Brian Utterback <brian.utterback@oracle.com>
 * [Bug 3095] Compatibility with openssl 1.1 <perlinger@ntp.org>
   - applied patches by Kurt Roeckx <kurt@roeckx.be> to source
   - added shim layer for SSL API calls with issues (both directions)
