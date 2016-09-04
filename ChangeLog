@@ -1,4 +1,9 @@
 ---
+* [Bug 3095] Compatibility with openssl 1.1 <perlinger@ntp.org>
+  - applied patches by Kurt Roeckx <kurt@roeckx.be> to source
+  - added shim layer for SSL API calls with issues (both directions)
+
+---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
