@@ -135,6 +135,7 @@ struct IoCtx {
 	DevCtx_t *		devCtx;
 	DWORD			errCode;	/* error code of last I/O	*/
 	DWORD			byteCount;	/* byte count     "             */
+	DWORD			ioFlags;	/* in/out flags for recvfrom()	*/
 	u_int			flRawMem : 1;	/* buffer is raw memory -> free */
 	struct {
 		l_fp		DCDSTime;	/* PPS-hack: time of DCD ON	*/

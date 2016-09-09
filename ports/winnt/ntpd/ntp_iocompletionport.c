@@ -546,7 +546,7 @@ getEndptFromIoCtx(
 	)
 {
 	/* Make sure the key matches the context info in the shared
-	 * lock, the check for errors. If the error indicates the
+	 * lock, then check for errors. If the error indicates the
 	 * operation was cancelled, let the operation fail silently.
 	 *
 	 * !Note! Since we use the lowest bit of the key to distinguish
@@ -554,6 +554,7 @@ getEndptFromIoCtx(
 	 * LSB is not used in the reverse-link check. Hence we shift
 	 * it out in both the input key and the registered source.
 	 */
+	int		oval, olen; /* getsockopt params */
 	endpt *		ep    = NULL;
 	SharedLock_t *	slock = slAttachShared(ctx->slock);
 	if (slock != NULL) {
@@ -576,10 +577,43 @@ getEndptFromIoCtx(
 		ep = NULL;
 	case ERROR_SUCCESS:		/* all is good */
 		break;
+
+	/* [Bug 3019] is hard to squash.
+	 * We should not get this, but we do, unfortunately. Obviously
+	 * Windows insists in terminating one overlapped I/O request
+	 * when it receives a TTL-expired ICMP message, and since the
+	 * write that caused it is long finished, this unfortunately
+	 * hits the pending receive.
+	 *
+	 * The only way out seems to be to silently ignore this error
+	 * and restart another round, in the hope this condition does
+	 * not prevail. Clear any pending socket level errors, too.
+	 */
+	case ERROR_HOST_UNREACHABLE:
+		oval = 0;
+		olen = sizeof(oval);
+		getsockopt(ctx->io.sfd, SOL_SOCKET, SO_ERROR, (char*)&oval, &olen);
+		ctx->errCode = ERROR_SUCCESS;
+		break;
+
+	/* [Bug 3110] On POSIX systems, reading UDP data into too small
+	 * a buffers silently truncates the message. Under Windows the
+	 * data is also truncated, but it blarts loudly about that.
+	 * Just pretend all is well, and all will be well.
+	 */
+	case ERROR_MORE_DATA:
+	case WSAEMSGSIZE    :
+		ctx->errCode = ERROR_SUCCESS;
+		break;
+
+	/* For any other error, log the error, clear the byt count, but
+	 * but return the endpoint. This prevents processing the packet
+	 * and keeps the read-chain running -- otherwise NTPD will play
+	 * dead duck!
+	 */
 	default:
-		/* log error, but return -- caller has to handle this! */
 		LogIoError(msg, ctx->io.hnd, ctx->errCode);
-		ep = NULL;
+		ctx->byteCount = 0;
 		break;
 	}
 	if (NULL == ep)
@@ -1350,13 +1384,13 @@ QueueSocketRecv(
 		"QueueSocketRecv: cannot schedule socket receive";
 
 	WSABUF	wsabuf;
-	DWORD	Flags;
 	int	rc;
 
 	lpo->onIoDone = OnSocketRecv;
 	lpo->recv_buf = buff;
 	lpo->flRawMem = 0;
-	
+	lpo->ioFlags  = 0;
+
 	buff->fd              = lpo->io.sfd;
 	buff->recv_srcadr_len = sizeof(buff->recv_srcadr);
 	buff->receiver        = receive;
@@ -1365,8 +1399,7 @@ QueueSocketRecv(
 	wsabuf.buf = (char *)buff->recv_buffer;
 	wsabuf.len = sizeof(buff->recv_buffer);
 
-	Flags = 0;	/* in/out parameter, must be valid! */
-	rc = WSARecvFrom(lpo->io.sfd, &wsabuf, 1, NULL, &Flags,
+	rc = WSARecvFrom(lpo->io.sfd, &wsabuf, 1, NULL, &lpo->ioFlags,
 			 &buff->recv_srcadr.sa, &buff->recv_srcadr_len, 
 			 &lpo->ol, NULL);
 	return !rc || IoResultCheck((DWORD)WSAGetLastError(), lpo, msg);
@@ -1702,10 +1735,16 @@ GetReceivedBuffers(void)
 			break;
 
 		case WAIT_FAILED:
+		{
+			BOOL   dynbuf = FALSE;
+			char * msgbuf = NTstrerror(GetLastError(), &dynbuf);
 			msyslog(LOG_ERR,
-				"WaitForMultipleObjects Failed: Error: %m");
+				"WaitForMultipleObjects Failed: Error: %s", msgbuf);
+			if (dynbuf)
+				LocalFree(msgbuf);
 			exit(1);
-			break;
+		}
+		break;
 
 		default:
 			DEBUG_INSIST((index - WAIT_OBJECT_0) <
