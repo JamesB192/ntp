@@ -15,6 +15,7 @@
 #ifdef OPENSSL
 #include "openssl/err.h"
 #include "openssl/evp.h"
+#include "libssl_compat.h"
 
 void	atexit_ssl_cleanup(void);
 
@@ -84,7 +85,6 @@ keytype_from_text(
 	u_char		digest[EVP_MAX_MD_SIZE];
 	char *		upcased;
 	char *		pch;
-	EVP_MD_CTX	ctx;
 
 	/*
 	 * OpenSSL digest short names are capitalized, so uppercase the
@@ -110,8 +110,12 @@ keytype_from_text(
 
 	if (NULL != pdigest_len) {
 #ifdef OPENSSL
-		EVP_DigestInit(&ctx, EVP_get_digestbynid(key_type));
-		EVP_DigestFinal(&ctx, digest, &digest_len);
+		EVP_MD_CTX	*ctx;
+
+		ctx = EVP_MD_CTX_new();
+		EVP_DigestInit(ctx, EVP_get_digestbynid(key_type));
+		EVP_DigestFinal(ctx, digest, &digest_len);
+		EVP_MD_CTX_free(ctx);
 		if (digest_len > max_digest_len) {
 			fprintf(stderr,
 				"key type %s %u octet digests are too big, max %lu\n",
