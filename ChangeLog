@@ -1,4 +1,9 @@
 ---
+* [Bug 3072] Attack on interface selection <perlinger@ntp.org>
+  - implemented Miroslav Lichvars <mlichvar@redhat.com> suggestion
+    to skip interface updates based on incoming packets
+
+---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
@@ -19,7 +24,7 @@
 * Fix typo in ntp-wait and plot_summary.  HStenn.
 * Make sure we have an "author" file for git imports.  HStenn.
 * Update the sntp problem tests for MacOS.  HStenn.
-  
+
 ---
 (4.2.8p7) 2016/04/26 Released by Harlan Stenn <stenn@ntp.org>
 
