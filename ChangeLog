@@ -1,5 +1,6 @@
 ---
 
+* [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
 * git author attribution cleanup
 * bk ignore file cleanup
 
