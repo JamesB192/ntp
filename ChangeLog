@@ -1,4 +1,8 @@
 ---
+* [Bug 2951] ntpd tests fail: multiple definition of `send_via_ntp_signd'
+  - fixed Makefile.am <perlinger@ntp.org>
+
+---
 
 * [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
 * git author attribution cleanup
