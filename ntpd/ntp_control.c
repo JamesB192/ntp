@@ -4997,6 +4997,22 @@ report_event(
 	if (num_ctl_traps <= 0)
 		return;
 
+	/* [Bug 3119]
+	 * Peer Events should be associated with a peer -- hence the
+	 * name. But there are instances where this function is called
+	 * *without* a valid peer. This happens e.g. with an unsolicited
+	 * CryptoNAK, or when a leap second alarm is going off while
+	 * currently without a system peer.
+	 *
+	 * The most sensible approach to this seems to bail out here if
+	 * this happens. Avoiding to call this function would also
+	 * bypass the log reporting in the first part of this function,
+	 * and this is probably not the best of all options.
+	 *   -*-perlinger@ntp.org-*-
+	 */
+	if ((err & PEER_EVENT) && !peer)
+		return;
+
 	/*
 	 * Set up the outgoing packet variables
 	 */
@@ -5013,15 +5029,14 @@ report_event(
 		/* Include the core system variables and the list. */
 		for (i = 1; i <= CS_VARLIST; i++)
 			ctl_putsys(i);
-	} else {
-		INSIST(peer != NULL);
+	} else if (NULL != peer) { /* paranoia -- skip output */
 		rpkt.associd = htons(peer->associd);
 		rpkt.status = htons(ctlpeerstatus(peer));
 
 		/* Dump it all. Later, maybe less. */
 		for (i = 1; i <= CP_MAX_NOAUTOKEY; i++)
 			ctl_putpeer(i, peer);
-#ifdef REFCLOCK
+#	    ifdef REFCLOCK
 		/*
 		 * for clock exception events: add clock variables to
 		 * reflect info on exception
@@ -5047,7 +5062,7 @@ report_event(
 						    FALSE);
 			free_varlist(cs.kv_list);
 		}
-#endif /* REFCLOCK */
+#	    endif /* REFCLOCK */
 	}
 
 	/*
