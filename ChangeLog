@@ -1,4 +1,8 @@
 ---
+* [Sec 3118] Mode 6 information disclosure and DDoS vector <perlinger@ntp.org>
+  - TRAP config via mode 6 packet requires AUTH now.
+
+---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
