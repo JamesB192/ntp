@@ -46,6 +46,9 @@ MD5authencrypt(
 	EVP_DigestUpdate(ctx, (u_char *)pkt, length);
 	EVP_DigestFinal(ctx, digest, &len);
 	EVP_MD_CTX_free(ctx);
+	/* If the MAC is longer than the MAX then truncate it. */
+	if (len > MAX_MAC_LEN - 4)
+	    len = MAX_MAC_LEN - 4;
 	memmove((u_char *)pkt + length + 4, digest, len);
 	return (len + 4);
 }
@@ -86,12 +89,15 @@ MD5authdecrypt(
 	EVP_DigestUpdate(ctx, (u_char *)pkt, length);
 	EVP_DigestFinal(ctx, digest, &len);
 	EVP_MD_CTX_free(ctx);
+	/* If the MAC is longer than the MAX then truncate it. */
+	if (len > MAX_MAC_LEN - 4)
+	    len = MAX_MAC_LEN - 4;
 	if (size != (size_t)len + 4) {
 		msyslog(LOG_ERR,
 		    "MAC decrypt: MAC length error");
 		return (0);
 	}
-	return !isc_tsmemcmp(digest, (const char *)pkt + length + 4, len);
+	return !isc_tsmemcmp(digest, (u_char *)pkt + length + 4, len);
 }
 
 /*
