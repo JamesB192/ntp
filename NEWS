@@ -14,6 +14,8 @@ Other fixes:
 
 * [Bug 3084] update-leap mis-parses the leapfile name.  HStenn.
 * [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
+* [Bug 3047] Fix refclock_jjy C-DEX JST2000. abe@ntp.org
+  - Patch provided by Kuramatsu.
 * [Bug 3021] unity_fixture.c needs pragma weak <perlinger@ntp.org>
   - removed unnecessary & harmful decls of 'setUp()' & 'tearDown()'
 * [Bug 2998] sntp/tests/packetProcessing.c broken without openssl. JPerlinger
