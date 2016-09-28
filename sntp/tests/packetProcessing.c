@@ -1,9 +1,9 @@
 #include "config.h"
 
 /* need autokey for some of the tests, or the will create buffer overruns. */
-#ifndef AUTOKEY
-# define AUTOKEY 1
-#endif
+// #ifndef AUTOKEY
+// # define AUTOKEY 1
+// #endif
 
 #include "sntptest.h"
 #include "networking.h"
@@ -152,6 +152,7 @@ test_LengthNotMultipleOfFour(void)
 void
 test_TooShortExtensionFieldLength(void)
 {
+#ifdef AUTOKEY
 	/* The lower 16-bits are the length of the extension field.
 	 * This lengths must be multiples of 4 bytes, which gives
 	 * a minimum of 4 byte extension field length.
@@ -167,6 +168,7 @@ test_TooShortExtensionFieldLength(void)
 	TEST_ASSERT_EQUAL(PACKET_UNUSEABLE,
 			  process_pkt(&testpkt, &testsock, pkt_len,
 				      MODE_SERVER, &testspkt, "UnitTest"));
+#endif  /* AUTOKEY */
 }
 
 
