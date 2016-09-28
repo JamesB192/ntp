@@ -3159,15 +3159,21 @@ ctl_getitem(
 
 	for (v = var_list; !(EOV & v->flags); ++v)
 		if (!(PADDING & v->flags)) {
-			/* check if the var name matches the buffer */
+			/* Check if the var name matches the buffer. The
+			 * name is bracketed by [reqpt..tp] and not NUL
+			 * terminated, and it contains no '=' char. The
+			 * lookup value IS NUL-terminated but might
+			 * include a '='... We have to look out for
+			 * that!
+			 */
 			const char *sp1 = reqpt;
 			const char *sp2 = v->text;
-			
-			while ((sp1 != tp) && *sp2 && (*sp1 == *sp2)) {
+
+			while ((sp1 != tp) && (*sp1 == *sp2)) {
 				++sp1;
 				++sp2;
 			}
-			if (sp1 == tp && !*sp2)
+			if (sp1 == tp && (*sp2 == '\0' || *sp2 == '='))
 				break;
 		}
 

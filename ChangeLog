@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3100] ntpq can't retrieve daemon_version <perlinger@ntp.org>
+  - fixed extended sysvar lookup (bug introduced with bug 3008 fix)
 * [Bug 3095] Compatibility with openssl 1.1 <perlinger@ntp.org>
   - applied patches by Kurt Roeckx <kurt@roeckx.be> to source
   - added shim layer for SSL API calls with issues (both directions)
@@ -29,8 +31,6 @@
   - improve stability close to the 500ms phase jump (phase gate)
 * git author attribution cleanup
 * bk ignore file cleanup
->>>>>>>
->>>>>>>
 
 ---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
