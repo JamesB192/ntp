@@ -1,11 +1,9 @@
 ---
+
+* [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
 * [Bug 2959] refclock_jupiter: gps week correction <perlinger@ntp.org>
   - fixed GPS week expansion to work based on build date. Special thanks
     to Craig Leres for initial patch and testing.
-
----
-
-* [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
 * [Bug 2951] ntpd tests fail: multiple definition of `send_via_ntp_signd'
   - fixed Makefile.am <perlinger@ntp.org>
 * [Bug 2689] ATOM driver processes last PPS pulse at startup,
