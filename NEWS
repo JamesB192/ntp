@@ -12,6 +12,8 @@ following X high- and Y low-severity vulnerabilities:
 
 Other fixes:
 
+* [Bug 3100] ntpq can't retrieve daemon_version <perlinger@ntp.org>
+  - fixed extended sysvar lookup (bug introduced with bug 3008 fix)
 * [Bug 3095] Compatibility with openssl 1.1 <perlinger@ntp.org>
   - applied patches by Kurt Roeckx <kurt@roeckx.be> to source
   - added shim layer for SSL API calls with issues (both directions)
