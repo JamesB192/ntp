@@ -47,6 +47,8 @@
 * [Bug 3054] miscopt.html documents the allan intercept in seconds. SWhite.
 * [Bug 3058] fetch_timestamp() mishandles 64-bit alignment. Brian Utterback,
   JPerlinger, HStenn.
+* [Bug 3068] Linker warnings when building on Solaris. perlinger@ntp.org
+  - applied patch thanks to Andrew Stormont <andyjstormont@gmail.com>
 * Update the NEWS file for 4.2.8p8.  HStenn.
 * Fix typo in ntp-wait and plot_summary.  HStenn.
 * Make sure we have an "author" file for git imports.  HStenn.
