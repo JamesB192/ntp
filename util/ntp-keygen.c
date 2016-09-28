@@ -149,6 +149,10 @@ EVP_PKEY *genkey	(const char *, const char *);
 EVP_PKEY *readkey	(char *, char *, u_int *, EVP_PKEY **);
 void	writekey	(char *, char *, u_int *, EVP_PKEY **);
 u_long	asn2ntp		(ASN1_TIME *);
+
+static DSA* genDsaParams(int, char*);
+static RSA* genRsaKeyPair(int, char*);
+
 #endif	/* AUTOKEY */
 
 /*
@@ -980,7 +984,7 @@ gen_rsa(
 	FILE	*str;
 
 	fprintf(stderr, "Generating RSA keys (%d bits)...\n", modulus);
-	rsa = RSA_generate_key(modulus, 65537, cb, _UC("RSA"));
+	rsa = genRsaKeyPair(modulus, _UC("RSA"));
 	fprintf(stderr, "\n");
 	if (rsa == NULL) {
 		fprintf(stderr, "RSA generate keys fails\n%s\n",
@@ -1019,7 +1023,7 @@ gen_rsa(
 	return (pkey);
 }
 
- 
+
 /*
  * Generate DSA public/private key pair
  */
@@ -1030,7 +1034,6 @@ gen_dsa(
 {
 	EVP_PKEY *pkey;		/* private key */
 	DSA	*dsa;		/* DSA parameters */
-	u_char	seed[20];	/* seed for parameters */
 	FILE	*str;
 
 	/*
@@ -1038,9 +1041,7 @@ gen_dsa(
 	 */
 	fprintf(stderr,
 	    "Generating DSA parameters (%d bits)...\n", modulus);
-	RAND_bytes(seed, sizeof(seed));
-	dsa = DSA_generate_parameters(modulus, seed, sizeof(seed), NULL,
-	    NULL, cb, _UC("DSA"));
+	dsa = genDsaParams(modulus, _UC("DSA"));
 	fprintf(stderr, "\n");
 	if (dsa == NULL) {
 		fprintf(stderr, "DSA generate parameters fails\n%s\n",
@@ -1132,27 +1133,24 @@ gen_iffkey(
 {
 	EVP_PKEY *pkey;		/* private key */
 	DSA	*dsa;		/* DSA parameters */
-	u_char	seed[20];	/* seed for parameters */
 	BN_CTX	*ctx;		/* BN working space */
 	BIGNUM	*b, *r, *k, *u, *v, *w; /* BN temp */
 	FILE	*str;
 	u_int	temp;
 	const BIGNUM *p, *q, *g;
 	BIGNUM *pub_key, *priv_key;
-
+	
 	/*
 	 * Generate DSA parameters for use as IFF parameters.
 	 */
 	fprintf(stderr, "Generating IFF keys (%d bits)...\n",
 	    modulus2);
-	RAND_bytes(seed, sizeof(seed));
-	dsa = DSA_generate_parameters(modulus2, seed, sizeof(seed), NULL,
-	    NULL, cb, _UC("IFF"));
+	dsa = genDsaParams(modulus2, _UC("IFF"));
 	fprintf(stderr, "\n");
 	if (dsa == NULL) {
 		fprintf(stderr, "DSA generate parameters fails\n%s\n",
 		    ERR_error_string(ERR_get_error(), NULL));
-		return (NULL);;
+		return (NULL);
 	}
 	DSA_get0_pqg(dsa, &p, &q, &g);
 
@@ -1320,14 +1318,14 @@ gen_gqkey(
 	u_int	temp;
 	BIGNUM	*b;
 	const BIGNUM	*n;
-
+	
 	/*
 	 * Generate RSA parameters for use as GQ parameters.
 	 */
 	fprintf(stderr,
 	    "Generating GQ parameters (%d bits)...\n",
 	     modulus2);
-	rsa = RSA_generate_key(modulus2, 65537, cb, _UC("GQ"));
+	rsa = genRsaKeyPair(modulus2, _UC("GQ"));
 	fprintf(stderr, "\n");
 	if (rsa == NULL) {
 		fprintf(stderr, "RSA generate keys fails\n%s\n",
@@ -1376,7 +1374,11 @@ gen_gqkey(
 		RSA_free(rsa);
 		return (NULL);
 	}
-	RSA_set0_factors(rsa, u, v);
+	/* setting 'u' and 'v' into a RSA object takes over ownership.
+	 * Since we use these values again, we have to pass in dupes,
+	 * or we'll corrupt the program!
+	 */
+	RSA_set0_factors(rsa, BN_dup(u), BN_dup(v));
 
 	/*
 	 * Here is a trial run of the protocol. First, Alice rolls
@@ -1570,8 +1572,8 @@ gen_mvkey(
 	for (j = 1; j <= n; j++) {
 		s1[j] = BN_new();
 		while (1) {
-			BN_generate_prime(s1[j], modulus2 / n, 0, NULL,
-			    NULL, NULL, NULL);
+			BN_generate_prime_ex(s1[j], modulus2 / n, 0,
+					     NULL, NULL, NULL);
 			for (i = 1; i < j; i++) {
 				if (BN_cmp(s1[i], s1[j]) == 0)
 					break;
@@ -1603,15 +1605,14 @@ gen_mvkey(
 		BN_copy(p, q);
 		BN_add(p, p, p);
 		BN_add_word(p, 1);
-		if (BN_is_prime(p, BN_prime_checks, NULL, ctx,
-		    NULL))
+		if (BN_is_prime_ex(p, BN_prime_checks, ctx, NULL))
 			break;
 
 		temp++;
 		j = temp % n + 1;
 		while (1) {
-			BN_generate_prime(u, modulus2 / n, 0, 0, NULL,
-			    NULL, NULL);
+			BN_generate_prime_ex(u, modulus2 / n, 0,
+					     NULL, NULL, NULL);
 			for (i = 1; i <= n; i++) {
 				if (BN_cmp(u, s1[i]) == 0)
 					break;
@@ -2170,6 +2171,56 @@ genkey(
 	fprintf(stderr, "Invalid %s key type %s\n", id, type);
 	return (NULL);
 }
+
+static RSA*
+genRsaKeyPair(
+	int	bits,
+	char *	what
+	)
+{
+	RSA *		rsa = RSA_new();
+	BN_GENCB *	gcb = BN_GENCB_new();
+	BIGNUM *	bne = BN_new();
+	
+	if (gcb)
+		BN_GENCB_set_old(gcb, cb, what);
+	if (bne)
+		BN_set_word(bne, 65537);
+	if (!(rsa && gcb && bne && RSA_generate_key_ex(
+		      rsa, bits, bne, gcb)))
+	{
+		RSA_free(rsa);
+		rsa = NULL;
+	}
+	BN_GENCB_free(gcb);
+	BN_free(bne);
+	return rsa;
+}
+
+static DSA*
+genDsaParams(
+	int	bits,
+	char *	what
+	)
+{
+	
+	DSA *		dsa = DSA_new();
+	BN_GENCB *	gcb = BN_GENCB_new();
+	u_char		seed[20];
+	
+	if (gcb)
+		BN_GENCB_set_old(gcb, cb, what);
+	RAND_bytes(seed, sizeof(seed));
+	if (!(dsa && gcb && DSA_generate_parameters_ex(
+		      dsa, bits, seed, sizeof(seed), NULL, NULL, gcb)))
+	{
+		DSA_free(dsa);
+		dsa = NULL;
+	}
+	BN_GENCB_free(gcb);
+	return dsa;
+}
+
 #endif	/* AUTOKEY */
 
 
