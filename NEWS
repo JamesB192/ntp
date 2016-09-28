@@ -15,6 +15,10 @@ Other fixes:
 * [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
 * [Bug 2951] ntpd tests fail: multiple definition of `send_via_ntp_signd'
   - fixed Makefile.am <perlinger@ntp.org>
+* [Bug 2689] ATOM driver processes last PPS pulse at startup,
+             even if it is very old <perlinger@ntp.org>
+  - make sure PPS source is alive before processing samples
+  - improve stability close to the 500ms phase jump (phase gate)
 * git author attribution cleanup
 * bk ignore file cleanup
 
