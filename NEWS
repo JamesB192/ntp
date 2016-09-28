@@ -1,4 +1,24 @@
 ---
+NTP 4.2.8p9 (Harlan Stenn <stenn@ntp.org>, 2016/10/xx) 
+
+Focus: Security, Bug fixes, enhancements.
+
+Severity: HIGH
+
+In addition to bug fixes and enhancements, this release fixes the
+following X high- and Y low-severity vulnerabilities:
+
+*
+
+Other fixes:
+
+* [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
+* [Bug 2951] ntpd tests fail: multiple definition of `send_via_ntp_signd'
+  - fixed Makefile.am <perlinger@ntp.org>
+* git author attribution cleanup
+* bk ignore file cleanup
+
+---
 NTP 4.2.8p8 (Harlan Stenn <stenn@ntp.org>, 2016/06/02) 
 
 Focus: Security, Bug fixes, enhancements.
