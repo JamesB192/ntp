@@ -2,6 +2,9 @@
 
 * [Bug 3084] update-leap mis-parses the leapfile name.  HStenn.
 * [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
+* [Bug 3050]  Fix for bug #2960 causes [...] spurious error message.
+  <perlinger@ntp.org>
+  - patches by Reinhard Max <max@suse.com> and Havard Eidnes <he@uninett.no>
 * [Bug 3047] Fix refclock_jjy C-DEX JST2000. abe@ntp.org
   - Patch provided by Kuramatsu.
 * [Bug 3021] unity_fixture.c needs pragma weak <perlinger@ntp.org>
