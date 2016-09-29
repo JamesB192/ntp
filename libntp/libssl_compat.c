@@ -316,8 +316,16 @@ sslshim_DSA_set0_key(
 	return 1;
 }
 
+int
+sslshim_X509_get_signature_nid(
+	const X509 *x
+	)
+{
+	return OBJ_obj2nid(x->sig_alg->algorithm);
+}
+
 /* ----------------------------------------------------------------- */
-#else
+#else /* OPENSSL_VERSION_NUMBER >= v1.1.0 */
 /* ----------------------------------------------------------------- */
 
 NONEMPTY_TRANSLATION_UNIT
