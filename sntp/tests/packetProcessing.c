@@ -163,7 +163,6 @@ test_LengthNotMultipleOfFour(void)
 void
 test_TooShortExtensionFieldLength(void)
 {
-XXX BO FRAG 1
 	/* [Bug 2998] We have to get around the formal specification of
 	 * the extension field if AUTOKEY is undefined. (At least CLANG
 	 * issues a warning in this case. It's just a warning, but
@@ -171,9 +170,6 @@ XXX BO FRAG 1
 	 */
 	uint32_t * pe = testpkt.p.exten + 7;
 	
-XXX ELSE
-#ifdef AUTOKEY
-XXX EO FRAG 1
 	/* The lower 16-bits are the length of the extension field.
 	 * This lengths must be multiples of 4 bytes, which gives
 	 * a minimum of 4 byte extension field length.
@@ -187,17 +183,8 @@ XXX EO FRAG 1
 	int pkt_len = LEN_PKT_NOMAC + 4 + 24;
 
 	TEST_ASSERT_EQUAL(PACKET_UNUSEABLE,
-XXX ORIG FRAG 2
-			  process_pkt(&testpkt, &testsock, pkt_len,
-				      MODE_SERVER, &testspkt, "UnitTest"));
-XXX BO FRAG 2
 			  process_pkt(&testpkt.p, &testsock, pkt_len,
 				      MODE_SERVER, &testspkt.p, "UnitTest"));
-XXX ELSE FRAG 2
-			  process_pkt(&testpkt, &testsock, pkt_len,
-				      MODE_SERVER, &testspkt, "UnitTest"));
-#endif  /* AUTOKEY */
-XXX EO FRAG 2
 }
 
 

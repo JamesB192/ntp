@@ -28,6 +28,9 @@
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 /* ----------------------------------------------------------------- */
 
+# include <openssl/objects.h>
+# include <openssl/x509.h>
+
 /* shim the new-style API on an old-style OpenSSL */
 
 extern BN_GENCB*	sslshimBN_GENCB_new(void);
@@ -62,6 +65,8 @@ extern void	sslshim_DSA_get0_key(const DSA *pdsa, const BIGNUM **ppub_key,
 extern int	sslshim_DSA_set0_key(DSA *pdsa, BIGNUM *pub_key,
 				     BIGNUM *priv_key);
 
+extern int	sslshim_X509_get_signature_nid(const X509 *x);
+
 #define	BN_GENCB_new		sslshimBN_GENCB_new
 #define	BN_GENCB_free		sslshimBN_GENCB_free
 
@@ -86,8 +91,10 @@ extern int	sslshim_DSA_set0_key(DSA *pdsa, BIGNUM *pub_key,
 #define DSA_get0_key		sslshim_DSA_get0_key
 #define DSA_set0_key		sslshim_DSA_set0_key
 
+#define X509_get_signature_nid	sslshim_X509_get_signature_nid
+
 /* ----------------------------------------------------------------- */
-#endif /* OPENSSL_VERSION_NUMBER checks */
+#endif /* OPENSSL_VERSION_NUMBER < v1.1.0 */
 /* ----------------------------------------------------------------- */
 
 #endif /* NTP_LIBSSL_COMPAT_H */
