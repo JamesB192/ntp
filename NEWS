@@ -23,6 +23,8 @@ Other fixes:
   - applied patch thanks to Andrew Stormont <andyjstormont@gmail.com>
 * [Bug 3066] NMEA clock ignores pps. perlinger@ntp.org
   - PPS-HACK works again.
+* [Bug 3059] Potential buffer overrun from oversized hash <perlinger@ntp.org>
+  - applied patch by Brian Utterback <brian.utterback@oracle.com>
 * [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
 * [Bug 3050]  Fix for bug #2960 causes [...] spurious error message.
   <perlinger@ntp.org>
