@@ -107,6 +107,7 @@ static void free_io_completion_port_mem(void);
 	HANDLE	WaitableIoEventHandle;
 static	HANDLE	hndIOCPLPort;
 static	HANDLE	hMainThread;
+static	BOOL	DoPPShack;
 
 DWORD	ActiveWaitHandles;
 HANDLE	WaitHandles[16];
@@ -214,10 +215,25 @@ void
 init_io_completion_port(void)
 {
 	OSVERSIONINFO vi;
+	const char *	envp;
 
 #   ifdef DEBUG
 	atexit(&free_io_completion_port_mem);
 #   endif
+
+	/* TODO: this should not be done via environment;
+	 * It would be much better to have this as proper config option.
+	 * (The same is true for the PPS API DLL list...)
+	 */
+	if (NULL != (envp = getenv("PPSAPI_HACK")))
+		/* check for [Tt]{rue}, [Yy]{es}, or '1' as first char*/
+		DoPPShack = !!strchr("yYtT1", (u_char)*envp);
+	else if (NULL != (envp = getenv("PPSAPI_DLLS")))
+		/* any non-empty list disables PPS hack */
+		DoPPShack = !*envp;
+	else
+		/* otherwise use the PPS hack */
+		DoPPShack = TRUE;
 
 	memset(&vi, 0, sizeof(vi));
 	vi.dwOSVersionInfoSize = sizeof(vi);
@@ -626,7 +642,6 @@ QueueSerialWait(
 
 	BOOL	rc;
 
-	memset(&lpo->aux, 0, sizeof(lpo->aux));
 	lpo->onIoDone = OnSerialWaitComplete;
 	lpo->recv_buf = buff;
 	lpo->flRawMem = 0;
@@ -659,6 +674,7 @@ OnSerialWaitComplete(
 
 	/* start next IO and leave if we hit an error */
 	if (lpo->errCode != ERROR_SUCCESS) {
+		memset(&lpo->aux, 0, sizeof(lpo->aux));
 		IoCtxStartLocked(lpo, QueueSerialWait, lpo->recv_buf);
 		return;
 	}
@@ -720,7 +736,7 @@ OnSerialWaitComplete(
 		 *
 		 * backward compat: 'usermode-pps-hack'
 		 */
-		if (MS_RLSD_ON & modem_status) {
+		if ((MS_RLSD_ON & modem_status) && DoPPShack) {
 			lpo->aux.DCDSTime = lpo->aux.RecvTime;
 			lpo->aux.flTsDCDS = 1;
 			DPRINTF(2, ("upps-hack: fd %d DCD PPS Rise at %s\n",
@@ -837,6 +853,7 @@ OnSerialReadComplete(
 
 wait_again:
 	/* make sure the read is issued again */
+	memset(&lpo->aux, 0, sizeof(lpo->aux));
 	IoCtxStartLocked(lpo, QueueSerialWait, lpo->recv_buf);
 }
 
@@ -1299,6 +1316,7 @@ io_completion_port_add_clock_io(
 		goto fail;
 	}
 	lpo->io.hnd = h;
+	memset(&lpo->aux, 0, sizeof(lpo->aux));
 	return QueueSerialWait(lpo, get_free_recv_buffer_alloc());
 
 fail:

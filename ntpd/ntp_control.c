@@ -33,6 +33,7 @@
 # include "ntp_syscall.h"
 #endif
 
+#include "libssl_compat.h"
 
 /*
  * Structure to hold request procedure information
@@ -3158,15 +3159,21 @@ ctl_getitem(
 
 	for (v = var_list; !(EOV & v->flags); ++v)
 		if (!(PADDING & v->flags)) {
-			/* check if the var name matches the buffer */
+			/* Check if the var name matches the buffer. The
+			 * name is bracketed by [reqpt..tp] and not NUL
+			 * terminated, and it contains no '=' char. The
+			 * lookup value IS NUL-terminated but might
+			 * include a '='... We have to look out for
+			 * that!
+			 */
 			const char *sp1 = reqpt;
 			const char *sp2 = v->text;
-			
-			while ((sp1 != tp) && *sp2 && (*sp1 == *sp2)) {
+
+			while ((sp1 != tp) && (*sp1 == *sp2)) {
 				++sp1;
 				++sp2;
 			}
-			if (sp1 == tp && !*sp2)
+			if (sp1 == tp && (*sp2 == '\0' || *sp2 == '='))
 				break;
 		}
 
@@ -3649,7 +3656,7 @@ static u_int32 derive_nonce(
 		u_char	digest[EVP_MAX_MD_SIZE];
 		u_int32 extract;
 	}		d;
-	EVP_MD_CTX	ctx;
+	EVP_MD_CTX	*ctx;
 	u_int		len;
 
 	while (!salt[0] || current_time - last_salt_update >= 3600) {
@@ -3660,19 +3667,21 @@ static u_int32 derive_nonce(
 		last_salt_update = current_time;
 	}
 
-	EVP_DigestInit(&ctx, EVP_get_digestbynid(NID_md5));
-	EVP_DigestUpdate(&ctx, salt, sizeof(salt));
-	EVP_DigestUpdate(&ctx, &ts_i, sizeof(ts_i));
-	EVP_DigestUpdate(&ctx, &ts_f, sizeof(ts_f));
+	ctx = EVP_MD_CTX_new();
+	EVP_DigestInit(ctx, EVP_get_digestbynid(NID_md5));
+	EVP_DigestUpdate(ctx, salt, sizeof(salt));
+	EVP_DigestUpdate(ctx, &ts_i, sizeof(ts_i));
+	EVP_DigestUpdate(ctx, &ts_f, sizeof(ts_f));
 	if (IS_IPV4(addr))
-		EVP_DigestUpdate(&ctx, &SOCK_ADDR4(addr),
+		EVP_DigestUpdate(ctx, &SOCK_ADDR4(addr),
 			         sizeof(SOCK_ADDR4(addr)));
 	else
-		EVP_DigestUpdate(&ctx, &SOCK_ADDR6(addr),
+		EVP_DigestUpdate(ctx, &SOCK_ADDR6(addr),
 			         sizeof(SOCK_ADDR6(addr)));
-	EVP_DigestUpdate(&ctx, &NSRCPORT(addr), sizeof(NSRCPORT(addr)));
-	EVP_DigestUpdate(&ctx, salt, sizeof(salt));
-	EVP_DigestFinal(&ctx, d.digest, &len);
+	EVP_DigestUpdate(ctx, &NSRCPORT(addr), sizeof(NSRCPORT(addr)));
+	EVP_DigestUpdate(ctx, salt, sizeof(salt));
+	EVP_DigestFinal(ctx, d.digest, &len);
+	EVP_MD_CTX_free(ctx);
 
 	return d.extract;
 }
