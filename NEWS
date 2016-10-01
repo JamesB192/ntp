@@ -8,6 +8,23 @@ Severity: HIGH
 In addition to bug fixes and enhancements, this release fixes the
 following X high- and Y low-severity vulnerabilities:
 
+* Trap crash
+   Date Resolved: xx October 2016; Dev (4.3.94) XX October 2016
+X  References: Sec 3119 / CVE-2016-XXXX / VU#XXXXX
+X  Affects: ntp-4.2.8p7, and ntp-4.3.92.
+X  CVSS2: HIGH 7.8 (AV:N/AC:L/Au:N/C:N/I:N/A:C)
+X  CVSS3: HIGH 7.5 CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+X  Summary: 
+X  Mitigation:
+        Implement BCP-38.
+        Upgrade to 4.2.8p8, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+        If you cannot upgrade from 4.2.8p7, the only other alternatives
+	    are to patch your code or filter CRYPTO_NAK packets.
+        Properly monitor your ntpd instances, and auto-restart ntpd
+	    (without -g) if it stops running. 
+   Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
+
 * Mode 6 information disclosure and DDoS vector
    Date Resolved: xx October 2016; Dev (4.3.94) XX October 2016
 X  References: Sec 3118 / CVE-2016-XXXX / VU#XXXXX
