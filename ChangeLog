@@ -1,9 +1,44 @@
 ---
-* [Sec 3075] Malicious crafted read_mru_list() packet will crash ntpd.
-  - added missing paramter validation in read_mru_list(). perlinger@ntp.org
-* [Sec 3082] (title too long -- Variation of [Sec 3075].)
-  - more hardening to read_mru_list(). perlinger@ntp.org
+(4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
+* [Sec 3082] null pointer dereference in _IO_str_init_static_internal()
+  - more hardening to read_mru_list(). perlinger@ntp.org
+* [Sec 3072] Attack on interface selection <perlinger@ntp.org>
+  - implemented Miroslav Lichvars <mlichvar@redhat.com> suggestion
+    to skip interface updates based on incoming packets
+* [Bug 3116] unit tests for NTP time stamp expansion. <perlinger@ntp.org>
+* [Bug 3100] ntpq can't retrieve daemon_version <perlinger@ntp.org>
+  - fixed extended sysvar lookup (bug introduced with bug 3008 fix)
+* [Bug 3095] Compatibility with openssl 1.1 <perlinger@ntp.org>
+  - applied patches by Kurt Roeckx <kurt@roeckx.be> to source
+  - added shim layer for SSL API calls with issues (both directions)
+* [Bug 3084] update-leap mis-parses the leapfile name.  HStenn.
+* [Bug 3068] Linker warnings when building on Solaris. perlinger@ntp.org
+  - applied patch thanks to Andrew Stormont <andyjstormont@gmail.com>
+* [Bug 3066] NMEA clock ignores pps. perlinger@ntp.org
+  - PPS-HACK works again.
+* [Bug 3059] Potential buffer overrun from oversized hash <perlinger@ntp.org>
+  - applied patch by Brian Utterback <brian.utterback@oracle.com>
+* [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
+* [Bug 3050]  Fix for bug #2960 causes [...] spurious error message.
+  <perlinger@ntp.org>
+  - patches by Reinhard Max <max@suse.com> and Havard Eidnes <he@uninett.no>
+* [Bug 3047] Fix refclock_jjy C-DEX JST2000. abe@ntp.org
+  - Patch provided by Kuramatsu.
+* [Bug 3021] unity_fixture.c needs pragma weak <perlinger@ntp.org>
+  - removed unnecessary & harmful decls of 'setUp()' & 'tearDown()'
+* [Bug 2998] sntp/tests/packetProcessing.c broken without openssl. JPerlinger
+* [Bug 2961] sntp/tests/packetProcessing.c assumes AUTOKEY.  HStenn.
+* [Bug 2959] refclock_jupiter: gps week correction <perlinger@ntp.org>
+  - fixed GPS week expansion to work based on build date. Special thanks
+    to Craig Leres for initial patch and testing.
+* [Bug 2951] ntpd tests fail: multiple definition of `send_via_ntp_signd'
+  - fixed Makefile.am <perlinger@ntp.org>
+* [Bug 2689] ATOM driver processes last PPS pulse at startup,
+             even if it is very old <perlinger@ntp.org>
+  - make sure PPS source is alive before processing samples
+  - improve stability close to the 500ms phase jump (phase gate)
+* Shim X509_get_signature_nid() if needed.
 * git author attribution cleanup
 * bk ignore file cleanup
 
