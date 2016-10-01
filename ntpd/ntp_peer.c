@@ -626,8 +626,13 @@ set_peerdstadr(
 {
 	struct peer *	unlinked;
 
+	DEBUG_INSIST(p != NULL);
+
+	if (p == NULL)
+		return;
+
 	/* check for impossible or identical assignment */
-	if (p == NULL || p->dstadr == dstadr)
+	if (p->dstadr == dstadr)
 		return;
 
 	/*
