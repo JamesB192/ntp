@@ -121,14 +121,14 @@ static const struct ctl_proc control_codes[] = {
 	{ CTL_OP_READVAR,		NOAUTH,	read_variables },
 	{ CTL_OP_WRITEVAR,		AUTH,	write_variables },
 	{ CTL_OP_READCLOCK,		NOAUTH,	read_clockstatus },
-	{ CTL_OP_WRITECLOCK,		NOAUTH,	write_clockstatus },
-	{ CTL_OP_SETTRAP,		NOAUTH,	set_trap },
+	{ CTL_OP_WRITECLOCK,		AUTH,	write_clockstatus },
+	{ CTL_OP_SETTRAP,		AUTH,	set_trap },
 	{ CTL_OP_CONFIGURE,		AUTH,	configure },
 	{ CTL_OP_SAVECONFIG,		AUTH,	save_config },
 	{ CTL_OP_READ_MRU,		NOAUTH,	read_mru_list },
 	{ CTL_OP_READ_ORDLIST_A,	AUTH,	read_ordlist },
 	{ CTL_OP_REQ_NONCE,		NOAUTH,	req_nonce },
-	{ CTL_OP_UNSETTRAP,		NOAUTH,	unset_trap },
+	{ CTL_OP_UNSETTRAP,		AUTH,	unset_trap },
 	{ NO_REQUEST,			0,	NULL }
 };
 

@@ -1,6 +1,8 @@
 ---
 (4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
+* [Sec 3118] Mode 6 information disclosure and DDoS vector <perlinger@ntp.org>
+  - TRAP config via mode 6 packet requires AUTH now.
 * [Sec 3110] Windows: ntpd DoS by oversized UDP packet
   - fixed error handling for truncated UDP packets. <perlinger@ntp.org>
 * [Sec 3082] null pointer dereference in _IO_str_init_static_internal()
