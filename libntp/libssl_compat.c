@@ -17,6 +17,10 @@
 #include "config.h"
 
 #include <string.h>
+#if defined(HAVE_INTTYPES_H) || _MSC_VER >= _MSC_VER == 1800
+# include <inttypes.h>
+#endif
+
 #include <openssl/bn.h>
 #include <openssl/evp.h>
 
