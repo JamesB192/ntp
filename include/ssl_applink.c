@@ -10,6 +10,9 @@
 # ifdef _MSC_VER
 #  pragma warning(push)
 #  pragma warning(disable: 4152)
+#  ifndef OPENSSL_NO_AUTOLINK
+#   include "msvc_ssl_autolib.h"
+#  endif
 # endif
 # include <openssl/applink.c>
 # ifdef _MSC_VER
@@ -29,16 +32,25 @@ void wrap_dbg_free(void *p);
 
 
 #if defined(OPENSSL) && defined(SYS_WINNT)
+
 void ssl_applink(void);
 
 void
 ssl_applink(void)
 {
-#ifdef WRAP_DBG_MALLOC
-	CRYPTO_set_mem_ex_functions(wrap_dbg_malloc, wrap_dbg_realloc, wrap_dbg_free);
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#   ifdef WRAP_DBG_MALLOC
+	CRYPTO_set_mem_functions(wrap_dbg_malloc, wrap_dbg_realloc, wrap_dbg_free);
+#   else
+	OPENSSL_malloc_init();
+#   endif
 #else
+#   ifdef WRAP_DBG_MALLOC
+	CRYPTO_set_mem_ex_functions(wrap_dbg_malloc, wrap_dbg_realloc, wrap_dbg_free);
+#   else
 	CRYPTO_malloc_init();
-#endif
+#   endif
+#endif /* OpenSSL version cascade */
 }
 #else	/* !OPENSSL || !SYS_WINNT */
 #define ssl_applink()	do {} while (0)
