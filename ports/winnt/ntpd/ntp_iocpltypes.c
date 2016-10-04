@@ -211,10 +211,10 @@ DevCtxAlloc(void)
 	/* allocate struct and tag all slots as invalid */
 	devCtx = (DevCtx_t *)IOCPLPoolAlloc(sizeof(DevCtx_t), "DEV ctx");
 	if (devCtx != NULL) {
+		devCtx->ref_count = 1;	/* already owned! */
 		/* The initial COV values make sure there is no busy
 		* loop on unused/empty slots.
 		*/
-		devCtx->cov_count = 1;	/* already owned! */
 		for (slot = 0; slot < PPS_QUEUE_LEN; slot++)
 			devCtx->pps_buff[slot].cov_count = ~slot;
 	}
@@ -299,7 +299,7 @@ IoCtxRelease(
 	)
 {
 	static const char *const dmsg =
-		"overlapped IO data buffer";
+		"Release overlapped IO data buffer";
 
 	if (ctx) {
 		if (ctx->flRawMem)
