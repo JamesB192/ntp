@@ -71,6 +71,11 @@ Juergen Perlinger (perlinger@ntp.org) Feb 2012
 #define CONTAINEROF(p, type, member) \
 	((type *)((char *)(p) - offsetof(type, member)))
 
+enum io_packet_handling {
+	PKT_OK,
+	PKT_DROP,
+	PKT_SOCKET_ERROR
+};
 
 /*
  * local function definitions
@@ -110,7 +115,7 @@ static	HANDLE	hMainThread;
 static	BOOL	DoPPShack;
 
 DWORD	ActiveWaitHandles;
-HANDLE	WaitHandles[16];
+HANDLE	WaitHandles[4];
 
 
 /*
@@ -474,6 +479,8 @@ IoResultCheck(
 	const char *	msg
 	)
 {
+	DPRINTF(6, ("in IoResultCheck err = %d\n", err));
+
 	switch (err) {
 		/* The first ones are no real errors. */
 	case ERROR_SUCCESS:	/* all is good */
@@ -557,8 +564,7 @@ getRioFromIoCtx(
 static endpt*
 getEndptFromIoCtx(
 	IoCtx_t *	ctx,
-	ULONG_PTR	key,
-	const char *	msg
+	ULONG_PTR	key
 	)
 {
 	/* Make sure the key matches the context info in the shared
@@ -570,7 +576,6 @@ getEndptFromIoCtx(
 	 * LSB is not used in the reverse-link check. Hence we shift
 	 * it out in both the input key and the registered source.
 	 */
-	int		oval, olen; /* getsockopt params */
 	endpt *		ep    = NULL;
 	SharedLock_t *	slock = slAttachShared(ctx->slock);
 	if (slock != NULL) {
@@ -581,7 +586,25 @@ getEndptFromIoCtx(
 			ep = NULL;
 		slDetachShared(slock);
 	}
-	if (ep != NULL) switch (ctx->errCode) {
+	if (ep == NULL)
+		IoCtxRelease(ctx);
+	return ep;
+}
+
+
+static int
+socketErrorCheck(
+	IoCtx_t *	ctx,
+	const char *	msg
+	)
+{
+	int oval, olen; /* getsockopt params */
+	int retCode;
+
+	switch (ctx->errCode) {
+	case ERROR_SUCCESS:		/* all is good */
+		retCode = PKT_OK;
+		break;
 	case ERROR_UNEXP_NET_ERR:
 		if (hMainThread)
 			QueueUserAPC(apcOnUnexpectedNetworkError,
@@ -589,9 +612,7 @@ getEndptFromIoCtx(
 	case ERROR_INVALID_PARAMETER:	/* handle already closed (clock?)*/
 	case ERROR_OPERATION_ABORTED:	/* handle closed while wait      */
 	case WSAENOTSOCK            :	/* handle already closed (sock)  */
-		ctx->errCode = ERROR_SUCCESS;
-		ep = NULL;
-	case ERROR_SUCCESS:		/* all is good */
+		retCode = PKT_SOCKET_ERROR;
 		break;
 
 	/* [Bug 3019] is hard to squash.
@@ -609,33 +630,35 @@ getEndptFromIoCtx(
 		oval = 0;
 		olen = sizeof(oval);
 		getsockopt(ctx->io.sfd, SOL_SOCKET, SO_ERROR, (char*)&oval, &olen);
-		ctx->errCode = ERROR_SUCCESS;
+		retCode = PKT_DROP;
 		break;
 
 	/* [Bug 3110] On POSIX systems, reading UDP data into too small
 	 * a buffers silently truncates the message. Under Windows the
 	 * data is also truncated, but it blarts loudly about that.
 	 * Just pretend all is well, and all will be well.
+	 *
+	 * Note: We accept the truncated packet -- this is consistent with the
+	 * POSIX / UNIX case where we have no notification about this at all.
 	 */
-	case ERROR_MORE_DATA:
-	case WSAEMSGSIZE    :
-		ctx->errCode = ERROR_SUCCESS;
+	case ERROR_MORE_DATA:		/* Too Much data for Buffer	 */
+	case WSAEMSGSIZE:
+		retCode = PKT_OK; /* or PKT_DROP ??? */
 		break;
 
-	/* For any other error, log the error, clear the byt count, but
-	 * but return the endpoint. This prevents processing the packet
-	 * and keeps the read-chain running -- otherwise NTPD will play
+	/* For any other error, log the error, clear the byte count, but
+	 * return the endpoint. This prevents processing the packet and
+	 * keeps the read-chain running -- otherwise NTPD will play
 	 * dead duck!
 	 */
 	default:
 		LogIoError(msg, ctx->io.hnd, ctx->errCode);
-		ctx->byteCount = 0;
+		retCode = PKT_DROP;
 		break;
 	}
-	if (NULL == ep)
-		IoCtxRelease(ctx);
-	return ep;
+	return retCode;
 }
+
 /*
  * -------------------------------------------------------------------
  * Serial IO stuff
@@ -909,8 +932,8 @@ wait_again:
  */
 static DWORD WINAPI
 OnSerialReadWorker(
-void * ctx
-)
+	void *	ctx
+	)
 {
 	IoCtx_t *	lpo;
 	SharedLock_t *	slock;
@@ -1182,58 +1205,16 @@ OnSerialWriteComplete(
  * -------------------------------------------------------------------
  */
 
-/* The dummy read procedure is used for getting the device context
- * into the IO completion thread, using the IO completion queue for
- * transport. There are other ways to accomplish what we need here,
- * but using the IO machine is handy and avoids a lot of trouble.
- */
-static void
-OnPpsDummyRead(
-	ULONG_PTR	key,
-	IoCtx_t *	lpo
-	)
-{
-	RIO_t *	rio;
-
-	rio = (RIO_t *)key;
-	lpo->devCtx = DevCtxAttach(rio->device_ctx);
-	SetEvent(lpo->ppswake);
-}
-
 __declspec(dllexport) void* __stdcall
 ntp_pps_attach_device(
 	HANDLE	hndIo
 	)
 {
-	IoCtx_t		myIoCtx;
-	HANDLE		myEvt;
-	DevCtx_t *	dev;
-	DWORD		rc;
+	DevCtx_t *	dev = NULL;
 
-	if (!isserialhandle(hndIo)) {
+	dev = DevCtxAttach(serial_devctx(hndIo));
+	if ( NULL == dev)
 		SetLastError(ERROR_INVALID_HANDLE);
-		return NULL;
-	}
-
-	ZERO(myIoCtx);
-	dev   = NULL;
-	myEvt = CreateEvent(NULL, FALSE, FALSE, NULL);
-	if (myEvt == NULL)
-		goto done;
-
-	myIoCtx.ppswake   = myEvt;
-	myIoCtx.onIoDone  = OnPpsDummyRead;
-	rc = ReadFile(hndIo, &myIoCtx.byteCount, 0,
-			&myIoCtx.byteCount, &myIoCtx.ol);
-	if (!rc && (GetLastError() != ERROR_IO_PENDING))
-		goto done;
-	if (WaitForSingleObject(myEvt, INFINITE) == WAIT_OBJECT_0)
-		if (NULL == (dev = myIoCtx.devCtx))
-			SetLastError(ERROR_INVALID_HANDLE);
-done:
-	rc = GetLastError();
-	CloseHandle(myEvt);
-	SetLastError(rc);
 	return dev;
 }
 
@@ -1332,7 +1313,7 @@ io_completion_port_add_clock_io(
 	slock->riofd      = rio->fd;
 	slock->rsrc.rio   = rio;
 
-	if ( ! (rio->device_ctx = DevCtxAlloc())) {
+	if (!(rio->device_ctx = DevCtxAttach(serial_devctx(h)))) {
 		msyslog(LOG_ERR, "%s: Failed to allocate device context",
 			msgh);
 		goto fail;
@@ -1435,9 +1416,13 @@ OnSocketRecv(
 
 	recvbuf_t *	buff    = NULL;
 	SharedLock_t *	slock   = NULL;
+	BOOL epOK = TRUE;
+	int retCode = PKT_OK;
 
 	/* Make sure this endpoint is not closed. */
-	endpt *	ep = getEndptFromIoCtx(lpo, key, msg);
+	endpt *	ep = getEndptFromIoCtx(lpo, key);
+	retCode = socketErrorCheck(lpo, msg);
+
 	if (ep == NULL)
 		return;
 
@@ -1448,7 +1433,7 @@ OnSocketRecv(
 	 * We also need an extra hold to the SLOCK structure.
 	 */
 	slock = slAttach(lpo->slock);
-	if (lpo->errCode == ERROR_SUCCESS && lpo->byteCount > 0) {
+	if (retCode == PKT_OK && lpo->byteCount > 0) {
 		/* keep input buffer, create new one for IO */
 		buff              = lpo->recv_buf;
 		lpo->recv_buf     = get_free_recv_buffer_alloc();
@@ -1457,7 +1442,13 @@ OnSocketRecv(
 		buff->recv_length = (int)lpo->byteCount;
 
 	} /* Note: else we use the current buffer again */
-	IoCtxStartLocked(lpo, QueueSocketRecv, lpo->recv_buf);
+
+	if (retCode != PKT_SOCKET_ERROR) {
+		IoCtxStartLocked(lpo, QueueSocketRecv, lpo->recv_buf);
+	}  else {
+		freerecvbuf(lpo->recv_buf);
+		IoCtxFree(lpo);
+	}
 	/* below this, any usage of 'lpo' is invalid! */
 
 	/* If we have a buffer, do some bookkeeping and other chores,
@@ -1474,19 +1465,19 @@ OnSocketRecv(
 			get_packet_mode(buff)));
 
 		if (slAttachShared(slock)) {
-			BOOL epOK = slEndPointOK(slock);
-			if (epOK)
-				InterlockedIncrement(&slock->rsrc.ept->received);
-			slDetachShared(slock);
-			if (epOK) {
+			if (slEndPointOK(slock)) {
+				InterlockedIncrement(&ep->received);
+				slDetachShared(slock);
 				InterlockedIncrement(&packets_received);
 				InterlockedIncrement(&handler_pkts);
+			} else {
+				slDetachShared(slock);
 			}
 		}
 
-		DPRINTF(2, ("Received %d bytes fd %d in buffer %p from %s\n",
+		DPRINTF(2, ("Received %d bytes fd %d in buffer %p from %s, state = %s\n",
 			buff->recv_length, (int)buff->fd, buff,
-			stoa(&buff->recv_srcadr)));
+			stoa(&buff->recv_srcadr), epOK? "Accepted" : "Ignored"));
 		slQueueLocked(slock, slEndPointOK, buff);
 	}
 	slDetach(slock);
@@ -1501,26 +1492,27 @@ OnSocketSend(
 {
 	/* this is somewhat easier: */
 	static const char * const msg =
-		"OnSocketRecv: send to socket failed";
+		"OnSocketSend: send to socket failed";
 
 	SharedLock_t *	slock = NULL;
-	endpt *		ep    = getEndptFromIoCtx(lpo, key, msg);
+	endpt *		ep = getEndptFromIoCtx(lpo, key);
+	int		retCode = socketErrorCheck(lpo, msg);
 	/* Make sure this endpoint is not closed. */
 	if (ep == NULL)
 		return;
 
-	if (lpo->errCode != ERROR_SUCCESS)
+	if (retCode != PKT_OK) {
 		slock = slAttachShared(lpo->slock);
-	if (slock) {
-		BOOL epOK = slEndPointOK(slock);
-		if (epOK) {
-			InterlockedIncrement(&slock->rsrc.ept->notsent);
-			InterlockedDecrement(&slock->rsrc.ept->sent);
-		}
-		slDetachShared(slock);
-		if (epOK) {
-			InterlockedIncrement(&packets_notsent);
-			InterlockedDecrement(&packets_sent);
+		if (slock) {
+			if (slEndPointOK(slock)) {
+				InterlockedIncrement(&ep->notsent);
+				InterlockedDecrement(&ep->sent);
+				slDetachShared(slock);
+				InterlockedIncrement(&packets_notsent);
+				InterlockedDecrement(&packets_sent);
+			} else {
+				slDetachShared(slock);
+			}
 		}
 	}
 	IoCtxRelease(lpo);
@@ -1721,7 +1713,10 @@ GetReceivedBuffers(void)
 {
 	DWORD	index;
 	HANDLE	ready;
-	int	have_packet;
+	int	errcode;
+	BOOL	dynbuf;
+	BOOL	have_packet;
+	char *	msgbuf;
 
 	have_packet = FALSE;
 	while (!have_packet) {
@@ -1748,20 +1743,18 @@ GetReceivedBuffers(void)
 
 		case WAIT_TIMEOUT:
 			msyslog(LOG_ERR,
-				"WaitForMultipleObjects INFINITE timed out.");
-			exit(1);
+				"WaitForMultipleObjectsEx INFINITE timed out.");
 			break;
 
 		case WAIT_FAILED:
-		{
-			BOOL   dynbuf = FALSE;
-			char * msgbuf = NTstrerror(GetLastError(), &dynbuf);
+			dynbuf = FALSE;
+			errcode = GetLastError();
+			msgbuf = NTstrerror(errcode, &dynbuf);
 			msyslog(LOG_ERR,
-				"WaitForMultipleObjects Failed: Error: %s", msgbuf);
+				"WaitForMultipleObjectsEx Failed: Errcode = %n, msg = %s", errcode, msgbuf);
 			if (dynbuf)
 				LocalFree(msgbuf);
 			exit(1);
-		}
 		break;
 
 		default:
