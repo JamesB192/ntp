@@ -1645,13 +1645,38 @@ receive(
 	} else if (peer->flip == 0) {
 		INSIST(0 != hisstratum);
 		INSIST(STRATUM_UNSPEC != hisstratum);
+
 		if (0) {
 		} else if (L_ISZERO(&p_org)) {
-			msyslog(LOG_INFO,
-				"receive: Got 0 origin timestamp from %s@%s xmt %#010x.%08x",
-				hm_str, ntoa(&peer->srcadr),
-				ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf));
+			char *action;
+
 			L_CLR(&peer->aorg);
+			/**/
+			switch (hismode) {
+			/* We allow 0org for: */
+			    case UCHAR_MAX:
+				action = "Allow";
+				break;
+			/* We disallow 0org for: */
+			    case MODE_UNSPEC:
+			    case MODE_ACTIVE:
+			    case MODE_PASSIVE:
+			    case MODE_CLIENT:
+			    case MODE_SERVER:
+			    case MODE_BROADCAST:
+				action = "Drop";
+				peer->bogusorg++;
+				peer->flash |= TEST2;	/* bogus */
+				break;
+			    default:
+				INSIST(!"receive(): impossible hismode");
+				break;
+			}
+			/**/
+			msyslog(LOG_INFO,
+				"receive: %s 0 origin timestamp from %s@%s xmt %#010x.%08x",
+				action, hm_str, ntoa(&peer->srcadr),
+				ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf));
 		} else if (!L_ISEQU(&p_org, &peer->aorg)) {
 			/* are there cases here where we should bail? */
 			/* Should we set TEST2 if we decide to try xleave? */

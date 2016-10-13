@@ -12,6 +12,7 @@
   - implemented Miroslav Lichvars <mlichvar@redhat.com> suggestion
     to skip interface updates based on incoming packets
 * [Bug 3116] unit tests for NTP time stamp expansion. <perlinger@ntp.org>
+* [Bug 3102] Zero origin issues.  HStenn.
 * [Bug 3100] ntpq can't retrieve daemon_version <perlinger@ntp.org>
   - fixed extended sysvar lookup (bug introduced with bug 3008 fix)
 * [Bug 3095] Compatibility with openssl 1.1 <perlinger@ntp.org>
