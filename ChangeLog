@@ -1,4 +1,5 @@
 ---
+(4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
 * [Bug 3116] unit tests for NTP time stamp expansion. <perlinger@ntp.org>
 * [Bug 3100] ntpq can't retrieve daemon_version <perlinger@ntp.org>
