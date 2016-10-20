@@ -1,4 +1,8 @@
 ---
+* [Sec 3113] Broadcast Mode Poll Interval Enforcement DoS <perlinger@ntp.org>
+  - applied fix as suggested by Matthew Van Gundy
+ 
+---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
