@@ -6,6 +6,7 @@
   - TRAP config via mode 6 packet requires AUTH now.
 * [Sec 3110] Windows: ntpd DoS by oversized UDP packet
   - fixed error handling for truncated UDP packets. <perlinger@ntp.org>
+* [Sec 3102] Zero origin issues.  HStenn.
 * [Sec 3082] null pointer dereference in _IO_str_init_static_internal()
   - more hardening to read_mru_list(). perlinger@ntp.org
 * [Sec 3072] Attack on interface selection <perlinger@ntp.org>
@@ -45,6 +46,7 @@
              even if it is very old <perlinger@ntp.org>
   - make sure PPS source is alive before processing samples
   - improve stability close to the 500ms phase jump (phase gate)
+* Fix typos in include/ntp.h.
 * Shim X509_get_signature_nid() if needed.
 * git author attribution cleanup
 * bk ignore file cleanup
