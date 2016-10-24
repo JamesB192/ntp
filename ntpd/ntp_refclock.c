@@ -710,7 +710,7 @@ process_refclock_packet(
 	if (rio->io_input == NULL || (*rio->io_input)(rb) != 0) {
 		rio->recvcount++;
 		packets_received++;
-		handler_pkts++;		
+		handler_pkts++;
 		(*rio->clock_recv)(rb);
 	}
 }
