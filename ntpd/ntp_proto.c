@@ -1450,14 +1450,23 @@ receive(
 				++bail;
 			}
 
-			/* too early? worth an error, too! */
+			/* too early? worth an error, too!
+			 *
+			 * [Bug 3113] Ensure that at least one poll
+			 * interval has elapsed since the last **clean**
+			 * packet was received.  We limit the check to
+			 * **clean** packets to prevent replayed packets
+			 * and incorrectly authenticated packets, which
+			 * we'll discard, from being used to create a
+			 * denial of service condition.
+			 */
 			deadband = (1u << pkt->ppoll);
 			if (FLAG_BC_VOL & peer->flags)
 				deadband -= 3;	/* allow greater fuzz after volley */
-			if ((current_time - peer->timelastrec) < deadband) {
+			if ((current_time - peer->timereceived) < deadband) {
 				msyslog(LOG_INFO, "receive: broadcast packet from %s arrived after %lu, not %lu seconds!",
 					stoa(&rbufp->recv_srcadr),
-					(current_time - peer->timelastrec),
+					(current_time - peer->timereceived),
 					deadband);
 				++bail;
 			}
