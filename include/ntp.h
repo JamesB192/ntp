@@ -391,7 +391,7 @@ struct peer {
 	 * Statistic counters
 	 */
 	u_long	timereset;	/* time stat counters were reset */
-	u_long	timelastrec;	/* last packet received time */
+	u_long	timelastrec;	/* last packet received time, incl. trash */
 	u_long	timereceived;	/* last (clean) packet received time */
 	u_long	timereachable;	/* last reachable/unreachable time */
 
