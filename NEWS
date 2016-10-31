@@ -95,6 +95,8 @@ X  Mitigation:
 
 Other fixes:
 
+* [Bug 3125] NTPD doesn't fully start when ntp.conf entries are out of order
+  using the loopback-ppsapi-provider.dll <perlinger@ntp.org>
 * [Bug 3116] unit tests for NTP time stamp expansion. <perlinger@ntp.org>
 * [Bug 3100] ntpq can't retrieve daemon_version <perlinger@ntp.org>
   - fixed extended sysvar lookup (bug introduced with bug 3008 fix)
