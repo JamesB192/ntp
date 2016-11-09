@@ -1471,10 +1471,33 @@ receive(
 				++bail;
 			}
 
-			/* Alert if time from the server is non-monotonic */
-			tdiff = p_xmt;
-			L_SUB(&tdiff, &peer->bxmt);
-			if (tdiff.l_i < 0) {
+			/* Alert if time from the server is non-monotonic.
+			 *
+			 * Note this check will not trigger for
+			 * backsteps smaller than the poll interval.
+			 *
+			 * [Bug 3114] But watch for the the initial
+			 * state, when peer->bxmt is all-zero!
+			 *
+			 * Another gotcha to avoid here: After some
+			 * time, we must heed to time stamps, even when
+			 * they are in the past. Otherwise we would
+			 * never be able to catch up with a backstep of
+			 * our broadcast server until the server has
+			 * revored the backstep: The last bxmt now
+			 * survives a cleanout of the peer structure and
+			 * would create another form of DoS.
+			 */
+			deadband = (1u << (pkt->ppoll + 2));
+			if (L_ISZERO(&peer->bxmt)) {
+				tdiff.l_ui = tdiff.l_uf = 0;
+			} else {
+				tdiff = p_xmt;
+				L_SUB(&tdiff, &peer->bxmt);
+			}
+			if (tdiff.l_i < 0 &&
+			    (current_time - peer->timereceived) < deadband)
+			{
 				msyslog(LOG_INFO, "receive: broadcast packet from %s contains non-monotonic timestamp: %#010x.%08x -> %#010x.%08x",
 					stoa(&rbufp->recv_srcadr),
 					peer->bxmt.l_ui, peer->bxmt.l_uf,
@@ -1482,8 +1505,6 @@ receive(
 					);
 				++bail;
 			}
-
-			peer->bxmt = p_xmt;
 
 			if (bail) {
 				peer->timelastrec = current_time;
@@ -1847,6 +1868,13 @@ receive(
 	}
 	peer->xmt = p_xmt;
 
+	/*
+	 * Now that we know the packet is correctly authenticated,
+	 * update peer->bxmt if needed
+	 */
+	if (MODE_BROADCAST == hismode)
+		peer->bxmt = p_xmt;
+	
 	/*
 	 * Set the peer ppoll to the maximum of the packet ppoll and the
 	 * peer minpoll. If a kiss-o'-death, set the peer minpoll to
@@ -2729,6 +2757,7 @@ peer_clear(
 	)
 {
 	u_char	u;
+	l_fp	bxmt = peer->bxmt;	/* bcast clients retain this! */
 
 #ifdef AUTOKEY
 	/*
@@ -2764,6 +2793,10 @@ peer_clear(
 	peer->disp = MAXDISPERSE;
 	peer->flash = peer_unfit(peer);
 	peer->jitter = LOGTOD(sys_precision);
+
+	/* Don't throw away our broadcast replay protection */
+	if (peer->hmode == MODE_BCLIENT)
+		peer->bxmt = bxmt;
 
 	/*
 	 * If interleave mode, initialize the alternate origin switch.
