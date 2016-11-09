@@ -723,6 +723,7 @@ struct pkt {
 #define	PROTO_UECRYPTONAK	30
 #define	PROTO_UEDIGEST		31
 #define	PROTO_PCEDIGEST		32
+#define	PROTO_BCPOLLBSTEP	33
 
 /*
  * Configuration items for the loop filter

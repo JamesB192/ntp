@@ -2002,6 +2002,21 @@ config_tos(
 			INSIST(0);
 			break;
 
+		case T_Bcpollbstep:
+			if (val > 4) {
+				msyslog(LOG_WARNING,
+					"Using maximum bcpollbstep ceiling %d, %g requested",
+					4, val);
+				val = 4;
+			} else if (val < 0) {
+				msyslog(LOG_WARNING,
+					"Using minimum bcpollbstep floor %d, %g requested",
+					0, val);
+				val = 0;
+			}
+			item = PROTO_BCPOLLBSTEP;
+			break;
+
 		case T_Ceiling:
 			if (val > STRATUM_UNSPEC - 1) {
 				msyslog(LOG_WARNING,
