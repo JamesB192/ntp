@@ -4029,6 +4029,10 @@ leap_smear_add_offs(
 
 	L_ADD(t, &leap_smear.offset);
 
+	/*
+	** XXX: Should the smear be added to the root dispersion?
+	*/
+
 	return;
 }
 
