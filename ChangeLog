@@ -6,7 +6,7 @@
   - TRAP config via mode 6 packet requires AUTH now.
 * [Sec 3114] Broadcast Mode Replay Prevention DoS
   - applied patches by Matthew Van Gundy. <perlinger@ntp.org>
-  - with tweaks and cleanup by stenn@ntp.org
+  - with bcpollbstep, tweaks and cleanup by stenn@ntp.org
 * [Sec 3113] Broadcast Mode Poll Interval Enforcement DoS <perlinger@ntp.org>
   - applied fix as suggested by Matthew Van Gundy
 * [Sec 3110] Windows: ntpd DoS by oversized UDP packet

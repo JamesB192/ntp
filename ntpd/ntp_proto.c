@@ -138,6 +138,7 @@ char	*sys_ident = NULL;	/* identity scheme */
  * TOS and multicast mapping stuff
  */
 int	sys_floor = 0;		/* cluster stratum floor */
+u_char	sys_bcpollbstep = 0;	/* Broadcast Poll backstep gate */
 int	sys_ceiling = STRATUM_UNSPEC - 1; /* cluster stratum ceiling */
 int	sys_minsane = 1;	/* minimum candidates */
 int	sys_minclock = NTP_MINCLOCK; /* minimum candidates */
@@ -278,7 +279,7 @@ valid_NAK(
 	  u_char hismode
 	  )
 {
-	int 		base_packet_length = MIN_V4_PKT_LEN;
+	int		base_packet_length = MIN_V4_PKT_LEN;
 	int		remainder_size;
 	struct pkt *	rpkt;
 	int		keyid;
@@ -335,7 +336,7 @@ valid_NAK(
 		myorg = &peer->borg;
 	else
 		myorg = &peer->aorg;
-	
+
 	if (L_ISZERO(&p_org) ||
 	    L_ISZERO( myorg) ||
 	    !L_ISEQU(&p_org, myorg)) {
@@ -1473,22 +1474,34 @@ receive(
 
 			/* Alert if time from the server is non-monotonic.
 			 *
-			 * Note this check will not trigger for
-			 * backsteps smaller than the poll interval.
+			 * [Bug 3114] is about Broadcast mode replay DoS.
 			 *
-			 * [Bug 3114] But watch for the the initial
-			 * state, when peer->bxmt is all-zero!
+			 * Broadcast mode *assumes* a trusted network.
+			 * Even so, it's nice to be robust in the face
+			 * of attacks.
 			 *
-			 * Another gotcha to avoid here: After some
-			 * time, we must heed to time stamps, even when
-			 * they are in the past. Otherwise we would
-			 * never be able to catch up with a backstep of
-			 * our broadcast server until the server has
-			 * revored the backstep: The last bxmt now
-			 * survives a cleanout of the peer structure and
-			 * would create another form of DoS.
+			 * If we get an authenticated broadcast packet
+			 * with an "earlier" timestamp, it means one of
+			 * two things:
+			 *
+			 * - the broadcast server had a backward step.
+			 *
+			 * - somebody is trying a replay attack.
+			 *
+			 * deadband: By default, we assume the broadcast
+			 * network is trustable, so we take our accepted
+			 * broadcast packets as we receive them.  But
+			 * some folks might want to take additional poll
+			 * delays before believing a backward step. 
 			 */
-			deadband = (1u << (pkt->ppoll + 2));
+			if (sys_bcpollbstep) {
+				/* pkt->ppoll or peer->ppoll ? */
+				deadband = (1u << pkt->ppoll)
+					   * sys_bcpollbstep + 2;
+			} else {
+				deadband = 0;
+			}
+
 			if (L_ISZERO(&peer->bxmt)) {
 				tdiff.l_ui = tdiff.l_uf = 0;
 			} else {
@@ -1653,7 +1666,7 @@ receive(
 				peer->borg.l_ui, peer->borg.l_uf);
 			return;
 		}
-	
+
 	/*
 	 * Basic mode checks:
 	 *
@@ -1855,6 +1868,12 @@ receive(
 				"receive: Bad broadcast auth (%d) from %s",
 				is_authentic, ntoa(&peer->srcadr));
 		}
+
+		/*
+		 * Now that we know the packet is correctly authenticated,
+		 * update peer->bxmt.
+		 */
+		peer->bxmt = p_xmt;
 	}
 
 
@@ -1868,13 +1887,6 @@ receive(
 	}
 	peer->xmt = p_xmt;
 
-	/*
-	 * Now that we know the packet is correctly authenticated,
-	 * update peer->bxmt if needed
-	 */
-	if (MODE_BROADCAST == hismode)
-		peer->bxmt = p_xmt;
-	
 	/*
 	 * Set the peer ppoll to the maximum of the packet ppoll and the
 	 * peer minpoll. If a kiss-o'-death, set the peer minpoll to
@@ -1940,7 +1952,7 @@ receive(
 			peer->badauth++;
 			return;
 		}
-	    	break;
+		break;
 
 	    case MODE_CLIENT:		/* client mode */
 #if 0		/* At this point, MODE_CONTROL is overloaded by MODE_BCLIENT */
@@ -1948,14 +1960,14 @@ receive(
 #endif
 	    case MODE_PRIVATE:		/* private mode */
 	    case MODE_BCLIENT:		/* broadcast client mode */
-	    	break;
+		break;
 
 	    case MODE_UNSPEC:		/* unspecified (old version) */
 	    default:
 		msyslog(LOG_INFO,
 			"receive: Unexpected mode (%d) in packet from %s",
 			hismode, ntoa(&peer->srcadr));
-	    	break;
+		break;
 	}
 
 
@@ -4784,6 +4796,11 @@ proto_config(
 	/*
 	 * tos command - arguments are double, sometimes cast to int
 	 */
+
+	case PROTO_BCPOLLBSTEP:	/* Broadcast Poll Backstep gate (bcpollbstep) */
+		sys_bcpollbstep = (u_char)dvalue;
+		break;
+
 	case PROTO_BEACON:	/* manycast beacon (beacon) */
 		sys_beacon = (int)dvalue;
 		break;
