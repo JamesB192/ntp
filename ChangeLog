@@ -4,6 +4,8 @@
 * [Sec 3119] Trap crash <perlinger@ntp.org>
 * [Sec 3118] Mode 6 information disclosure and DDoS vector <perlinger@ntp.org>
   - TRAP config via mode 6 packet requires AUTH now.
+* [Sec 3113] Broadcast Mode Poll Interval Enforcement DoS <perlinger@ntp.org>
+  - applied fix as suggested by Matthew Van Gundy
 * [Sec 3110] Windows: ntpd DoS by oversized UDP packet
   - fixed error handling for truncated UDP packets. <perlinger@ntp.org>
 * [Sec 3102] Zero origin issues.  HStenn.
