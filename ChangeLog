@@ -52,7 +52,7 @@
 * Shim X509_get_signature_nid() if needed.
 * git author attribution cleanup
 * bk ignore file cleanup
-* remove locks in Wndows IO, use rpc-like thread synchronisation instead
+* remove locks in Windows IO, use rpc-like thread synchronisation instead
 
 ---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
