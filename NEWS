@@ -95,6 +95,7 @@ X  Mitigation:
 
 Other fixes:
 
+* [Bug 3138] gpsdjson refclock should honor fudgetime1. stenn@ntp.org
 * [Bug 3125] NTPD doesn't fully start when ntp.conf entries are out of order
   using the loopback-ppsapi-provider.dll <perlinger@ntp.org>
 * [Bug 3116] unit tests for NTP time stamp expansion. <perlinger@ntp.org>
