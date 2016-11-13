@@ -23,7 +23,7 @@ X  Mitigation:
 	    are to patch your code or filter CRYPTO_NAK packets.
         Properly monitor your ntpd instances, and auto-restart ntpd
 	    (without -g) if it stops running. 
-   Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
+X  Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
 
 * Mode 6 information disclosure and DDoS vector
    Date Resolved: xx October 2016; Dev (4.3.94) XX October 2016
@@ -40,7 +40,24 @@ X  Mitigation:
 	    are to patch your code or filter CRYPTO_NAK packets.
         Properly monitor your ntpd instances, and auto-restart ntpd
 	    (without -g) if it stops running. 
-   Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
+X  Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
+
+* Broadcast Mode Poll Interval Enforcement DoS
+   Date Resolved: xx October 2016; Dev (4.3.94) XX October 2016
+X  References: Sec 3113 / CVE-2016-XXXX / VU#XXXXX
+X  Affects: ntp-4.2.8p7, and ntp-4.3.92.
+X  CVSS2: HIGH 7.8 (AV:N/AC:L/Au:N/C:N/I:N/A:C)
+X  CVSS3: HIGH 7.5 CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+X  Summary: 
+X  Mitigation:
+        Implement BCP-38.
+        Upgrade to 4.2.8p8, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+        If you cannot upgrade from 4.2.8p7, the only other alternatives
+	    are to patch your code or filter CRYPTO_NAK packets.
+        Properly monitor your ntpd instances, and auto-restart ntpd
+	    (without -g) if it stops running. 
+X  Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
 
 * Windows: ntpd DoS by oversized UDP packet
    Date Resolved: xx October 2016; Dev (4.3.94) XX October 2016
@@ -57,7 +74,24 @@ X  Mitigation:
 	    are to patch your code or filter CRYPTO_NAK packets.
         Properly monitor your ntpd instances, and auto-restart ntpd
 	    (without -g) if it stops running. 
-   Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
+   Credit: This weakness was discovered by Robert Pajak
+
+* 0rigin (zero origin) issues
+   Date Resolved: xx October 2016; Dev (4.3.94) XX October 2016
+X  References: Sec 3102 / CVE-2016-XXXX / VU#XXXXX
+X  Affects: ntp-4.2.8p7, and ntp-4.3.92.
+X  CVSS2: HIGH 7.8 (AV:N/AC:L/Au:N/C:N/I:N/A:C)
+X  CVSS3: HIGH 7.5 CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+X  Summary: 
+X  Mitigation:
+        Implement BCP-38.
+        Upgrade to 4.2.8p8, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page
+        If you cannot upgrade from 4.2.8p7, the only other alternatives
+	    are to patch your code or filter CRYPTO_NAK packets.
+        Properly monitor your ntpd instances, and auto-restart ntpd
+	    (without -g) if it stops running. 
+X  Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
 
 * null pointer dereference in _IO_str_init_static_internal()
    Date Resolved: xx October 2016; Dev (4.3.94) XX October 2016
@@ -74,7 +108,7 @@ X  Mitigation:
 	    are to patch your code or filter CRYPTO_NAK packets.
         Properly monitor your ntpd instances, and auto-restart ntpd
 	    (without -g) if it stops running. 
-   Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
+X  Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
 
 * Attack on interface selection
    Date Resolved: xx October 2016; Dev (4.3.94) XX October 2016
@@ -91,7 +125,7 @@ X  Mitigation:
 	    are to patch your code or filter CRYPTO_NAK packets.
         Properly monitor your ntpd instances, and auto-restart ntpd
 	    (without -g) if it stops running. 
-   Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
+X  Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
 
 Other fixes:
 
@@ -113,13 +147,14 @@ Other fixes:
 * [Bug 3059] Potential buffer overrun from oversized hash <perlinger@ntp.org>
   - applied patch by Brian Utterback <brian.utterback@oracle.com>
 * [Bug 3053] ntp_loopfilter.c frequency calc precedence error.  Sarah White.
-* [Bug 3050]  Fix for bug #2960 causes [...] spurious error message.
+* [Bug 3050] Fix for bug #2960 causes [...] spurious error message.
   <perlinger@ntp.org>
   - patches by Reinhard Max <max@suse.com> and Havard Eidnes <he@uninett.no>
 * [Bug 3047] Fix refclock_jjy C-DEX JST2000. abe@ntp.org
   - Patch provided by Kuramatsu.
 * [Bug 3021] unity_fixture.c needs pragma weak <perlinger@ntp.org>
   - removed unnecessary & harmful decls of 'setUp()' & 'tearDown()'
+* [Bug 3019] Windows: ERROR_HOST_UNREACHABLE block packet processing. DMayer
 * [Bug 2998] sntp/tests/packetProcessing.c broken without openssl. JPerlinger
 * [Bug 2961] sntp/tests/packetProcessing.c assumes AUTOKEY.  HStenn.
 * [Bug 2959] refclock_jupiter: gps week correction <perlinger@ntp.org>
