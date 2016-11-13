@@ -107,6 +107,7 @@ Other fixes:
 * [Bug 3084] update-leap mis-parses the leapfile name.  HStenn.
 * [Bug 3068] Linker warnings when building on Solaris. perlinger@ntp.org
   - applied patch thanks to Andrew Stormont <andyjstormont@gmail.com>
+* [Bug 3067] Root distance calculation needs improvement.  HStenn
 * [Bug 3066] NMEA clock ignores pps. perlinger@ntp.org
   - PPS-HACK works again.
 * [Bug 3059] Potential buffer overrun from oversized hash <perlinger@ntp.org>
