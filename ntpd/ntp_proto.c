@@ -3074,8 +3074,9 @@ clock_select(void)
 		 * Leave the island immediately if the peer is
 		 * unfit to synchronize.
 		 */
-		if (peer_unfit(peer))
+		if (peer_unfit(peer)) {
 			continue;
+		}
 
 		/*
 		 * If this peer is an orphan parent, elect the
@@ -3115,8 +3116,9 @@ clock_select(void)
 		 * parent in ancestry so are excluded.
 		 * See http://bugs.ntp.org/2050
 		 */
-		if (peer->stratum > sys_orphan)
+		if (peer->stratum > sys_orphan) {
 			continue;
+		}
 #ifdef REFCLOCK
 		/*
 		 * The following are special cases. We deal
@@ -3565,15 +3567,15 @@ root_distance(
 
 	/*
 	 * Root Distance (LAMBDA) is defined as:
-	 * (delta + DELTA)/2 + epsilon + EPSILON + phi
+	 * (delta + DELTA)/2 + epsilon + EPSILON + D
 	 *
 	 * where:
 	 *  delta   is the round-trip delay
 	 *  DELTA   is the root delay
-	 *  epsilon is the remote server precision + local precision
+	 *  epsilon is the peer dispersion
 	 *	    + (15 usec each second)
 	 *  EPSILON is the root dispersion
-	 *  phi     is the peer jitter statistic
+	 *  D       is sys_jitter
 	 *
 	 * NB: Think hard about why we are using these values, and what
 	 * the alternatives are, and the various pros/cons.
@@ -3582,8 +3584,7 @@ root_distance(
 	 * other worse choices.
 	 */
 	dtemp = (peer->delay + peer->rootdelay) / 2
-		+ LOGTOD(peer->precision)
-		  + LOGTOD(sys_precision)
+		+ peer->disp
 		  + clock_phi * (current_time - peer->update)
 		+ peer->rootdisp
 		+ peer->jitter;
@@ -4463,8 +4464,9 @@ peer_unfit(
 	 */
 	if (   peer->leap == LEAP_NOTINSYNC
 	    || peer->stratum < sys_floor
-	    || peer->stratum >= sys_ceiling)
+	    || peer->stratum >= sys_ceiling) {
 		rval |= TEST10;		/* bad synch or stratum */
+	}
 
 	/*
 	 * A distance error for a remote peer occurs if the root
@@ -4473,8 +4475,9 @@ peer_unfit(
 	 */
 	if (   !(peer->flags & FLAG_REFCLOCK)
 	    && root_distance(peer) >= sys_maxdist
-				      + clock_phi * ULOGTOD(peer->hpoll))
+				      + clock_phi * ULOGTOD(peer->hpoll)) {
 		rval |= TEST11;		/* distance exceeded */
+	}
 
 	/*
 	 * A loop error occurs if the remote peer is synchronized to the
@@ -4482,15 +4485,17 @@ peer_unfit(
 	 * server as the local peer but only if the remote peer is
 	 * neither a reference clock nor an orphan.
 	 */
-	if (peer->stratum > 1 && local_refid(peer))
+	if (peer->stratum > 1 && local_refid(peer)) {
 		rval |= TEST12;		/* synchronization loop */
+	}
 
 	/*
 	 * An unreachable error occurs if the server is unreachable or
 	 * the noselect bit is set.
 	 */
-	if (!peer->reach || (peer->flags & FLAG_NOSELECT))
+	if (!peer->reach || (peer->flags & FLAG_NOSELECT)) {
 		rval |= TEST13;		/* unreachable */
+	}
 
 	peer->flash &= ~PEER_TEST_MASK;
 	peer->flash |= rval;
