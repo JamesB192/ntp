@@ -138,6 +138,7 @@ char	*sys_ident = NULL;	/* identity scheme */
  * TOS and multicast mapping stuff
  */
 int	sys_floor = 0;		/* cluster stratum floor */
+u_char	sys_bcpollbstep = 0;	/* Broadcast Poll backstep gate */
 int	sys_ceiling = STRATUM_UNSPEC - 1; /* cluster stratum ceiling */
 int	sys_minsane = 1;	/* minimum candidates */
 int	sys_minclock = NTP_MINCLOCK; /* minimum candidates */
@@ -278,7 +279,7 @@ valid_NAK(
 	  u_char hismode
 	  )
 {
-	int 		base_packet_length = MIN_V4_PKT_LEN;
+	int		base_packet_length = MIN_V4_PKT_LEN;
 	int		remainder_size;
 	struct pkt *	rpkt;
 	int		keyid;
@@ -335,7 +336,7 @@ valid_NAK(
 		myorg = &peer->borg;
 	else
 		myorg = &peer->aorg;
-	
+
 	if (L_ISZERO(&p_org) ||
 	    L_ISZERO( myorg) ||
 	    !L_ISEQU(&p_org, myorg)) {
@@ -1471,10 +1472,45 @@ receive(
 				++bail;
 			}
 
-			/* Alert if time from the server is non-monotonic */
-			tdiff = p_xmt;
-			L_SUB(&tdiff, &peer->bxmt);
-			if (tdiff.l_i < 0) {
+			/* Alert if time from the server is non-monotonic.
+			 *
+			 * [Bug 3114] is about Broadcast mode replay DoS.
+			 *
+			 * Broadcast mode *assumes* a trusted network.
+			 * Even so, it's nice to be robust in the face
+			 * of attacks.
+			 *
+			 * If we get an authenticated broadcast packet
+			 * with an "earlier" timestamp, it means one of
+			 * two things:
+			 *
+			 * - the broadcast server had a backward step.
+			 *
+			 * - somebody is trying a replay attack.
+			 *
+			 * deadband: By default, we assume the broadcast
+			 * network is trustable, so we take our accepted
+			 * broadcast packets as we receive them.  But
+			 * some folks might want to take additional poll
+			 * delays before believing a backward step. 
+			 */
+			if (sys_bcpollbstep) {
+				/* pkt->ppoll or peer->ppoll ? */
+				deadband = (1u << pkt->ppoll)
+					   * sys_bcpollbstep + 2;
+			} else {
+				deadband = 0;
+			}
+
+			if (L_ISZERO(&peer->bxmt)) {
+				tdiff.l_ui = tdiff.l_uf = 0;
+			} else {
+				tdiff = p_xmt;
+				L_SUB(&tdiff, &peer->bxmt);
+			}
+			if (tdiff.l_i < 0 &&
+			    (current_time - peer->timereceived) < deadband)
+			{
 				msyslog(LOG_INFO, "receive: broadcast packet from %s contains non-monotonic timestamp: %#010x.%08x -> %#010x.%08x",
 					stoa(&rbufp->recv_srcadr),
 					peer->bxmt.l_ui, peer->bxmt.l_uf,
@@ -1482,8 +1518,6 @@ receive(
 					);
 				++bail;
 			}
-
-			peer->bxmt = p_xmt;
 
 			if (bail) {
 				peer->timelastrec = current_time;
@@ -1632,7 +1666,7 @@ receive(
 				peer->borg.l_ui, peer->borg.l_uf);
 			return;
 		}
-	
+
 	/*
 	 * Basic mode checks:
 	 *
@@ -1834,6 +1868,12 @@ receive(
 				"receive: Bad broadcast auth (%d) from %s",
 				is_authentic, ntoa(&peer->srcadr));
 		}
+
+		/*
+		 * Now that we know the packet is correctly authenticated,
+		 * update peer->bxmt.
+		 */
+		peer->bxmt = p_xmt;
 	}
 
 
@@ -1912,7 +1952,7 @@ receive(
 			peer->badauth++;
 			return;
 		}
-	    	break;
+		break;
 
 	    case MODE_CLIENT:		/* client mode */
 #if 0		/* At this point, MODE_CONTROL is overloaded by MODE_BCLIENT */
@@ -1920,14 +1960,14 @@ receive(
 #endif
 	    case MODE_PRIVATE:		/* private mode */
 	    case MODE_BCLIENT:		/* broadcast client mode */
-	    	break;
+		break;
 
 	    case MODE_UNSPEC:		/* unspecified (old version) */
 	    default:
 		msyslog(LOG_INFO,
 			"receive: Unexpected mode (%d) in packet from %s",
 			hismode, ntoa(&peer->srcadr));
-	    	break;
+		break;
 	}
 
 
@@ -2729,6 +2769,7 @@ peer_clear(
 	)
 {
 	u_char	u;
+	l_fp	bxmt = peer->bxmt;	/* bcast clients retain this! */
 
 #ifdef AUTOKEY
 	/*
@@ -2764,6 +2805,10 @@ peer_clear(
 	peer->disp = MAXDISPERSE;
 	peer->flash = peer_unfit(peer);
 	peer->jitter = LOGTOD(sys_precision);
+
+	/* Don't throw away our broadcast replay protection */
+	if (peer->hmode == MODE_BCLIENT)
+		peer->bxmt = bxmt;
 
 	/*
 	 * If interleave mode, initialize the alternate origin switch.
@@ -4760,6 +4805,11 @@ proto_config(
 	/*
 	 * tos command - arguments are double, sometimes cast to int
 	 */
+
+	case PROTO_BCPOLLBSTEP:	/* Broadcast Poll Backstep gate (bcpollbstep) */
+		sys_bcpollbstep = (u_char)dvalue;
+		break;
+
 	case PROTO_BEACON:	/* manycast beacon (beacon) */
 		sys_beacon = (int)dvalue;
 		break;
