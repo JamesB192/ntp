@@ -46,6 +46,8 @@
   - Patch provided by Kuramatsu.
 * [Bug 3021] unity_fixture.c needs pragma weak <perlinger@ntp.org>
   - removed unnecessary & harmful decls of 'setUp()' & 'tearDown()'
+* [Bug 3019] Windows: ERROR_HOST_UNREACHABLE block packet processing.
+  DMayer and JPerlinger.
 * [Bug 2998] sntp/tests/packetProcessing.c broken without openssl. JPerlinger
 * [Bug 2961] sntp/tests/packetProcessing.c assumes AUTOKEY.  HStenn.
 * [Bug 2959] refclock_jupiter: gps week correction <perlinger@ntp.org>
