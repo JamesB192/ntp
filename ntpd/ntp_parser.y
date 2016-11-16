@@ -801,7 +801,7 @@ access_control_command
 						  lex_current()->curpos.nline);
 			APPEND_G_FIFO(cfgt.restrict_opts, rn);
 		}
-	|	T_Restrict ip_address T_Mask ip_address ac_flag_list
+	|	T_Restrict address T_Mask ip_address ac_flag_list
 		{
 			restrict_node *rn;
 
