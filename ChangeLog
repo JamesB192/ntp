@@ -17,6 +17,7 @@
 * [Sec 3072] Attack on interface selection <perlinger@ntp.org>
   - implemented Miroslav Lichvars <mlichvar@redhat.com> suggestion
     to skip interface updates based on incoming packets
+* [Bug 3142] bug in netmask prefix length detection <perlinger@ntp.org>
 * [Bug 3138] gpsdjson refclock should honor fudgetime1. stenn@ntp.org
 * [Bug 3129] Unknown hosts can put resolver thread into a hard loop
   - moved retry decision where it belongs. <perlinger@ntp.org>
