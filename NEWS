@@ -12,11 +12,11 @@ fixes and improvements:
 
 * Trap crash
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3119 / CVE-2016-9311 / VU#XXXXX
-   Affects: ntp-4.0.90 (21 July 1999) uo to but not including 4.2.8p9,
-       and ntp-4.3.0 up to but not including ntp-4.3.94.
+   References: Sec 3119 / CVE-2016-9311 / VU#633847
+   Affects: ntp-4.0.90 (21 July 1999), possibly earlier, up to but not
+   	including 4.2.8p9, and ntp-4.3.0 up to but not including ntp-4.3.94.
    CVSS2: MED 4.9 (AV:N/AC:H/Au:N/C:N/I:N/A:C)
-   CVSS3: MED 4.2 CVSS:3.0/AV:N/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:H
+   CVSS3: MED 4.4 CVSS:3.0/AV:N/AC:H/PR:H/UI:N/S:U/C:N/I:N/A:H
    Summary: 
 	ntpd does not enable trap service by default. If trap service
 	has been explicitly enabled, an attacker can send a specially
@@ -34,9 +34,9 @@ fixes and improvements:
 
 * Mode 6 information disclosure and DDoS vector
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3118 / CVE-2016-9310 / VU#XXXXX
-   Affects: ntp-4.0.90 (21 July 1999) uo to but not including 4.2.8p9,
-       and ntp-4.3.0 up to but not including ntp-4.3.94.
+   References: Sec 3118 / CVE-2016-9310 / VU#633847
+   Affects: ntp-4.0.90 (21 July 1999), possibly earlier, up to but not
+	including 4.2.8p9, and ntp-4.3.0 up to but not including ntp-4.3.94.
    CVSS2: MED 6.4 (AV:A/AC:L/Au:N/C:N/I:N/A:P)
    CVSS3: MED 6.5 CVSS:3.0/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L
    Summary: 
@@ -59,7 +59,7 @@ fixes and improvements:
 
 * Broadcast Mode Replay Prevention DoS
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3114 / CVE-2016-7427 / VU#XXXXX
+   References: Sec 3114 / CVE-2016-7427 / VU#633847
    Affects: ntp-4.2.8p6, up to but not including ntp-4.2.8p9, and 
 	ntp-4.3.90 up to, but not including ntp-4.3.94.
    CVSS2: LOW 3.3 (AV:A/AC:L/Au:N/C:N/I:N/A:P)
@@ -84,7 +84,7 @@ fixes and improvements:
 
 * Broadcast Mode Poll Interval Enforcement DoS
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3113 / CVE-2016-7428 / VU#XXXXX
+   References: Sec 3113 / CVE-2016-7428 / VU#633847
    Affects: ntp-4.2.8p6, up to but not including ntp-4.2.8p9, and
 	ntp-4.3.90 up to, but not including ntp-4.3.94
    CVSS2: LOW 3.3 (AV:A/AC:L/Au:N/C:N/I:N/A:P)
@@ -113,7 +113,7 @@ fixes and improvements:
 
 * Windows: ntpd DoS by oversized UDP packet
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3110 / CVE-2016-9312 / VU#XXXXX
+   References: Sec 3110 / CVE-2016-9312 / VU#633847
    Affects Windows only: ntp-4.?.?, up to but not including ntp-4.2.8p9,
 	and ntp-4.3.0 up to, but not including ntp-4.3.94. 
    CVSS2: HIGH 7.8 (AV:N/AC:L/Au:N/C:N/I:N/A:C)
@@ -127,11 +127,11 @@ fixes and improvements:
 	    or the NTP Public Services Project Download Page
         Properly monitor your ntpd instances, and auto-restart ntpd
 	    (without -g) if it stops running. 
-   Credit: This weakness was discovered by Robert Pajak
+   Credit: This weakness was discovered by Robert Pajak of ABB.
 
 * 0rigin (zero origin) issues
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3102 / CVE-2016-7431 / VU#XXXXX
+   References: Sec 3102 / CVE-2016-7431 / VU#633847
    Affects: ntp-4.2.8p8, and ntp-4.3.93.
    CVSS2: MED 5.0 (AV:N/AC:L/Au:N/C:N/I:P/A:N)
    CVSS3: MED 5.3 CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N
@@ -151,7 +151,7 @@ fixes and improvements:
 
 * read_mru_list() does inadequate incoming packet checks
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3082 / CVE-2016-7434 / VU#XXXXX
+   References: Sec 3082 / CVE-2016-7434 / VU#633847
    Affects: ntp-4.2.7p22, up to but not including ntp-4.2.8p9, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94.
    CVSS2: LOW 3.8 (AV:L/AC:H/Au:S/C:N/I:N/A:C)
@@ -161,6 +161,7 @@ fixes and improvements:
 	server that sends a crafted malicious packet, ntpd will crash
 	on receipt of that crafted malicious mrulist query packet.
    Mitigation:
+	Only allow mrulist query packets from trusted hosts.
         Implement BCP-38.
         Upgrade to 4.2.8p9, or later, from the NTP Project Download Page
 	    or the NTP Public Services Project Download Page
@@ -170,7 +171,7 @@ fixes and improvements:
 
 * Attack on interface selection
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3072 / CVE-2016-7429 / VU#XXXXX
+   References: Sec 3072 / CVE-2016-7429 / VU#633847
    Affects: ntp-4.2.7p385, up to but not including ntp-4.2.8p9, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94
    CVSS2: LOW 1.0 (AV:L/AC:H/Au:S/C:N/I:N/A:P)
@@ -193,13 +194,16 @@ fixes and improvements:
         Implement BCP-38.
         Upgrade to 4.2.8p9, or later, from the NTP Project Download Page
 	    or the NTP Public Services Project Download Page
+	If you are going to configure your OS to disable source address
+	    checks, also configure your firewall configuration to control
+	    what interfaces can receive packets from what networks.
         Properly monitor your ntpd instances, and auto-restart ntpd
 	    (without -g) if it stops running. 
    Credit: This weakness was discovered by Miroslav Lichvar of Red Hat.
 
 * Client rate limiting and server responses
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3071 / CVE-2016-7426 / VU#XXXXX
+   References: Sec 3071 / CVE-2016-7426 / VU#633847
    Affects: ntp-4.2.5p203, up to but not including ntp-4.2.8p9, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94
    CVSS2: LOW 1.0 (AV:L/AC:H/Au:S/C:N/I:N/A:P)
@@ -213,6 +217,11 @@ fixes and improvements:
 	way can periodically send packets with spoofed source address to
 	keep the rate limiting activated and prevent ntpd from accepting
 	valid responses from its sources. 
+
+	While this blanket rate limiting can be useful to prevent
+	brute-force attacks on the origin timestamp, it allows this DoS
+	attack. Similarly, it allows the attacker to prevent mobilization
+	of ephemeral associations.  
    Mitigation:
         Implement BCP-38.
         Upgrade to 4.2.8p9, or later, from the NTP Project Download Page
@@ -223,12 +232,11 @@ fixes and improvements:
 
 * Fix for bug 2085 broke initial sync calculations 
    Date Resolved: 21 November 2016; Dev (4.3.94) 21 November 2016
-   References: Sec 3067 / CVE-2016-7433 / VU#XXXXX
+   References: Sec 3067 / CVE-2016-7433 / VU#633847
    Affects: ntp-4.2.7p385, up to but not including ntp-4.2.8p9, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94. But the
 	root-distance calculation in general is incorrect in all versions
 	of ntp-4 until this release. 
-	and ntp-4.3.0 up to, but not including ntp-4.3.94
    CVSS2: LOW 1.2 (AV:L/AC:H/Au:N/C:N/I:N/A:P)
    CVSS3: LOW 1.6 CVSS:3.0/AV:P/AC:H/PR:H/UI:N/S:U/C:N/I:N/A:L
    Summary: 

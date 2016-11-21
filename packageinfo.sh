@@ -70,7 +70,7 @@ esac
 special=
 
 # prerelease can be empty, 'beta', or 'rc'.
-prerelease=rc
+prerelease=
 
 # ChangeLog starting tag (see also CommitLog-4.1.0)
 CLTAG=NTP_4_2_0
@@ -83,7 +83,7 @@ CLTAG=NTP_4_2_0
 # - Numeric values increment
 # - empty 'increments' to 1
 # - NEW 'increments' to empty
-point=9
+point=8
 
 ### betapoint is normally modified by script.
 # ntp-stable Beta number (betapoint)
