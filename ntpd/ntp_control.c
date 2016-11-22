@@ -33,8 +33,6 @@
 # include "ntp_syscall.h"
 #endif
 
-#include "libssl_compat.h"
-
 /*
  * Structure to hold request procedure information
  */
@@ -1838,7 +1836,7 @@ ctl_putrefid(
 	char *	oplim;
 	char *	iptr;
 	char *	iplim;
-	char *	past_eq;
+	char *	past_eq = NULL;
 
 	optr = output;
 	oplim = output + sizeof(output);
