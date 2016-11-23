@@ -1651,8 +1651,10 @@ ctl_putuint(
 }
 
 /*
- * ctl_putcal - write a decoded calendar data into the response
+ * ctl_putcal - write a decoded calendar data into the response.
+ * only used with AUTOKEY currently, so compiled conditional
  */
+#ifdef AUTOKEY
 static void
 ctl_putcal(
 	const char *tag,
@@ -1676,6 +1678,7 @@ ctl_putcal(
 
 	return;
 }
+#endif
 
 /*
  * ctl_putfs - write a decoded filestamp into the response
