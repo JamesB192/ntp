@@ -1691,7 +1691,7 @@ receive(
 
 		if (0) {
 		} else if (L_ISZERO(&p_org)) {
-			char *action;
+			const char *action;
 
 			L_CLR(&peer->aorg);
 			/**/
@@ -1712,6 +1712,7 @@ receive(
 				peer->flash |= TEST2;	/* bogus */
 				break;
 			    default:
+				action = "";	/* for cranky compilers / MSVC */
 				INSIST(!"receive(): impossible hismode");
 				break;
 			}

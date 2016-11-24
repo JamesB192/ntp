@@ -1,4 +1,8 @@
 ---
+* [Bug 3173] forking async worker: interrupted pipe I/O <perlinger@ntp.org>
+  - initial patch by Christos Zoulas
+
+---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
