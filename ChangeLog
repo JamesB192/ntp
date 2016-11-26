@@ -1,4 +1,10 @@
 ---
+* [Bug 3139] (...) time_pps_create: Exec format error <perlinger@ntp.org>
+  - move loader API from 'inline' to proper source
+  - augment pathless dlls with absolute path to NTPD
+  - use 'msyslog()' instead of 'printf() 'for reporting trouble
+
+---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
