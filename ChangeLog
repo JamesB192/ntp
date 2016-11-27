@@ -1,4 +1,9 @@
 ---
+* [Bug 3216] libntp audio ioctl() args incorrectly cast to int
+  on 4.4BSD-Lite derived platforms <perlinger@ntp.org>
+  - original patch by Majdi S. Abbas
+
+---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
