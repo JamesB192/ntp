@@ -647,19 +647,19 @@ tos_option
 
 tos_option_int_keyword
 	:	T_Bcpollbstep
+	|	T_Beacon
 	|	T_Ceiling
 	|	T_Floor
+	|	T_Maxclock
+	|	T_Minclock
+	|	T_Minsane
 	|	T_Orphan
 	|	T_Orphanwait
-	|	T_Minsane
-	|	T_Beacon
 	;
 
 tos_option_dbl_keyword
 	:	T_Mindist
 	|	T_Maxdist
-	|	T_Minclock
-	|	T_Maxclock
 	;
 
 
