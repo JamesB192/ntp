@@ -1996,40 +1996,98 @@ config_tos(
 	int		item;
 	double		val;
 
-#ifdef __GNUC__
-	item = -1;	/* quiet warning */
-#endif
+	/* [Bug 2896] For the daemon to work properly it is essential
+	 * that minsane < minclock <= maxclock.
+	 *
+	 * If either constraint is violated, the daemon will be or might
+	 * become dysfunctional. Fixing the values is too fragile here,
+	 * since three variables with interdependecies are involved. We
+	 * just log an error but do not stop: This might be caused by
+	 * remote config, and it might be fixed by remote config, too.
+	 */ 
+	int l_maxclock = sys_maxclock;
+	int l_minclock = sys_minclock;
+	int l_minsane  = sys_minsane;
+
+	/* -*- phase one: inspect / sanitize the values */
+	tos = HEAD_PFIFO(ptree->orphan_cmds);
+	for (; tos != NULL; tos = tos->link) {
+		val = tos->value.d;
+		switch(tos->attr) {
+		default:
+			break;
+
+		case T_Bcpollbstep:
+			if (val > 4) {
+				msyslog(LOG_WARNING,
+					"Using maximum bcpollbstep ceiling %d, %d requested",
+					4, (int)val);
+				tos->value.d = 4;
+			} else if (val < 0) {
+				msyslog(LOG_WARNING,
+					"Using minimum bcpollbstep floor %d, %d requested",
+					0, (int)val);
+				tos->value.d = 0;
+			}
+			break;
+			
+		case T_Ceiling:
+			if (val > STRATUM_UNSPEC - 1) {
+				msyslog(LOG_WARNING,
+					"Using maximum tos ceiling %d, %d requested",
+					STRATUM_UNSPEC - 1, (int)val);
+				val = STRATUM_UNSPEC - 1;
+			} else if (val < 1) {
+				msyslog(LOG_WARNING,
+					"Using minimum tos floor %d, %d requested",
+					1, (int)val);
+				tos->value.d = 1;
+			}
+			break;
+
+		case T_Minclock:
+			if ((int)tos->value.d < 1)
+				tos->value.d = 1;
+			l_minclock = (int)tos->value.d;
+			break;
+
+		case T_Maxclock:
+			if ((int)tos->value.d < 1)
+				tos->value.d = 1;
+			l_maxclock = (int)tos->value.d;
+			break;
+
+		case T_Minsane:
+			if ((int)tos->value.d < 1)
+				tos->value.d = 1;
+			l_minsane = (int)tos->value.d;
+			break;
+		}
+	}
+
+	if ( ! (l_minsane < l_minclock && l_minclock <= l_maxclock)) {
+		msyslog(LOG_ERR,
+			"tos error: minsane(=%d) < minclock(=%d) <= maxclock(=%d)"
+			" - deamon  will not operate properly!",
+			l_minsane, l_minclock, l_maxclock);
+	}
+	
+	/* -*- phase two: forward the values to the protocol machinery */
 	tos = HEAD_PFIFO(ptree->orphan_cmds);
 	for (; tos != NULL; tos = tos->link) {
 		val = tos->value.d;
 		switch(tos->attr) {
 
 		default:
+			item = -1;	/* quiet warning */
 			INSIST(0);
 			break;
 
 		case T_Bcpollbstep:
-			if (val > 4) {
-				msyslog(LOG_WARNING,
-					"Using maximum bcpollbstep ceiling %d, %g requested",
-					4, val);
-				val = 4;
-			} else if (val < 0) {
-				msyslog(LOG_WARNING,
-					"Using minimum bcpollbstep floor %d, %g requested",
-					0, val);
-				val = 0;
-			}
 			item = PROTO_BCPOLLBSTEP;
 			break;
 
 		case T_Ceiling:
-			if (val > STRATUM_UNSPEC - 1) {
-				msyslog(LOG_WARNING,
-					"Using maximum tos ceiling %d, %g requested",
-					STRATUM_UNSPEC - 1, val);
-				val = STRATUM_UNSPEC - 1;
-			}
 			item = PROTO_CEILING;
 			break;
 
