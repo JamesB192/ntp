@@ -64,8 +64,8 @@ auth_md5(
 		 * with.  sntp is a 1-shot program, so snooping for
 		 * timing attacks is Harder.
 		 */
-		authentic = !memcmp(digest, pkt_data + pkt_size + 4,
-				    hash_len);
+	    authentic = !memcmp(digest, (const char*)pkt_data + pkt_size + 4,
+				hash_len);
 	}
 	return authentic;
 }
