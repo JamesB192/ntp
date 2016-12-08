@@ -1,4 +1,9 @@
 ---
+* [Bug 2645] out-of-bound pointers in ctl_putsys and decode_bitflags
+  - Fixed these and some more locations of this pattern.
+    Probably din't get them all, though. <perlinger@ntp.org>
+
+---
 (4.2.8p8) 2016/06/02 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3042] Broadcast Interleave.  HStenn.
