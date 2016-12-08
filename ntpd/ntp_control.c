@@ -1817,7 +1817,7 @@ ctl_putadr(
 		cq = numtoa(addr32);
 	else
 		cq = stoa(addr);
-	INSIST((cp - buffer) < (int)sizeof(buffer));
+	INSIST((size_t)(cp - buffer) < sizeof(buffer));
 	snprintf(cp, sizeof(buffer) - (cp - buffer), "%s", cq);
 	cp += strlen(cp);
 	ctl_putdata(buffer, (unsigned)(cp - buffer), 0);
@@ -2087,7 +2087,7 @@ ctl_putsys(
 
 		buffp = buf;
 		buffend = buf + sizeof(buf);
-		if (buffp + strlen(sys_var[CS_VARLIST].text) + 4 > buffend)
+		if (strlen(sys_var[CS_VARLIST].text) + 4 > buffend - buffp)
 			break;	/* really long var name */
 
 		snprintf(buffp, sizeof(buf), "%s=\"",sys_var[CS_VARLIST].text);
@@ -2097,7 +2097,7 @@ ctl_putsys(
 			if (k->flags & PADDING)
 				continue;
 			len = strlen(k->text);
-			if (buffp + len + 1 >= buffend)
+			if (len + 1 >= buffend - buffp)
 				break;
 			if (!firstVarName)
 				*buffp++ = ',';
@@ -2117,7 +2117,7 @@ ctl_putsys(
 				len = strlen(k->text);
 			else
 				len = ss1 - k->text;
-			if (buffp + len + 1 >= buffend)
+			if (len + 1 >= buffend - buffp)
 				break;
 			if (firstVarName) {
 				*buffp++ = ',';
@@ -2126,7 +2126,7 @@ ctl_putsys(
 			memcpy(buffp, k->text,(unsigned)len);
 			buffp += len;
 		}
-		if (buffp + 2 >= buffend)
+		if (2 >= buffend - buffp)
 			break;
 
 		*buffp++ = '"';
