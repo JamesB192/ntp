@@ -3595,7 +3595,7 @@ static void list_md_fn(const EVP_MD *m, const char *from, const char *to, void *
     /* Lowercase names aren't accepted by keytype_from_text in ssl_init.c */
 
     for( cp = name; *cp; cp++ ) {
-	if( islower((unsigned int)*cp) )
+	if( islower((unsigned char)*cp) )
 	    return;
     }
     len = (cp - name) + 1;
