@@ -374,7 +374,7 @@ u_int numassoc;		/* number of cached associations */
 /*
  * For commands typed on the command line (with the -c option)
  */
-int numcmds = 0;
+size_t numcmds = 0;
 const char *ccmds[MAXCMDS];
 #define	ADDCMD(cp)	if (numcmds < MAXCMDS) ccmds[numcmds++] = (cp)
 
@@ -458,7 +458,7 @@ ntpqmain(
 	)
 {
 	u_int ihost;
-	int icmd;
+	size_t icmd;
 
 
 #ifdef SYS_VXWORKS
@@ -3595,7 +3595,7 @@ static void list_md_fn(const EVP_MD *m, const char *from, const char *to, void *
     /* Lowercase names aren't accepted by keytype_from_text in ssl_init.c */
 
     for( cp = name; *cp; cp++ ) {
-	if( islower(*cp) )
+	if( islower((unsigned int)*cp) )
 	    return;
     }
     len = (cp - name) + 1;

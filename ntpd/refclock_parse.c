@@ -4226,13 +4226,13 @@ parse_process(
 
 static void
 mk_utcinfo(
-	   char *t,  // pointer to the output string buffer
-	   int wnt,
-	   int wnlsf,
+	   char *t,  /* pointer to the output string buffer */
+	   uint16_t wnt,
+	   uint16_t wnlsf,
 	   int dn,
 	   int dtls,
 	   int dtlsf,
-	   int size  // size of the output string buffer
+	   int size  /* size of the output string buffer */
 	   )
 {
 	/*
@@ -4261,7 +4261,7 @@ mk_utcinfo(
 			+ GPS_SEC_BIAS - 1;
 
 		tm = gmtime( &t_ls );
-		if (tm == NULL)  // gmtime() failed
+		if (tm == NULL)  /* gmtime() failed */
 		{
 			snprintf( t, size, "** (gmtime() failed in mk_utcinfo())" );
 			return;

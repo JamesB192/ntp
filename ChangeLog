@@ -1,6 +1,10 @@
 ---
+* [Bug 3065] Quiet warnings on NetBSD <perlinger@ntp.org>
+  - applied some of the patches provided by Harvard. Not all of them
+    still match the current code base, and I did not touch libopt.
+
+---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
-(4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3119] Trap crash <perlinger@ntp.org>
 * [Sec 3118] Mode 6 information disclosure and DDoS vector <perlinger@ntp.org>
