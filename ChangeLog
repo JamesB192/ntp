@@ -1,4 +1,7 @@
 ---
+* [Bug 3356] Bugfix 3072 breaks multicastclient <perlinger@ntp.org>
+
+---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
