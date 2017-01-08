@@ -3,6 +3,7 @@
 
 * [Bug 3363] Support for openssl-1.1.0 without compatibility modes
   - rework of patch set from <ntp.org@eroen.eu>. <perlinger@ntp.org>
+* [Bug 3356] Bugfix 3072 breaks multicastclient <perlinger@ntp.org>
 * [Bug 3216] libntp audio ioctl() args incorrectly cast to int
   on 4.4BSD-Lite derived platforms <perlinger@ntp.org>
   - original patch by Majdi S. Abbas
