@@ -487,6 +487,7 @@ extern u_char	sys_bcpollbstep;	/* broadcast poll backstep gate */
 extern u_long 	sys_epoch;		/* last clock update time */
 extern keyid_t	sys_private;		/* private value for session seed */
 extern int	sys_manycastserver;	/* respond to manycast client pkts */
+extern int	sys_maxclock;		/* maximum survivors */
 extern int	sys_minclock;		/* minimum survivors */
 extern int	sys_minsane;		/* minimum candidates */
 extern int	sys_floor;		/* cluster stratum floor */

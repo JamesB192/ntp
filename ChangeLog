@@ -6,6 +6,8 @@
 * [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>
 * [Bug 2923] Trap Configuration Fail <perlinger@ntp.org>
   - fixed dependency inversion from [Bug 2837]
+* [Bug 2896] Nothing happens if minsane < maxclock < minclock
+  - produce ERROR log message about dysfunctional daemon. <perlinger@ntp.org>
 * [Bug 2851] allow -4/-6 on restrict line with mask <perlinger@ntp.org>
   - applied patch by Miroslav Lichvar for ntp4.2.6 compat
 * [Bug 2645] out-of-bound pointers in ctl_putsys and decode_bitflags
