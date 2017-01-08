@@ -4384,11 +4384,11 @@ config_ntpd(
 	config_mdnstries(ptree);
 	config_setvar(ptree);
 	config_ttl(ptree);
-	config_trap(ptree);
 	config_vars(ptree);
 
-	io_open_sockets();
+	io_open_sockets();	/* [bug 2837] dep. on config_vars() */
 
+	config_trap(ptree);	/* [bug 2923] dep. on io_open_sockets() */
 	config_other_modes(ptree);
 	config_peers(ptree);
 	config_unpeers(ptree);
