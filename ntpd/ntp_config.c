@@ -2067,8 +2067,8 @@ config_tos(
 
 	if ( ! (l_minsane < l_minclock && l_minclock <= l_maxclock)) {
 		msyslog(LOG_ERR,
-			"tos error: minsane(=%d) < minclock(=%d) <= maxclock(=%d)"
-			" - deamon  will not operate properly!",
+			"tos error: must have minsane (%d) < minclock (%d) <= maxclock (%d)"
+			" - daemon will not operate properly!",
 			l_minsane, l_minclock, l_maxclock);
 	}
 	
