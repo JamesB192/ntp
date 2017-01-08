@@ -1,6 +1,9 @@
 ---
+* [Bug 3062] Change the process name of forked DNS worker <perlinger@ntp.org>
+  - applied patch by Reinhard Max. See bugzilla for limitations.
+
+---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
-(4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3119] Trap crash <perlinger@ntp.org>
 * [Sec 3118] Mode 6 information disclosure and DDoS vector <perlinger@ntp.org>

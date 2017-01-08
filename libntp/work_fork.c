@@ -24,6 +24,8 @@
 	int			worker_process;
 	addremove_io_fd_func	addremove_io_fd;
 static	volatile int		worker_sighup_received;
+int	saved_argc = 0;
+char	**saved_argv;
 
 /* === function prototypes === */
 static	void		fork_blocking_child(blocking_child *);
@@ -501,6 +503,22 @@ fork_blocking_child(
 	 */
 	c->pid = getpid();
 	worker_process = TRUE;
+
+	/*
+	 * Change the process name of the child to avoid confusion
+	 * about ntpd trunning twice.
+	 */
+	if (saved_argc != 0) {
+		int argcc;
+		int argvlen = 0;
+		/* Clear argv */
+		for (argcc = 0; argcc < saved_argc; argcc++) {
+			int l = strlen(saved_argv[argcc]);
+			argvlen += l + 1;
+			memset(saved_argv[argcc], 0, l);
+		}
+		strlcpy(saved_argv[0], "ntpd: asynchronous dns resolver", argvlen);
+	}
 
 	/*
 	 * In the child, close all files except stdin, stdout, stderr,
