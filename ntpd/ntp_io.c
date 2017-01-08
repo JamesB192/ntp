@@ -2565,7 +2565,7 @@ io_setbclient(void)
 {
 #ifdef OPEN_BCAST_SOCKET
 	struct interface *	interf;
-	int			nif;
+	unsigned int		nif;
 
 	nif = 0;
 	set_reuseaddr(1);
@@ -2642,11 +2642,10 @@ io_setbclient(void)
 		}
 	}
 	set_reuseaddr(0);
-	if (nif > 0) {
+	if (nif != 0) {
 		broadcast_client_enabled = ISC_TRUE;
 		DPRINTF(1, ("io_setbclient: listening to %d broadcast addresses\n", nif));
-	}
-	else if (!nif) {
+	} else {
 		broadcast_client_enabled = ISC_FALSE;
 		msyslog(LOG_ERR,
 			"Unable to listen for broadcasts, no broadcast interfaces available");
