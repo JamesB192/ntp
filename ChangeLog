@@ -3,6 +3,7 @@
 
 * [Bug 3363] Support for openssl-1.1.0 without compatibility modes
   - rework of patch set from <ntp.org@eroen.eu>. <perlinger@ntp.org>
+* [Bug 3125] 'make distcheck' fails with new BK repo format <perlinger@ntp.org>
 * [Bug 3173] forking async worker: interrupted pipe I/O <perlinger@ntp.org>
   - initial patch by Christos Zoulas
 * [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>

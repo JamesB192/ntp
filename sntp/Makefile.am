@@ -187,8 +187,7 @@ check-scm-rev: $(srcdir)/scm-rev
 	@: do-nothing
 
 $(srcdir)/scm-rev:
-	-test -r $(srcdir)/../SCCS/s.ChangeSet &&		\
-	    (bk version) >/dev/null 2>&1 &&			\
+	-bk root $(srcdir) >/dev/null 2>&1 &&			\
 	    cd $(srcdir)/.. &&					\
 	    x=`bk -R prs -hr+ -nd:I: ChangeSet` &&		\
 	    y=`cat sntp/scm-rev 2>/dev/null` || true &&		\
