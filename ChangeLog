@@ -4,6 +4,10 @@
 * [Bug 3363] Support for openssl-1.1.0 without compatibility modes
   - rework of patch set from <ntp.org@eroen.eu>. <perlinger@ntp.org>
 * [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>
+* [Bug 3139] (...) time_pps_create: Exec format error <perlinger@ntp.org>
+  - move loader API from 'inline' to proper source
+  - augment pathless dlls with absolute path to NTPD
+  - use 'msyslog()' instead of 'printf() 'for reporting trouble
 * [Bug 3107] Incorrect Logic for Peer Event Limiting <perlinger@ntp.org>
   - applied patch by Matthew Van Gundy
 * [Bug 3065] Quiet warnings on NetBSD <perlinger@ntp.org>
