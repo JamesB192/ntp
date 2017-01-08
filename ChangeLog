@@ -7,6 +7,8 @@
 * [Bug 3065] Quiet warnings on NetBSD <perlinger@ntp.org>
   - applied some of the patches provided by Havard. Not all of them
     still match the current code base, and I did not touch libopt.
+* [Bug 3062] Change the process name of forked DNS worker <perlinger@ntp.org>
+  - applied patch by Reinhard Max. See bugzilla for limitations.
 * [Bug 2923] Trap Configuration Fail <perlinger@ntp.org>
   - fixed dependency inversion from [Bug 2837]
 * [Bug 2896] Nothing happens if minsane < maxclock < minclock
