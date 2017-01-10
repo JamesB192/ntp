@@ -32,6 +32,8 @@
   - Fixed these and some more locations of this pattern.
     Probably din't get them all, though. <perlinger@ntp.org>
 * Update copyright year.
+* configure.ac cleanup.  stenn@ntp.org
+* openssl configure cleanup.  stenn@ntp.org
 
 ---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
