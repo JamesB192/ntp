@@ -1,4 +1,9 @@
 ---
+
+* configure.ac cleanup.  stenn@ntp.org
+* openssl configure cleanup.  stenn@ntp.org
+
+---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
