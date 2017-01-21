@@ -28,6 +28,7 @@
 void *wrap_dbg_malloc(size_t s, const char *f, int l);
 void *wrap_dbg_realloc(void *p, size_t s, const char *f, int l);
 void wrap_dbg_free(void *p);
+void wrap_dbg_free_ex(void *p, const char *f, int l);
 #endif
 
 
@@ -40,7 +41,7 @@ ssl_applink(void)
 {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
 #   ifdef WRAP_DBG_MALLOC
-	CRYPTO_set_mem_functions(wrap_dbg_malloc, wrap_dbg_realloc, wrap_dbg_free);
+	CRYPTO_set_mem_functions(wrap_dbg_malloc, wrap_dbg_realloc, wrap_dbg_free_ex);
 #   else
 	OPENSSL_malloc_init();
 #   endif
@@ -81,6 +82,13 @@ void *wrap_dbg_realloc(void *p, size_t s, const char *f, int l)
 
 void wrap_dbg_free(void *p)
 {
+	_free_dbg(p, _NORMAL_BLOCK);
+}
+
+void wrap_dbg_free_ex(void *p, const char *f, int l)
+{
+	(void)f;
+	(void)l;
 	_free_dbg(p, _NORMAL_BLOCK);
 }
 #endif	/* WRAP_DBG_MALLOC */

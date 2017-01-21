@@ -1,6 +1,7 @@
 ---
 * [Bug 3144] NTP does not build without openSSL <perlinger@ntp.org>
-
+  - added missed changeset for automatic openssl lib detection
+  - fixed some minor warning issues
 ---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
 
