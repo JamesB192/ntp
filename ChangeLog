@@ -34,7 +34,8 @@
 * Update copyright year.
 * configure.ac cleanup.  stenn@ntp.org
 * openssl configure cleanup.  stenn@ntp.org
-
+  - added missed changeset for automatic openssl lib detection
+  - fixed some minor warning issues
 ---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
 
