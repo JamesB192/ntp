@@ -4,6 +4,8 @@
   - added missed changeset for automatic openssl lib detection
   - fixed some minor warning issues
 * [Bug 3095]  More compatibility with openssl 1.1. <perlinger@ntp.org>
+* configure.ac cleanup.  stenn@ntp.org
+* openssl configure cleanup.  stenn@ntp.org
 
 ---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
