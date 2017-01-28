@@ -67,9 +67,9 @@ case "$with_crypto" in
     with_crypto=openssl,libcrypto
 esac
 
-DNL AC_MSG_NOTICE(['%with_crypto:%{PKG_CONFIG:+notempty}:%{with_openssl_libdir-notgiven}:%{with_openssl_incdir-notgiven}'])
-DNL str="$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${with_openssl_incdir-notgiven}"
-DNL AC_MSG_NOTICE([$str])
+dnl AC_MSG_NOTICE(['%with_crypto:%{PKG_CONFIG:+notempty}:%{with_openssl_libdir-notgiven}:%{with_openssl_incdir-notgiven}'])
+dnl str="$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${with_openssl_incdir-notgiven}"
+dnl AC_MSG_NOTICE([$str])
 
 case "$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${with_openssl_incdir-notgiven}" in
  no:*) ;;
@@ -92,11 +92,11 @@ case "$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${wit
 	AC_MSG_RESULT([no])
     done
 esac
-DNL AC_MSG_NOTICE([OpenSSL Phase I checks:])
-DNL AC_MSG_NOTICE([CPPFLAGS_NTP: $CPPFLAGS_NTP])
-DNL AC_MSG_NOTICE([CFLAGS_NTP: $CFLAGS_NTP])
-DNL AC_MSG_NOTICE([LDADD_NTP: $LDADD_NTP])
-DNL AC_MSG_NOTICE([LDFLAGS_NTP: $LDFLAGS_NTP])
+dnl AC_MSG_NOTICE([OpenSSL Phase I checks:])
+dnl AC_MSG_NOTICE([CPPFLAGS_NTP: $CPPFLAGS_NTP])
+dnl AC_MSG_NOTICE([CFLAGS_NTP: $CFLAGS_NTP])
+dnl AC_MSG_NOTICE([LDADD_NTP: $LDADD_NTP])
+dnl AC_MSG_NOTICE([LDFLAGS_NTP: $LDFLAGS_NTP])
 case "$with_crypto:$ntp_openssl" in
  no:*) ;;
  *:no)
@@ -382,11 +382,11 @@ case "$ntp_openssl" in
     ;;
 esac
 
-DNL AC_MSG_NOTICE([OpenSSL final checks:])
-DNL AC_MSG_NOTICE([CPPFLAGS_NTP: $CPPFLAGS_NTP])
-DNL AC_MSG_NOTICE([CFLAGS_NTP: $CFLAGS_NTP])
-DNL AC_MSG_NOTICE([LDADD_NTP: $LDADD_NTP])
-DNL AC_MSG_NOTICE([LDFLAGS_NTP: $LDFLAGS_NTP])
+dnl AC_MSG_NOTICE([OpenSSL final checks:])
+dnl AC_MSG_NOTICE([CPPFLAGS_NTP: $CPPFLAGS_NTP])
+dnl AC_MSG_NOTICE([CFLAGS_NTP: $CFLAGS_NTP])
+dnl AC_MSG_NOTICE([LDADD_NTP: $LDADD_NTP])
+dnl AC_MSG_NOTICE([LDFLAGS_NTP: $LDFLAGS_NTP])
 
 CPPFLAGS="$NTPO_SAVED_CPPFLAGS"
 LIBS="$NTPO_SAVED_LIBS"
