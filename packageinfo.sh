@@ -67,7 +67,7 @@ esac
 
 # Special.  Normally unused.  A suffix.
 #special=ag
-special=win
+special=win 
 
 # prerelease can be empty, 'beta', or 'rc'.
 prerelease=
