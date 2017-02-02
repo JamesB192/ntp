@@ -10,7 +10,6 @@
 * [Bug 3215] 'make distcheck' fails with new BK repo format <perlinger@ntp.org>
 * [Bug 3173] forking async worker: interrupted pipe I/O <perlinger@ntp.org>
   - initial patch by Christos Zoulas
-* [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>
 * [Bug 3139] (...) time_pps_create: Exec format error <perlinger@ntp.org>
   - move loader API from 'inline' to proper source
   - augment pathless dlls with absolute path to NTPD
@@ -32,10 +31,17 @@
   - Fixed these and some more locations of this pattern.
     Probably din't get them all, though. <perlinger@ntp.org>
 * Update copyright year.
-* configure.ac cleanup.  stenn@ntp.org
-* openssl configure cleanup.  stenn@ntp.org
+
+---
+(4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
+
+* [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>
   - added missed changeset for automatic openssl lib detection
   - fixed some minor warning issues
+* [Bug 3095]  More compatibility with openssl 1.1. <perlinger@ntp.org>
+* configure.ac cleanup.  stenn@ntp.org
+* openssl configure cleanup.  stenn@ntp.org
+
 ---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
 
