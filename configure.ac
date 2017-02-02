@@ -169,7 +169,6 @@ case "$ans" in
     ;;
 esac
 PROG_NET_SNMP_CONFIG=$ans
-AC_MSG_CHECKING([for net-snmp-config path])
 case "$PROG_NET_SNMP_CONFIG" in
  no) ;;
  /*)
@@ -180,6 +179,7 @@ case "$PROG_NET_SNMP_CONFIG" in
     AS_UNSET([ac_cv_path_PATH_NET_SNMP_CONFIG])
 ;;
 esac
+AC_MSG_CHECKING([for net-snmp-config path])
 AC_MSG_RESULT([$PATH_NET_SNMP_CONFIG])
 
 case "$PATH_NET_SNMP_CONFIG" in
