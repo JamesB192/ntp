@@ -1,6 +1,15 @@
 ---
+(4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
+
+* [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>
+  - added missed changeset for automatic openssl lib detection
+  - fixed some minor warning issues
+* [Bug 3095]  More compatibility with openssl 1.1. <perlinger@ntp.org>
+* configure.ac cleanup.  stenn@ntp.org
+* openssl configure cleanup.  stenn@ntp.org
+
+---
 (4.2.8p9) 2016/11/21 Released by Harlan Stenn <stenn@ntp.org>
-(4.2.8p9) 2016/MM/DD Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3119] Trap crash <perlinger@ntp.org>
 * [Sec 3118] Mode 6 information disclosure and DDoS vector <perlinger@ntp.org>

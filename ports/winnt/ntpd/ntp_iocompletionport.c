@@ -1391,8 +1391,7 @@ io_completion_port_add_clock_io(
 		goto fail;
 	}
 
-	;
-	if ( ! (rio->ioreg_ctx = iopad = iohpCreate(rio))) {
+	if (NULL == (rio->ioreg_ctx = iopad = iohpCreate(rio))) {
 		msyslog(LOG_ERR, "%s: Failed to create shared lock",
 			msgh);
 		goto fail;
@@ -1401,13 +1400,13 @@ io_completion_port_add_clock_io(
 	iopad->riofd      = rio->fd;
 	iopad->rsrc.rio   = rio;
 
-	if (!(rio->device_ctx = DevCtxAttach(serial_devctx(h)))) {
+	if (NULL == (rio->device_ctx = DevCtxAttach(serial_devctx(h)))) {
 		msyslog(LOG_ERR, "%s: Failed to allocate device context",
 			msgh);
 		goto fail;
 	}
 
-	if ( ! (lpo = IoCtxAlloc(iopad, rio->device_ctx))) {
+	if (NULL == (lpo = IoCtxAlloc(iopad, rio->device_ctx))) {
 		msyslog(LOG_ERR, "%: Failed to allocate IO context",
 			msgh);
 		goto fail;
@@ -1594,7 +1593,6 @@ OnSocketSend(
 	static const char * const msg =
 		"OnSocketSend: send to socket failed";
 
-	IoHndPad_T *	iopad	= NULL;
 	endpt *		ep	= NULL;
 	int		rc;
 
@@ -1662,7 +1660,7 @@ io_completion_port_remove_interface(
 
 	INSIST(hndIOCPLPort && hMainRpcDone);
 	if (iopad)
-		iocpl_notify(iopad, OnInterfaceDetach, -1);
+		iocpl_notify(iopad, OnInterfaceDetach, (UINT_PTR)-1);
 }
 
 /* --------------------------------------------------------------------
