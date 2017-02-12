@@ -1,4 +1,10 @@
 ---
+* [Sec 3382] NTP-01-007: Data Structure terminated insufficiently
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3383] NTP-01-008: Stack Buffer Overflow from Command Line
+  (Pentest report 01.2017) <perlinger@ntp.org>
+  
+---
 (4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>
