@@ -3719,8 +3719,9 @@ peer_xmit(
 			}
 		}
 		peer->t21_bytes = sendlen;
-		sendpkt(&peer->srcadr, peer->dstadr, sys_ttl[peer->ttl],
-		    &xpkt, sendlen);
+		sendpkt(&peer->srcadr, peer->dstadr,
+			sys_ttl[(peer->ttl >= sys_ttlmax) ? sys_ttlmax : peer->ttl],
+			&xpkt, sendlen);
 		peer->sent++;
 		peer->throttle += (1 << peer->minpoll) - 2;
 
@@ -4030,8 +4031,9 @@ peer_xmit(
 		exit (-1);
 	}
 	peer->t21_bytes = sendlen;
-	sendpkt(&peer->srcadr, peer->dstadr, sys_ttl[peer->ttl], &xpkt,
-	    sendlen);
+	sendpkt(&peer->srcadr, peer->dstadr,
+		sys_ttl[(peer->ttl >= sys_ttlmax) ? sys_ttlmax : peer->ttl],
+		&xpkt, sendlen);
 	peer->sent++;
 	peer->throttle += (1 << peer->minpoll) - 2;
 
@@ -4352,8 +4354,9 @@ pool_xmit(
 	get_systime(&xmt_tx);
 	pool->aorg = xmt_tx;
 	HTONL_FP(&xmt_tx, &xpkt.xmt);
-	sendpkt(rmtadr, lcladr,	sys_ttl[pool->ttl], &xpkt,
-		LEN_PKT_NOMAC);
+	sendpkt(rmtadr, lcladr,
+		sys_ttl[(pool->ttl >= sys_ttlmax) ? sys_ttlmax : pool->ttl],
+		&xpkt, LEN_PKT_NOMAC);
 	pool->sent++;
 	pool->throttle += (1 << pool->minpoll) - 2;
 	DPRINTF(1, ("pool_xmit: at %ld %s->%s pool\n",
@@ -4722,10 +4725,9 @@ init_proto(void)
 	sys_stattime = current_time;
 	orphwait = current_time + sys_orphwait;
 	proto_clr_stats();
-	for (i = 0; i < MAX_TTL; i++) {
+	for (i = 0; i < MAX_TTL; ++i)
 		sys_ttl[i] = (u_char)((i * 256) / MAX_TTL);
-		sys_ttlmax = i;
-	}
+	sys_ttlmax = (MAX_TTL - 1);
 	hardpps_enable = 0;
 	stats_control = 1;
 }
