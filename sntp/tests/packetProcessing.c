@@ -5,6 +5,8 @@
 #include "ntp_stdlib.h"
 #include "unity.h"
 
+#define CMAC "AES128CMAC"
+
 
 const char * Version = "stub unit test Version string";
 
@@ -35,6 +37,7 @@ void test_AcceptNoSentPacketBroadcastMode(void);
 void test_CorrectUnauthenticatedPacket(void);
 void test_CorrectAuthenticatedPacketMD5(void);
 void test_CorrectAuthenticatedPacketSHA1(void);
+void test_CorrectAuthenticatedPacketCMAC(void);
 
 /* [Bug 2998] There are some issues whith the definition of 'struct pkt'
  * when AUTOKEY is undefined -- the formal struct is too small to hold
@@ -455,3 +458,26 @@ test_CorrectAuthenticatedPacketSHA1(void)
 			  process_pkt(&testpkt.p, &testsock, pkt_len,
 				      MODE_SERVER, &testspkt.p, "UnitTest"));
 }
+
+
+void
+test_CorrectAuthenticatedPacketCMAC(void)
+{
+	PrepareAuthenticationTest(30, 15, CMAC, "abcdefghijklmno");
+	TEST_ASSERT_TRUE(ENABLED_OPT(AUTHENTICATION));
+
+	int pkt_len = LEN_PKT_NOMAC;
+
+	/* Prepare the packet. */
+	testpkt.p.exten[0] = htonl(20);
+	int mac_len = make_mac(&testpkt.p, pkt_len,
+			       MAX_MAC_LEN, key_ptr,
+			       &testpkt.p.exten[1]);
+
+	pkt_len += 4 + mac_len;
+
+	TEST_ASSERT_EQUAL(pkt_len,
+			  process_pkt(&testpkt.p, &testsock, pkt_len,
+				      MODE_SERVER, &testspkt.p, "UnitTest"));
+}
+

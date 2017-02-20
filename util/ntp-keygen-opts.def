@@ -297,8 +297,8 @@ When used to generate message digest keys, the program produces a file
 containing ten pseudo-random printable ASCII strings suitable for the
 MD5 message digest algorithm included in the distribution.
 If the OpenSSL library is installed, it produces an additional ten
-hex-encoded random bit strings suitable for the SHA1 and other message
-digest algorithms.
+hex-encoded random bit strings suitable for the SHA1, AES-128-CMAC, and
+other message digest algorithms.
 The message digest keys file must be distributed and stored
 using secure means beyond the scope of NTP itself.
 Besides the keys used for ordinary NTP associations, additional keys
@@ -1054,8 +1054,7 @@ The format of the symmetric keys file is somewhat different
 than the other files in the interest of backward compatibility.
 Since DES-CBC is deprecated in NTPv4, the only key format of interest
 is MD5 alphanumeric strings.
-Following hte heard the keys are
-entered one per line in the format
+Following the header the keys are entered one per line in the format
 .D1 Ar keyno type key
 where
 .Ar keyno
@@ -1134,10 +1133,7 @@ doc-section	= {
   ds-type	= 'BUGS';
   ds-format	= 'mdoc';
   ds-text	= <<- _END_MDOC_BUGS
-It can take quite a while to generate some cryptographic values,
-from one to several minutes with modern architectures
-such as UltraSPARC and up to tens of minutes to an hour
-with older architectures such as SPARC IPC.
+It can take quite a while to generate some cryptographic values.
 .Pp
 Please report bugs to http://bugs.ntp.org .
 	_END_MDOC_BUGS;
