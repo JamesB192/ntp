@@ -35,6 +35,8 @@
 #include "openssl/objects.h"
 #include "openssl/err.h"
 #include "libssl_compat.h"
+
+#define CMAC "AES128CMAC"
 #endif
 #include <ssl_applink.c>
 
@@ -459,6 +461,17 @@ ntpqmain(
 {
 	u_int ihost;
 	size_t icmd;
+#ifdef OPENSSL
+# ifdef HAVE_EVP_MD_DO_ALL_SORTED
+#  define K_PER_LINE 8
+#  define K_NL_PFX_STR "\n    "
+#  define K_DELIM_STR ", "
+
+	int nl;
+	int append;
+	size_t len;
+# endif
+#endif
 
 
 #ifdef SYS_VXWORKS
@@ -495,6 +508,52 @@ ntpqmain(
 
 #ifdef OPENSSL
 	    builtins[icmd].desc[0] = "digest-name";
+
+# ifdef HAVE_EVP_MD_DO_ALL_SORTED
+	    /* Append CMAC to SSL digests */
+
+	    /* If list empty, we need to append CMAC and new line */
+	    append = nl = (!list || !*list);
+
+	    if (append) {
+		len = strlen(K_NL_PFX_STR) + strlen(CMAC);
+		list = (char *)erealloc(list, len + 1);
+		list[0] = '\0';
+	    } else {
+		/* Check if CMAC already in list */
+		const char *cmac_sn;
+		char *cmac_p;
+
+		cmac_sn = OBJ_nid2sn(NID_cmac);
+		cmac_p = strstr(list, cmac_sn);
+
+		/* CMAC in list if found followed by null or "," */
+		if (cmac_p)
+			cmac_p += strlen(cmac_sn);
+
+		append = !(cmap_p && (!*cmap_p || ',' == *cmap_p));
+
+		if (append) {
+		    char *last_nl;
+
+		    len = strlen(list) + strlen(CMAC);
+		    /* Check if new entry will fit on last line */
+		    last_nl = strrchr(list, "\n");
+		    if (!last_nl)	last_nl = list;
+		    /* Do we need a new line? */
+		    nl = (len - (last_nl - list) + strlen(K_DELIM_STR) > 72);
+		    len += (nl) ? strlen(K_NL_PFX_STR) : strlen(K_DELIM_STR);
+		    list = (char *)erealloc(list, len + 1);
+		}
+	    }
+
+	    /* Check if we need to append an entry */
+	    if (append)
+		sprintf(list + strlen(list), "%s%s",
+			((nl) ? K_NL_PFX_STR : K_DELIM_STR),
+			CMAC);
+# endif
+
 	    my_easprintf(&msg,
 			 "set key type to use for authenticated requests, one of:%s",
 			 list);
@@ -3575,9 +3634,8 @@ struct hstate {
    const char **seen;
    int idx;
 };
-#define K_PER_LINE 8
-#define K_NL_PFX_STR "\n    "
-#define K_DELIM_STR ", "
+
+
 static void list_md_fn(const EVP_MD *m, const char *from, const char *to, void *arg )
 {
     size_t len, n;

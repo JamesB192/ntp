@@ -1,4 +1,4 @@
-@echo off
+@echo on
 GOTO PROG
 
 see notes/remarks directly below this header:
@@ -142,6 +142,8 @@ REM ****************************************************************************
 	IF NOT EXIST %TEMP%\TZ-%GENERATED_PROGRAM%.TMP GOTO NOTZINFO
 
 	for /f "Tokens=1* Delims==" %%a in ('type %TEMP%\TZ-%GENERATED_PROGRAM%.TMP') do if %%a == "ActiveTimeBias" SET ACTIVEBIAS=%%b
+	REM Windows 10 - Home and possibly others
+	IF "%ACTIVEBIAS%" == "" for /f "Tokens=1* Delims==" %%a in ('type %TEMP%\TZ-%GENERATED_PROGRAM%.TMP') do if %%a == "Bias" SET ACTIVEBIAS=%%b
 	for /f "Tokens=1* Delims=:" %%a in ('echo %ACTIVEBIAS%') do ( SET ACTIVEBIAS=%%b & SET PARTYP=%%a )
 	
 	REM *** Clean up temporary file
