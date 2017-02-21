@@ -7,7 +7,6 @@
 #define NTP_MD5_H
 
 #ifdef OPENSSL
-# include "openssl/cmac.h"
 # include "openssl/evp.h"
 # include "libssl_compat.h"
 #else	/* !OPENSSL follows */

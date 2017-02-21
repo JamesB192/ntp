@@ -1,4 +1,4 @@
-@echo on
+@echo off
 GOTO PROG
 
 see notes/remarks directly below this header:

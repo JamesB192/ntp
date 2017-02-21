@@ -5,7 +5,7 @@
  * Moved from ntpd/ntp_crypto.c crypto_setup()
  */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+# include <config.h>
 #endif
 #include <ctype.h>
 #include <ntp.h>
@@ -13,16 +13,16 @@
 #include <lib_strbuf.h>
 
 #ifdef OPENSSL
-#include "openssl/cmac.h"
-#include "openssl/crypto.h"
-#include "openssl/err.h"
-#include "openssl/evp.h"
-#include "openssl/opensslv.h"
-#include "libssl_compat.h"
+# include "openssl/cmac.h"
+# include "openssl/crypto.h"
+# include "openssl/err.h"
+# include "openssl/evp.h"
+# include "openssl/opensslv.h"
+# include "libssl_compat.h"
 
-#define MD5_LENGTH	16
-#define CMAC_LENGTH	16
-#define CMAC		"AES128CMAC"
+# define MD5_LENGTH	16
+# define CMAC_LENGTH	16
+# define CMAC		"AES128CMAC"
 
 int ssl_init_done;
 
@@ -102,7 +102,6 @@ keytype_from_text(
 	u_int		digest_len;
 #ifdef OPENSSL
 	const u_long	max_digest_len = MAX_MAC_LEN - sizeof(keyid_t);
-	u_char		digest[EVP_MAX_MD_SIZE];
 	char *		upcased;
 	char *		pch;
 
@@ -140,9 +139,8 @@ keytype_from_text(
 
 	if (NULL != pdigest_len) {
 #ifdef OPENSSL
-		EVP_MD *	md;
+		const EVP_MD *	md = EVP_get_digestbynid(key_type);
 
-		md = EVP_get_digestbynid(key_type);
 		digest_len = (md) ? EVP_MD_size(md) : 0;
 
 		if (!md || digest_len <= 0) {
