@@ -452,6 +452,14 @@ main(
 }
 #endif
 
+#ifdef OPENSSL
+# ifdef HAVE_EVP_MD_DO_ALL_SORTED
+#  define K_PER_LINE 8
+#  define K_NL_PFX_STR "\n    "
+#  define K_DELIM_STR ", "
+# endif
+#endif
+
 #ifndef BUILD_AS_LIB
 int
 ntpqmain(
@@ -463,10 +471,6 @@ ntpqmain(
 	size_t icmd;
 #ifdef OPENSSL
 # ifdef HAVE_EVP_MD_DO_ALL_SORTED
-#  define K_PER_LINE 8
-#  define K_NL_PFX_STR "\n    "
-#  define K_DELIM_STR ", "
-
 	int nl;
 	int append;
 	size_t len;
@@ -528,18 +532,23 @@ ntpqmain(
 		cmac_p = strstr(list, cmac_sn);
 
 		/* CMAC in list if found followed by null or "," */
-		if (cmac_p)
+		if (cmac_p) {
 			cmac_p += strlen(cmac_sn);
+		}
 
-		append = !(cmap_p && (!*cmap_p || ',' == *cmap_p));
+		append = !(cmac_p && (!*cmac_p || ',' == *cmac_p));
 
 		if (append) {
 		    char *last_nl;
 
 		    len = strlen(list) + strlen(CMAC);
 		    /* Check if new entry will fit on last line */
-		    last_nl = strrchr(list, "\n");
-		    if (!last_nl)	last_nl = list;
+		    last_nl = strrchr(list, '\n');
+
+		    if (!last_nl) {
+			    last_nl = list;
+		    }
+
 		    /* Do we need a new line? */
 		    nl = (len - (last_nl - list) + strlen(K_DELIM_STR) > 72);
 		    len += (nl) ? strlen(K_NL_PFX_STR) : strlen(K_DELIM_STR);
@@ -548,10 +557,11 @@ ntpqmain(
 	    }
 
 	    /* Check if we need to append an entry */
-	    if (append)
+	    if (append) {
 		sprintf(list + strlen(list), "%s%s",
 			((nl) ? K_NL_PFX_STR : K_DELIM_STR),
 			CMAC);
+	    }
 # endif
 
 	    my_easprintf(&msg,
