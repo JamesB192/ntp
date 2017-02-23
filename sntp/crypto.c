@@ -37,6 +37,12 @@ make_mac(
 	if (key_type == NID_cmac) {
 	    CMAC_CTX *      ctx;
 
+
+	    if (debug) {
+		fprintf(stderr, "%s:%d:%s():%s:nid\n",
+				__FILE__, __LINE__, __func__, CMAC);
+	    }
+
 	    if (!(ctx = CMAC_CTX_new())) {
 		fprintf(stderr,  "make_mac: CMAC %s CTX new failed.\n", CMAC);
 		msyslog(LOG_ERR, "make_mac: CMAC %s CTX new failed.",   CMAC);
@@ -214,7 +220,9 @@ auth_init(
 		if (octothorpe)
 			*octothorpe = '\0';
 		act = emalloc(sizeof(*act));
-		scan_cnt = sscanf(kbuf, "%d %9s %128s", &act->key_id, act->type, keystring);
+		/* keep width 15 = sizeof struct key.type - 1 synced */
+		scan_cnt = sscanf(kbuf, "%d %15s %128s",
+					&act->key_id, act->type, keystring);
 		if (scan_cnt == 3) {
 			int len = strlen(keystring);
 			if (len <= 20) {

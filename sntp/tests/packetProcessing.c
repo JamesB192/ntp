@@ -5,7 +5,8 @@
 #include "ntp_stdlib.h"
 #include "unity.h"
 
-#define CMAC "AES128CMAC"
+#define CMAC		"AES128CMAC"
+#define CMAC_LENGTH	16
 
 
 const char * Version = "stub unit test Version string";
@@ -79,7 +80,7 @@ PrepareAuthenticationTest(
 	key_ptr->next = NULL;
 	key_ptr->key_id = key_id;
 	key_ptr->key_len = key_len;
-	memcpy(key_ptr->type, "MD5", 3);
+	memcpy(key_ptr->type, type, strlen(type) + 1);
 
 	TEST_ASSERT_TRUE(key_len < sizeof(key_ptr->key_seq));
 
@@ -463,13 +464,13 @@ test_CorrectAuthenticatedPacketSHA1(void)
 void
 test_CorrectAuthenticatedPacketCMAC(void)
 {
-	PrepareAuthenticationTest(30, 15, CMAC, "abcdefghijklmno");
+	PrepareAuthenticationTest(30, CMAC_LENGTH, CMAC, "abcdefghijklmnop");
 	TEST_ASSERT_TRUE(ENABLED_OPT(AUTHENTICATION));
 
 	int pkt_len = LEN_PKT_NOMAC;
 
 	/* Prepare the packet. */
-	testpkt.p.exten[0] = htonl(20);
+	testpkt.p.exten[0] = htonl(30);
 	int mac_len = make_mac(&testpkt.p, pkt_len,
 			       MAX_MAC_LEN, key_ptr,
 			       &testpkt.p.exten[1]);
