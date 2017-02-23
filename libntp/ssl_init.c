@@ -124,6 +124,11 @@ keytype_from_text(
 
 	if (!key_type && !strncmp(CMAC, upcased, strlen(CMAC) + 1)) {
 		key_type = NID_cmac;
+
+		if (debug) {
+			fprintf(stderr, "%s:%d:%s():%s:key\n",
+				__FILE__, __LINE__, __func__, CMAC);
+		}
 	}
 #else
 	key_type = 0;
@@ -146,6 +151,11 @@ keytype_from_text(
 		if (!md || digest_len <= 0) {
 		    if (key_type == NID_cmac) {
 			digest_len = CMAC_LENGTH;
+
+			if (debug) {
+				fprintf(stderr, "%s:%d:%s():%s:len\n",
+					__FILE__, __LINE__, __func__, CMAC);
+			}
 		    } else {
 			fprintf(stderr,
 				"key type %s is not supported by OpenSSL\n",
@@ -197,6 +207,11 @@ keytype_name(
 
 	if (NID_cmac == nid) {
 		name = CMAC;
+
+		if (debug) {
+			fprintf(stderr, "%s:%d:%s():%s:nid\n",
+				__FILE__, __LINE__, __func__, CMAC);
+		}
 	} else
 	if (NULL == name) {
 		name = unknown_type;
