@@ -56,6 +56,8 @@ dnl AC_ARG_PROGRAM
 
 NTP_PROG_CC
 
+NTP_HARDEN
+
 NTP_LOCINFO()
 
 dnl AM_PROG_AR req. automake 1.12

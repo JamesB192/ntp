@@ -72,6 +72,8 @@ AC_PROG_YACC
 AC_PROG_CC_C_O
 AX_C99_STRUCT_INIT
 
+NTP_HARDEN([sntp])
+
 NTP_VPATH_HACK		dnl used only by ntpd/Makefile.am
 
 NTP_LOCINFO([sntp])	dnl takes over from NTP_BINDIR, in NTP_LIBNTP
