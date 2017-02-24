@@ -35,6 +35,12 @@
 #include "openssl/evp.h"
 #include "openssl/objects.h"
 #include "openssl/err.h"
+#ifdef SYS_WINNT
+# include "openssl/opensslv.h"
+# if !defined(HAVE_EVP_MD_DO_ALL_SORTED) && OPENSSL_VERSION_NUMBER > 0x10000000L
+#    define HAVE_EVP_MD_DO_ALL_SORTED	1
+# endif
+#endif
 #include "libssl_compat.h"
 
 #define CMAC "AES128CMAC"
