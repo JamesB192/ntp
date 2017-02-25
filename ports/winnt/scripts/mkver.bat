@@ -20,7 +20,11 @@ see notes/remarks directly below this header:
 #
 #
 # Changes:
-# 02/23/2011	David J Taylor	- Use reg instead of regedit so "run as
+# 02/20/2017	Brian Inglis
+#				- add support for Windows 10 (Home maybe others) rename of
+#				  registry Time Zone info from ActiveTimeBias to Bias
+# 02/23/2011	David J Taylor
+#				- Use reg instead of regedit so "run as
 #				  administrator" is not required.
 # 12/21/2009	Dave Hart
 #				- packageinfo.sh uses prerelease= now not
