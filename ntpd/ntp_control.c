@@ -2088,7 +2088,7 @@ ctl_putsys(
 
 		buffp = buf;
 		buffend = buf + sizeof(buf);
-		if (strlen(sys_var[CS_VARLIST].text) + 4 > buffend - buffp)
+		if (strlen(sys_var[CS_VARLIST].text) > (sizeof(buf) - 4))
 			break;	/* really long var name */
 
 		snprintf(buffp, sizeof(buf), "%s=\"",sys_var[CS_VARLIST].text);

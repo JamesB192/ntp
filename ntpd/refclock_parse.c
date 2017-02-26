@@ -3675,8 +3675,7 @@ parse_control(
 			}
 		}
 
-		tt = ap(start, LEN_STATES, tt,
-		    "; running time: %s\"", l_mktime(sum));
+		ap(start, LEN_STATES, tt, "; running time: %s\"", l_mktime(sum));
 
 		tt = add_var(&out->kv_list, 32, RO);
 		snprintf(tt, 32,  "refclock_id=\"%s\"", parse->parse_type->cl_id);
@@ -4248,13 +4247,11 @@ mk_utcinfo(
 	{
 		time_t t_ls;
 		struct tm *tm;
-		int n = 0;
+		int nc;
 
 		if (wnlsf < GPSWRAP)
 			wnlsf += GPSWEEKS;
-
-		if (wnt < GPSWRAP)
-			wnt += GPSWEEKS;
+		/* 'wnt' not used here: would need the same treatment as 'wnlsf */
 
 		t_ls = (time_t) wnlsf * SECSPERWEEK
 			+ (time_t) dn * SECSPERDAY
@@ -4267,13 +4264,20 @@ mk_utcinfo(
 			return;
 		}
 
-		n += snprintf( t, size, "UTC offset transition from %is to %is due to leap second %s",
+		nc = snprintf( t, size, "UTC offset transition from %is to %is due to leap second %s",
 				dtls, dtlsf, ( dtls < dtlsf ) ? "insertion" : "deletion" );
-		n += snprintf( t + n, size - n, " at UTC midnight at the end of %s, %04i-%02i-%02i",
+		if (nc < 0)
+			nc = strlen(t);
+		else if (nc > size)
+			nc = size;
+		
+		snprintf( t + nc, size - nc, " at UTC midnight at the end of %s, %04i-%02i-%02i",
 				daynames[tm->tm_wday], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday );
 	}
 	else
+	{
 		snprintf( t, size, "UTC offset parameter: %is, no leap second announced.\n", dtls );
+	}
 
 }
 
