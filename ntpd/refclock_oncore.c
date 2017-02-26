@@ -2514,8 +2514,6 @@ oncore_msg_Bl(
 		WARN_MINUS
 	} warn;
 
-	day_now = day_lsf = 0;
-	cp = NULL;	/* keep gcc happy */
 
 	subframe = buf[6] & 017;
 	valid = (buf[6] >> 4) & 017;
@@ -2589,6 +2587,9 @@ oncore_msg_Bl(
 		case WARN_PLUS:
 			instance->peer->leap = LEAP_ADDSECOND;
 			cp = "Set peer.leap to LEAP_ADDSECOND";
+			break;
+		default:
+			cp = NULL;
 			break;
 		}
 		oncore_log(instance, LOG_NOTICE, cp);
@@ -3379,7 +3380,6 @@ oncore_check_antenna(
 {
 	enum antenna_state antenna;		/* antenna state */
 
-	antenna = instance->ant_state;
 	if (instance->chan == 12)
 		antenna = (instance->BEHa[130] & 0x6 ) >> 1;
 	else

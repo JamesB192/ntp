@@ -367,7 +367,23 @@ static int getnetnum(const char *num, sockaddr_u *addr, int complain,
 
 #endif
 
+#if defined(__GNUC__) /* this covers CLANG, too */
+static void  __attribute__((noreturn,format(printf,1,2))) fatal_error(const char *fmt, ...)
+#elif defined(_MSC_VER)
+static void __declspec(noreturn) fatal_error(const char *fmt, ...)
+#else
+static void fatal_error(const char *fmt, ...)
+#endif
+{
+	va_list va;
+	
+	va_start(va, fmt);
+	mvsyslog(LOG_EMERG, fmt, va);
+	va_end(va);
+	_exit(1);
+}
 
+    
 /* FUNCTIONS FOR INITIALIZATION
  * ----------------------------
  */
@@ -1841,16 +1857,12 @@ config_auth(
 
 	/* Crypto Command */
 #ifdef AUTOKEY
-# ifdef __GNUC__
-	item = -1;	/* quiet warning */
-# endif
 	my_val = HEAD_PFIFO(ptree->auth.crypto_cmd_list);
 	for (; my_val != NULL; my_val = my_val->link) {
 		switch (my_val->attr) {
 
 		default:
-			INSIST(0);
-			break;
+			fatal_error("config_auth: attr-token=%d", my_val->attr);
 
 		case T_Host:
 			item = CRYPTO_CONF_PRIV;
@@ -2036,7 +2048,7 @@ config_tos(
 				msyslog(LOG_WARNING,
 					"Using maximum tos ceiling %d, %d requested",
 					STRATUM_UNSPEC - 1, (int)val);
-				val = STRATUM_UNSPEC - 1;
+				tos->value.d = STRATUM_UNSPEC - 1;
 			} else if (val < 1) {
 				msyslog(LOG_WARNING,
 					"Using minimum tos floor %d, %d requested",
@@ -2079,9 +2091,7 @@ config_tos(
 		switch(tos->attr) {
 
 		default:
-			item = -1;	/* quiet warning */
-			INSIST(0);
-			break;
+			fatal_error("config-tos: attr-token=%d", tos->attr);
 
 		case T_Bcpollbstep:
 			item = PROTO_BCPOLLBSTEP;
@@ -2230,8 +2240,7 @@ config_monitor(
 				switch (my_opts->value.i) {
 
 				default:
-					INSIST(0);
-					break;
+					fatal_error("config-monitor: type-token=%d", my_opts->value.i);
 
 				case T_None:
 					filegen_type = FILEGEN_NONE;
@@ -2467,8 +2476,7 @@ config_access(
 			switch (curr_flag->i) {
 
 			default:
-				INSIST(0);
-				break;
+				fatal_error("config-access: flag-type-token=%d", curr_flag->i);
 
 			case T_Ntpport:
 				mflags |= RESM_NTPONLY;
@@ -2698,8 +2706,7 @@ config_rlimit(
 		switch (rlimit_av->attr) {
 
 		default:
-			INSIST(0);
-			break;
+			fatal_error("config-rlimit: value-token=%d", rlimit_av->attr);
 
 		case T_Memlock:
 			/* What if we HAVE_OPT(SAVECONFIGQUIT) ? */
@@ -2772,16 +2779,12 @@ config_tinker(
 	attr_val *	tinker;
 	int		item;
 
-#ifdef __GNUC__
-	item = -1;	/* quiet warning */
-#endif
 	tinker = HEAD_PFIFO(ptree->tinker);
 	for (; tinker != NULL; tinker = tinker->link) {
 		switch (tinker->attr) {
 
 		default:
-			INSIST(0);
-			break;
+			fatal_error("config_tinker: attr-token=%d", tinker->attr);
 
 		case T_Allan:
 			item = LOOP_ALLAN;
@@ -2888,16 +2891,7 @@ config_nic_rules(
 		switch (curr_node->match_class) {
 
 		default:
-#ifdef __GNUC__
-			/*
-			 * this assignment quiets a gcc "may be used
-			 * uninitialized" warning and is here for no
-			 * other reason.
-			 */
-			match_type = MATCH_ALL;
-#endif
-			INSIST(FALSE);
-			break;
+			fatal_error("config_nic_rules: match-class-token=%d", curr_node->match_class);
 
 		case 0:
 			/*
@@ -2948,16 +2942,7 @@ config_nic_rules(
 		switch (curr_node->action) {
 
 		default:
-#ifdef __GNUC__
-			/*
-			 * this assignment quiets a gcc "may be used
-			 * uninitialized" warning and is here for no
-			 * other reason.
-			 */
-			action = ACTION_LISTEN;
-#endif
-			INSIST(FALSE);
-			break;
+			fatal_error("config_nic_rules: action-token=%d", curr_node->action);
 
 		case T_Listen:
 			action = ACTION_LISTEN;
@@ -3145,8 +3130,7 @@ config_logconfig(
 			ntp_syslogmask = get_logmask(my_lc->value.s);
 			break;
 		default:
-			INSIST(0);
-			break;
+			fatal_error("config-logconfig: modifier='%c'", my_lc->attr);
 		}
 	}
 }
@@ -3796,8 +3780,7 @@ peerflag_bits(
 		switch (option->value.i) {
 
 		default:
-			INSIST(0);
-			break;
+			fatal_error("peerflag_bits: option-token=%d", option->value.i);
 
 		case T_Autokey:
 			peerflags |= FLAG_SKEY;
@@ -5099,8 +5082,7 @@ ntp_rlimit(
 # endif /* RLIMIT_STACK */
 
 	    default:
-		INSIST(!"Unexpected setrlimit() case!");
-		break;
+		    fatal_error("ntp_rlimit: unexpected RLIMIT case: %d", rl_what);
 	}
 }
 #endif	/* HAVE_SETRLIMIT */

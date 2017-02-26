@@ -1,4 +1,7 @@
 ---
+* [Sec 3393] clang scan-build findings <perlinger@ntp.org>
+
+---
 (4.2.8p10)
 
 * [Bug 3363] Support for openssl-1.1.0 without compatibility modes
