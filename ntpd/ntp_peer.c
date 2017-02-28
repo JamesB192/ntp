@@ -161,7 +161,7 @@ getmorepeermem(void)
 	int i;
 	struct peer *peers;
 
-	peers = emalloc_zero(INC_PEER_ALLOC * sizeof(*peers));
+	peers = eallocarray(INC_PEER_ALLOC, sizeof(*peers));
 
 	for (i = INC_PEER_ALLOC - 1; i >= 0; i--)
 		LINK_SLIST(peer_free, &peers[i], p_link);
