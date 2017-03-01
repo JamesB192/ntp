@@ -1328,8 +1328,8 @@ create_unpeer_node(
 	)
 {
 	unpeer_node *	my_node;
-	u_int		u;
-	char *		pch;
+	u_long		u;
+	const u_char *	pch;
 
 	my_node = emalloc_zero(sizeof(*my_node));
 
@@ -1338,16 +1338,15 @@ create_unpeer_node(
 	 * its generic T_String definition of a name/address "address".
 	 * We treat all valid 16-bit numbers as association IDs.
 	 */
-	pch = addr->address;
-	while (*pch && isdigit((unsigned char)*pch))
-		pch++;
-
-	if (!*pch
-	    && 1 == sscanf(addr->address, "%u", &u)
-	    && u <= ASSOCID_MAX) {
+	for (u = 0, pch = (u_char*)addr->address; isdigit(*pch); ++pch) {
+		/* accumulate with overflow retention */
+		u = (10 * u + *pch - '0') | (u & 0xFF000000u);
+	}
+	
+	if (!*pch && u <= ASSOCID_MAX) {
 		my_node->assocID = (associd_t)u;
-		destroy_address_node(addr);
 		my_node->addr = NULL;
+		destroy_address_node(addr);
 	} else {
 		my_node->assocID = 0;
 		my_node->addr = addr;
@@ -4098,10 +4097,10 @@ config_unpeers(
 	curr_unpeer = HEAD_PFIFO(ptree->unpeers);
 	for (; curr_unpeer != NULL; curr_unpeer = curr_unpeer->link) {
 		/*
-		 * Either AssocID will be zero, and we unpeer by name/
-		 * address addr, or it is nonzero and addr NULL.
+		 * If we have no address attached, assume we have to
+		 * unpeer by AssocID.
 		 */
-		if (curr_unpeer->assocID) {
+		if (!curr_unpeer->addr) {
 			p = findpeerbyassoc(curr_unpeer->assocID);
 			if (p != NULL) {
 				msyslog(LOG_NOTICE, "unpeered %s",
@@ -4109,7 +4108,6 @@ config_unpeers(
 				peer_clear(p, "GONE");
 				unpeer(p);
 			}
-
 			continue;
 		}
 
@@ -4128,7 +4126,6 @@ config_unpeers(
 				peer_clear(p, "GONE");
 				unpeer(p);
 			}
-
 			continue;
 		}
 		/*
