@@ -744,8 +744,8 @@ jjy_receive ( struct recvbuf *rbufp )
 		}
 
 		iCopyLen = ( iLen <= sizeof(sLogText)-1 ? iLen : sizeof(sLogText)-1 ) ;
-		strncpy( sLogText, pBuf, iCopyLen ) ;
-		sLogText[iCopyLen] = 0 ;
+		memcpy( sLogText, pBuf, iCopyLen ) ;
+		sLogText[iCopyLen] = '\0' ;
 		jjy_write_clockstats( peer, JJY_CLOCKSTATS_MARK_RECEIVE, sLogText ) ;
 
 		switch ( up->unittype ) {
