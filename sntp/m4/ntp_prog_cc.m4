@@ -7,7 +7,7 @@ case "$build" in
     cclist=cc
     ;;
  *)
-    cclist=
+    cclist="cc gcc"
     ;;
 esac
 
