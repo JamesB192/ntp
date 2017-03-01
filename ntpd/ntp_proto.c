@@ -1693,7 +1693,11 @@ receive(
 		} else if (L_ISZERO(&p_org)) {
 			const char *action;
 
+#ifdef BUG3361
+			msyslog(LOG_INFO,
+				"receive: BUG 3361: Clearing peer->aorg ");
 			L_CLR(&peer->aorg);
+#endif
 			/**/
 			switch (hismode) {
 			/* We allow 0org for: */
