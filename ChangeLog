@@ -1,6 +1,8 @@
 ---
 (4.2.8p10)
 
+* [Sec 3377] NTP-01-002 Buffer Overflow in ntpq when fetching reslist
+  (Pentest report 01.2017) <perlinger@ntp.org
 * [Sec 3361] 0rigin (zero origin) DoS.  HStenn.
 * [Bug 3363] Support for openssl-1.1.0 without compatibility modes
   - rework of patch set from <ntp.org@eroen.eu>. <perlinger@ntp.org>
