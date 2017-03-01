@@ -1,9 +1,7 @@
 ---
-* [Sec 3393] clang scan-build findings <perlinger@ntp.org>
-
----
 (4.2.8p10)
 
+* [Sec 3393] clang scan-build findings <perlinger@ntp.org>
 * [Sec 3389] NTP-01-016: Denial of Service via Malformed Config
   (Pentest report 01.2017) <perlinger@ntp.org>
 * [Sec 3388] NTP-01-014: Buffer Overflow in DPTS Clock
