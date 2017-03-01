@@ -1461,7 +1461,7 @@ oncore_receive(
 #endif
 
 	i = rbufp->recv_length;
-	if (rcvbuf+rcvptr+i > &rcvbuf[sizeof rcvbuf])
+	if ((size_t)rcvptr + i >= sizeof(rcvbuf))
 		i = sizeof(rcvbuf) - rcvptr;	/* and some char will be lost */
 	memcpy(rcvbuf+rcvptr, p, i);
 	rcvptr += i;
