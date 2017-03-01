@@ -214,13 +214,13 @@ int RemoveService(LPCTSTR serviceName)
 
 /* --------------------------------------------------------------------------------------- */
 
-int addSourceToRegistry(LPSTR pszAppname, LPSTR pszMsgDLL)
+int addSourceToRegistry(const char * pszAppname, const char * pszMsgDLL)
 {
-  HKEY hk;                      /* registry key handle */
+  HKEY  hk;                      /* registry key handle */
   DWORD dwData;
-  BOOL bSuccess;
-  char   regarray[200];
-  char *lpregarray = regarray;
+  BOOL  bSuccess;
+  char  regarray[200];
+  int   rc;
 
   /* When an application uses the RegisterEventSource or OpenEventLog
      function to get a handle of an event log, the event loggging service
@@ -229,43 +229,49 @@ int addSourceToRegistry(LPSTR pszAppname, LPSTR pszMsgDLL)
      under the Application key and adding registry values to the new
      subkey. */
 
-  strcpy(lpregarray, "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\");
-  strcat(lpregarray, pszAppname);
+  rc = snprintf(regarray, sizeof(regarray), "%s%s",
+                "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\",
+                pszAppname);
+  if (rc < 0 || rc >= sizeof(regarray))
+  {
+    fputs("addSourceToRegistry: buffer overrun(app name)", stderr);
+    return 1;
+  }
   /* Create a new key for our application */
-  bSuccess = RegCreateKey(HKEY_LOCAL_MACHINE, lpregarray, &hk);
-   if(bSuccess != ERROR_SUCCESS)
-    {
-      PERR("RegCreateKey");
-      return 1;
-    }
+  bSuccess = RegCreateKeyA(HKEY_LOCAL_MACHINE, regarray, &hk);
+  if(bSuccess != ERROR_SUCCESS)
+  {
+    PERR("RegCreateKey");
+    return 1;
+  }
     
   /* Add the Event-ID message-file name to the subkey. */
-  bSuccess = RegSetValueEx(hk,          /* subkey handle         */
+  bSuccess = RegSetValueExA(hk,         /* subkey handle         */
       "EventMessageFile",               /* value name            */
       0,                                /* must be zero          */
       REG_EXPAND_SZ,                    /* value type            */
-      (LPBYTE) pszMsgDLL,               /* address of value data */
+      (LPBYTE)pszMsgDLL,                /* address of value data */
       (DWORD)(strlen(pszMsgDLL) + 1));  /* length of value data  */
- if(bSuccess != ERROR_SUCCESS)
-    {
-      PERR("RegSetValueEx");
-      return 1;
-    }
+  if(bSuccess != ERROR_SUCCESS)
+  {
+    PERR("RegSetValueEx");
+    return 1;
+  }
   
   /* Set the supported types flags and addit to the subkey. */
   dwData = EVENTLOG_ERROR_TYPE | EVENTLOG_WARNING_TYPE |
       EVENTLOG_INFORMATION_TYPE;
-  bSuccess = RegSetValueEx(hk,  /* subkey handle                */
+  bSuccess = RegSetValueExA(hk,  /* subkey handle                */
       "TypesSupported",         /* value name                   */
       0,                        /* must be zero                 */
       REG_DWORD,                /* value type                   */
       (LPBYTE) &dwData,         /* address of value data        */
       sizeof(DWORD));           /* length of value data         */
   if(bSuccess != ERROR_SUCCESS)
-    {
-      PERR("RegSetValueEx");
-      return 1;
-    }
+  {
+    PERR("RegSetValueEx");
+    return 1;
+  }
   RegCloseKey(hk);
   return 0;
 }
@@ -273,45 +279,36 @@ int addSourceToRegistry(LPSTR pszAppname, LPSTR pszMsgDLL)
 /* --------------------------------------------------------------------------------------- */
 
 int addKeysToRegistry()
-
 {
   HKEY hk;                      /* registry key handle */
   BOOL bSuccess;
-  char   myarray[200];
-  char *lpmyarray = myarray;
-  int arsize = 0;
 
+  /* Building an initialised REG_MULTISZ needs a bit of care: The array must be big enough
+  ** to hold the closing double-NUL and should have *exactly* the required size. Since the
+  ** dependencies are fixed here, we take exactly the required 11 bytes:
+  */
+  static const char s_acSvcDeps[11] = "TcpIp\0Afd\0\0";
   /* now add the depends on service key */
  
   /* Create a new key for our application */
-  bSuccess = RegCreateKey(HKEY_LOCAL_MACHINE,
+  bSuccess = RegCreateKeyA(HKEY_LOCAL_MACHINE,
       "SYSTEM\\CurrentControlSet\\Services\\NTP", &hk);
-  if(bSuccess != ERROR_SUCCESS)
-    {
-      PERR("RegCreateKey");
-      return 1;
-    }
+  if(bSuccess != ERROR_SUCCESS) {
+    PERR("RegCreateKey");
+    return 1;
+  }
 
-  strcpy(lpmyarray,"TcpIp");
-  lpmyarray = lpmyarray + 6;
-  arsize = arsize + 6;
-  strcpy(lpmyarray,"Afd");
-  lpmyarray = lpmyarray + 4;
-  arsize = arsize + 4;
-  arsize = arsize + 2;
-  strcpy(lpmyarray,"\0\0");
-  
-  bSuccess = RegSetValueEx(hk,  /* subkey handle         */
-      "DependOnService",        /* value name            */
-      0,                        /* must be zero          */
-      REG_MULTI_SZ,             /* value type            */
-      (LPBYTE) &myarray,        /* address of value data */
-      arsize);                  /* length of value data  */
-   if(bSuccess != ERROR_SUCCESS)
-    {
-      PERR("RegSetValueEx");
-      return 1;
-    }
+  bSuccess = RegSetValueExA(hk,     /* subkey handle         */
+      "DependOnService",            /* value name            */
+      0,                            /* must be zero          */
+      REG_MULTI_SZ,                 /* value type            */
+      (LPBYTE)s_acSvcDeps,          /* address of value data */
+      (DWORD)sizeof(s_acSvcDeps));  /* length of value data  */
+  if(bSuccess != ERROR_SUCCESS)
+  {
+    PERR("RegSetValueEx");
+    return 1;
+  }
 
   RegCloseKey(hk);
   return 0;
