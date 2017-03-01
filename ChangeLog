@@ -1,6 +1,8 @@
 ---
 (4.2.8p10)
 
+* [Sec 3378] NTP-01-003 Improper use of snprintf() in mx4200_send()
+  (Pentest report 01.2017) <perlinger@ntp.org>
 * [Sec 3377] NTP-01-002 Buffer Overflow in ntpq when fetching reslist
   (Pentest report 01.2017) <perlinger@ntp.org
 * [Sec 3361] 0rigin (zero origin) DoS.  HStenn.
