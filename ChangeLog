@@ -1,6 +1,8 @@
 ---
 (4.2.8p10)
 
+* [Sec 3386] NTP-01-011: ntpq_stripquotes() returns incorrect Value
+  (Pentest report 01.2017) <perlinger@ntp.org>
 * [Sec 3385] NTP-01-010 NTP: ereallocarray()/eallocarray() underused. HStenn
 * [Sec 3383] NTP-01-008: Stack Buffer Overflow from Command Line
   (Pentest report 01.2017) <perlinger@ntp.org>
