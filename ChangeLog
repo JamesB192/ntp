@@ -1,6 +1,8 @@
 ---
 (4.2.8p10)
 
+* [Sec 3380] NTP-01-005: Off-by-one in Oncore GPS Receiver
+  (Pentest report 01.2017) <perlinger@ntp.org>
 * [Sec 3379] NTP-01-004 Potential Overflows in ctl_put() functions
   (Pentest report 01.2017) <perlinger@ntp.org>
 * [Sec 3378] NTP-01-003 Improper use of snprintf() in mx4200_send()
