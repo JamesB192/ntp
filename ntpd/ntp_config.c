@@ -361,6 +361,9 @@ static char * normal_dtoa(double);
 static u_int32 get_pfxmatch(const char **, struct masks *);
 static u_int32 get_match(const char *, struct masks *);
 static u_int32 get_logmask(const char *);
+static int/*BOOL*/ is_refclk_addr(const address_node * addr);
+
+
 #ifndef SIM
 static int getnetnum(const char *num, sockaddr_u *addr, int complain,
 		     enum gnn_type a_type);
@@ -1282,7 +1285,10 @@ create_peer_node(
 			break;
 
 		case T_Ttl:
-			if (option->value.u >= MAX_TTL) {
+			if (is_refclk_addr(addr)) {
+				msyslog(LOG_ERR, "'ttl' does not apply for refclocks");
+				errflag = 1;
+			} else if (option->value.u >= MAX_TTL) {
 				msyslog(LOG_ERR, "ttl: invalid argument");
 				errflag = 1;
 			} else {
@@ -1291,7 +1297,12 @@ create_peer_node(
 			break;
 
 		case T_Mode:
-			my_node->ttl = option->value.u;
+			if (is_refclk_addr(addr)) {
+				my_node->ttl = option->value.u;
+			} else {
+				msyslog(LOG_ERR, "'mode' does not apply for network peers");
+				errflag = 1;
+			}
 			break;
 
 		case T_Key:
@@ -1344,8 +1355,8 @@ create_unpeer_node(
 	)
 {
 	unpeer_node *	my_node;
-	u_int		u;
-	char *		pch;
+	u_long		u;
+	const u_char *	pch;
 
 	my_node = emalloc_zero(sizeof(*my_node));
 
@@ -1354,16 +1365,15 @@ create_unpeer_node(
 	 * its generic T_String definition of a name/address "address".
 	 * We treat all valid 16-bit numbers as association IDs.
 	 */
-	pch = addr->address;
-	while (*pch && isdigit((unsigned char)*pch))
-		pch++;
-
-	if (!*pch
-	    && 1 == sscanf(addr->address, "%u", &u)
-	    && u <= ASSOCID_MAX) {
+	for (u = 0, pch = (u_char*)addr->address; isdigit(*pch); ++pch) {
+		/* accumulate with overflow retention */
+		u = (10 * u + *pch - '0') | (u & 0xFF000000u);
+	}
+	
+	if (!*pch && u <= ASSOCID_MAX) {
 		my_node->assocID = (associd_t)u;
-		destroy_address_node(addr);
 		my_node->addr = NULL;
+		destroy_address_node(addr);
 	} else {
 		my_node->assocID = 0;
 		my_node->addr = addr;
@@ -4081,10 +4091,10 @@ config_unpeers(
 	curr_unpeer = HEAD_PFIFO(ptree->unpeers);
 	for (; curr_unpeer != NULL; curr_unpeer = curr_unpeer->link) {
 		/*
-		 * Either AssocID will be zero, and we unpeer by name/
-		 * address addr, or it is nonzero and addr NULL.
+		 * If we have no address attached, assume we have to
+		 * unpeer by AssocID.
 		 */
-		if (curr_unpeer->assocID) {
+		if (!curr_unpeer->addr) {
 			p = findpeerbyassoc(curr_unpeer->assocID);
 			if (p != NULL) {
 				msyslog(LOG_NOTICE, "unpeered %s",
@@ -4092,7 +4102,6 @@ config_unpeers(
 				peer_clear(p, "GONE");
 				unpeer(p);
 			}
-
 			continue;
 		}
 
@@ -4111,7 +4120,6 @@ config_unpeers(
 				peer_clear(p, "GONE");
 				unpeer(p);
 			}
-
 			continue;
 		}
 		/*
@@ -4677,6 +4685,16 @@ save_and_apply_config_tree(int/*BOOL*/ input_from_file)
 #endif
 }
 
+/* Hack to disambiguate 'server' statements for refclocks and network peers.
+ * Please note the qualification 'hack'. It's just that.
+ */
+static int/*BOOL*/
+is_refclk_addr(
+	const address_node * addr
+	)
+{
+	return addr && addr->address && !strncmp(addr->address, "127.127.", 6);
+}
 
 static void
 ntpd_set_tod_using(

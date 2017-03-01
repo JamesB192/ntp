@@ -4,6 +4,28 @@
 ---
 (4.2.8p10)
 
+* [Sec 3389] NTP-01-016: Denial of Service via Malformed Config
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3388] NTP-01-014: Buffer Overflow in DPTS Clock
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3387] NTP-01-012: Authenticated DoS via Malicious Config Option
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3386] NTP-01-011: ntpq_stripquotes() returns incorrect Value
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3385] NTP-01-010: ereallocarray()/eallocarray() underused. HStenn
+* [Sec 3383] NTP-01-008: Stack Buffer Overflow from Command Line
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3382] NTP-01-007: Data Structure terminated insufficiently
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3380] NTP-01-005: Off-by-one in Oncore GPS Receiver
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3379] NTP-01-004: Potential Overflows in ctl_put() functions
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3378] NTP-01-003: Improper use of snprintf() in mx4200_send()
+  (Pentest report 01.2017) <perlinger@ntp.org>
+* [Sec 3377] NTP-01-002: Buffer Overflow in ntpq when fetching reslist
+  (Pentest report 01.2017) <perlinger@ntp.org
+* [Sec 3361] 0rigin (zero origin) DoS.  HStenn.
 * [Bug 3363] Support for openssl-1.1.0 without compatibility modes
   - rework of patch set from <ntp.org@eroen.eu>. <perlinger@ntp.org>
 * [Bug 3356] Bugfix 3072 breaks multicastclient <perlinger@ntp.org>

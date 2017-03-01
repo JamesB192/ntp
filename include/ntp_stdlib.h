@@ -105,21 +105,23 @@ extern	u_int32	addr2refid	(sockaddr_u *);
 /* emalloc.c */
 #ifndef EREALLOC_CALLSITE	/* ntp_malloc.h defines */
 extern	void *	ereallocz	(void *, size_t, size_t, int);
-extern	void *	oreallocarray	(void *optr, size_t nmemb, size_t size);
+extern	void *	oreallocarrayx	(void *optr, size_t nmemb, size_t size, size_t extra);
 #define	erealloczsite(p, n, o, z, f, l) ereallocz((p), (n), (o), (z))
 #define	emalloc(n)		ereallocz(NULL, (n), 0, FALSE)
 #define	emalloc_zero(c)		ereallocz(NULL, (c), 0, TRUE)
 #define	erealloc(p, c)		ereallocz((p), (c), 0, FALSE)
 #define erealloc_zero(p, n, o)	ereallocz((p), (n), (o), TRUE)
-#define ereallocarray(p, n, s)	oreallocarray((p), (n), (s))
-#define eallocarray(n, s)	oreallocarray(NULL, (n), (s))
+#define ereallocarray(p, n, s)	oreallocarrayx((p), (n), (s), 0)
+#define eallocarray(n, s)	oreallocarrayx(NULL, (n), (s), 0)
+#define ereallocarrayx(p, n, s, x)	oreallocarrayx((p), (n), (s), (x))
+#define eallocarrayx(n, s, x)	oreallocarrayx(NULL, (n), (s), (x))
 extern	char *	estrdup_impl(const char *);
 #define	estrdup(s)		estrdup_impl(s)
 #else
 extern	void *	ereallocz	(void *, size_t, size_t, int,
 				 const char *, int);
-extern	void *	oreallocarray	(void *optr, size_t nmemb, size_t size,
-				 const char *, int);
+extern	void *	oreallocarrayx	(void *optr, size_t nmemb, size_t size,
+				 size_t extra, const char *, int);
 #define erealloczsite		ereallocz
 #define	emalloc(c)		ereallocz(NULL, (c), 0, FALSE, \
 					  __FILE__, __LINE__)
