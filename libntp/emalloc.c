@@ -83,7 +83,7 @@ ereallocz(
 #define MUL_NO_OVERFLOW	((size_t)1 << (sizeof(size_t) * 4))
 
 void *
-oreallocarrayx(
+oreallocarrayxz(
 	void *optr,
 	size_t nmemb,
 	size_t size,
@@ -107,9 +107,9 @@ oreallocarrayx(
 		exit(1);
 	}
 #ifndef EREALLOC_CALLSITE
-	return ereallocz(optr, extra + (size * nmemb), 0, FALSE);
+	return ereallocz(optr, extra + (size * nmemb), 0, TRUE);
 #else
-	return ereallocz(optr, extra + (size * nmemb), 0, FALSE, file, line);
+	return ereallocz(optr, extra + (size * nmemb), 0, TRUE, file, line);
 #endif
 }
 
