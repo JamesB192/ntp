@@ -20,6 +20,9 @@ see notes/remarks directly below this header:
 #
 #
 # Changes:
+# 03/03/2017	Brian Inglis
+#				- ensure Windows system32 from COMSPEC added to start
+#				  of PATH in case other find commands are on PATH
 # 02/20/2017	Brian Inglis
 #				- add support for Windows 10 (Home maybe others) rename of
 #				  registry Time Zone info from ActiveTimeBias to Bias
@@ -86,6 +89,7 @@ GOTO USAGE
 
 :BEGIN
 
+SET PATH=%COMSPEC:\cmd.exe=%;%PATH%
 SET GENERATED_PROGRAM=%2
 
 REM *****************************************************************************************************************
