@@ -1,4 +1,8 @@
 ---
+* [Sec 3384] NTP-01-009: Privileged execution of User Library code
+  (Pentest report 01.2017) <perlinger@ntp.org>
+
+---
 (4.2.8p10)
 
 * [Sec 3393] clang scan-build findings <perlinger@ntp.org>

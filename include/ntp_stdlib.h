@@ -131,9 +131,13 @@ extern	void *	oreallocarrayxz	(void *optr, size_t nmemb, size_t size,
 					  __FILE__, __LINE__)
 #define	erealloc_zero(p, n, o)	ereallocz((p), (n), (o), TRUE, \
 					  __FILE__, __LINE__)
-#define ereallocarray(p, n, s)	oreallocarray((p), (n), (s), \
+#define ereallocarray(p, n, s)	oreallocarrayxz((p), (n), (s), 0, \
 					  __FILE__, __LINE__)
-#define eallocarray(n, s)	oreallocarray(NULL, (n), (s), \
+#define eallocarray(n, s)	oreallocarrayxz(NULL, (n), (s), 0, \
+					  __FILE__, __LINE__)
+#define ereallocarrayxz(p, n, s, x)	oreallocarrayxz((p), (n), (s), (x), \
+					  __FILE__, __LINE__)
+#define eallocarrayxz(n, s, x)	oreallocarrayxz(NULL, (n), (s), (x), \
 					  __FILE__, __LINE__)
 extern	char *	estrdup_impl(const char *, const char *, int);
 #define	estrdup(s) estrdup_impl((s), __FILE__, __LINE__)

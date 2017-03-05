@@ -3262,7 +3262,7 @@ config_ttl(
 				"ttl: Number of TTL entries exceeds %zu. Ignoring TTL %d...",
 				COUNTOF(sys_ttl), curr_ttl->i);
 	}
-	sys_ttlmax = i - 1;
+	sys_ttlmax = (i) ? (i - 1) : 0;
 }
 #endif	/* !SIM */
 
