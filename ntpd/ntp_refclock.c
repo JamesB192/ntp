@@ -1254,7 +1254,10 @@ refclock_params(
 		    PPS_TSFMT_TSPEC) < 0) {
 			msyslog(LOG_ERR,
 			    "refclock_params: time_pps_kcbind: %m");
-			return (0);
+
+			if (errno != EOPNOTSUPP) { 
+				return (0);
+			}
 		}
 		hardpps_enable = 1;
 	}
