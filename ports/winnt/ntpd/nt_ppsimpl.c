@@ -21,9 +21,134 @@
 #include "timepps.h"
 #include "ntp_stdlib.h"
 #include "lib_strbuf.h"
+#include "ntp_iocpltypes.h"
+#include "ntp_iocplmem.h"
 
+struct InstListNode {
+	struct InstListNode *	next;
+	pps_handle_t		ppsu;
+	DevCtx_t *		devu;
+};
+typedef struct ProvListNode ProvListNode_t;
+
+static struct InstListNode *	g_active_units;
 static ppsapi_provider *	g_provider_list;
 static ppsapi_provider *	g_curr_provider;
+
+static void
+ppsu_register(
+	pps_handle_t ppsu,
+	DevCtx_t *   devu)
+{
+	struct InstListNode *	node;
+
+	if (devu && (node = IOCPLPoolAlloc(sizeof(*node), "PPS registration"))) {
+		node->next = g_active_units;
+		node->ppsu = ppsu;
+		node->devu = DevCtxAttach(devu);
+		devu->pps_active = TRUE;
+		g_active_units = node;
+	}
+}
+
+static void
+ppsu_remove(
+	pps_handle_t ppsu)
+{
+	struct InstListNode **	link;
+	struct InstListNode *	node;
+
+	link = &g_active_units;
+	while (NULL != (node = *link)) {
+		if (node->ppsu == ppsu) {
+			node->devu->pps_active = FALSE;
+			DevCtxDetach(node->devu);
+			*link = node->next;
+			IOCPLPoolFree(node, "PPS registration");
+		} else {
+			link = &node->next;
+		}
+	}
+}
+
+static HKEY
+myRegOpenKey(
+	const char * szSubKey)
+{
+	static const char * const s_RegKey =
+		"SYSTEM\\CurrentControlSet\\services\\NTP";
+
+	HKEY	hkey1 = NULL;
+	HKEY	hkey2 = NULL;
+	DWORD	rc;
+
+	rc = RegOpenKeyExA(HKEY_LOCAL_MACHINE, s_RegKey, 0, KEY_READ, &hkey1);
+	if (ERROR_SUCCESS  != rc)
+		return NULL;
+	if (!(szSubKey && *szSubKey))
+		return hkey1;
+
+	rc = RegOpenKeyExA(hkey1, szSubKey, 0, KEY_READ, &hkey2);
+	RegCloseKey(hkey1);
+	if (ERROR_SUCCESS != rc)
+		return NULL;
+	return hkey2;
+}
+
+static char*
+myRegReadMultiString(
+	HKEY        hKey   ,
+	const char *szValue,
+	DWORD      *pSize  )
+{
+	char *	endp;
+	char *	retv  = NULL;
+	DWORD	rSize = 0, rType = REG_NONE, rc;
+
+	/* take two turns: one to get the size, another one to malloc & read */
+	do {
+		if (rType != REG_NONE) {
+			retv = malloc(rSize += 2);
+			if (NULL == retv)
+				goto fail;
+		}
+		rc = RegQueryValueExA(hKey, szValue, NULL, &rType, retv, &rSize);
+		if (ERROR_SUCCESS != rc || (REG_SZ != rType && REG_MULTI_SZ != rType))
+			goto fail;	
+	} while (NULL == retv);
+
+	/* trim trailing NULs and ensure two of them */
+	endp = retv + rSize;
+	while (endp != retv && endp[-1])
+		--endp;
+	if (endp != retv) {
+		endp[0] = endp[1] = '\0';
+		if (NULL != pSize)
+			*pSize = (DWORD)(endp - retv);
+		return retv;
+	}
+fail:
+	free(retv);
+	if (NULL != pSize)
+		*pSize = 0;
+	return NULL;
+}
+
+static DWORD
+myRegReadDWord(
+	HKEY        hKey   ,
+	const char *szValue,
+	DWORD       Default)
+{
+	DWORD	rc, rSize, rType, rValue;
+	
+	rSize = sizeof(rValue);
+	rc = RegQueryValueExA(hKey, szValue, NULL, &rType, (PBYTE)&rValue, &rSize);
+	if (rc != ERROR_SUCCESS || rSize != sizeof(rValue) || rType != REG_DWORD)
+		rValue = Default;
+	return rValue;
+}
+
 
 static pps_handle_t
 internal_create_pps_handle(
@@ -169,6 +294,82 @@ fail:
 	return NULL;
 }
 
+static char *
+get_provider_list(void)
+{
+	static char * s_Value = NULL;
+
+	HKEY hKey;
+	DWORD rSize;
+	char *cp, *op;
+
+	if (s_Value != NULL)
+		return (*s_Value) ? s_Value : NULL;
+
+	/*
+	** try registry first
+	*/
+	hKey = myRegOpenKey(NULL);
+	if (NULL == hKey)
+		goto regfail;
+
+	s_Value = myRegReadMultiString(hKey, "PPSProviders", &rSize);
+	if (NULL == s_Value)
+		goto regfail;
+
+	/* make sure we have backslashes in the path */
+	for (cp = s_Value; rSize; --rSize, ++cp)
+		if (*cp == '/')
+			*cp = '\\';
+regfail:
+	if (NULL != hKey)
+		RegCloseKey(hKey);
+
+	if (s_Value && *s_Value)
+		return s_Value;
+
+	/*
+	** try environment next.
+	*/
+	free(s_Value);
+	s_Value = NULL;
+
+	/* try to get env var */
+	cp = getenv("PPSAPI_DLLS");
+	if (!(cp && *cp))
+		goto envfail;
+
+	/* get size & allocate buffer */
+	rSize = strlen(cp);
+	s_Value = malloc(rSize + 2);
+	if (s_Value == NULL)
+		goto envfail;
+
+	/* copy string value and convert to MULTI_SZ.
+	 * Converts sequences of ';' to a single NUL byte, and rplaces
+	 * slashes by backslashes on the fly.
+	 */
+	for (op = s_Value; *cp; ++cp) {
+		if (*cp == '/') {
+			*op++ = '\\';
+		} else if (*cp == ';') {
+			if (op != s_Value && op[-1])
+				*op++ = '\0';
+		} else {
+			*op++ = *cp;
+		}
+	}
+	cp[0] = '\0';
+	cp[1] = '\0';
+	return s_Value;
+
+envfail:
+	free(s_Value);
+	s_Value = calloc(2, 1);
+	return s_Value;
+}
+
+
 /* Iteration helper for the provider list. Naked names (without *any*
  * path) will be prepended with path to the executable running this
  * code. While this was not necessary until Win7, newer versions of
@@ -177,38 +378,48 @@ fail:
  */
 static char*
 provlist_next_item(
-	const char ** const ppath
+	const char ** iter
 	)
 {
 	static char *	s_modpath    /* = NULL */;
 	static char	s_nullstr[1] /* = { '\0' } */;
 
-	const char *	phead;
-	const char *	ptail;
-	char *		retv;
-	char *		endp;
+	const char     *phead, *phold;
+	char	       *retv, *endp;
 	int/*BOOL*/	nodir;
-	int		ch;
-	DWORD		slen;
+	DWORD		slen, mlen;
 
-	/* check if we're already done */
-	if (NULL == (phead = *ppath))
-		return NULL;
-	/* Skip any leading ';' -- should not happen, but this is
-	 * user-provided input after all...
-	 */
-	while (*phead == ';')
-		++phead;
-	/* check if we're already done */
-	if (!*phead) {
-		*ppath = NULL;
+	/* get next item -- might be start of a new round or the end */
+again:
+	if (*iter == NULL)
+		*iter = phead = get_provider_list();
+	else
+		*iter = phead = *iter + strlen(*iter) + 1;
+	if (!(phead && *phead)) {
+		*iter = NULL;
 		return NULL;
 	}
-	/* Inspect the next section of input string. */
-	nodir = TRUE;
-	for (ptail = phead; (ch = *ptail) && ch != ';'; ++ptail)
-		if (ch == '\\' || ch == '/')
-			nodir = FALSE;
+
+	/* Inspect the next section of input string. It must be
+	 * either an absolute path or just a name.
+	 */
+	if (isalpha((u_char)phead[0]) && phead[1] == ':' && phead[2] == '\\') {
+		nodir = FALSE;
+	} else {
+		nodir = TRUE;
+		phold = phead;
+		while (NULL != (endp = strpbrk(phold, "\\:")))
+			phold = endp + 1;
+		if (phead != phold) {
+			msyslog(LOG_WARNING,
+				"pps api: path component(s) of '%s' ignored, use '%s'",
+				phead, phold);
+			phead = phold;
+		}
+	}
+	if (!*phead || strchr("\\.:", (u_char)phead[strlen(phead) - 1]))
+		goto again;	/* empty or looks like a directory! */
+
 	/* Make sure we have a proper module path when we need one. */
 	if (nodir && NULL == s_modpath) {
 		s_modpath = get_module_path();
@@ -217,27 +428,23 @@ provlist_next_item(
 	}
 
 	/* Prepare buffer for copy of file name. */
-	slen = (DWORD)(ptail - phead); /* 4GB string should be enough... */
+	slen = (DWORD)strlen(phead); /* 4GB string should be enough... */
 	if (nodir && NULL != s_modpath) {
 		/* Prepend full path to executable to the name. */
-		endp = retv = malloc(strlen(s_modpath) + slen + 1);
+		mlen = (DWORD)strlen(s_modpath);
+		endp = retv = malloc(mlen + slen + 1);
 		if (NULL != endp) {
-			strcpy(endp, s_modpath);
-			endp += strlen(endp);
+			memcpy(endp, s_modpath, mlen);
+			endp += mlen;
 		}
 	} else {
 		endp = retv = malloc(slen + 1u);
 	}
 	/* Copy with conversion from '/' to '\\' */
 	if (NULL != endp) {
-		while (phead != ptail) {
-			ch = (u_char)*phead++;
-			*endp++ = (ch != '/') ? ch : '\\';
-		}
-		*endp = '\0';
+		memcpy(endp, phead, slen);
+		endp[slen] = '\0';
 	}
-	/*Update scan pointer & return result. */
-	*ppath = (*ptail) ? (ptail + 1) : NULL;
 	return retv;
 }
 
@@ -327,6 +534,49 @@ load_pps_provider(
 }
 
 
+static ppsapi_provider*
+get_first_provider(void)
+{
+	const char *	 itpos;
+	char *		 dll;
+	ppsapi_provider *prov, *hold;
+	int		 err;
+
+	/* check if we have done our work so far... */
+	if (g_provider_list == INVALID_HANDLE_VALUE)
+		return NULL;
+	if (g_provider_list != NULL)
+		return g_provider_list;
+
+	itpos = NULL;
+	while (NULL != (dll = provlist_next_item(&itpos))) {
+		err = load_pps_provider(dll);
+		if (err)
+			msyslog(LOG_ERR, "time_pps_create: load failed (%s) --> %d / %s",
+				dll, err, strerror(err));
+		else
+			msyslog(LOG_INFO, "time_pps_create: loaded '%s'",
+				dll);
+		free(dll);
+	}
+
+	/* reverse the list, possibly mark as EMPTY */
+	prov = g_provider_list;
+	if (NULL != prov) {
+		g_provider_list = NULL;
+		do {
+			hold = prov;
+			prov = hold->next;
+			hold->next = g_provider_list;
+			g_provider_list = hold;
+		} while (prov);
+		prov = g_provider_list;
+	} else {
+		g_provider_list = INVALID_HANDLE_VALUE;
+	}
+	return prov;
+}
+
 int
 time_pps_create(
 	int		filedes,/* device file descriptor */
@@ -334,8 +584,6 @@ time_pps_create(
 	)
 {
 	HANDLE			winhandle;
-	const char *		dlls;
-	char *			dll;
 	ppsapi_provider *	prov;
 	pps_handle_t		ppshandle;
 	int			err;
@@ -347,37 +595,6 @@ time_pps_create(
 	if (INVALID_HANDLE_VALUE == winhandle)
 		return set_pps_errno(EBADF);
 
-	/* For initial testing the list of PPSAPI backend providers is
-	 * provided by the environment variable PPSAPI_DLLS, separated by
-	 * semicolons such as
-	 * PPSAPI_DLLS=c:\ntp\serial_ppsapi.dll;..\parport_ppsapi.dll
-	 * There are a million better ways, such as a well-known registry
-	 * key under which a value is created for each provider DLL
-	 * installed, or even a platform-specific ntp.conf directive or
-	 * command-line switch.
-	 *
-	 * [Bug 3139] Since nothing is more durable than a provisional
-	 * implementation, we're still stuck with that...
-	 */
-	dlls = getenv("PPSAPI_DLLS");
-	if (NULL != dlls && NULL == g_provider_list) {
-		msyslog(LOG_INFO, "time_pps_create: load list '%s'",
-			dlls);
-	} else
-		dlls = NULL;
-
-	while (NULL != (dll = provlist_next_item(&dlls))) {
-		err = load_pps_provider(dll);
-		if (err) {
-			msyslog(LOG_ERR, "time_pps_create: load failed (%s) --> %d / %s",
-				dll, err, strerror(err));
-		} else {
-			msyslog(LOG_INFO, "time_pps_create: loaded '%s'",
-				dll);
-		}
-		free(dll);
-	}
-
 	/* Hand off to each provider in turn until one returns a PPS
 	 * handle or they've all declined.
 	 *
@@ -388,23 +605,25 @@ time_pps_create(
 	 * this provides slightly more information.
 	 */
 	err = ENOEXEC;
-	if (NULL == g_provider_list) {
+	prov = get_first_provider();
+	if (NULL == prov) {
 		msyslog(LOG_ERR, "time_pps_create: %s",
 			"no providers available");
 		return set_pps_errno(err);
-	}
-	for (prov = g_provider_list; NULL != prov; prov = prov->next) {
+	} else do {
 		ppshandle = 0;
 		g_curr_provider = prov;
 		err = (*prov->ptime_pps_create)(winhandle, &ppshandle);
 		g_curr_provider = NULL;
 		if (!err && ppshandle) {
 			*phandle = ppshandle;
+			ppsu_register(ppshandle, serial_devctx(winhandle));
 			return 0;
 		}
 		msyslog(LOG_INFO, "time_pps_create: provider '%s' failed: %d / %s",
 			prov->short_name, err, strerror(err));
-	}
+	} while (NULL != (prov = prov->next));
+
 	msyslog(LOG_ERR, "time_pps_create: %s",
 		"all providers failed");
 	return set_pps_errno(err);
@@ -423,6 +642,7 @@ time_pps_destroy(
 	if (NULL == punit)
 		return set_pps_errno(EBADF);
 	/* Call provider. Note the handle is gone anyway... */
+	ppsu_remove(handle);
 	err = (*punit->provider->ptime_pps_destroy)(punit, punit->context);
 	free(punit);
 	if (err)

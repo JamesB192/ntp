@@ -147,7 +147,7 @@ int	sys_cohort = 0;		/* cohort switch */
 int	sys_orphan = STRATUM_UNSPEC + 1; /* orphan stratum */
 int	sys_orphwait = NTP_ORPHWAIT; /* orphan wait */
 int	sys_beacon = BEACON;	/* manycast beacon interval */
-int	sys_ttlmax;		/* max ttl mapping vector index */
+u_int	sys_ttlmax;		/* max ttl mapping vector index */
 u_char	sys_ttl[MAX_TTL];	/* ttl mapping vector */
 
 /*
@@ -401,7 +401,7 @@ transmit(
 			peer_xmit(peer);
 		} else if (   sys_survivors < sys_minclock
 			   || peer_associations < sys_maxclock) {
-			if (peer->ttl < (u_int32)sys_ttlmax)
+			if (peer->ttl < sys_ttlmax)
 				peer->ttl++;
 			peer_xmit(peer);
 		}
