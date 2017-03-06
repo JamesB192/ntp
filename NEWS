@@ -14,7 +14,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * NTP-01-016 NTP: Denial of Service via Malformed Config (Medium)
    Date Resolved: XX Mar 2017
-   References: Sec 3389 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3389 / CVE-2017-6464 / VU#XXXX
    Affects: All versions of NTP-4, up to but not including ntp-4.2.8p10, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94.
    CVSS2: MED 4.6 (AV:N/AC:H/Au:M/C:N/I:N/A:C)
@@ -34,7 +34,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * NTP-01-014 NTP: Buffer Overflow in DPTS Clock (Low)
     Date Resolved: XX Mar 2017
-    References: Sec 3388 / CVE-2017-XXXX / VU#XXXX
+    References: Sec 3388 / CVE-2017-6462 / VU#XXXX
     Affects: All versions of NTP, up to but not including ntp-4.2.8p10, and ntp-4.3.0 up to, but not including ntp-4.3.94.
     CVSS2: Low 1.0 (AV:L/AC:H/Au:S/C:N/I:N/A:P)
     CVSS3: Low 1.6 CVSS:3.0/AV:P/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:L
@@ -58,7 +58,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * NTP-01-012 NTP: Authenticated DoS via Malicious Config Option (Medium)
    Date Resolved: 21 Mar 2017
-   References: Sec 3387 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3387 / CVE-2017-6463 / VU#XXXX
    Affects: All versions of ntp, up to but not including ntp-4.2.8p10, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94.
    CVSS2: MED 4.6 (AV:N/AC:H/Au:M/C:N/I:N/A:C)
@@ -78,7 +78,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * NTP-01-011 NTP: ntpq_stripquotes() returns incorrect value (Informational)
    Date Resolved: 21 Mar 2017
-   References: Sec 3386 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3386 / CVE-2017-6461 / VU#XXXX
    Affects: All versions of NTP, up to but not including ntp-4.2.8p10, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94.
    CVSS2: None 0.0 (AV:N/AC:H/Au:N/C:N/I:N/A:N)
@@ -105,7 +105,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * NTP-01-010 NTP: ereallocarray()/eallocarray() underused (Info)
    Date Resolved: 21 Mar 2017
-   References: Sec 3385
+   References: Sec 3385 / CVE-2017-6457
    Affects: All versions of NTP, up to but not including ntp-4.2.8p10, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94.
    Summary:
@@ -132,7 +132,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 * NTP-01-009 NTP: Privileged execution of User Library code (WINDOWS
 	PPSAPI ONLY) (Low)
    Date Resolved: 21 Mar 2017
-   References: Sec 3384 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3384 / CVE-2017-6455 / VU#XXXX
    Affects: All Windows versions of ntp-4 that use the PPSAPI, up to but
 	not including ntp-4.2.8p10, and ntp-4.3.0 up to, but not
 	including ntp-4.3.94.
@@ -156,7 +156,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 * NTP-01-008 NTP: Stack Buffer Overflow from Command Line (WINDOWS
 	installer ONLY) (Low)
    Date Resolved: XX Mar 2017
-   References: Sec 3383 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3383 / CVE-2017-6452 / VU#XXXX
    Affects: WINDOWS installer ONLY: All versions of the ntp-4 Windows
 	installer, up to but not including ntp-4.2.8p10, and ntp-4.3.0 up
 	to, but not including ntp-4.3.94.
@@ -182,7 +182,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 * NTP-01-007 NTP: Data Structure terminated insufficiently (WINDOWS
 	installer ONLY) (Low)
    Date Resolved: 21 Mar 2017
-   References: Sec 3382 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3382 / CVE-2017-6459 / VU#XXXX
    Affects: WINDOWS installer ONLY: All ntp-4 versions of the Windows
 	installer, up to but not including ntp-4.2.8p10, and ntp-4.3.0
 	up to, but not including ntp-4.3.94.
@@ -205,7 +205,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 	This weakness was discovered by Cure53. 
 
 * NTP-01-006 NTP: Copious amounts of Unused Code (Informational)
-   References: Sec 3381
+   References: Sec 3381 / CVE-2017-6454
    Summary:
 	The report says: Statically included external projects
 	potentially introduce several problems and the issue of having
@@ -254,7 +254,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * NTP-01-005 NTP: Off-by-one in Oncore GPS Receiver (Low)
    Date Resolved: 21 Mar 2017
-   References: Sec 3380 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3380 / CVE-2017-6456 / VU#XXXX
    Affects: All versions of NTP, up to but not including ntp-4.2.8p10, and
    	ntp-4.3.0 up to, but not including ntp-4.3.94.
    CVSS2: None 0.0 (AV:L/AC:H/Au:N/C:N/I:N/A:N)
@@ -273,7 +273,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * NTP-01-004 NTP: Potential Overflows in ctl_put() functions (Medium)
    Date Resolved: 21 Mar 2017
-   References: Sec 3379 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3379 / CVE-2017-6458 / VU#XXXX
    Affects: All versions of NTP, up to but not including ntp-4.2.8p10, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94.
    CVSS2: MED 4.6 (AV:N/AC:H/Au:M/C:N/I:N/A:C)
@@ -300,7 +300,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * NTP-01-003 NTP: Improper use of snprintf() in mx4200_send() (Low)
    Date Resolved: 21 Mar 2017
-   References: Sec 3378 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3378 / CVE-2017-6451 / VU#XXXX
    Affects: All versions of NTP, up to but not including ntp-4.2.8p10, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94.
    CVSS2: LOW 0.8 (AV:L/AC:H/Au:M/C:N/I:N/A:P)
@@ -333,7 +333,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 * NTP-01-002 NTP: Buffer Overflow in ntpq when fetching reslist from a
 	malicious ntpd (Medium)
    Date Resolved: 21 Mar 2017
-   References: Sec 3377 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3377 / CVE-2017-6460 / VU#XXXX
    Affects: All versions of ntpq, up to but not including ntp-4.2.8p10, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94.
    CVSS2: MED 4.9 (AV:N/AC:H/Au:S/C:N/I:N/A:C)
@@ -359,7 +359,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * NTP-01-001 NTP: Makefile does not enforce Security Flags (Informational)
    Date Resolved: 21 Mar 2017
-   References: Sec 3376 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3376 / CVE-2017-6453 / VU#XXXX
    Affects: All versions of NTP, up to but not including ntp-4.2.8p10, and
 	ntp-4.3.0 up to, but not including ntp-4.3.94.
    CVSS2: N/A
@@ -387,7 +387,7 @@ vulnerabilities, and provides 14 other non-security fixes and improvements:
 
 * 0rigin DoS (Medium)
    Date Resolved: 21 Mar 2017
-   References: Sec 3361 / CVE-2017-XXXX / VU#XXXX
+   References: Sec 3361 / CVE-2016-9042 / VU#XXXX
    Affects: ntp-4.0.9 (DD MMM 201Y), up to but not including ntp-4.2.8p10
    CVSS2: MED 4.9 (AV:N/AC:H/Au:N/C:N/I:N/A:C) (worst case)
    CVSS3: MED 4.4 CVSS:3.0/AV:N/AC:H/PR:H/UI:N/S:U/C:N/I:N/A:H (worst case)
