@@ -10,6 +10,10 @@
 #include <windows.h>
 #include <stdio.h>
 
+#if _MSC_VER <= 1800
+#define snprintf _snprintf
+#endif
+
 #define PERR(api) printf("\n%s: Error %d from %s on line %d",  \
                          __FILE__, GetLastError(), api, __LINE__);
 
