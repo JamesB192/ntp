@@ -51,8 +51,7 @@ enum kiss_codes {
 	RATEKISS,			/* Rate limit Kiss Code */
 	DENYKISS,			/* Deny Kiss */
 	RSTRKISS,			/* Restricted Kiss */
-	XKISS,				/* Experimental Kiss */
-	UNKNOWNKISS			/* Unknown Kiss Code */
+	XKISS				/* Experimental Kiss */
 };
 
 enum nak_error_codes {
@@ -260,12 +259,9 @@ kiss_code_check(
 			return (RSTRKISS);
 		} else if(memcmp(&refid,"X", 1) == 0) {
 			return (XKISS);
-		} else {
-			return (UNKNOWNKISS);
 		}
-	} else {
-		return (NOKISS);
 	}
+	return (NOKISS);
 }
 
 
@@ -1575,9 +1571,12 @@ receive(
 	 * A KoD packet we pay attention to cannot have a 0 transmit
 	 * timestamp.
 	 */
+
+	kissCode = kiss_code_check(hisleap, hisstratum, hismode, pkt->refid);
+
 	if (L_ISZERO(&p_xmt)) {
 		peer->flash |= TEST3;			/* unsynch */
-		if (STRATUM_UNSPEC == hisstratum) {	/* KoD packet */
+		if (kissCode != NOKISS) {		/* KoD packet */
 			peer->bogusorg++;		/* for TEST2 or TEST3 */
 			msyslog(LOG_INFO,
 				"receive: Unexpected zero transmit timestamp in KoD from %s",
@@ -1628,7 +1627,7 @@ receive(
 	 * (nonzero) org, rec, and xmt timestamps set to the xmt timestamp
 	 * that we have previously sent out.  Watch interleave mode.
 	 */
-	} else if (STRATUM_UNSPEC == hisstratum) {
+	} else if (kissCode != NOKISS) {
 		DEBUG_INSIST(!L_ISZERO(&p_xmt));
 		if (   L_ISZERO(&p_org)		/* We checked p_xmt above */
 		    || L_ISZERO(&p_rec)) {
@@ -1901,10 +1900,8 @@ receive(
 
 	/*
 	 * Check for any kiss codes. Note this is only used when a server
-	 * responds to a packet request
+	 * responds to a packet request.
 	 */
-
-	kissCode = kiss_code_check(hisleap, hisstratum, hismode, pkt->refid);
 
 	/*
 	 * Check to see if this is a RATE Kiss Code

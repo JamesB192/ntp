@@ -1,4 +1,8 @@
 ---
+
+* [Bug 3358] Spurious KoD log messages in .INIT. phase.  HStenn.
+
+---
 (4.2.8p10)
 
 * [Sec 3393] clang scan-build findings <perlinger@ntp.org>
