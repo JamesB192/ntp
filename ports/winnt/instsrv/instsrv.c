@@ -293,7 +293,7 @@ addSourceToRegistry(
     int   rc;
 
     /* When an application uses the RegisterEventSource or OpenEventLog function to get a
-       handle of an event log, the event loggging service searches for the specified
+       handle of an event log, the event logging service searches for the specified
        source name in the registry. You can add a new source name to the registry by
        opening a new registry subkey under the Application key and adding registry values
        to the new subkey.
