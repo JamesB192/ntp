@@ -1058,7 +1058,7 @@ If
 is not specified, the default host name is the string returned by the Unix
 .Ic hostname
 command.
-.It Fl S Fl -sign-key Ns = Op Cm RSA Ba DSA
+.It Fl S Fl -sign-key Ns = Op Cm RSA | DSA
 Generate a new encrypted public/private sign key file of the specified type.
 By default, the sign key is the host key and has the same type.
 If compatibility with FIPS 140-2 is required, the sign key type must be
@@ -1181,13 +1181,13 @@ and edited using an ordinary text editor.
 # ntpkey_MD5key_bk.ntp.org.3595864945
 # Thu Dec 12 19:22:25 2013
 
-1  MD5 L";Nw<`.I<f4U0)247"i  # MD5 key
+1  MD5 L";Nw<\`.I<f4U0)247"i  # MD5 key
 2  MD5 &>l0%XXK9O'51VwV<xq~  # MD5 key
 3  MD5 lb4zLW~d^!K:]RsD'qb6  # MD5 key
-4  MD5 Yue:tL[+vR)M`n~bY,'?  # MD5 key
+4  MD5 Yue:tL[+vR)M\`n~bY,'?  # MD5 key
 5  MD5 B;fx'Kgr/&4ZTbL6=RxA  # MD5 key
-6  MD5 4eYwa`o@}3i@@@@V@@..R9!l  # MD5 key
-7  MD5 `A.([h+;wTQ|xfi%Sn_!  # MD5 key
+6  MD5 4eYwa\`o@}3i@@@@V@@..R9!l  # MD5 key
+7  MD5 \`A.([h+;wTQ|xfi%Sn_!  # MD5 key
 8  MD5 45:V,r4]l6y^JH6"Sh?F  # MD5 key
 9  MD5 3-5vcn*6l29DS?Xdsg)*  # MD5 key
 10 MD5 2late4Me              # MD5 key
