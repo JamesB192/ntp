@@ -261,7 +261,7 @@ list.
 The
 .Ic showvars
 command displays the current list of optional variables.
-.It Ic authenticate Op Cm yes Ba Cm no
+.It Ic authenticate Op Cm yes | Cm no
 Normally
 .Nm
 does not authenticate requests unless
@@ -291,7 +291,7 @@ Variables which
 could not decode completely are
 marked with a trailing
 .Ql \&? .
-.It Ic debug Op Cm more Ba Cm less Ba Cm off
+.It Ic debug Op Cm more | Cm less | Cm off
 With no argument, displays the current debug level.
 Otherwise, the debugging level is changed as indicated.
 .It Ic delay Op Ar milliseconds
@@ -304,7 +304,7 @@ Actually the
 server does not now require timestamps in authenticated requests,
 so this command may be obsolete.
 Without any arguments, displays the current delay.
-.It Ic drefid Op Cm hash Ba Cm ipv4
+.It Ic drefid Op Cm hash | Cm ipv4
 Display refids as IPv4 or hash.
 Without any arguments, displays whether refids are shown as IPv4
 addresses or hashes.
@@ -317,7 +317,7 @@ The
 .Ar name
 may be either a host name or a numeric address.
 Without any arguments, displays the current host.
-.It Ic hostnames Op Cm yes Ba Cm no
+.It Ic hostnames Op Cm yes | Cm no
 If
 .Cm yes
 is specified, host names are printed in
@@ -355,7 +355,7 @@ can be any message digest algorithm supported by OpenSSL.
 If no argument is given, the current
 .Ic keytype Ar digest
 algorithm used is displayed.
-.It Ic ntpversion Op Cm 1 Ba Cm 2 Ba Cm 3 Ba Cm 4
+.It Ic ntpversion Op Cm 1 | Cm 2 | Cm 3 | Cm 4
 Sets the NTP version number which
 .Nm
 claims in
@@ -490,13 +490,13 @@ precision system variable.
 .It Ic lassociations
 Perform the same function as the associations command, except display
 mobilized and unmobilized associations, including all clients.
-.It Ic lopeers Op Fl 4 Ba Fl 6
+.It Ic lopeers Op Fl 4 | Fl 6
 Display a list of all peers and clients showing
 .Cm dstadr
 (associated with the given IP version).
 .It Ic lpassociations
 Display the last obtained list of associations, including all clients.
-.It Ic lpeers Op Fl 4 Ba Fl 6
+.It Ic lpeers Op Fl 4 | Fl 6
 Display a list of all peers and clients (associated with the given IP version).
 .It Ic monstats
 Display monitor facility status, statistics, and limits:
@@ -516,9 +516,9 @@ Perform the same function as the
 command for a range of association ids.
 This range may be determined from the list displayed by any
 command showing associations.
-.It Xo Ic mrulist Oo Cm limited Ba Cm kod Ba Cm mincount Ns = Ns Ar count Ba
-.Cm laddr Ns = Ns Ar localaddr Ba Cm sort Ns = Ns Ar sortorder Ba
-.Cm resany Ns = Ns Ar hexmask Ba Cm resall Ns = Ns Ar hexmask Oc
+.It Xo Ic mrulist Oo Cm limited | Cm kod | Cm mincount Ns = Ns Ar count |
+.Cm laddr Ns = Ns Ar localaddr | Cm sort Ns = Ns Ar sortorder |
+.Cm resany Ns = Ns Ar hexmask | Cm resall Ns = Ns Ar hexmask Oc
 .Xc
 Display traffic counts of the most recently seen source addresses
 collected and maintained by the monitor facility.
@@ -594,7 +594,7 @@ Source port of last packet from this address.
 DNS name, numeric address, or address followed by
 claimed DNS name which could not be verified in parentheses.
 .El
-.It Ic opeers Op Fl 4 Ba Fl 6
+.It Ic opeers Op Fl 4 | Fl 6
 Obtain and print the old-style list of all peers and clients showing
 .Cm dstadr
 (associated with the given IP version),
