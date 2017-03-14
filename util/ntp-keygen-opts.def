@@ -118,9 +118,9 @@ flag = {
 	the file name of IFF, GQ, and MV client parameters files.  In
 	that role, the default is the host name if this option is not
 	provided.  The group name, if specified using @code{-i/--ident} or
-	using @code{-s/--subject-name} following an '@code{@}' character,
+	using @code{-s/--subject-name} following an '@code{@@}' character,
 	is also a part of the self-signed host certificate subject and
-	issuer names in the form @code{host@group} and should match the
+	issuer names in the form @code{host@@group} and should match the
 	'@code{crypto ident}' or '@code{server ident}' configuration in the
 	@code{ntpd} configuration file.
 	_EndOfDoc_;
@@ -212,12 +212,12 @@ flag = {
     descrip   = "set host and optionally group name";
     doc = <<-  _EndOfDoc_
 	Set the Autokey host name, and optionally, group name specified
-	following an '@code{@}' character.  The host name is used in the file
+	following an '@code{@@}' character.  The host name is used in the file
 	name of generated host and signing certificates, without the
 	group name.  The host name, and if provided, group name are used
-	in @code{host@group} form for the host certificate subject and issuer
-	fields.  Specifying '@code{-s @group}' is allowed, and results in
-	leaving the host name unchanged while appending @code{@group} to the
+	in @code{host@@group} form for the host certificate subject and issuer
+	fields.  Specifying '@code{-s @@group}' is allowed, and results in
+	leaving the host name unchanged while appending @code{@@group} to the
 	subject and issuer fields, as with @code{-i group}.  The group name, or
 	if not provided, the host name are also used in the file names
 	of IFF, GQ, and MV client parameter files.
@@ -975,9 +975,9 @@ The group name, if specified using
 or
 .Fl s
 following an
-.Ql @
+.Ql @@
 character, is also used in certificate subject and issuer names in the form
-.Ar host @ group
+.Ar host @@ group
 and should match the group specified via
 .Ic crypto Cm ident
 or
@@ -1034,17 +1034,17 @@ password.
 By default, the password is the string returned by the Unix
 .Ic hostname
 command.
-.It Fl s Fl -subject-key Ns = Ar Oo host Oc Op @ Ar group
+.It Fl s Fl -subject-key Ns = Ar Oo host Oc Op @@ Ar group
 Specify the Autokey host name, where
 .Ar host
 is the optional host name and
 .Ar group
 is the optional group name.
 The host name, and if provided, group name are used in
-.Ar host @ group
+.Ar host @@ group
 form as certificate subject and issuer.
 Specifying
-.Fl s @ Ar group
+.Fl s @@ Ar group
 is allowed, and results in leaving the host name unchanged, as with
 .Fl i Ar group .
 The group name, or if no group is provided, the host name are also used in the
@@ -1186,7 +1186,7 @@ and edited using an ordinary text editor.
 3  MD5 lb4zLW~d^!K:]RsD'qb6  # MD5 key
 4  MD5 Yue:tL[+vR)M`n~bY,'?  # MD5 key
 5  MD5 B;fx'Kgr/&4ZTbL6=RxA  # MD5 key
-6  MD5 4eYwa`o}3i@@V@..R9!l  # MD5 key
+6  MD5 4eYwa`o@}3i@@@@V@@..R9!l  # MD5 key
 7  MD5 `A.([h+;wTQ|xfi%Sn_!  # MD5 key
 8  MD5 45:V,r4]l6y^JH6"Sh?F  # MD5 key
 9  MD5 3-5vcn*6l29DS?Xdsg)*  # MD5 key
