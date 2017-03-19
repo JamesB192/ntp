@@ -14,9 +14,9 @@ flag = {
     name      = ipv4;
     flags-cant = ipv6;
     value     = 4;
-    descrip   = "Force IPv4 DNS name resolution";
+    descrip   = "Force IPv4 name resolution";
     doc = <<-  _EndOfDoc_
-	Force DNS resolution of following host names on the command line
+	Force resolution of following host names on the command line
 	to the IPv4 namespace.
 	_EndOfDoc_;
 };
@@ -25,9 +25,9 @@ flag = {
     name      = ipv6;
     flags-cant = ipv4;
     value     = 6;
-    descrip   = "Force IPv6 DNS name resolution";
+    descrip   = "Force IPv6 name resolution";
     doc = <<-  _EndOfDoc_
-	Force DNS resolution of following host names on the command line
+	Force resolution of following host names on the command line
 	to the IPv6 namespace.
 	_EndOfDoc_;
 };
@@ -180,8 +180,8 @@ Note that in contexts where a host name is expected, a
 qualifier preceding the host name forces resolution to the IPv4
 namespace, while a
 .Fl 6
-qualifier forces DNS resolution to the IPv6 namespace.
-<p>For examples and usage, see the
+qualifier forces resolution to the IPv6 namespace.
+For examples and usage, see the
 .Dq NTP Debugging Techniques
 page.
 .Pp
@@ -212,29 +212,27 @@ the
 utility itself and do not result in NTP
 requests being sent to a server.
 These are described following.
-.Bl -tag -width "help [command_keyword]" -compact -offset indent
-.It Ic ? Op Ar command_keyword
-.It Ic help Op Ar command_keyword
+.Bl -tag -width "help [command]" -compact -offset indent
+.It Ic ? Op Ar command
+.It Ic help Op Ar command
 A
 .Ql \&?
-by itself will print a list of all the command
-keywords known to
+by itself will print a list of all the commands
+known to
 .Nm .
 A
 .Ql \&?
-followed by a command keyword will print function and usage
+followed by a command name will print function and usage
 information about the command.
-.It Ic addvars Ar name Ns Xo Op = Ns Ar value
-.Op ...
-.Xc
-.It Ic rmvars Ar name Op ...
+.It Ic addvars Ar name Ns Oo \&= Ns Ar value Ns Op ,...
+.It Ic rmvars Ar name Ns Op ,...
 .It Ic clearvars
 .It Ic showvars
 The arguments to this command consist of a list of
 items of the form
-.Ar name Ns Op = Ns Ar value ,
+.Ar name Ns Op \&= Ns Ar value ,
 where the
-.No = Ns Ar value
+.No \&= Ns Ar value
 is ignored, and can be omitted,
 in requests to the server to read variables.
 The
@@ -255,13 +253,13 @@ The
 .Ic rmvars
 command can be used to remove individual variables from the list,
 while the
-.Ic clearlist
+.Ic clearvars
 command removes all variables from the
 list.
 The
 .Ic showvars
 command displays the current list of optional variables.
-.It Ic authenticate Op Cm yes | Cm no
+.It Ic authenticate Op Cm yes Ns | Ns Cm no
 Normally
 .Nm
 does not authenticate requests unless
@@ -291,7 +289,7 @@ Variables which
 could not decode completely are
 marked with a trailing
 .Ql \&? .
-.It Ic debug Op Cm more | Cm less | Cm off
+.It Ic debug Op Cm more Ns | Ns Cm less Ns | Ns Cm off
 With no argument, displays the current debug level.
 Otherwise, the debugging level is changed as indicated.
 .It Ic delay Op Ar milliseconds
@@ -304,7 +302,7 @@ Actually the
 server does not now require timestamps in authenticated requests,
 so this command may be obsolete.
 Without any arguments, displays the current delay.
-.It Ic drefid Op Cm hash | Cm ipv4
+.It Ic drefid Op Cm hash Ns | Ns Cm ipv4
 Display refids as IPv4 or hash.
 Without any arguments, displays whether refids are shown as IPv4
 addresses or hashes.
@@ -317,7 +315,7 @@ The
 .Ar name
 may be either a host name or a numeric address.
 Without any arguments, displays the current host.
-.It Ic hostnames Op Cm yes | Cm no
+.It Ic hostnames Op Cm yes Ns | Ns Cm no
 If
 .Cm yes
 is specified, host names are printed in
@@ -332,7 +330,7 @@ unless
 modified using the command line
 .Fl n
 switch.
-Without any arguments, displays whether hostnames or numeric addresses
+Without any arguments, displays whether host names or numeric addresses
 are shown.
 .It Ic keyid Op Ar keyid
 This command allows the specification of a key number to be
@@ -355,7 +353,7 @@ can be any message digest algorithm supported by OpenSSL.
 If no argument is given, the current
 .Ic keytype Ar digest
 algorithm used is displayed.
-.It Ic ntpversion Op Cm 1 | Cm 2 | Cm 3 | Cm 4
+.It Ic ntpversion Op Cm 1 Ns | Ns Cm 2 Ns | Ns Cm 3 Ns | Ns Cm 4
 Sets the NTP version number which
 .Nm
 claims in
@@ -429,17 +427,17 @@ is displayed in hex format and the association number is also displayed.
 .It Ic associations
 Display a list of mobilized associations in the form:
 .Dl ind assid status conf reach auth condition last_event cnt
-.Bl -column -offset indent ".Sy Variable" "selection status (see the select field of the peer status word)"
+.Bl -column -offset indent ".Sy Variable" "see the select field of the peer status word"
 .It Sy Variable Ta Sy Description
 .It Cm ind Ta index on this list
 .It Cm assid Ta association id
 .It Cm status Ta peer status word
-.It Cm conf Ta Cm yes : persistent, Cm no : ephemeral
-.It Cm reach Ta Cm yes : reachable, Cm no : unreachable
-.It Cm auth Ta Cm ok , Cm yes , Cm bad and Cm none
-.It Cm condition Ta selection status \&(see the Cm select field of the peer status word\&)
-.It Cm last_event Ta event report \&(see the Cm event field of the peer status word\&)
-.It Cm cnt Ta event count \&(see the Cm count field of the peer status word\&)
+.It Cm conf Ta Cm yes : No persistent, Cm no : No ephemeral
+.It Cm reach Ta Cm yes : No reachable, Cm no : No unreachable
+.It Cm auth Ta Cm ok , Cm yes , Cm bad No and Cm none
+.It Cm condition Ta selection status \&(see the Cm select No field of the peer status word\&)
+.It Cm last_event Ta event report \&(see the Cm event No field of the peer status word\&)
+.It Cm cnt Ta event count \&(see the Cm count No field of the peer status word\&)
 .El
 .It Ic authinfo
 Display the authentication statistics counters:
@@ -449,8 +447,8 @@ uncached keys, expired keys, encryptions, decryptions.
 .It Ic cl Op Ar associd
 Display all clock variables in the variable list for those associations
 supporting a reference clock.
-.It Ic clockvar Oo Ar associd Oc Oo Ar name Ns Oo \&= Ns Ar value Oc Oc Op ...
-.It Ic cv Oo Ar associd Oc Oo Ar name Ns Oo \&= Ns Ar value Oc Oc Op ...
+.It Ic clockvar Oo Ar associd Oc Oo Ar name Ns Oo \&= Ns Ar value Oc Ns Oc Ns Op ,...
+.It Ic cv Oo Ar associd Oc Oo Ar name Ns Oo \&= Ns Ar value Oc Ns Oc Ns Op ,...
 Display a list of clock variables for those associations supporting a
 reference clock.
 .It Ic :config Ar "configuration command line"
@@ -462,8 +460,8 @@ Authentication is of course required.
 .It Ic config-from-file Ar filename
 Send each line of
 .Ar filename
-to the server as run-time configuration commands in the same format as a
-line in the configuration file.
+to the server as run-time configuration commands in the same format as
+lines in the configuration file.
 This command is experimental until further notice and clarification.
 Authentication is required.
 .It Ic ifstats
@@ -483,20 +481,20 @@ estimated error, kernel status, pll time constant, precision,
 frequency tolerance, pps frequency, pps stability, pps jitter,
 calibration interval, calibration cycles, jitter exceeded,
 stability exceeded, calibration errors.
-As with other ntpq output, times are in milliseconds; some small values
-may be shown in exponential notation.
+As with other ntpq output, times are in milliseconds; very small values
+may be shown as exponentials.
 The precision value displayed is in milliseconds as well, unlike the
 precision system variable.
 .It Ic lassociations
 Perform the same function as the associations command, except display
 mobilized and unmobilized associations, including all clients.
-.It Ic lopeers Op Fl 4 | Fl 6
+.It Ic lopeers Op Fl 4 Ns | Ns Fl 6
 Display a list of all peers and clients showing
 .Cm dstadr
 (associated with the given IP version).
 .It Ic lpassociations
 Display the last obtained list of associations, including all clients.
-.It Ic lpeers Op Fl 4 | Fl 6
+.It Ic lpeers Op Fl 4 Ns | Ns Fl 6
 Display a list of all peers and clients (associated with the given IP version).
 .It Ic monstats
 Display monitor facility status, statistics, and limits:
@@ -507,23 +505,23 @@ reclaim above count, reclaim older than, kilobytes, maximum kilobytes.
 Perform the same function as the
 .Ic readlist
 command for a range of association ids.
-.It Ic mreadvar Ar associdlo Ar associdhi Oo Ar name Ns Oo = Ns Ar value Oc Oc ...
+.It Ic mreadvar Ar associdlo Ar associdhi Oo Ar name Oc Ns Op ,...
 This range may be determined from the list displayed by any
 command showing associations.
-.It Ic mrv Ar associdlo Ar associdhi Oo Ar name Ns Oo = Ns Ar value Oc Oc ...
+.It Ic mrv Ar associdlo Ar associdhi Oo Ar name Oc Ns Op ,...
 Perform the same function as the
 .Ic readvar
 command for a range of association ids.
 This range may be determined from the list displayed by any
 command showing associations.
-.It Xo Ic mrulist Oo Cm limited | Cm kod | Cm mincount Ns = Ns Ar count |
-.Cm laddr Ns = Ns Ar localaddr | Cm sort Ns = Ns Ar sortorder |
-.Cm resany Ns = Ns Ar hexmask | Cm resall Ns = Ns Ar hexmask Oc
+.It Xo Ic mrulist Oo Cm limited | Cm kod | Cm mincount Ns \&= Ns Ar count |
+.Cm laddr Ns \&= Ns Ar localaddr | Cm sort Ns \&= Ns Oo \&- Oc Ns Ar sortorder |
+.Cm resany Ns \&= Ns Ar hexmask | Cm resall Ns \&= Ns Ar hexmask Oc
 .Xc
 Display traffic counts of the most recently seen source addresses
 collected and maintained by the monitor facility.
 With the exception of
-.Cm sort Ns = Ns Ar sortorder ,
+.Cm sort Ns \&= Ns Oo \&- Oc Ns Ar sortorder ,
 the options filter the list returned by
 .Xr ntpd 8 .
 The
@@ -552,12 +550,14 @@ The
 .Ar sortorder
 defaults to
 .Cm lstint
-and may be any of
+and may be 
 .Cm addr ,
 .Cm avgint ,
 .Cm count ,
 .Cm lstint ,
-or any of those preceded by a minus sign (hyphen) to reverse the sort order.
+or any of those preceded by
+.Ql \&-
+to reverse the sort order.
 The output columns are:
 .Bl -tag -width "something" -compact -offset indent
 .It Column
@@ -591,7 +591,7 @@ Packets received from this address.
 .It Ic rport
 Source port of last packet from this address.
 .It Ic remote address
-DNS name, numeric address, or address followed by
+host or DNS name, numeric address, or address followed by
 claimed DNS name which could not be verified in parentheses.
 .El
 .It Ic opeers Op Fl 4 | Fl 6
