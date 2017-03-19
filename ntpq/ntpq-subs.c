@@ -1833,8 +1833,12 @@ doprintpeers(
 		if (!have_srchost)
 			strlcpy(clock_name, nntohost(&srcadr),
 				sizeof(clock_name));
+		/* wide and long source - space over on next line */
+		/* allow for host + sp if > 1 and regular tally + source + sp */
 		if (wideremote && 15 < strlen(clock_name))
-			fprintf(fp, "%c%s\n                 ", c, clock_name);
+			fprintf(fp, "%c%s\n%*s", c, clock_name,
+				((numhosts > 1) ? (int)maxhostlen + 1 : 0)
+							+ 1 + 15 + 1, "");
 		else
 			fprintf(fp, "%c%-15.15s ", c, clock_name);
 		if (!have_da_rid) {
