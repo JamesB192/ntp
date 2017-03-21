@@ -444,6 +444,16 @@ Other fixes:
 * Update copyright year.
 
 --
+(4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
+
+* [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>
+  - added missed changeset for automatic openssl lib detection
+  - fixed some minor warning issues
+* [Bug 3095]  More compatibility with openssl 1.1. <perlinger@ntp.org>
+* configure.ac cleanup.  stenn@ntp.org
+* openssl configure cleanup.  stenn@ntp.org
+
+--
 NTP 4.2.8p9 (Harlan Stenn <stenn@ntp.org>, 2016/11/21) 
 
 Focus: Security, Bug fixes, enhancements.
