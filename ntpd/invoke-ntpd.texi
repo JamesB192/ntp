@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntpd.texi)
 #
-# It has been AutoGen-ed  March 21, 2017 at 09:32:09 AM by AutoGen 5.18.5
+# It has been AutoGen-ed  March 21, 2017 at 10:44:20 AM by AutoGen 5.18.5
 # From the definitions    ntpd-opts.def
 # and the template file   agtexi-cmd.tpl
 @end ignore
@@ -142,40 +142,36 @@ with a status code of 0.
 
 @exampleindent 0
 @example
-ntpd - NTP daemon program - Ver. 4.2.7p245
-USAGE:  ntpd [ -<flag> [<val>] | --<name>[@{=| @}<val>] ]... \
+ntpd - NTP daemon program - Ver. 4.2.8p10-beta
+Usage:  ntpd [ -<flag> [<val>] | --<name>[@{=| @}<val>] ]... \
                 [ <server1> ... <serverN> ]
   Flg Arg Option-Name    Description
    -4 no  ipv4           Force IPv4 DNS name resolution
-                                - prohibits these options:
-                                ipv6
+                                - prohibits the option 'ipv6'
    -6 no  ipv6           Force IPv6 DNS name resolution
-                                - prohibits these options:
-                                ipv4
+                                - prohibits the option 'ipv4'
    -a no  authreq        Require crypto authentication
-                                - prohibits these options:
-                                authnoreq
+                                - prohibits the option 'authnoreq'
    -A no  authnoreq      Do not require crypto authentication
-                                - prohibits these options:
-                                authreq
+                                - prohibits the option 'authreq'
    -b no  bcastsync      Allow us to sync to broadcast servers
    -c Str configfile     configuration file name
-   -d no  debug-level    Increase output debug message level
+   -d no  debug-level    Increase debug verbosity level
                                 - may appear multiple times
-   -D Str set-debug-level Set the output debug message level
+   -D Num set-debug-level Set the debug verbosity level
                                 - may appear multiple times
    -f Str driftfile      frequency drift file name
    -g no  panicgate      Allow the first adjustment to be Big
                                 - may appear multiple times
-   -i --- jaildir        built without --enable-clockctl or --enable-linuxcaps
+   -G no  force-step-once Step any initial offset correction.
+   -i Str jaildir        Jail directory
    -I Str interface      Listen on an interface name or address
                                 - may appear multiple times
    -k Str keyfile        path to symmetric keys
    -l Str logfile        path to the log file
    -L no  novirtualips   Do not listen to virtual interfaces
    -n no  nofork         Do not fork
-                                - prohibits these options:
-                                wait-sync
+                                - prohibits the option 'wait-sync'
    -N no  nice           Run at high priority
    -p Str pidfile        path to the PID file
    -P Num priority       Process priority
@@ -191,7 +187,7 @@ USAGE:  ntpd [ -<flag> [<val>] | --<name>[@{=| @}<val>] ]... \
    -s Str statsdir       Statistics file location
    -t Str trustedkey     Trusted key number
                                 - may appear multiple times
-   -u --- user           built without --enable-clockctl or --enable-linuxcaps
+   -u Str user           Run as userid (or userid:groupid)
    -U Num updateinterval interval in seconds between scans for new or dropped interfaces
       Str var            make ARG an ntp variable (RW)
                                 - may appear multiple times
@@ -203,19 +199,18 @@ USAGE:  ntpd [ -<flag> [<val>] | --<name>[@{=| @}<val>] ]... \
                                 quit
                                 saveconfigquit
    -x no  slew           Slew up to 600 seconds
-   -! opt version        Output version information and exit
-   -? no  help           Display extended usage information and exit
-   -! no  more-help      Extended usage information passed thru pager
+      opt version        output version information and exit
+   -? no  help           display extended usage information and exit
+   -! no  more-help      extended usage information passed thru pager
 
 Options are specified by doubled hyphens and their name or by a single
 hyphen and the flag character.
 
 
-
 The following option preset mechanisms are supported:
  - examining environment variables named NTPD_*
 
-please send bug reports to:  http://bugs.ntp.org, bugs@@ntp.org
+Please send bug reports to:  <http://bugs.ntp.org, bugs@@ntp.org>
 @end example
 @exampleindent 4
 
