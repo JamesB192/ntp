@@ -57,6 +57,7 @@
   - Fixed these and some more locations of this pattern.
     Probably din't get them all, though. <perlinger@ntp.org>
 * Update copyright year.
+* bk-7 trigger updates
 
 ---
 (4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
