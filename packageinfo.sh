@@ -67,10 +67,10 @@ esac
 
 # Special.  Normally unused.  A suffix.
 #special=ag
-special=win 
+special=
 
 # prerelease can be empty, 'beta', or 'rc'.
-prerelease=beta
+prerelease=
 
 # ChangeLog starting tag (see also CommitLog-4.1.0)
 CLTAG=NTP_4_2_0
@@ -90,7 +90,7 @@ point=10
 # Should be zeroed at release, and left at zero until first beta.
 # The first beta is -beta1.
 # betapoint is always zero in ntp-dev.
-betapoint=1
+betapoint=
 
 ### rcpoint is normally modified by script except for GO.
 # RC number (rcpoint)
