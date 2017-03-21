@@ -1,7 +1,5 @@
 ---
 (4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
-(4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
-(4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>
   - added missed changeset for automatic openssl lib detection
