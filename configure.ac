@@ -65,12 +65,15 @@ ntp_ripe_ncc_ok=${ntp_parse_ok=no}
 ntp_jupiter_ok=${ntp_jupiter_ok=no}
 
 NTP_PROG_CC
-AC_PROG_CPP
-# Do we need CXX for anything besides google test?
-AC_PROG_CXX
+NTP_COMPILER
+
+dnl # Do we need CXX for anything besides google test?
+dnl AC_PROG_CXX
 AC_PROG_YACC
-AC_PROG_CC_C_O
+dnl AC_PROG_CC_C_O 	# called by NTP_COMPILER
 AX_C99_STRUCT_INIT
+
+NTP_HARDEN([sntp])
 
 NTP_VPATH_HACK		dnl used only by ntpd/Makefile.am
 
