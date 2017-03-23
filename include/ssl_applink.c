@@ -14,7 +14,9 @@
 #   include "msvc_ssl_autolib.h"
 #  endif
 # endif
-# include <openssl/applink.c>
+# if OPENSSL_VERSION_NUMBER < 0x10100000L
+#  include <openssl/applink.c>
+# endif
 # ifdef _MSC_VER
 #  pragma warning(pop)
 # endif
