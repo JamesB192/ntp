@@ -1,4 +1,8 @@
 ---
+* [Bug 3391] ntpd segfaults on startup due to small warmup thread stack size
+  - increased mimimum stack size to 32kB <perlinger@ntp.org>
+
+---
 (4.2.8p10-win-beta1) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p10)
 
