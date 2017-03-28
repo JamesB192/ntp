@@ -1,4 +1,8 @@
 ---
+
+* AES-128-CMAC support
+
+---
 (4.2.8p10)
 
 * [Sec 3393] clang scan-build findings <perlinger@ntp.org>
