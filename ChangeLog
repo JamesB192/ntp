@@ -1,11 +1,11 @@
 ---
 
 * AES-128-CMAC support
+* [Bug 3358] Spurious KoD log messages in .INIT. phase.  HStenn.
 
 ---
-(4.2.8p10)
+(4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 
-* [Sec 3393] clang scan-build findings <perlinger@ntp.org>
 * [Sec 3389] NTP-01-016: Denial of Service via Malformed Config
   (Pentest report 01.2017) <perlinger@ntp.org>
 * [Sec 3388] NTP-01-014: Buffer Overflow in DPTS Clock
@@ -31,6 +31,7 @@
   (Pentest report 01.2017) <perlinger@ntp.org
 * [Sec 3376] Support build "hardening" flags.  stenn@ntp.org
 * [Sec 3361] 0rigin (zero origin) DoS.  HStenn.
+* [Bug 3393] clang scan-build findings <perlinger@ntp.org>
 * [Bug 3363] Support for openssl-1.1.0 without compatibility modes
   - rework of patch set from <ntp.org@eroen.eu>. <perlinger@ntp.org>
 * [Bug 3356] Bugfix 3072 breaks multicastclient <perlinger@ntp.org>
@@ -61,6 +62,7 @@
   - Fixed these and some more locations of this pattern.
     Probably din't get them all, though. <perlinger@ntp.org>
 * Update copyright year.
+* bk-7 trigger updates
 
 ---
 (4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>

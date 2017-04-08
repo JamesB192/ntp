@@ -51,8 +51,7 @@ enum kiss_codes {
 	RATEKISS,			/* Rate limit Kiss Code */
 	DENYKISS,			/* Deny Kiss */
 	RSTRKISS,			/* Restricted Kiss */
-	XKISS,				/* Experimental Kiss */
-	UNKNOWNKISS			/* Unknown Kiss Code */
+	XKISS				/* Experimental Kiss */
 };
 
 enum nak_error_codes {
@@ -260,12 +259,9 @@ kiss_code_check(
 			return (RSTRKISS);
 		} else if(memcmp(&refid,"X", 1) == 0) {
 			return (XKISS);
-		} else {
-			return (UNKNOWNKISS);
 		}
-	} else {
-		return (NOKISS);
 	}
+	return (NOKISS);
 }
 
 
@@ -637,6 +633,8 @@ receive(
 	hisleap = PKT_LEAP(pkt->li_vn_mode);
 	hismode = (int)PKT_MODE(pkt->li_vn_mode);
 	hisstratum = PKT_TO_STRATUM(pkt->stratum);
+
+	/* See basic mode and broadcast checks, below */
 	INSIST(0 != hisstratum);
 
 	if (restrict_mask & RES_IGNORE) {
@@ -1575,9 +1573,12 @@ receive(
 	 * A KoD packet we pay attention to cannot have a 0 transmit
 	 * timestamp.
 	 */
+
+	kissCode = kiss_code_check(hisleap, hisstratum, hismode, pkt->refid);
+
 	if (L_ISZERO(&p_xmt)) {
 		peer->flash |= TEST3;			/* unsynch */
-		if (STRATUM_UNSPEC == hisstratum) {	/* KoD packet */
+		if (kissCode != NOKISS) {		/* KoD packet */
 			peer->bogusorg++;		/* for TEST2 or TEST3 */
 			msyslog(LOG_INFO,
 				"receive: Unexpected zero transmit timestamp in KoD from %s",
@@ -1601,13 +1602,13 @@ receive(
 	 * see if this is an interleave broadcast packet until after
 	 * we've validated the MAC that SHOULD be provided.
 	 *
-	 * hisstratum should never be 0.
+	 * hisstratum cannot be 0 - see assertion above.
 	 * If hisstratum is 15, then we'll advertise as UNSPEC but
 	 * at least we'll be able to sync with the broadcast server.
 	 */
 	} else if (hismode == MODE_BROADCAST) {
-		if (   0 == hisstratum
-		    || STRATUM_UNSPEC <= hisstratum) {
+		/* 0 is unexpected too, and impossible */
+		if (STRATUM_UNSPEC <= hisstratum) {
 			/* Is this a ++sys_declined or ??? */
 			msyslog(LOG_INFO,
 				"receive: Unexpected stratum (%d) in broadcast from %s",
@@ -1628,7 +1629,7 @@ receive(
 	 * (nonzero) org, rec, and xmt timestamps set to the xmt timestamp
 	 * that we have previously sent out.  Watch interleave mode.
 	 */
-	} else if (STRATUM_UNSPEC == hisstratum) {
+	} else if (kissCode != NOKISS) {
 		DEBUG_INSIST(!L_ISZERO(&p_xmt));
 		if (   L_ISZERO(&p_org)		/* We checked p_xmt above */
 		    || L_ISZERO(&p_rec)) {
@@ -1684,11 +1685,11 @@ receive(
 	 *
 	 * This could also mean somebody is forging packets claiming to
 	 * be from us, attempting to cause our server to KoD us.
+	 *
+	 * We have earlier asserted that hisstratum cannot be 0.
+	 * If hisstratum is STRATUM_UNSPEC, it means he's not sync'd.
 	 */
 	} else if (peer->flip == 0) {
-		INSIST(0 != hisstratum);
-		INSIST(STRATUM_UNSPEC != hisstratum);
-
 		if (0) {
 		} else if (L_ISZERO(&p_org)) {
 			const char *action;
@@ -1901,10 +1902,8 @@ receive(
 
 	/*
 	 * Check for any kiss codes. Note this is only used when a server
-	 * responds to a packet request
+	 * responds to a packet request.
 	 */
-
-	kissCode = kiss_code_check(hisleap, hisstratum, hismode, pkt->refid);
 
 	/*
 	 * Check to see if this is a RATE Kiss Code
