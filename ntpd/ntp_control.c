@@ -1472,6 +1472,89 @@ ctl_flushpkt(
 }
 
 
+/* --------------------------------------------------------------------
+ * block transfer API -- stream string/data fragments into xmit buffer
+ * without additional copying
+ */
+
+/* buffer descriptor: address & size of fragment
+ * 'buf' may only be NULL when 'len' is zero!
+ */
+typedef struct {
+	const void  *buf;
+	size_t       len;
+} CtlMemBufT;
+
+/* put ctl data in a gather-style operation */
+static void
+ctl_putdata_ex(
+	const CtlMemBufT * argv,
+	size_t             argc,
+	int/*BOOL*/        bin		/* set to 1 when data is binary */
+	)
+{
+	const char * src_ptr;
+	size_t       src_len, cur_len, add_len, argi;
+
+	/* text / binary preprocessing, possibly create new linefeed */
+	if (bin) {
+		add_len = 0;
+	} else {
+		datanotbinflag = TRUE;
+		add_len = 3;
+		
+		if (datasent) {
+			*datapt++ = ',';
+			datalinelen++;
+			
+			/* sum up total length */
+			for (argi = 0, src_len = 0; argi < argc; ++argi)
+				src_len += argv[argi].len;
+			/* possibly start a new line, assume no size_t overflow */
+			if ((src_len + datalinelen + 1) >= MAXDATALINELEN) {
+				*datapt++ = '\r';
+				*datapt++ = '\n';
+				datalinelen = 0;
+			} else {
+				*datapt++ = ' ';
+				datalinelen++;
+			}
+		}
+	}
+
+	/* now stream out all buffers */
+	for (argi = 0; argi < argc; ++argi) {
+		src_ptr = argv[argi].buf;
+		src_len = argv[argi].len;
+
+		if ( ! (src_ptr && src_len))
+			continue;
+
+		cur_len = (size_t)(dataend - datapt);
+		while ((src_len + add_len) > cur_len) {
+			/* Not enough room in this one, flush it out. */
+			if (src_len < cur_len)
+				cur_len = src_len;
+			
+			memcpy(datapt, src_ptr, cur_len);
+			datapt      += cur_len;
+			datalinelen += cur_len;
+
+			src_ptr     += cur_len;
+			src_len     -= cur_len;
+			
+			ctl_flushpkt(CTL_MORE);
+			cur_len = (size_t)(dataend - datapt);
+		}
+
+		memcpy(datapt, src_ptr, src_len);
+		datapt      += src_len;
+		datalinelen += src_len;
+
+		datasent = TRUE;
+	}
+}
+
 /*
  * ctl_putdata - write data into the packet, fragmenting and starting
  * another if this one is full.
@@ -1483,52 +1566,12 @@ ctl_putdata(
 	int bin			/* set to 1 when data is binary */
 	)
 {
-	int overhead;
-	unsigned int currentlen;
-
-	overhead = 0;
-	if (!bin) {
-		datanotbinflag = TRUE;
-		overhead = 3;
-		if (datasent) {
-			*datapt++ = ',';
-			datalinelen++;
-			if ((dlen + datalinelen + 1) >= MAXDATALINELEN) {
-				*datapt++ = '\r';
-				*datapt++ = '\n';
-				datalinelen = 0;
-			} else {
-				*datapt++ = ' ';
-				datalinelen++;
-			}
-		}
-	}
-
-	/*
-	 * Save room for trailing junk
-	 */
-	while (dlen + overhead + datapt > dataend) {
-		/*
-		 * Not enough room in this one, flush it out.
-		 */
-		currentlen = MIN(dlen, (unsigned int)(dataend - datapt));
-
-		memcpy(datapt, dp, currentlen);
-
-		datapt += currentlen;
-		dp += currentlen;
-		dlen -= currentlen;
-		datalinelen += currentlen;
-
-		ctl_flushpkt(CTL_MORE);
-	}
-
-	memcpy(datapt, dp, dlen);
-	datapt += dlen;
-	datalinelen += dlen;
-	datasent = TRUE;
+	CtlMemBufT args[1];
+	
+	args[0].buf = dp;
+	args[0].len = dlen;
+	ctl_putdata_ex(args, 1, bin);
 }
-
 
 /*
  * ctl_putstr - write a tagged string into the response packet
@@ -1546,16 +1589,18 @@ ctl_putstr(
 	size_t		len
 	)
 {
-	char buffer[512];
-	int  rc;
+	CtlMemBufT args[4];
+	
+	args[0].buf = tag;
+	args[0].len = strlen(tag);
+	args[1].buf = "=\"";
+	args[1].len = 2;
+	args[2].buf = data;
+	args[2].len = len;
+	args[3].buf = "\"";
+	args[3].len = 1;
 
-	INSIST(len < sizeof(buffer));
-	if (len)
-	    rc = snprintf(buffer, sizeof(buffer), "%s=\"%.*s\"", tag, (int)len, data);
-	else
-	    rc = snprintf(buffer, sizeof(buffer), "%s", tag);
-	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putdata_ex(args, 4, FALSE);
 }
 
 
@@ -1575,16 +1620,16 @@ ctl_putunqstr(
 	size_t		len
 	)
 {
-	char buffer[512];
-	int  rc;
+	CtlMemBufT args[3];
+	
+	args[0].buf = tag;
+	args[0].len = strlen(tag);
+	args[1].buf = "=";
+	args[1].len = 1;
+	args[2].buf = data;
+	args[2].len = len;
 
-	INSIST(len < sizeof(buffer));
-	if (len)
-	    rc = snprintf(buffer, sizeof(buffer), "%s=%.*s", tag, (int)len, data);
-	else
-	    rc = snprintf(buffer, sizeof(buffer), "%s", tag);
-	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putdata_ex(args, 3, FALSE);
 }
 
 
@@ -1599,14 +1644,14 @@ ctl_putdblf(
 	double		d
 	)
 {
-	char buffer[200];
+	char buffer[40];
 	int  rc;
 	
 	rc = snprintf(buffer, sizeof(buffer),
-		      (use_f ? "%s=%.*f" : "%s=%.*g"),
-		      tag, precision, d);
+		      (use_f ? "%.*f" : "%.*g"),
+		      precision, d);
 	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putunqstr(tag, buffer, rc);
 }
 
 /*
@@ -1618,12 +1663,12 @@ ctl_putuint(
 	u_long uval
 	)
 {
-	char buffer[200];
+	char buffer[24]; /* needs to fit for 64 bits! */
 	int  rc;
 
-	rc = snprintf(buffer, sizeof(buffer), "%s=%lu", tag, uval);
+	rc = snprintf(buffer, sizeof(buffer), "%lu", uval);
 	INSIST(rc >= 0 && rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putunqstr(tag, buffer, rc);
 }
 
 /*
@@ -1637,17 +1682,16 @@ ctl_putcal(
 	const struct calendar *pcal
 	)
 {
-	char buffer[100];
+	char buffer[16];
 	int  rc;
 
 	rc = snprintf(buffer, sizeof(buffer),
-		      "%s=%04d%02d%02d%02d%02d",
-		      tag,
+		      "%04d%02d%02d%02d%02d",
 		      pcal->year, pcal->month, pcal->monthday,
 		      pcal->hour, pcal->minute
 		);
 	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putunqstr(tag, buffer, rc);
 }
 #endif
 
@@ -1660,23 +1704,21 @@ ctl_putfs(
 	tstamp_t uval
 	)
 {
-	char buffer[200];
-	struct tm *tm = NULL;
-	time_t fstamp;
-	int    rc;
+	char buffer[16];
+	int  rc;
 	
-	fstamp = (time_t)uval - JAN_1970;
-	tm = gmtime(&fstamp);
+	time_t fstamp = (time_t)uval - JAN_1970;
+	struct tm *tm = gmtime(&fstamp);
+
 	if (NULL == tm)
 		return;
 
 	rc = snprintf(buffer, sizeof(buffer),
-		      "%s=%04d%02d%02d%02d%02d",
-		      tag,
+		      "%04d%02d%02d%02d%02d",
 		      tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
 		      tm->tm_hour, tm->tm_min);
 	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putunqstr(tag, buffer, rc);
 }
 
 
@@ -1690,12 +1732,12 @@ ctl_puthex(
 	u_long uval
 	)
 {
-	char buffer[200];
+	char buffer[24];	/* must fit 64bit int! */
 	int  rc;
 	
-	rc = snprintf(buffer, sizeof(buffer), "%s=0x%lx", tag, uval);
+	rc = snprintf(buffer, sizeof(buffer), "0x%lx", uval);
 	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putunqstr(tag, buffer, rc);
 }
 
 
@@ -1708,12 +1750,12 @@ ctl_putint(
 	long ival
 	)
 {
-	char buffer[200];
+	char buffer[24];	/*must fit 64bit int */
 	int  rc;
 	
-	rc = snprintf(buffer, sizeof(buffer), "%s=%ld", tag, ival);
+	rc = snprintf(buffer, sizeof(buffer), "%ld", ival);
 	INSIST(rc >= 0 && rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putunqstr(tag, buffer, rc);
 }
 
 
@@ -1726,14 +1768,14 @@ ctl_putts(
 	l_fp *ts
 	)
 {
-	char buffer[200];
+	char buffer[24];
 	int  rc;
 	
 	rc = snprintf(buffer, sizeof(buffer),
-		      "%s=0x%08lx.%08lx",
-		      tag, (u_long)ts->l_ui, (u_long)ts->l_uf);
+		      "0x%08lx.%08lx",
+		      (u_long)ts->l_ui, (u_long)ts->l_uf);
 	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putunqstr(tag, buffer, rc);
 }
 
 
@@ -1748,16 +1790,12 @@ ctl_putadr(
 	)
 {
 	const char *cq;
-	char buffer[200];
-	int  rc;
 	
 	if (NULL == addr)
 		cq = numtoa(addr32);
 	else
 		cq = stoa(addr);
-	rc = snprintf(buffer, sizeof(buffer), "%s=%s", tag, cq);
-	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, 0);
+	ctl_putunqstr(tag, cq, strlen(cq));
 }
 
 
@@ -1770,8 +1808,7 @@ ctl_putrefid(
 	u_int32		refid
 	)
 {
-	char buffer[128];
-	int  rc, i;
+	size_t nc;
 
 	union {
 		uint32_t w;
@@ -1779,13 +1816,10 @@ ctl_putrefid(
 	} bytes;
 
 	bytes.w = refid;
-	for (i = 0; i < sizeof(bytes.b); ++i)
-		if (bytes.b[i] && !isprint(bytes.b[i]))
-			bytes.b[i] = '.';
-	rc = snprintf(buffer, sizeof(buffer), "%s=%.*s",
-		      tag, (int)sizeof(bytes.b), bytes.b);
-	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
-	ctl_putdata(buffer, (u_int)rc, FALSE);
+	for (nc = 0; nc < sizeof(bytes.b) && bytes.b[nc]; ++nc)
+		if (!isprint(bytes.b[nc]))
+			bytes.b[nc] = '.';
+	ctl_putunqstr(tag, (const char*)bytes.b, nc);
 }
 
 
@@ -1805,21 +1839,16 @@ ctl_putarray(
 
 	cp = buffer;
 	ep = buffer + sizeof(buffer);
-
-	rc  = snprintf(cp, (size_t)(ep - cp), "%s=", tag);
-	INSIST(rc >= 0 && rc < (ep - cp));
-	cp += rc;
-
-	i = start;
+	i  = start;
 	do {
 		if (i == 0)
 			i = NTP_SHIFT;
 		i--;
 		rc = snprintf(cp, (size_t)(ep - cp), " %.2f", arr[i] * 1e3);
-		INSIST(rc >= 0 && rc < (ep - cp));
+		INSIST(rc >= 0 && (size_t)rc < (size_t)(ep - cp));
 		cp += rc;
 	} while (i != start);
-	ctl_putdata(buffer, (u_int)(cp - buffer), 0);
+	ctl_putunqstr(tag, buffer, (size_t)(cp - buffer));
 }
 
 /*
