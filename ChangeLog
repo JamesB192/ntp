@@ -1,3 +1,6 @@
+* [Bug 3408]  refclock_jjy.c : Avoid a wrong report of the coverity static
+              analysis tool. <abe@ntp.org>
+
 ---
 (4.2.8p10-win-beta1) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p10)
