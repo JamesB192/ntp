@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntpq.texi)
 #
-# It has been AutoGen-ed  March 19, 2017 at 10:10:33 AM by AutoGen 5.18.5
+# It has been AutoGen-ed  May 19, 2017 at 12:33:24 PM by AutoGen 5.18.5
 # From the definitions    ntpq-opts.def
 # and the template file   agtexi-cmd.tpl
 @end ignore
@@ -109,7 +109,7 @@ A
 @quoteleft{}?@quoteright{}
 followed by a command name will print function and usage
 information about the command.
-@item @code{addvars} @kbd{name}@code{[=@kbd{value}@code{[,...]}
+@item @code{addvars} @kbd{name}@code{[=@kbd{value}]}@code{[,...]}
 @item @code{rmvars} @kbd{name}@code{[,...]}
 @item @code{clearvars}
 @item @code{showvars}
@@ -942,7 +942,7 @@ with a status code of 0.
 
 @exampleindent 0
 @example
-ntpq - standard NTP query program - Ver. 4.2.8p9
+ntpq - standard NTP query program - Ver. 4.2.8p10
 Usage:  ntpq [ -<flag> [<val>] | --<name>[@{=| @}<val>] ]... [ host ...]
   Flg Arg Option-Name    Description
    -4 no  ipv4           Force IPv4 name resolution

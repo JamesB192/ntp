@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntp-keygen-opts.c)
  *
- *  It has been AutoGen-ed  March 19, 2017 at 10:10:36 AM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  May 19, 2017 at 12:27:15 PM by AutoGen 5.18.5
  *  From the definitions    ntp-keygen-opts.def
  *  and the template file   options
  *
@@ -51,7 +51,7 @@ extern "C" {
 #endif
 extern FILE * option_usage_fp;
 #define zCopyright      (ntp_keygen_opt_strs+0)
-#define zLicenseDescrip (ntp_keygen_opt_strs+352)
+#define zLicenseDescrip (ntp_keygen_opt_strs+355)
 
 /*
  *  global included definitions
@@ -71,15 +71,15 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for ntp-keygen options
  */
-static char const ntp_keygen_opt_strs[2439] =
-/*     0 */ "ntp-keygen (ntp) 4.2.8p9\n"
+static char const ntp_keygen_opt_strs[2448] =
+/*     0 */ "ntp-keygen (ntp) 4.2.8p10-x\n"
             "Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
             "redistribution under the terms of the NTP License, copies of which\n"
             "can be seen at:\n"
             "  <http://ntp.org/license>\n"
             "  <http://opensource.org/licenses/ntp-license.php>\n\0"
-/*   352 */ "Permission to use, copy, modify, and distribute this software and its\n"
+/*   355 */ "Permission to use, copy, modify, and distribute this software and its\n"
             "documentation for any purpose with or without fee is hereby granted,\n"
             "provided that the above copyright notice appears in all copies and that\n"
             "both the copyright notice and this permission notice appear in supporting\n"
@@ -89,101 +89,101 @@ static char const ntp_keygen_opt_strs[2439] =
             "Time Foundation makes no representations about the suitability this\n"
             "software for any purpose.  It is provided \"as is\" without express or\n"
             "implied warranty.\n\0"
-/*  1020 */ "identity modulus bits\0"
-/*  1042 */ "IMBITS\0"
-/*  1049 */ "imbits\0"
-/*  1056 */ "certificate scheme\0"
-/*  1075 */ "CERTIFICATE\0"
-/*  1087 */ "certificate\0"
-/*  1099 */ "privatekey cipher\0"
-/*  1117 */ "CIPHER\0"
-/*  1124 */ "cipher\0"
-/*  1131 */ "Increase debug verbosity level\0"
-/*  1162 */ "DEBUG_LEVEL\0"
-/*  1174 */ "debug-level\0"
-/*  1186 */ "Set the debug verbosity level\0"
-/*  1216 */ "SET_DEBUG_LEVEL\0"
-/*  1232 */ "set-debug-level\0"
-/*  1248 */ "Write IFF or GQ identity keys\0"
-/*  1278 */ "ID_KEY\0"
-/*  1285 */ "id-key\0"
-/*  1292 */ "Generate GQ parameters and keys\0"
-/*  1324 */ "GQ_PARAMS\0"
-/*  1334 */ "gq-params\0"
-/*  1344 */ "generate RSA host key\0"
-/*  1366 */ "HOST_KEY\0"
-/*  1375 */ "host-key\0"
-/*  1384 */ "generate IFF parameters\0"
-/*  1408 */ "IFFKEY\0"
-/*  1415 */ "iffkey\0"
-/*  1422 */ "set Autokey group name\0"
-/*  1445 */ "IDENT\0"
-/*  1451 */ "ident\0"
-/*  1457 */ "set certificate lifetime\0"
-/*  1482 */ "LIFETIME\0"
-/*  1491 */ "lifetime\0"
-/*  1500 */ "prime modulus\0"
-/*  1514 */ "MODULUS\0"
-/*  1522 */ "modulus\0"
-/*  1530 */ "generate symmetric keys\0"
-/*  1554 */ "MD5KEY\0"
-/*  1561 */ "md5key\0"
-/*  1568 */ "generate PC private certificate\0"
-/*  1600 */ "PVT_CERT\0"
-/*  1609 */ "pvt-cert\0"
-/*  1618 */ "local private password\0"
-/*  1641 */ "PASSWORD\0"
-/*  1650 */ "password\0"
-/*  1659 */ "export IFF or GQ group keys with password\0"
-/*  1701 */ "EXPORT_PASSWD\0"
-/*  1715 */ "export-passwd\0"
-/*  1729 */ "set host and optionally group name\0"
-/*  1764 */ "SUBJECT_NAME\0"
-/*  1777 */ "subject-name\0"
-/*  1790 */ "generate sign key (RSA or DSA)\0"
-/*  1821 */ "SIGN_KEY\0"
-/*  1830 */ "sign-key\0"
-/*  1839 */ "trusted certificate (TC scheme)\0"
-/*  1871 */ "TRUSTED_CERT\0"
-/*  1884 */ "trusted-cert\0"
-/*  1897 */ "generate <num> MV parameters\0"
-/*  1926 */ "MV_PARAMS\0"
-/*  1936 */ "mv-params\0"
-/*  1946 */ "update <num> MV keys\0"
-/*  1967 */ "MV_KEYS\0"
-/*  1975 */ "mv-keys\0"
-/*  1983 */ "display extended usage information and exit\0"
-/*  2027 */ "help\0"
-/*  2032 */ "extended usage information passed thru pager\0"
-/*  2077 */ "more-help\0"
-/*  2087 */ "output version information and exit\0"
-/*  2123 */ "version\0"
-/*  2131 */ "save the option state to a config file\0"
-/*  2170 */ "save-opts\0"
-/*  2180 */ "load options from a config file\0"
-/*  2212 */ "LOAD_OPTS\0"
-/*  2222 */ "no-load-opts\0"
-/*  2235 */ "no\0"
-/*  2238 */ "NTP_KEYGEN\0"
-/*  2249 */ "ntp-keygen (ntp) - Create a NTP host key - Ver. 4.2.8p9\n"
+/*  1023 */ "identity modulus bits\0"
+/*  1045 */ "IMBITS\0"
+/*  1052 */ "imbits\0"
+/*  1059 */ "certificate scheme\0"
+/*  1078 */ "CERTIFICATE\0"
+/*  1090 */ "certificate\0"
+/*  1102 */ "privatekey cipher\0"
+/*  1120 */ "CIPHER\0"
+/*  1127 */ "cipher\0"
+/*  1134 */ "Increase debug verbosity level\0"
+/*  1165 */ "DEBUG_LEVEL\0"
+/*  1177 */ "debug-level\0"
+/*  1189 */ "Set the debug verbosity level\0"
+/*  1219 */ "SET_DEBUG_LEVEL\0"
+/*  1235 */ "set-debug-level\0"
+/*  1251 */ "Write IFF or GQ identity keys\0"
+/*  1281 */ "ID_KEY\0"
+/*  1288 */ "id-key\0"
+/*  1295 */ "Generate GQ parameters and keys\0"
+/*  1327 */ "GQ_PARAMS\0"
+/*  1337 */ "gq-params\0"
+/*  1347 */ "generate RSA host key\0"
+/*  1369 */ "HOST_KEY\0"
+/*  1378 */ "host-key\0"
+/*  1387 */ "generate IFF parameters\0"
+/*  1411 */ "IFFKEY\0"
+/*  1418 */ "iffkey\0"
+/*  1425 */ "set Autokey group name\0"
+/*  1448 */ "IDENT\0"
+/*  1454 */ "ident\0"
+/*  1460 */ "set certificate lifetime\0"
+/*  1485 */ "LIFETIME\0"
+/*  1494 */ "lifetime\0"
+/*  1503 */ "prime modulus\0"
+/*  1517 */ "MODULUS\0"
+/*  1525 */ "modulus\0"
+/*  1533 */ "generate symmetric keys\0"
+/*  1557 */ "MD5KEY\0"
+/*  1564 */ "md5key\0"
+/*  1571 */ "generate PC private certificate\0"
+/*  1603 */ "PVT_CERT\0"
+/*  1612 */ "pvt-cert\0"
+/*  1621 */ "local private password\0"
+/*  1644 */ "PASSWORD\0"
+/*  1653 */ "password\0"
+/*  1662 */ "export IFF or GQ group keys with password\0"
+/*  1704 */ "EXPORT_PASSWD\0"
+/*  1718 */ "export-passwd\0"
+/*  1732 */ "set host and optionally group name\0"
+/*  1767 */ "SUBJECT_NAME\0"
+/*  1780 */ "subject-name\0"
+/*  1793 */ "generate sign key (RSA or DSA)\0"
+/*  1824 */ "SIGN_KEY\0"
+/*  1833 */ "sign-key\0"
+/*  1842 */ "trusted certificate (TC scheme)\0"
+/*  1874 */ "TRUSTED_CERT\0"
+/*  1887 */ "trusted-cert\0"
+/*  1900 */ "generate <num> MV parameters\0"
+/*  1929 */ "MV_PARAMS\0"
+/*  1939 */ "mv-params\0"
+/*  1949 */ "update <num> MV keys\0"
+/*  1970 */ "MV_KEYS\0"
+/*  1978 */ "mv-keys\0"
+/*  1986 */ "display extended usage information and exit\0"
+/*  2030 */ "help\0"
+/*  2035 */ "extended usage information passed thru pager\0"
+/*  2080 */ "more-help\0"
+/*  2090 */ "output version information and exit\0"
+/*  2126 */ "version\0"
+/*  2134 */ "save the option state to a config file\0"
+/*  2173 */ "save-opts\0"
+/*  2183 */ "load options from a config file\0"
+/*  2215 */ "LOAD_OPTS\0"
+/*  2225 */ "no-load-opts\0"
+/*  2238 */ "no\0"
+/*  2241 */ "NTP_KEYGEN\0"
+/*  2252 */ "ntp-keygen (ntp) - Create a NTP host key - Ver. 4.2.8p10-x\n"
             "Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]...\n\0"
-/*  2363 */ "$HOME\0"
-/*  2369 */ ".\0"
-/*  2371 */ ".ntprc\0"
-/*  2378 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  2412 */ "\n\0"
-/*  2414 */ "ntp-keygen (ntp) 4.2.8p9";
+/*  2369 */ "$HOME\0"
+/*  2375 */ ".\0"
+/*  2377 */ ".ntprc\0"
+/*  2384 */ "http://bugs.ntp.org, bugs@ntp.org\0"
+/*  2418 */ "\n\0"
+/*  2420 */ "ntp-keygen (ntp) 4.2.8p10-x";
 
 /**
  *  imbits option description:
  */
 #ifdef AUTOKEY
 /** Descriptive text for the imbits option */
-#define IMBITS_DESC      (ntp_keygen_opt_strs+1020)
+#define IMBITS_DESC      (ntp_keygen_opt_strs+1023)
 /** Upper-cased name for the imbits option */
-#define IMBITS_NAME      (ntp_keygen_opt_strs+1042)
+#define IMBITS_NAME      (ntp_keygen_opt_strs+1045)
 /** Name string for the imbits option */
-#define IMBITS_name      (ntp_keygen_opt_strs+1049)
+#define IMBITS_name      (ntp_keygen_opt_strs+1052)
 /** Compiled in flag settings for the imbits option */
 #define IMBITS_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_NUMERIC))
@@ -200,11 +200,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the certificate option */
-#define CERTIFICATE_DESC      (ntp_keygen_opt_strs+1056)
+#define CERTIFICATE_DESC      (ntp_keygen_opt_strs+1059)
 /** Upper-cased name for the certificate option */
-#define CERTIFICATE_NAME      (ntp_keygen_opt_strs+1075)
+#define CERTIFICATE_NAME      (ntp_keygen_opt_strs+1078)
 /** Name string for the certificate option */
-#define CERTIFICATE_name      (ntp_keygen_opt_strs+1087)
+#define CERTIFICATE_name      (ntp_keygen_opt_strs+1090)
 /** Compiled in flag settings for the certificate option */
 #define CERTIFICATE_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
@@ -221,11 +221,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the cipher option */
-#define CIPHER_DESC      (ntp_keygen_opt_strs+1099)
+#define CIPHER_DESC      (ntp_keygen_opt_strs+1102)
 /** Upper-cased name for the cipher option */
-#define CIPHER_NAME      (ntp_keygen_opt_strs+1117)
+#define CIPHER_NAME      (ntp_keygen_opt_strs+1120)
 /** Name string for the cipher option */
-#define CIPHER_name      (ntp_keygen_opt_strs+1124)
+#define CIPHER_name      (ntp_keygen_opt_strs+1127)
 /** Compiled in flag settings for the cipher option */
 #define CIPHER_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
@@ -241,11 +241,11 @@ static char const ntp_keygen_opt_strs[2439] =
  *  debug-level option description:
  */
 /** Descriptive text for the debug-level option */
-#define DEBUG_LEVEL_DESC      (ntp_keygen_opt_strs+1131)
+#define DEBUG_LEVEL_DESC      (ntp_keygen_opt_strs+1134)
 /** Upper-cased name for the debug-level option */
-#define DEBUG_LEVEL_NAME      (ntp_keygen_opt_strs+1162)
+#define DEBUG_LEVEL_NAME      (ntp_keygen_opt_strs+1165)
 /** Name string for the debug-level option */
-#define DEBUG_LEVEL_name      (ntp_keygen_opt_strs+1174)
+#define DEBUG_LEVEL_name      (ntp_keygen_opt_strs+1177)
 /** Compiled in flag settings for the debug-level option */
 #define DEBUG_LEVEL_FLAGS     (OPTST_DISABLED)
 
@@ -253,11 +253,11 @@ static char const ntp_keygen_opt_strs[2439] =
  *  set-debug-level option description:
  */
 /** Descriptive text for the set-debug-level option */
-#define SET_DEBUG_LEVEL_DESC      (ntp_keygen_opt_strs+1186)
+#define SET_DEBUG_LEVEL_DESC      (ntp_keygen_opt_strs+1189)
 /** Upper-cased name for the set-debug-level option */
-#define SET_DEBUG_LEVEL_NAME      (ntp_keygen_opt_strs+1216)
+#define SET_DEBUG_LEVEL_NAME      (ntp_keygen_opt_strs+1219)
 /** Name string for the set-debug-level option */
-#define SET_DEBUG_LEVEL_name      (ntp_keygen_opt_strs+1232)
+#define SET_DEBUG_LEVEL_name      (ntp_keygen_opt_strs+1235)
 /** Compiled in flag settings for the set-debug-level option */
 #define SET_DEBUG_LEVEL_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_NUMERIC))
@@ -267,11 +267,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the id-key option */
-#define ID_KEY_DESC      (ntp_keygen_opt_strs+1248)
+#define ID_KEY_DESC      (ntp_keygen_opt_strs+1251)
 /** Upper-cased name for the id-key option */
-#define ID_KEY_NAME      (ntp_keygen_opt_strs+1278)
+#define ID_KEY_NAME      (ntp_keygen_opt_strs+1281)
 /** Name string for the id-key option */
-#define ID_KEY_name      (ntp_keygen_opt_strs+1285)
+#define ID_KEY_name      (ntp_keygen_opt_strs+1288)
 /** Compiled in flag settings for the id-key option */
 #define ID_KEY_FLAGS     (OPTST_DISABLED)
 
@@ -287,11 +287,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the gq-params option */
-#define GQ_PARAMS_DESC      (ntp_keygen_opt_strs+1292)
+#define GQ_PARAMS_DESC      (ntp_keygen_opt_strs+1295)
 /** Upper-cased name for the gq-params option */
-#define GQ_PARAMS_NAME      (ntp_keygen_opt_strs+1324)
+#define GQ_PARAMS_NAME      (ntp_keygen_opt_strs+1327)
 /** Name string for the gq-params option */
-#define GQ_PARAMS_name      (ntp_keygen_opt_strs+1334)
+#define GQ_PARAMS_name      (ntp_keygen_opt_strs+1337)
 /** Compiled in flag settings for the gq-params option */
 #define GQ_PARAMS_FLAGS     (OPTST_DISABLED)
 
@@ -307,11 +307,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the host-key option */
-#define HOST_KEY_DESC      (ntp_keygen_opt_strs+1344)
+#define HOST_KEY_DESC      (ntp_keygen_opt_strs+1347)
 /** Upper-cased name for the host-key option */
-#define HOST_KEY_NAME      (ntp_keygen_opt_strs+1366)
+#define HOST_KEY_NAME      (ntp_keygen_opt_strs+1369)
 /** Name string for the host-key option */
-#define HOST_KEY_name      (ntp_keygen_opt_strs+1375)
+#define HOST_KEY_name      (ntp_keygen_opt_strs+1378)
 /** Compiled in flag settings for the host-key option */
 #define HOST_KEY_FLAGS     (OPTST_DISABLED)
 
@@ -327,11 +327,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the iffkey option */
-#define IFFKEY_DESC      (ntp_keygen_opt_strs+1384)
+#define IFFKEY_DESC      (ntp_keygen_opt_strs+1387)
 /** Upper-cased name for the iffkey option */
-#define IFFKEY_NAME      (ntp_keygen_opt_strs+1408)
+#define IFFKEY_NAME      (ntp_keygen_opt_strs+1411)
 /** Name string for the iffkey option */
-#define IFFKEY_name      (ntp_keygen_opt_strs+1415)
+#define IFFKEY_name      (ntp_keygen_opt_strs+1418)
 /** Compiled in flag settings for the iffkey option */
 #define IFFKEY_FLAGS     (OPTST_DISABLED)
 
@@ -347,11 +347,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the ident option */
-#define IDENT_DESC      (ntp_keygen_opt_strs+1422)
+#define IDENT_DESC      (ntp_keygen_opt_strs+1425)
 /** Upper-cased name for the ident option */
-#define IDENT_NAME      (ntp_keygen_opt_strs+1445)
+#define IDENT_NAME      (ntp_keygen_opt_strs+1448)
 /** Name string for the ident option */
-#define IDENT_name      (ntp_keygen_opt_strs+1451)
+#define IDENT_name      (ntp_keygen_opt_strs+1454)
 /** Compiled in flag settings for the ident option */
 #define IDENT_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
@@ -368,11 +368,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the lifetime option */
-#define LIFETIME_DESC      (ntp_keygen_opt_strs+1457)
+#define LIFETIME_DESC      (ntp_keygen_opt_strs+1460)
 /** Upper-cased name for the lifetime option */
-#define LIFETIME_NAME      (ntp_keygen_opt_strs+1482)
+#define LIFETIME_NAME      (ntp_keygen_opt_strs+1485)
 /** Name string for the lifetime option */
-#define LIFETIME_name      (ntp_keygen_opt_strs+1491)
+#define LIFETIME_name      (ntp_keygen_opt_strs+1494)
 /** Compiled in flag settings for the lifetime option */
 #define LIFETIME_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_NUMERIC))
@@ -389,11 +389,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the modulus option */
-#define MODULUS_DESC      (ntp_keygen_opt_strs+1500)
+#define MODULUS_DESC      (ntp_keygen_opt_strs+1503)
 /** Upper-cased name for the modulus option */
-#define MODULUS_NAME      (ntp_keygen_opt_strs+1514)
+#define MODULUS_NAME      (ntp_keygen_opt_strs+1517)
 /** Name string for the modulus option */
-#define MODULUS_name      (ntp_keygen_opt_strs+1522)
+#define MODULUS_name      (ntp_keygen_opt_strs+1525)
 /** Compiled in flag settings for the modulus option */
 #define MODULUS_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_NUMERIC))
@@ -409,11 +409,11 @@ static char const ntp_keygen_opt_strs[2439] =
  *  md5key option description:
  */
 /** Descriptive text for the md5key option */
-#define MD5KEY_DESC      (ntp_keygen_opt_strs+1530)
+#define MD5KEY_DESC      (ntp_keygen_opt_strs+1533)
 /** Upper-cased name for the md5key option */
-#define MD5KEY_NAME      (ntp_keygen_opt_strs+1554)
+#define MD5KEY_NAME      (ntp_keygen_opt_strs+1557)
 /** Name string for the md5key option */
-#define MD5KEY_name      (ntp_keygen_opt_strs+1561)
+#define MD5KEY_name      (ntp_keygen_opt_strs+1564)
 /** Compiled in flag settings for the md5key option */
 #define MD5KEY_FLAGS     (OPTST_DISABLED)
 
@@ -422,11 +422,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the pvt-cert option */
-#define PVT_CERT_DESC      (ntp_keygen_opt_strs+1568)
+#define PVT_CERT_DESC      (ntp_keygen_opt_strs+1571)
 /** Upper-cased name for the pvt-cert option */
-#define PVT_CERT_NAME      (ntp_keygen_opt_strs+1600)
+#define PVT_CERT_NAME      (ntp_keygen_opt_strs+1603)
 /** Name string for the pvt-cert option */
-#define PVT_CERT_name      (ntp_keygen_opt_strs+1609)
+#define PVT_CERT_name      (ntp_keygen_opt_strs+1612)
 /** Compiled in flag settings for the pvt-cert option */
 #define PVT_CERT_FLAGS     (OPTST_DISABLED)
 
@@ -442,11 +442,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the password option */
-#define PASSWORD_DESC      (ntp_keygen_opt_strs+1618)
+#define PASSWORD_DESC      (ntp_keygen_opt_strs+1621)
 /** Upper-cased name for the password option */
-#define PASSWORD_NAME      (ntp_keygen_opt_strs+1641)
+#define PASSWORD_NAME      (ntp_keygen_opt_strs+1644)
 /** Name string for the password option */
-#define PASSWORD_name      (ntp_keygen_opt_strs+1650)
+#define PASSWORD_name      (ntp_keygen_opt_strs+1653)
 /** Compiled in flag settings for the password option */
 #define PASSWORD_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
@@ -463,11 +463,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the export-passwd option */
-#define EXPORT_PASSWD_DESC      (ntp_keygen_opt_strs+1659)
+#define EXPORT_PASSWD_DESC      (ntp_keygen_opt_strs+1662)
 /** Upper-cased name for the export-passwd option */
-#define EXPORT_PASSWD_NAME      (ntp_keygen_opt_strs+1701)
+#define EXPORT_PASSWD_NAME      (ntp_keygen_opt_strs+1704)
 /** Name string for the export-passwd option */
-#define EXPORT_PASSWD_name      (ntp_keygen_opt_strs+1715)
+#define EXPORT_PASSWD_name      (ntp_keygen_opt_strs+1718)
 /** Compiled in flag settings for the export-passwd option */
 #define EXPORT_PASSWD_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
@@ -484,11 +484,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the subject-name option */
-#define SUBJECT_NAME_DESC      (ntp_keygen_opt_strs+1729)
+#define SUBJECT_NAME_DESC      (ntp_keygen_opt_strs+1732)
 /** Upper-cased name for the subject-name option */
-#define SUBJECT_NAME_NAME      (ntp_keygen_opt_strs+1764)
+#define SUBJECT_NAME_NAME      (ntp_keygen_opt_strs+1767)
 /** Name string for the subject-name option */
-#define SUBJECT_NAME_name      (ntp_keygen_opt_strs+1777)
+#define SUBJECT_NAME_name      (ntp_keygen_opt_strs+1780)
 /** Compiled in flag settings for the subject-name option */
 #define SUBJECT_NAME_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
@@ -505,11 +505,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the sign-key option */
-#define SIGN_KEY_DESC      (ntp_keygen_opt_strs+1790)
+#define SIGN_KEY_DESC      (ntp_keygen_opt_strs+1793)
 /** Upper-cased name for the sign-key option */
-#define SIGN_KEY_NAME      (ntp_keygen_opt_strs+1821)
+#define SIGN_KEY_NAME      (ntp_keygen_opt_strs+1824)
 /** Name string for the sign-key option */
-#define SIGN_KEY_name      (ntp_keygen_opt_strs+1830)
+#define SIGN_KEY_name      (ntp_keygen_opt_strs+1833)
 /** Compiled in flag settings for the sign-key option */
 #define SIGN_KEY_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
@@ -526,11 +526,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the trusted-cert option */
-#define TRUSTED_CERT_DESC      (ntp_keygen_opt_strs+1839)
+#define TRUSTED_CERT_DESC      (ntp_keygen_opt_strs+1842)
 /** Upper-cased name for the trusted-cert option */
-#define TRUSTED_CERT_NAME      (ntp_keygen_opt_strs+1871)
+#define TRUSTED_CERT_NAME      (ntp_keygen_opt_strs+1874)
 /** Name string for the trusted-cert option */
-#define TRUSTED_CERT_name      (ntp_keygen_opt_strs+1884)
+#define TRUSTED_CERT_name      (ntp_keygen_opt_strs+1887)
 /** Compiled in flag settings for the trusted-cert option */
 #define TRUSTED_CERT_FLAGS     (OPTST_DISABLED)
 
@@ -546,11 +546,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the mv-params option */
-#define MV_PARAMS_DESC      (ntp_keygen_opt_strs+1897)
+#define MV_PARAMS_DESC      (ntp_keygen_opt_strs+1900)
 /** Upper-cased name for the mv-params option */
-#define MV_PARAMS_NAME      (ntp_keygen_opt_strs+1926)
+#define MV_PARAMS_NAME      (ntp_keygen_opt_strs+1929)
 /** Name string for the mv-params option */
-#define MV_PARAMS_name      (ntp_keygen_opt_strs+1936)
+#define MV_PARAMS_name      (ntp_keygen_opt_strs+1939)
 /** Compiled in flag settings for the mv-params option */
 #define MV_PARAMS_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_NUMERIC))
@@ -567,11 +567,11 @@ static char const ntp_keygen_opt_strs[2439] =
  */
 #ifdef AUTOKEY
 /** Descriptive text for the mv-keys option */
-#define MV_KEYS_DESC      (ntp_keygen_opt_strs+1946)
+#define MV_KEYS_DESC      (ntp_keygen_opt_strs+1949)
 /** Upper-cased name for the mv-keys option */
-#define MV_KEYS_NAME      (ntp_keygen_opt_strs+1967)
+#define MV_KEYS_NAME      (ntp_keygen_opt_strs+1970)
 /** Name string for the mv-keys option */
-#define MV_KEYS_name      (ntp_keygen_opt_strs+1975)
+#define MV_KEYS_name      (ntp_keygen_opt_strs+1978)
 /** Compiled in flag settings for the mv-keys option */
 #define MV_KEYS_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_NUMERIC))
@@ -586,11 +586,11 @@ static char const ntp_keygen_opt_strs[2439] =
 /*
  *  Help/More_Help/Version option descriptions:
  */
-#define HELP_DESC       (ntp_keygen_opt_strs+1983)
-#define HELP_name       (ntp_keygen_opt_strs+2027)
+#define HELP_DESC       (ntp_keygen_opt_strs+1986)
+#define HELP_name       (ntp_keygen_opt_strs+2030)
 #ifdef HAVE_WORKING_FORK
-#define MORE_HELP_DESC  (ntp_keygen_opt_strs+2032)
-#define MORE_HELP_name  (ntp_keygen_opt_strs+2077)
+#define MORE_HELP_DESC  (ntp_keygen_opt_strs+2035)
+#define MORE_HELP_name  (ntp_keygen_opt_strs+2080)
 #define MORE_HELP_FLAGS (OPTST_IMM | OPTST_NO_INIT)
 #else
 #define MORE_HELP_DESC  HELP_DESC
@@ -603,14 +603,14 @@ static char const ntp_keygen_opt_strs[2439] =
 #  define VER_FLAGS     (OPTST_SET_ARGTYPE(OPARG_TYPE_STRING) | \
                          OPTST_ARG_OPTIONAL | OPTST_IMM | OPTST_NO_INIT)
 #endif
-#define VER_DESC        (ntp_keygen_opt_strs+2087)
-#define VER_name        (ntp_keygen_opt_strs+2123)
-#define SAVE_OPTS_DESC  (ntp_keygen_opt_strs+2131)
-#define SAVE_OPTS_name  (ntp_keygen_opt_strs+2170)
-#define LOAD_OPTS_DESC     (ntp_keygen_opt_strs+2180)
-#define LOAD_OPTS_NAME     (ntp_keygen_opt_strs+2212)
-#define NO_LOAD_OPTS_name  (ntp_keygen_opt_strs+2222)
-#define LOAD_OPTS_pfx      (ntp_keygen_opt_strs+2235)
+#define VER_DESC        (ntp_keygen_opt_strs+2090)
+#define VER_name        (ntp_keygen_opt_strs+2126)
+#define SAVE_OPTS_DESC  (ntp_keygen_opt_strs+2134)
+#define SAVE_OPTS_name  (ntp_keygen_opt_strs+2173)
+#define LOAD_OPTS_DESC     (ntp_keygen_opt_strs+2183)
+#define LOAD_OPTS_NAME     (ntp_keygen_opt_strs+2215)
+#define NO_LOAD_OPTS_name  (ntp_keygen_opt_strs+2225)
+#define LOAD_OPTS_pfx      (ntp_keygen_opt_strs+2238)
 #define LOAD_OPTS_name     (NO_LOAD_OPTS_name + 3)
 /**
  *  Declare option callback procedures
@@ -961,24 +961,24 @@ static tOptDesc optDesc[OPTION_CT] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** Reference to the upper cased version of ntp-keygen. */
-#define zPROGNAME       (ntp_keygen_opt_strs+2238)
+#define zPROGNAME       (ntp_keygen_opt_strs+2241)
 /** Reference to the title line for ntp-keygen usage. */
-#define zUsageTitle     (ntp_keygen_opt_strs+2249)
+#define zUsageTitle     (ntp_keygen_opt_strs+2252)
 /** ntp-keygen configuration file name. */
-#define zRcName         (ntp_keygen_opt_strs+2371)
+#define zRcName         (ntp_keygen_opt_strs+2377)
 /** Directories to search for ntp-keygen config files. */
 static char const * const apzHomeList[3] = {
-    ntp_keygen_opt_strs+2363,
     ntp_keygen_opt_strs+2369,
+    ntp_keygen_opt_strs+2375,
     NULL };
 /** The ntp-keygen program bug email address. */
-#define zBugsAddr       (ntp_keygen_opt_strs+2378)
+#define zBugsAddr       (ntp_keygen_opt_strs+2384)
 /** Clarification/explanation of what ntp-keygen does. */
-#define zExplain        (ntp_keygen_opt_strs+2412)
+#define zExplain        (ntp_keygen_opt_strs+2418)
 /** Extra detail explaining what ntp-keygen does. */
 #define zDetail         (NULL)
 /** The full version string for ntp-keygen. */
-#define zFullVersion    (ntp_keygen_opt_strs+2414)
+#define zFullVersion    (ntp_keygen_opt_strs+2420)
 /* extracted from optcode.tlib near line 364 */
 
 #if defined(ENABLE_NLS)
@@ -1310,7 +1310,7 @@ static void bogus_function(void) {
      translate option names.
    */
   /* referenced via ntp_keygenOptions.pzCopyright */
-  puts(_("ntp-keygen (ntp) 4.2.8p9\n\
+  puts(_("ntp-keygen (ntp) 4.2.8p10-x\n\
 Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.\n\
 This is free software. It is licensed for use, modification and\n\
 redistribution under the terms of the NTP License, copies of which\n\
@@ -1409,14 +1409,14 @@ implied warranty.\n"));
   puts(_("load options from a config file"));
 
   /* referenced via ntp_keygenOptions.pzUsageTitle */
-  puts(_("ntp-keygen (ntp) - Create a NTP host key - Ver. 4.2.8p9\n\
+  puts(_("ntp-keygen (ntp) - Create a NTP host key - Ver. 4.2.8p10-x\n\
 Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]...\n"));
 
   /* referenced via ntp_keygenOptions.pzExplain */
   puts(_("\n"));
 
   /* referenced via ntp_keygenOptions.pzFullVersion */
-  puts(_("ntp-keygen (ntp) 4.2.8p9"));
+  puts(_("ntp-keygen (ntp) 4.2.8p10-x"));
 
   /* referenced via ntp_keygenOptions.pzFullUsage */
   puts(_("<<<NOT-FOUND>>>"));
