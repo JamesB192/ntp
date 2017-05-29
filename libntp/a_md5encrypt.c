@@ -178,7 +178,7 @@ MD5authdecrypt(
 		msyslog(LOG_ERR, "MAC decrypt: CMAC %s CTX new failed.",   CMAC);
 		len = 0;
 	    } else
-	    if (!CMAC_Init(ctx, key, (u_int)cache_secretsize,
+	    if (!CMAC_Init(ctx, key, (u_int)AES_128_KEY_SIZE,
 						EVP_aes_128_cbc(), NULL)) {
 		fprintf(stderr,  "MAC decrypt: CMAC %s Init failed.\n",    CMAC);
 		msyslog(LOG_ERR, "MAC decrypt: CMAC %s Init failed.",      CMAC);
