@@ -1,4 +1,8 @@
 ---
+* [Bug 3417] ntpq ifstats packet counters can be negative
+  made IFSTATS counter quantities unsigned <perlinger@ntp.org>
+
+---
 (4.2.8p10-win-beta1) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p10)
 

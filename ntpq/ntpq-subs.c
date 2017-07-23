@@ -307,12 +307,12 @@ typedef struct ifstats_row_tag {
 	sockaddr_u	bcast;
 	int		enabled;
 	u_int		flags;
-	int		mcast_count;
+	u_int		mcast_count;
 	char		name[32];
-	int		peer_count;
-	int		received;
-	int		sent;
-	int		send_errors;
+	u_int		peer_count;
+	u_int		received;
+	u_int		sent;
+	u_int		send_errors;
 	u_int		ttl;
 	u_int		uptime;
 } ifstats_row;
@@ -3314,7 +3314,7 @@ another_ifstats_field(
 	"==============================================================================\n");
 	 */
 	fprintf(fp,
-		"%3u %-24.24s %c %4x %3d %2d %6d %6d %6d %5d %8d\n"
+		"%3u %-24.24s %c %4x %3u %2u %6u %6u %6u %5u %8d\n"
 		"    %s\n",
 		prow->ifnum, prow->name,
 		(prow->enabled)
@@ -3414,7 +3414,7 @@ ifstats(
 
 		case 'm':
 			if (1 == sscanf(tag, mc_fmt, &ui) &&
-			    1 == sscanf(val, "%d", &row.mcast_count))
+			    1 == sscanf(val, "%u", &row.mcast_count))
 				comprende = TRUE;
 			break;
 
@@ -3435,31 +3435,31 @@ ifstats(
 
 		case 'p':
 			if (1 == sscanf(tag, pc_fmt, &ui) &&
-			    1 == sscanf(val, "%d", &row.peer_count))
+			    1 == sscanf(val, "%u", &row.peer_count))
 				comprende = TRUE;
 			break;
 
 		case 'r':
 			if (1 == sscanf(tag, rx_fmt, &ui) &&
-			    1 == sscanf(val, "%d", &row.received))
+			    1 == sscanf(val, "%u", &row.received))
 				comprende = TRUE;
 			break;
 
 		case 't':
 			if (1 == sscanf(tag, tl_fmt, &ui) &&
-			    1 == sscanf(val, "%d", &row.ttl))
+			    1 == sscanf(val, "%u", &row.ttl))
 				comprende = TRUE;
 			else if (1 == sscanf(tag, tx_fmt, &ui) &&
-				 1 == sscanf(val, "%d", &row.sent))
+				 1 == sscanf(val, "%u", &row.sent))
 				comprende = TRUE;
 			else if (1 == sscanf(tag, txerr_fmt, &ui) &&
-				 1 == sscanf(val, "%d", &row.send_errors))
+				 1 == sscanf(val, "%u", &row.send_errors))
 				comprende = TRUE;
 			break;
 
 		case 'u':
 			if (1 == sscanf(tag, up_fmt, &ui) &&
-			    1 == sscanf(val, "%d", &row.uptime))
+			    1 == sscanf(val, "%u", &row.uptime))
 				comprende = TRUE;
 			break;
 		}
