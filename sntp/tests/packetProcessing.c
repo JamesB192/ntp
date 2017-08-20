@@ -76,7 +76,7 @@ PrepareAuthenticationTest(
 	key_ptr->next = NULL;
 	key_ptr->key_id = key_id;
 	key_ptr->key_len = key_len;
-	memcpy(key_ptr->type, "MD5", 3);
+	strlcpy(key_ptr->type, "MD5", sizeof(key_ptr->type));
 
 	TEST_ASSERT_TRUE(key_len < sizeof(key_ptr->key_seq));
 
