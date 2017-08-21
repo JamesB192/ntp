@@ -1,4 +1,8 @@
 ---
+* [Bug 3367] Faulty LinuxPPS NMEA clock support in 4.2.8 <perlinger@ntp.org>
+  - reverted handling of PPS kernel consumer to 4.2.6 behavior
+
+---
 (4.2.8p10-win-beta1) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p10)
 
