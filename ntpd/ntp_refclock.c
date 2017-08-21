@@ -1247,16 +1247,24 @@ refclock_params(
 
 	/*
 	 * If flag3 is lit, select the kernel PPS if we can.
+	 *
+	 * Note: EOPNOTSUPP is the only 'legal' error code we deal with;
+	 * it is part of the 'if we can' strategy.  Any other error
+	 * indicates something more sinister and makes this function fail.
 	 */
 	if (mode & CLK_FLAG3) {
 		if (time_pps_kcbind(ap->handle, PPS_KC_HARDPPS,
 		    ap->pps_params.mode & ~PPS_TSFMT_TSPEC,
-		    PPS_TSFMT_TSPEC) < 0) {
-			msyslog(LOG_ERR,
-			    "refclock_params: time_pps_kcbind: %m");
-			return (0);
+		    PPS_TSFMT_TSPEC) < 0)
+		{
+			if (errno != EOPNOTSUPP) { 
+				msyslog(LOG_ERR,
+					"refclock_params: time_pps_kcbind: %m");
+				return (0);
+			}
+		} else {
+			hardpps_enable = 1;
 		}
-		hardpps_enable = 1;
 	}
 	return (1);
 }
