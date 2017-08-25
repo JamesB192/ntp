@@ -71,7 +71,8 @@ BUILT_SOURCES +=			\
 
 ###
 
-test_leapsec_CFLAGS =			\
+test_leapsec_CFLAGS = 			\
+	$(AM_CFLAGS)			\
 	-I$(top_srcdir)/sntp/unity	\
 	$(NULL)
 
@@ -91,6 +92,7 @@ $(srcdir)/run-leapsec.c: $(srcdir)/leapsec.c $(std_unity_list)
 
 ###
 test_ntp_prio_q_CFLAGS =		\
+	$(AM_CFLAGS)			\
 	-I$(top_srcdir)/sntp/unity	\
 	$(NULL)
 
@@ -111,6 +113,7 @@ $(srcdir)/run-ntp_prio_q.c: $(srcdir)/ntp_prio_q.c $(std_unity_list)
 
 ###
 test_ntp_restrict_CFLAGS =		\
+	$(AM_CFLAGS)			\
 	-I$(top_srcdir)/sntp/unity	\
 	$(NULL)
 
@@ -131,6 +134,7 @@ $(srcdir)/run-ntp_restrict.c: $(srcdir)/ntp_restrict.c $(std_unity_list)
 
 ###
 test_rc_cmdlength_CFLAGS =		\
+	$(AM_CFLAGS)			\
 	-I$(top_srcdir)/sntp/unity	\
 	$(NULL)
 
@@ -166,6 +170,7 @@ $(srcdir)/run-t-ntp_signd.c: $(srcdir)/t-ntp_signd.c $(std_unity_list)
 
 ###
 test_ntp_scanner_CFLAGS =		\
+	$(AM_CFLAGS)			\
 	-I$(top_srcdir)/sntp/unity	\
 	$(NULL)
 
