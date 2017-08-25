@@ -1,4 +1,8 @@
 ---
+* [Bug 3016] wrong error position reported for bad ":config pool"
+  - fixed location counter & ntpq output <perlinger@ntp.org>
+
+---
 (4.2.8p10-win-beta1) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p10)
 
