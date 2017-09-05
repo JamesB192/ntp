@@ -1,4 +1,8 @@
 ---
+* [Bug 3394] Leap second deletion does not work on ntpd clients
+  - fixed handling of dynamic deletion w/o leap file <perlinger@ntp.org>
+  
+---
 (4.2.8p10-win-beta1) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p10)
 
