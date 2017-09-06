@@ -141,7 +141,7 @@ struct req_pkt {
 	req_data_u u;			/* data area */
 	l_fp tstamp;			/* time stamp, for authentication */
 	keyid_t keyid;			/* (optional) encryption key */
-	char mac[MAX_MAC_LEN-sizeof(keyid_t)]; /* (optional) auth code */
+	char mac[MAX_MDG_LEN];		/* (optional) auth code */
 };
 
 /*
@@ -151,7 +151,7 @@ struct req_pkt {
 struct req_pkt_tail {
 	l_fp tstamp;			/* time stamp, for authentication */
 	keyid_t keyid;			/* (optional) encryption key */
-	char mac[MAX_MAC_LEN-sizeof(keyid_t)]; /* (optional) auth code */
+	char mac[MAX_MDG_LEN];		/* (optional) auth code */
 };
 
 /* MODE_PRIVATE request packet header length before optional items. */

@@ -17,24 +17,27 @@ make_mac(
 	)
 {
 	u_int		len = mac_size;
-	int		key_type;
 	EVP_MD_CTX *	ctx;
+	u_char		dbuf[EVP_MAX_MD_SIZE];
 	
 	if (cmp_key->key_len > 64)
 		return 0;
 	if (pkt_size % 4 != 0)
 		return 0;
 
-	INIT_SSL();
-	key_type = keytype_from_text(cmp_key->type, NULL);
-	
 	ctx = EVP_MD_CTX_new();
-	EVP_DigestInit(ctx, EVP_get_digestbynid(key_type));
+	EVP_DigestInit(ctx, EVP_get_digestbynid(cmp_key->typei));
 	EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq, (u_int)cmp_key->key_len);
 	EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size);
-	EVP_DigestFinal(ctx, digest, &len);
+	EVP_DigestFinal(ctx, dbuf, &len);
 	EVP_MD_CTX_free(ctx);
 	
+	/* if the digest is longer than permitted, truncate it. This is
+	 * consistent with the behavior of NTPD/NTPQ/NTPDC...
+	 */
+	if (len > mac_size)
+		len = mac_size;
+	memcpy(digest, dbuf, len);
 	return (int)len;
 }
 
@@ -54,7 +57,7 @@ auth_md5(
 {
 	int  hash_len;
 	int  authentic;
-	char digest[20];
+	char digest[MAX_MDG_LEN];
 	const u_char *pkt_ptr; 
 	if (mac_size > (int)sizeof(digest))
 		return 0;
@@ -109,6 +112,8 @@ auth_init(
 	char kbuf[200];
 	char keystring[129];
 
+	INIT_SSL();
+	
 	if (keyf == NULL) {
 		if (debug)
 			printf("sntp auth_init: Couldn't open key file %s for reading!\n", keyfile);
@@ -134,18 +139,17 @@ auth_init(
 		if (octothorpe)
 			*octothorpe = '\0';
 		act = emalloc(sizeof(*act));
-		scan_cnt = sscanf(kbuf, "%d %9s %128s", &act->key_id, act->type, keystring);
+		scan_cnt = sscanf(kbuf, "%d %9s %128s", &act->key_id, act->typen, keystring);
 		if (scan_cnt == 3) {
 			int len = strlen(keystring);
+			goodline = 1;	/* assume best for now */
 			if (len <= 20) {
 				act->key_len = len;
 				memcpy(act->key_seq, keystring, len + 1);
-				goodline = 1;
 			} else if ((len & 1) != 0) {
 				goodline = 0; /* it's bad */
 			} else {
 				int j;
-				goodline = 1;
 				act->key_len = len >> 1;
 				for (j = 0; j < len; j+=2) {
 					int val;
@@ -158,6 +162,9 @@ auth_init(
 					act->key_seq[j>>1] = (char)val;
 				}
 			}
+			act->typei = keytype_from_text(act->typen, NULL);
+			if (0 == act->typei)
+				goodline = 0; /* it's bad */
 		}
 		if (goodline) {
 			act->next = NULL;
