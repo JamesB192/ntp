@@ -118,7 +118,7 @@ keytype_from_text(
 		*pch = (char)toupper((unsigned char)*pch);
 
 	md = EVP_get_digestbyname(upcased);
-	if (NULL == md && 'M' == upcased[0])
+	if (NULL == md && !strcmp(upcased, "M"))
 		md = EVP_get_digestbyname("MD5");
 	if (NULL == md)
 		return 0;
