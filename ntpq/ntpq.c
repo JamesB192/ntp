@@ -3584,6 +3584,12 @@ ntpq_custom_opt_handler(
  * Obtain list of digest names
  */
 
+#if defined(OPENSSL) && !defined(HAVE_EVP_MD_DO_ALL_SORTED)
+# if defined(_MSC_VER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
+#  define HAVE_EVP_MD_DO_ALL_SORTED
+# endif
+#endif
+
 #ifdef OPENSSL
 # ifdef HAVE_EVP_MD_DO_ALL_SORTED
 struct hstate {
