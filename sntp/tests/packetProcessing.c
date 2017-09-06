@@ -76,7 +76,8 @@ PrepareAuthenticationTest(
 	key_ptr->next = NULL;
 	key_ptr->key_id = key_id;
 	key_ptr->key_len = key_len;
-	memcpy(key_ptr->type, "MD5", 3);
+	strlcpy(key_ptr->typen, "MD5", sizeof(key_ptr->typen));
+	key_ptr->typei = keytype_from_text(key_ptr->typen, NULL);
 
 	TEST_ASSERT_TRUE(key_len < sizeof(key_ptr->key_seq));
 
@@ -231,7 +232,7 @@ test_AuthenticatedPacketInvalid(void)
 
 	testpkt.p.exten[0] = htonl(50);
 	int mac_len = make_mac(&testpkt.p, pkt_len,
-			       MAX_MD5_LEN, key_ptr,
+			       MAX_MD5_LEN - KEY_MAC_LEN, key_ptr,
 			       &testpkt.p.exten[1]);
 
 	pkt_len += 4 + mac_len;
@@ -259,9 +260,9 @@ test_AuthenticatedPacketUnknownKey(void)
 
 	testpkt.p.exten[0] = htonl(50);
 	int mac_len = make_mac(&testpkt.p, pkt_len,
-			       MAX_MD5_LEN, key_ptr,
+			       MAX_MD5_LEN - KEY_MAC_LEN, key_ptr,
 			       &testpkt.p.exten[1]);
-	pkt_len += 4 + mac_len;
+	pkt_len += KEY_MAC_LEN + mac_len;
 
 	TEST_ASSERT_EQUAL(SERVER_AUTH_FAIL,
 			  process_pkt(&testpkt.p, &testsock, pkt_len,
@@ -424,10 +425,10 @@ test_CorrectAuthenticatedPacketMD5(void)
 	/* Prepare the packet. */
 	testpkt.p.exten[0] = htonl(10);
 	int mac_len = make_mac(&testpkt.p, pkt_len,
-			       MAX_MD5_LEN, key_ptr,
+			       MAX_MD5_LEN - KEY_MAC_LEN, key_ptr,
 			       &testpkt.p.exten[1]);
 
-	pkt_len += 4 + mac_len;
+	pkt_len += KEY_MAC_LEN + mac_len;
 
 	TEST_ASSERT_EQUAL(pkt_len,
 			  process_pkt(&testpkt.p, &testsock, pkt_len,
@@ -446,12 +447,13 @@ test_CorrectAuthenticatedPacketSHA1(void)
 	/* Prepare the packet. */
 	testpkt.p.exten[0] = htonl(20);
 	int mac_len = make_mac(&testpkt.p, pkt_len,
-			       MAX_MAC_LEN, key_ptr,
+			       MAX_MDG_LEN, key_ptr,
 			       &testpkt.p.exten[1]);
 
-	pkt_len += 4 + mac_len;
+	pkt_len += KEY_MAC_LEN + mac_len;
 
 	TEST_ASSERT_EQUAL(pkt_len,
 			  process_pkt(&testpkt.p, &testsock, pkt_len,
 				      MODE_SERVER, &testspkt.p, "UnitTest"));
 }
+

@@ -553,11 +553,13 @@ struct pkt {
 	l_fp	rec;		/* receive time stamp */
 	l_fp	xmt;		/* transmit time stamp */
 
-#define	MIN_V4_PKT_LEN	(12 * sizeof(u_int32)) /* min header length */
-#define	LEN_PKT_NOMAC	(12 * sizeof(u_int32)) /* min header length */
-#define MIN_MAC_LEN	(1 * sizeof(u_int32))	/* crypto_NAK */
-#define MAX_MD5_LEN	(5 * sizeof(u_int32))	/* MD5 */
+#define	MIN_V4_PKT_LEN	(12 * sizeof(u_int32))	/* min header length */
+#define	LEN_PKT_NOMAC	(12 * sizeof(u_int32))	/* min header length */
+#define	MIN_MAC_LEN	(1 * sizeof(u_int32))	/* crypto_NAK */
+#define	MAX_MD5_LEN	(5 * sizeof(u_int32))	/* MD5 */
 #define	MAX_MAC_LEN	(6 * sizeof(u_int32))	/* SHA */
+#define	KEY_MAC_LEN	sizeof(u_int32)		/* key ID in MAC */
+#define	MAX_MDG_LEN	(MAX_MAC_LEN-KEY_MAC_LEN) /* max. digest len */
 
 	/*
 	 * The length of the packet less MAC must be a multiple of 64
