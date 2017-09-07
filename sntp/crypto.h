@@ -21,7 +21,7 @@ struct key {
 	int		key_id;
 	int		key_len;
 	int		typei;
-	char		typen[10];
+	char		typen[20];
 	char		key_seq[64];
 };
 
