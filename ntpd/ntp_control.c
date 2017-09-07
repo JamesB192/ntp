@@ -1593,14 +1593,17 @@ ctl_putstr(
 	
 	args[0].buf = tag;
 	args[0].len = strlen(tag);
-	args[1].buf = "=\"";
-	args[1].len = 2;
-	args[2].buf = data;
-	args[2].len = len;
-	args[3].buf = "\"";
-	args[3].len = 1;
-
-	ctl_putdata_ex(args, 4, FALSE);
+	if (data && len) {
+	    args[1].buf = "=\"";
+	    args[1].len = 2;
+	    args[2].buf = data;
+	    args[2].len = len;
+	    args[3].buf = "\"";
+	    args[3].len = 1;
+	    ctl_putdata_ex(args, 4, FALSE);
+	} else {
+	    ctl_putdata_ex(args, 1, FALSE);
+	}
 }
 
 
@@ -1624,12 +1627,15 @@ ctl_putunqstr(
 	
 	args[0].buf = tag;
 	args[0].len = strlen(tag);
-	args[1].buf = "=";
-	args[1].len = 1;
-	args[2].buf = data;
-	args[2].len = len;
-
-	ctl_putdata_ex(args, 3, FALSE);
+	if (data && len) {
+	    args[1].buf = "=";
+	    args[1].len = 1;
+	    args[2].buf = data;
+	    args[2].len = len;
+	    ctl_putdata_ex(args, 3, FALSE);
+	} else {
+	    ctl_putdata_ex(args, 1, FALSE);
+	}
 }
 
 
