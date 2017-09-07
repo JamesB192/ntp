@@ -139,7 +139,7 @@ auth_init(
 		if (octothorpe)
 			*octothorpe = '\0';
 		act = emalloc(sizeof(*act));
-		scan_cnt = sscanf(kbuf, "%d %9s %128s", &act->key_id, act->typen, keystring);
+		scan_cnt = sscanf(kbuf, "%d %19s %128s", &act->key_id, act->typen, keystring);
 		if (scan_cnt == 3) {
 			int len = strlen(keystring);
 			goodline = 1;	/* assume best for now */
