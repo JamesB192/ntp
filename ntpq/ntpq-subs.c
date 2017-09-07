@@ -3277,7 +3277,7 @@ validate_ifnum(
 		return;
 	if (prow->ifnum + 1 <= ifnum) {
 		if (*pfields < IFSTATS_FIELDS)
-			fprintf(fp, "Warning: incomplete row with %d (of %d) fields",
+			fprintf(fp, "Warning: incomplete row with %d (of %d) fields\n",
 				*pfields, IFSTATS_FIELDS);
 		*pfields = 0;
 		prow->ifnum = ifnum;
@@ -3472,7 +3472,7 @@ ifstats(
 		}
 	}
 	if (fields != IFSTATS_FIELDS)
-		fprintf(fp, "Warning: incomplete row with %d (of %d) fields",
+		fprintf(fp, "Warning: incomplete row with %d (of %d) fields\n",
 			fields, IFSTATS_FIELDS);
 
 	fflush(fp);
