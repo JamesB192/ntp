@@ -1,4 +1,8 @@
 ---
+* [Bug 3411] problem about SIGN(6) packet handling for ntp-4.2.8p10
+  - raised receive buffer size to 1200 <perlinger@ntp.org>
+ 
+---
 (4.2.8p10-win-beta1) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p10)
 
