@@ -418,14 +418,14 @@ get_u16(
  * unpack & fix date (the receiver provides a valid time for 1024 weeks
  * after 1997-12-14 and therefore folds back in 2017, 2037,...)
  *
- * Returns -1 on error, day-of month + (month * 32) othertwise.
+ * Returns -1 on error, day-of-month + (month * 32) othertwise.
  */
 int
 decode_date(
 	struct refclockproc *pp,
 	const char          *cp)
 {
-	static uint32_t s_baseday = 0;
+	static int32_t  s_baseday = 0;
 	
 	struct calendar jd;
 	int32_t         rd;
