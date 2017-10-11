@@ -1,6 +1,9 @@
 ---
 
+* [Bug 3358] Spurious KoD log messages in .INIT. phase.  HStenn.
+* Use strlcpy() to copy strings, not memcpy().  HStenn.
 * Typos.  HStenn.
+
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 
