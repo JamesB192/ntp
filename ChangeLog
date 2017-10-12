@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3391] ntpd segfaults on startup due to small warmup thread stack size
+  - increased mimimum stack size to 32kB <perlinger@ntp.org>
 * [Bug 3367] Faulty LinuxPPS NMEA clock support in 4.2.8 <perlinger@ntp.org>
   - reverted handling of PPS kernel consumer to 4.2.6 behavior
 * [Bug 3365] Updates driver40(-ja).html and miscopt.html <abe@ntp.org>
