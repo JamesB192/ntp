@@ -1,5 +1,6 @@
 ---
 
+* [Bug 3365] Updates driver40(-ja).html and miscopt.html <abe@ntp.org>
 * [Bug 3358] Spurious KoD log messages in .INIT. phase.  HStenn.
 * [Bug 3016] wrong error position reported for bad ":config pool"
   - fixed location counter & ntpq output <perlinger@ntp.org>
