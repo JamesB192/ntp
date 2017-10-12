@@ -1,6 +1,8 @@
 ---
 * [Bug 3438] Negative values and values > 999 days in... <perlinger@ntp.org>
  - applied patch by ggarvey (with minor mods)
+* [Bug 3439] When running multiple commands / hosts in ntpq... <perlinger@ntp.org>
+ - applied patch by ggarvey
 
 ---
 (4.2.8p10-win-beta1) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
