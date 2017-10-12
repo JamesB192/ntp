@@ -1452,6 +1452,8 @@ when(
 	else
 		return 0;
 
+	if (ts->l_ui < lasttime->l_ui)
+		return -1;
 	return (ts->l_ui - lasttime->l_ui);
 }
 
@@ -1490,7 +1492,14 @@ prettyinterval(
 	}
 
 	diff = (diff + 11) / 24;
-	snprintf(buf, cb, "%ldd", diff);
+	if (diff <= 999) {
+		snprintf(buf, cb, "%ldd", diff);
+		return buf;
+	}
+
+	/* years are only approximated... */
+	diff = (long)floor(diff / 365.25 + 0.5);
+	snprintf(buf, cb, "%ldy", diff);
 	return buf;
 }
 

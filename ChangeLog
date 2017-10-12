@@ -1,4 +1,8 @@
 ---
+* [Bug 3438] Negative values and values > 999 days in... <perlinger@ntp.org>
+ - applied patch by ggarvey (with minor mods)
+
+---
 (4.2.8p10-win-beta1) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
 (4.2.8p10)
 
