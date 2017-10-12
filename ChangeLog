@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3394] Leap second deletion does not work on ntpd clients
+  - fixed handling of dynamic deletion w/o leap file <perlinger@ntp.org>
 * [Bug 3391] ntpd segfaults on startup due to small warmup thread stack size
   - increased mimimum stack size to 32kB <perlinger@ntp.org>
 * [Bug 3367] Faulty LinuxPPS NMEA clock support in 4.2.8 <perlinger@ntp.org>
