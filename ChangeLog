@@ -1,6 +1,8 @@
 ---
 
 * [Bug 3358] Spurious KoD log messages in .INIT. phase.  HStenn.
+* [Bug 2737] Wrong phone number listed for USNO. ntp-bugs@bodosom.net,
+  perlinger@ntp.org
 * [Bug 2557] Fix Thunderbolt init. ntp-bugs@bodosom.net, perlinger@ntp.
 * [Bug 948] Trustedkey config directive leaks memory. <perlinger@ntp.org>
 * Use strlcpy() to copy strings, not memcpy().  HStenn.
