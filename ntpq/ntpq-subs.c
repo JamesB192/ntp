@@ -2225,14 +2225,13 @@ config (
 	col = -1;
 	if (1 == sscanf(resp, "column %d syntax error", &col)
 	    && col >= 0 && (size_t)col <= strlen(cfgcmd) + 1) {
-		if (interactive) {
-			printf("______");	/* "ntpq> " */
-			printf("________");	/* ":config " */
-		} else
+		if (interactive)
+			fputs("             *", stdout); /* "ntpq> :config " */
+		else
 			printf("%s\n", cfgcmd);
-		for (i = 1; i < col; i++)
-			putchar('_');
-		printf("^\n");
+		for (i = 0; i < col; i++)
+			fputc('_', stdout);
+		fputs("^\n", stdout);
 	}
 	printf("%s\n", resp);
 	free(resp);
