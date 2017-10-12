@@ -1057,10 +1057,44 @@ concat_gen_fifos(
 	return pf1;
 }
 
+void*
+destroy_gen_fifo(
+	void        *fifo,
+	fifo_deleter func
+	)
+{
+	any_node *	np  = NULL;
+	any_node_fifo *	pf1 = fifo;
+
+	if (pf1 != NULL) {
+		if (!func)
+			func = free;
+		for (;;) {
+			UNLINK_FIFO(np, *pf1, link);
+			if (np == NULL)
+				break;
+			(*func)(np);
+		}
+		free(pf1);
+	}
+	return NULL;
+}
 
 /* FUNCTIONS FOR CREATING NODES ON THE SYNTAX TREE
  * -----------------------------------------------
  */
+
+void
+destroy_attr_val(
+	attr_val *	av
+	)
+{
+	if (av) {
+		if (T_String == av->type)
+			free(av->value.s);
+		free(av);
+	}
+}
 
 attr_val *
 create_attr_dval(
@@ -1484,9 +1518,7 @@ destroy_attr_val_fifo(
 			UNLINK_FIFO(av, *av_fifo, link);
 			if (av == NULL)
 				break;
-			if (T_String == av->type)
-				free(av->value.s);
-			free(av);
+			destroy_attr_val(av);
 		}
 		free(av_fifo);
 	}
