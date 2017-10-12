@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3398] tests fail with core dump <perlinger@ntp.org>
+  - patch contributed by Alexander Bluhm
 * [Bug 3397] ctl_putstr() asserts that data fits in its buffer
   rework of formatting & data transfer stuff in 'ntp_control.c'
   avoids unecessary buffers and size limitations. <perlinger@ntp.org>
