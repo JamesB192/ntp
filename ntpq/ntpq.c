@@ -584,9 +584,15 @@ ntpqmain(
 		getcmds();
 	} else {
 		for (ihost = 0; ihost < numhosts; ihost++) {
-			if (openhost(chosts[ihost].name, chosts[ihost].fam))
-				for (icmd = 0; icmd < numcmds; icmd++)
+			if (openhost(chosts[ihost].name, chosts[ihost].fam)) {
+				if (ihost)
+					fputc('\n', current_output);
+				for (icmd = 0; icmd < numcmds; icmd++) {
+					if (icmd)
+						fputc('\n', current_output);
 					docmd(ccmds[icmd]);
+				}
+			}
 		}
 	}
 #ifdef SYS_WINNT
