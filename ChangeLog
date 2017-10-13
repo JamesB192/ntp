@@ -1,5 +1,8 @@
 ---
 
+* [Bug 3430] ntpq dumps core (SIGSEGV) for "keytype md2"
+  - fixed several issues with hash algos in ntpd, sntp, ntpq,
+    ntpdc and the test suites <perlinger@ntp.org>
 * [Bug 3424] Trimble Thunderbolt 1024 week millenium bug <perlinger@ntp.org>
   - initial patch by Daniel Pouzzner
 * [Bug 3423] QNX adjtime() implementation error checking is
