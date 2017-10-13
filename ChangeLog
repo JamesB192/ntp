@@ -1,9 +1,9 @@
 ---
 
-* [Bug 3438] Negative values and values > 999 days in... <perlinger@ntp.org>
- - applied patch by ggarvey (with minor mods)
 * [Bug 3439] When running multiple commands / hosts in ntpq... <perlinger@ntp.org>
  - applied patch by ggarvey
+* [Bug 3438] Negative values and values > 999 days in... <perlinger@ntp.org>
+ - applied patch by ggarvey (with minor mods)
 * [Bug 3430] ntpq dumps core (SIGSEGV) for "keytype md2"
   - fixed several issues with hash algos in ntpd, sntp, ntpq,
     ntpdc and the test suites <perlinger@ntp.org>
