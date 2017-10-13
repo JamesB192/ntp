@@ -22,6 +22,7 @@
 * [Bug 2557] Fix Thunderbolt init. ntp-bugs@bodosom.net, perlinger@ntp.
 * [Bug 948] Trustedkey config directive leaks memory. <perlinger@ntp.org>
 * Use strlcpy() to copy strings, not memcpy().  HStenn.
+* test_ntp_scanner_LDADD needs ntpd/ntp_io.o.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>

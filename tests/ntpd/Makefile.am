@@ -177,6 +177,7 @@ test_ntp_scanner_CFLAGS =		\
 test_ntp_scanner_LDADD =		\
 	$(unity_tests_LDADD)		\
 	$(top_builddir)/ntpd/ntp_config.o	\
+	$(top_builddir)/ntpd/ntp_io.o		\
 	$(top_builddir)/ntpd/ntp_parser.o	\
 	$(NULL)
 
