@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3417] ntpq ifstats packet counters can be negative
+  made IFSTATS counter quantities unsigned <perlinger@ntp.org>
 * [Bug 3411] problem about SIGN(6) packet handling for ntp-4.2.8p10
   - raised receive buffer size to 1200 <perlinger@ntp.org>
 * [Bug 3408] refclock_jjy.c: Avoid a wrong report of the coverity static
