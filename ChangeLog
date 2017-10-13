@@ -1,6 +1,9 @@
 ---
 
-* [Bug 3423] QNX adjtime() implementation error checking is wrong <perlinger@ntp.org>
+* [Bug 3424] Trimble Thunderbolt 1024 week millenium bug <perlinger@ntp.org>
+  - initial patch by Daniel Pouzzner
+* [Bug 3423] QNX adjtime() implementation error checking is
+  wrong <perlinger@ntp.org>
 * [Bug 3417] ntpq ifstats packet counters can be negative
   made IFSTATS counter quantities unsigned <perlinger@ntp.org>
 * [Bug 3411] problem about SIGN(6) packet handling for ntp-4.2.8p10
