@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3399] NTP: linker error in 4.2.8p10 during Linux cross-compilation
+  - initial patch by timeflies@mail2tor.com  <perlinger@ntp.org>
 * [Bug 3398] tests fail with core dump <perlinger@ntp.org>
   - patch contributed by Alexander Bluhm
 * [Bug 3397] ctl_putstr() asserts that data fits in its buffer
