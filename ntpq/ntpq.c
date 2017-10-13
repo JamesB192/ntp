@@ -3584,6 +3584,12 @@ ntpq_custom_opt_handler(
  * Obtain list of digest names
  */
 
+#if defined(OPENSSL) && !defined(HAVE_EVP_MD_DO_ALL_SORTED)
+# if defined(_MSC_VER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
+#  define HAVE_EVP_MD_DO_ALL_SORTED
+# endif
+#endif
+
 #ifdef OPENSSL
 # ifdef HAVE_EVP_MD_DO_ALL_SORTED
 struct hstate {
@@ -3596,64 +3602,55 @@ struct hstate {
 #define K_DELIM_STR ", "
 static void list_md_fn(const EVP_MD *m, const char *from, const char *to, void *arg )
 {
-    size_t len, n;
-    const char *name, *cp, **seen;
+    size_t 	  len, n, digest_len;
+    const char	  *name, **seen;
     struct hstate *hstate = arg;
-    EVP_MD_CTX *ctx;
-    u_int digest_len;
-    u_char digest[EVP_MAX_MD_SIZE];
 
     if (!m)
-        return; /* Ignore aliases */
+	    return; /* Ignore aliases */
 
+    /* There are duplicates.  Discard if name has been seen.
+     *
+     * Names are capitalized in 'keytype_from_text()' in ssl_init.c; we
+     * have to make sure we do compare case-insensitive when checking
+     * for dupes...
+     */
     name = EVP_MD_name(m);
-
-    /* Lowercase names aren't accepted by keytype_from_text in ssl_init.c */
-
-    for( cp = name; *cp; cp++ ) {
-	if( islower((unsigned char)*cp) )
-	    return;
-    }
-    len = (cp - name) + 1;
-
-    /* There are duplicates.  Discard if name has been seen. */
-
+    len  = strlen(name) + 1;
     for (seen = hstate->seen; *seen; seen++)
-        if (!strcmp(*seen, name))
+	    if (!strcasecmp(*seen, name))
+		    return;
+    
+    /* Discard MACs that NTP won't accept.
+     * Keep this consistent with keytype_from_text() in ssl_init.c,
+     * which is done most easily by using it...
+     */
+    if (keytype_from_text(name, &digest_len) == 0)
 	    return;
+
     n = (seen - hstate->seen) + 2;
     hstate->seen = erealloc(hstate->seen, n * sizeof(*seen));
     hstate->seen[n-2] = name;
     hstate->seen[n-1] = NULL;
 
-    /* Discard MACs that NTP won't accept.
-     * Keep this consistent with keytype_from_text() in ssl_init.c.
-     */
-
-    ctx = EVP_MD_CTX_new();
-    EVP_DigestInit(ctx, EVP_get_digestbyname(name));
-    EVP_DigestFinal(ctx, digest, &digest_len);
-    EVP_MD_CTX_free(ctx);
-    if (digest_len > (MAX_MAC_LEN - sizeof(keyid_t)))
-        return;
-
     if (hstate->list != NULL)
-	len += strlen(hstate->list);
+	    len += strlen(hstate->list);
     len += (hstate->idx >= K_PER_LINE)? strlen(K_NL_PFX_STR): strlen(K_DELIM_STR);
 
     if (hstate->list == NULL) {
-	hstate->list = (char *)emalloc(len);
-	hstate->list[0] = '\0';
-    } else
-	hstate->list = (char *)erealloc(hstate->list, len);
-
+	    hstate->list = (char *)emalloc(len);
+	    hstate->list[0] = '\0';
+    } else {
+	    hstate->list = (char *)erealloc(hstate->list, len);
+    }
+    
     sprintf(hstate->list + strlen(hstate->list), "%s%s",
 	    ((hstate->idx >= K_PER_LINE)? K_NL_PFX_STR : K_DELIM_STR),
 	    name);
     if (hstate->idx >= K_PER_LINE)
-	hstate->idx = 1;
+	    hstate->idx = 1;
     else
-	hstate->idx++;
+	    hstate->idx++;
 }
 # endif
 #endif
