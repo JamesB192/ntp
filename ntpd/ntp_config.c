@@ -312,7 +312,7 @@ static void config_monitor(config_tree *);
 static void config_rlimit(config_tree *);
 static void config_system_opts(config_tree *);
 static void config_tinker(config_tree *);
-static void config_tos_clock(config_tree *);
+static int  config_tos_clock(config_tree *);
 static void config_tos(config_tree *);
 static void config_vars(config_tree *);
 
@@ -2025,13 +2025,19 @@ free_config_auth(
 #endif	/* FREE_CFG_T */
 
 
-static void
+/* Configure low-level clock-related parameters. Return TRUE if the
+ * clock might need adjustment like era-checking after the call, FALSE
+ * otherwise.
+ */
+static int/*BOOL*/
 config_tos_clock(
 	config_tree *ptree
 	)
 {
+	int		ret;
 	attr_val *	tos;
 
+	ret = FALSE;
 	tos = HEAD_PFIFO(ptree->orphan_cmds);
 	for (; tos != NULL; tos = tos->link) {
 		switch(tos->attr) {
@@ -2041,9 +2047,11 @@ config_tos_clock(
 
 		case T_Basedate:
 			basedate_set_day(tos->value.i);
+			ret = TRUE;
 			break;
 		}
 	}
+	return ret;
 }
 
 static void
@@ -4467,10 +4475,13 @@ config_ntpd(
 	int/*BOOL*/ input_from_files
 	)
 {
-	dump_config_tree(ptree, stderr, 1); 
+	/* [Bug 3435] check and esure clock sanity if configured from
+	 * file and clock sanity parameters (-> basedate) are given. Do
+	 * this ASAP, so we don't disturb the closed loop controller.
+	 */
 	if (input_from_files) {
-		config_tos_clock(ptree);
-		clamp_systime();
+		if (config_tos_clock(ptree))
+			clamp_systime();
 	}
 	
 	config_nic_rules(ptree, input_from_files);
