@@ -189,7 +189,7 @@ static	int	getarg		(const char *, int, arg_v *);
 static	int	findcmd		(const char *, struct xcmd *,
 				 struct xcmd *, struct xcmd **);
 static	int	rtdatetolfp	(char *, l_fp *);
-static	int	decodearr	(char *, int *, l_fp *);
+static	int	decodearr	(char *, int *, l_fp *, int);
 static	void	help		(struct parse *, FILE *);
 static	int	helpsort	(const void *, const void *);
 static	void	printusage	(struct xcmd *, FILE *);
@@ -226,6 +226,16 @@ static	void	on_ctrlc	(void);
 	u_short	varfmt		(const char *);
 static	int	my_easprintf	(char**, const char *, ...) NTP_PRINTF(2, 3);
 void	ntpq_custom_opt_handler	(tOptions *, tOptDesc *);
+
+/* read a character from memory and expand to integer */
+static inline int
+pgetc(
+	const char *cp
+	)
+{
+	return (int)*(const unsigned char*)cp;
+}
+
 
 #ifdef OPENSSL
 # ifdef HAVE_EVP_MD_DO_ALL_SORTED
@@ -2020,7 +2030,7 @@ rtdatetolfp(
 	 * d[d]-Mth-y[y[y[y]]] hh:mm:ss
 	 */
 	cp = str;
-	if (!isdigit((int)*cp)) {
+	if (!isdigit(pgetc(cp))) {
 		if (*cp == '-') {
 			/*
 			 * Catch special case
@@ -2032,7 +2042,7 @@ rtdatetolfp(
 	}
 
 	cal.monthday = (u_char) (*cp++ - '0');	/* ascii dependent */
-	if (isdigit((int)*cp)) {
+	if (isdigit(pgetc(cp))) {
 		cal.monthday = (u_char)((cal.monthday << 3) + (cal.monthday << 1));
 		cal.monthday = (u_char)(cal.monthday + *cp++ - '0');
 	}
@@ -2054,18 +2064,18 @@ rtdatetolfp(
 	if (*cp++ != '-')
 	    return 0;
 
-	if (!isdigit((int)*cp))
+	if (!isdigit(pgetc(cp)))
 	    return 0;
 	cal.year = (u_short)(*cp++ - '0');
-	if (isdigit((int)*cp)) {
+	if (isdigit(pgetc(cp))) {
 		cal.year = (u_short)((cal.year << 3) + (cal.year << 1));
 		cal.year = (u_short)(*cp++ - '0');
 	}
-	if (isdigit((int)*cp)) {
+	if (isdigit(pgetc(cp))) {
 		cal.year = (u_short)((cal.year << 3) + (cal.year << 1));
 		cal.year = (u_short)(cal.year + *cp++ - '0');
 	}
-	if (isdigit((int)*cp)) {
+	if (isdigit(pgetc(cp))) {
 		cal.year = (u_short)((cal.year << 3) + (cal.year << 1));
 		cal.year = (u_short)(cal.year + *cp++ - '0');
 	}
@@ -2078,26 +2088,26 @@ rtdatetolfp(
 		return 1;
 	}
 
-	if (*cp++ != ' ' || !isdigit((int)*cp))
+	if (*cp++ != ' ' || !isdigit(pgetc(cp)))
 	    return 0;
 	cal.hour = (u_char)(*cp++ - '0');
-	if (isdigit((int)*cp)) {
+	if (isdigit(pgetc(cp))) {
 		cal.hour = (u_char)((cal.hour << 3) + (cal.hour << 1));
 		cal.hour = (u_char)(cal.hour + *cp++ - '0');
 	}
 
-	if (*cp++ != ':' || !isdigit((int)*cp))
+	if (*cp++ != ':' || !isdigit(pgetc(cp)))
 	    return 0;
 	cal.minute = (u_char)(*cp++ - '0');
-	if (isdigit((int)*cp)) {
+	if (isdigit(pgetc(cp))) {
 		cal.minute = (u_char)((cal.minute << 3) + (cal.minute << 1));
 		cal.minute = (u_char)(cal.minute + *cp++ - '0');
 	}
 
-	if (*cp++ != ':' || !isdigit((int)*cp))
+	if (*cp++ != ':' || !isdigit(pgetc(cp)))
 	    return 0;
 	cal.second = (u_char)(*cp++ - '0');
-	if (isdigit((int)*cp)) {
+	if (isdigit(pgetc(cp))) {
 		cal.second = (u_char)((cal.second << 3) + (cal.second << 1));
 		cal.second = (u_char)(cal.second + *cp++ - '0');
 	}
@@ -2221,34 +2231,36 @@ decodeuint(
  */
 static int
 decodearr(
-	char *str,
-	int *narr,
-	l_fp *lfparr
+	char *cp,
+	int  *narr,
+	l_fp *lfpa,
+	int   amax
 	)
 {
-	register char *cp, *bp;
-	register l_fp *lfp;
+	char *bp;
 	char buf[60];
 
-	lfp = lfparr;
-	cp = str;
 	*narr = 0;
 
-	while (*narr < 8) {
-		while (isspace((int)*cp))
-		    cp++;
-		if (*cp == '\0')
-		    break;
+	while (*narr < amax && *cp) {
+		if (isspace(pgetc(cp))) {
+			do
+				++cp;
+			while (*cp && isspace(pgetc(cp)));
+		} else {
+			bp = buf;
+			do {
+				if (bp != (buf + sizeof(buf) - 1))
+					*bp++ = *cp;
+				++cp;
+			} while (*cp && !isspace(pgetc(cp)));
+			*bp = '\0';
 
-		bp = buf;
-		while (!isspace((int)*cp) && *cp != '\0')
-		    *bp++ = *cp++;
-		*bp++ = '\0';
-
-		if (!decodetime(buf, lfp))
-		    return 0;
-		(*narr)++;
-		lfp++;
+			if (!decodetime(buf, lfpa))
+				return 0;
+			++(*narr);
+			++lfpa;
+		}
 	}
 	return 1;
 }
@@ -3055,7 +3067,7 @@ nextvar(
 	/*
 	 * Space past commas and white space
 	 */
-	while (cp < cpend && (*cp == ',' || isspace((int)*cp)))
+	while (cp < cpend && (*cp == ',' || isspace(pgetc(cp))))
 		cp++;
 	if (cp >= cpend)
 		return 0;
@@ -3067,7 +3079,7 @@ nextvar(
 	srclen = strcspn(cp, ",=\r\n");
 	srclen = min(srclen, (size_t)(cpend - cp));
 	len = srclen;
-	while (len > 0 && isspace((unsigned char)cp[len - 1]))
+	while (len > 0 && isspace(pgetc(&cp[len - 1])))
 		len--;
 	if (len >= sizeof(name))
 	    return 0;
@@ -3093,7 +3105,7 @@ nextvar(
 	 * So far, so good.  Copy out the value
 	 */
 	cp++;	/* past '=' */
-	while (cp < cpend && (isspace((unsigned char)*cp) && *cp != '\r' && *cp != '\n'))
+	while (cp < cpend && (isspace(pgetc(cp)) && *cp != '\r' && *cp != '\n'))
 		cp++;
 	np = cp;
 	if ('"' == *np) {
@@ -3114,7 +3126,7 @@ nextvar(
 	/*
 	 * Trim off any trailing whitespace
 	 */
-	while (len > 0 && isspace((unsigned char)value[len - 1]))
+	while (len > 0 && isspace(pgetc(&value[len - 1])))
 		len--;
 	value[len] = '\0';
 
@@ -3197,7 +3209,7 @@ rawprint(
 			 */
 			if (cp == (cpend - 1) || *(cp + 1) != '\n')
 			    makeascii(1, cp, fp);
-		} else if (isspace((unsigned char)*cp) || isprint((unsigned char)*cp))
+		} else if (isspace(pgetc(cp)) || isprint(pgetc(cp)))
 			putc(*cp, fp);
 		else
 			makeascii(1, cp, fp);
@@ -3405,7 +3417,7 @@ cookedprint(
 			break;
 
 		case TS:
-			if (!decodets(value, &lfp))
+			if (!value || !decodets(value, &lfp))
 				output_raw = '?';
 			else
 				output(fp, name, prettydate(&lfp));
@@ -3413,7 +3425,7 @@ cookedprint(
 
 		case HA:	/* fallthru */
 		case NA:
-			if (!decodenetnum(value, &hval)) {
+			if (!value || !decodenetnum(value, &hval)) {
 				output_raw = '?';
 			} else if (fmt == HA){
 				output(fp, name, nntohost(&hval));
@@ -3423,7 +3435,9 @@ cookedprint(
 			break;
 
 		case RF:
-			if (decodenetnum(value, &hval)) {
+			if (!value) {
+				output_raw = '?';
+			} else if (decodenetnum(value, &hval)) {
 				if (ISREFCLOCKADR(&hval))
 					output(fp, name,
 					       refnumtoa(&hval));
@@ -3437,7 +3451,7 @@ cookedprint(
 			break;
 
 		case LP:
-			if (!decodeuint(value, &uval) || uval > 3) {
+			if (!value || !decodeuint(value, &uval) || uval > 3) {
 				output_raw = '?';
 			} else {
 				b[0] = (0x2 & uval)
@@ -3452,7 +3466,7 @@ cookedprint(
 			break;
 
 		case OC:
-			if (!decodeuint(value, &uval)) {
+			if (!value || !decodeuint(value, &uval)) {
 				output_raw = '?';
 			} else {
 				snprintf(b, sizeof(b), "%03lo", uval);
@@ -3461,14 +3475,14 @@ cookedprint(
 			break;
 
 		case AR:
-			if (!decodearr(value, &narr, lfparr))
+			if (!value || !decodearr(value, &narr, lfparr, 8))
 				output_raw = '?';
 			else
 				outputarr(fp, name, narr, lfparr);
 			break;
 
 		case FX:
-			if (!decodeuint(value, &uval))
+			if (!value || !decodeuint(value, &uval))
 				output_raw = '?';
 			else
 				output(fp, name, tstflags(uval));
