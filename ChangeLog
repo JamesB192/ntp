@@ -3,6 +3,23 @@
 * [Sec 3414] ntpq: decodearr() can write beyond its 'buf' limits
   - initial patch by <stenn@ntp.org>, extended by <perlinger@ntp.org>
 * [Sec 3412] ctl_getitem(): Don't compare names past NUL. <perlinger@ntp.org>
+* [Bug 3441] Validate the assumption that AF_UNSPEC is 0.  stenn@ntp.org
+* [Bug 3439] When running multiple commands / hosts in ntpq... <perlinger@ntp.org>
+ - applied patch by ggarvey
+* [Bug 3438] Negative values and values > 999 days in... <perlinger@ntp.org>
+ - applied patch by ggarvey (with minor mods)
+* [Bug 3437] ntpd tries to open socket with AF_UNSPEC domain
+ - applied patch (with mods) by Miroslav Lichvar <perlinger@ntp.org>
+* [Bug 3435] anchor NTP era alignment <perlinger@ntp.org>
+* [Bug 3430] ntpq dumps core (SIGSEGV) for "keytype md2"
+  - fixed several issues with hash algos in ntpd, sntp, ntpq,
+    ntpdc and the test suites <perlinger@ntp.org>
+* [Bug 3424] Trimble Thunderbolt 1024 week millenium bug <perlinger@ntp.org>
+  - initial patch by Daniel Pouzzner
+* [Bug 3423] QNX adjtime() implementation error checking is
+  wrong <perlinger@ntp.org>
+* [Bug 3417] ntpq ifstats packet counters can be negative
+  made IFSTATS counter quantities unsigned <perlinger@ntp.org>
 * [Bug 3411] problem about SIGN(6) packet handling for ntp-4.2.8p10
   - raised receive buffer size to 1200 <perlinger@ntp.org>
 * [Bug 3408] refclock_jjy.c: Avoid a wrong report of the coverity static

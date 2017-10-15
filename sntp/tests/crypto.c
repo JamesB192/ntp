@@ -31,8 +31,9 @@ test_MakeMd5Mac(void)
 	md5.key_id = 10;
 	md5.key_len = 6;
 	memcpy(&md5.key_seq, "md5seq", md5.key_len);
-	memcpy(&md5.type, "MD5", 4);
-
+	strlcpy(md5.typen, "MD5", sizeof(md5.typen));
+	md5.typei = keytype_from_text(md5.typen, NULL);
+	
 	TEST_ASSERT_EQUAL(MD5_LENGTH,
 			  make_mac(PKT_DATA, PKT_LEN, MD5_LENGTH, &md5, actual));
 
@@ -57,7 +58,8 @@ test_MakeSHA1Mac(void)
 	sha1.key_id = 20;
 	sha1.key_len = 7;
 	memcpy(&sha1.key_seq, "sha1seq", sha1.key_len);
-	memcpy(&sha1.type, "SHA1", 5);
+	strlcpy(sha1.typen, "SHA1", sizeof(sha1.typen));
+	sha1.typei = keytype_from_text(sha1.typen, NULL);
 
 	TEST_ASSERT_EQUAL(SHA1_LENGTH,
 			  make_mac(PKT_DATA, PKT_LEN, SHA1_LENGTH, &sha1, actual));
@@ -87,7 +89,8 @@ test_VerifyCorrectMD5(void)
 	md5.key_id = 0;
 	md5.key_len = 6;
 	memcpy(&md5.key_seq, "md5key", md5.key_len);
-	memcpy(&md5.type, "MD5", 4);
+	strlcpy(md5.typen, "MD5", sizeof(md5.typen));
+	md5.typei = keytype_from_text(md5.typen, NULL);
 
 	TEST_ASSERT_TRUE(auth_md5(PKT_DATA, PKT_LEN, MD5_LENGTH, &md5));
 }
@@ -110,7 +113,8 @@ test_VerifySHA1(void)
 	sha1.key_id = 0;
 	sha1.key_len = 7;
 	memcpy(&sha1.key_seq, "sha1key", sha1.key_len);
-	memcpy(&sha1.type, "SHA1", 5);
+	strlcpy(sha1.typen, "SHA1", sizeof(sha1.typen));	
+	sha1.typei = keytype_from_text(sha1.typen, NULL);
 
 	TEST_ASSERT_TRUE(auth_md5(PKT_DATA, PKT_LEN, SHA1_LENGTH, &sha1));
 	
@@ -139,7 +143,8 @@ test_VerifyFailure(void)
 	md5.key_id = 0;
 	md5.key_len = 6;
 	memcpy(&md5.key_seq, "md5key", md5.key_len);
-	memcpy(&md5.type, "MD5", 4);
+	strlcpy(md5.typen, "MD5", sizeof(md5.typen));
+	md5.typei = keytype_from_text(md5.typen, NULL);
 
 	TEST_ASSERT_FALSE(auth_md5(PKT_DATA, PKT_LEN, MD5_LENGTH, &md5));
 }
@@ -157,7 +162,8 @@ test_PacketSizeNotMultipleOfFourBytes(void)
 	md5.key_id = 10;
 	md5.key_len = 6;
 	memcpy(&md5.key_seq, "md5seq", md5.key_len);
-	memcpy(&md5.type, "MD5", 4);
+	strlcpy(md5.typen, "MD5", sizeof(md5.typen));
+	md5.typei = keytype_from_text(md5.typen, NULL);
 
 	TEST_ASSERT_EQUAL(0, make_mac(PKT_DATA, PKT_LEN, MD5_LENGTH, &md5, actual));
 }
