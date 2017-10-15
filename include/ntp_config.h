@@ -54,6 +54,14 @@ typedef struct int_range_tag {
 	int	last;
 } int_range;
 
+/* generic list node */
+typedef struct any_node_tag any_node;
+struct any_node_tag {
+	any_node *	link;
+};
+
+typedef DECL_FIFO_ANCHOR(any_node) any_node_fifo;
+
 /* Structure for storing an attribute-value pair  */
 typedef struct attr_val_tag attr_val;
 struct attr_val_tag {
@@ -267,8 +275,12 @@ typedef struct settrap_parms_tag {
 const char * token_name(int token);
 
 /* generic fifo routines for structs linked by 1st member */
+typedef void (*fifo_deleter)(void*);
+void*   destroy_gen_fifo(void *fifo, fifo_deleter func);
 void*	append_gen_fifo(void *fifo, void *entry);
 void *	concat_gen_fifos(void *first, void *second);
+#define DESTROY_G_FIFO(pf, func)	\
+    ((pf) = destroy_gen_fifo((pf), (fifo_deleter)(func)))
 #define APPEND_G_FIFO(pf, pe)		\
 	((pf) = append_gen_fifo((pf), (pe)))
 #define CONCAT_G_FIFOS(first, second)	\
@@ -288,6 +300,7 @@ attr_val *create_attr_ival(int attr, int value);
 attr_val *create_attr_uval(int attr, u_int value);
 attr_val *create_attr_rangeval(int attr, int first, int last);
 attr_val *create_attr_sval(int attr, const char *s);
+void      destroy_attr_val(attr_val *node);
 filegen_node *create_filegen_node(int filegen_token,
 				  attr_val_fifo *options);
 string_node *create_string_node(char *str);

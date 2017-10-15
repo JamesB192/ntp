@@ -77,6 +77,7 @@
 %token	<Integer>	T_Autokey
 %token	<Integer>	T_Automax
 %token	<Integer>	T_Average
+%token	<Integer>	T_Basedate
 %token	<Integer>	T_Bclient
 %token	<Integer>	T_Bcpollbstep
 %token	<Integer>	T_Beacon
@@ -276,6 +277,7 @@
 %type	<Address_node>	address
 %type	<Integer>	address_fam
 %type	<Address_fifo>	address_list
+%type	<Integer>	basedate
 %type	<Integer>	boolean
 %type	<Integer>	client_type
 %type	<Integer>	counter_set_keyword
@@ -570,12 +572,13 @@ authentication_command
 			{ cfgt.auth.revoke = $2; }
 	|	T_Trustedkey integer_list_range
 		{
-			cfgt.auth.trusted_key_list = $2;
-
-			// if (!cfgt.auth.trusted_key_list)
-			// 	cfgt.auth.trusted_key_list = $2;
-			// else
-			// 	LINK_SLIST(cfgt.auth.trusted_key_list, $2, link);
+			/* [Bug 948] leaves it open if appending or
+			 * replacing the trusted key list is the right
+			 * way. In any case, either alternative should
+			 * be coded correctly!
+			 */
+			DESTROY_G_FIFO(cfgt.auth.trusted_key_list, destroy_attr_val); /* remove for append */
+			CONCAT_G_FIFOS(cfgt.auth.trusted_key_list, $2);
 		}
 	|	T_NtpSignDsocket T_String
 			{ cfgt.auth.ntp_signd_socket = $2; }
@@ -643,6 +646,8 @@ tos_option
 			{ $$ = create_attr_dval($1, $2); }
 	|	T_Cohort boolean
 			{ $$ = create_attr_dval($1, (double)$2); }
+	|	basedate
+			{ $$ = create_attr_ival(T_Basedate, $1); }
 	;
 
 tos_option_int_keyword
@@ -1507,6 +1512,9 @@ number
 	|	T_Double
 	;
 
+basedate
+	:	T_Basedate T_String
+			{ $$ = basedate_eval_string($2); YYFREE($2); }
 
 /* Simulator Configuration Commands
  * --------------------------------
