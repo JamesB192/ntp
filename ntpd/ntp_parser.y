@@ -77,6 +77,7 @@
 %token	<Integer>	T_Autokey
 %token	<Integer>	T_Automax
 %token	<Integer>	T_Average
+%token	<Integer>	T_Basedate
 %token	<Integer>	T_Bclient
 %token	<Integer>	T_Bcpollbstep
 %token	<Integer>	T_Beacon
@@ -276,6 +277,7 @@
 %type	<Address_node>	address
 %type	<Integer>	address_fam
 %type	<Address_fifo>	address_list
+%type	<Integer>	basedate
 %type	<Integer>	boolean
 %type	<Integer>	client_type
 %type	<Integer>	counter_set_keyword
@@ -644,6 +646,8 @@ tos_option
 			{ $$ = create_attr_dval($1, $2); }
 	|	T_Cohort boolean
 			{ $$ = create_attr_dval($1, (double)$2); }
+	|	basedate
+			{ $$ = create_attr_ival(T_Basedate, $1); }
 	;
 
 tos_option_int_keyword
@@ -1508,6 +1512,9 @@ number
 	|	T_Double
 	;
 
+basedate
+	:	T_Basedate T_String
+			{ $$ = basedate_eval_string($2); YYFREE($2); }
 
 /* Simulator Configuration Commands
  * --------------------------------
