@@ -3367,7 +3367,7 @@ teljjy_conn_send ( struct peer *peer, struct refclockproc *pp, struct jjyunit *u
 				snprintf( sLog, sizeof(sLog)-1, "refclock_jjy.c ; teljjy_conn_send ; iClockCommandSeq=%d iLoopbackCount=%d MAX_LOOPBACK=%d",
 					  up->iClockCommandSeq, up->iLoopbackCount, MAX_LOOPBACK ) ;
 				jjy_write_clockstats( peer, JJY_CLOCKSTATS_MARK_BUG, sLog ) ;
-				msyslog ( LOG_ERR, sLog ) ;
+				msyslog ( LOG_ERR, "%s", sLog ) ;
 				up->bLoopbackMode = FALSE ;
 			}
 		} else {
