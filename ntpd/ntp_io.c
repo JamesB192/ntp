@@ -3960,6 +3960,17 @@ findlocalinterface(
 	DPRINTF(4, ("Finding interface for addr %s in list of addresses\n",
 		    stoa(addr)));
 
+	/* [Bug 3437] The dummy POOL peer comes in with an AF of
+	 * zero. This is bound to fail, but on the way to nowhere it
+	 * triggers a security incident on SELinux.
+	 *
+	 * Checking the condition and failing early is probably a good
+	 * advice, and even saves us some syscalls in that case.
+	 * Thanks to Miroslav Lichvar for finding this.
+	 */
+	if (AF_UNSPEC == AF(addr))
+		return NULL;
+
 	s = socket(AF(addr), SOCK_DGRAM, 0);
 	if (INVALID_SOCKET == s)
 		return NULL;

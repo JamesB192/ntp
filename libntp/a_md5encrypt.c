@@ -46,10 +46,10 @@ MD5authencrypt(
 	EVP_DigestFinal(ctx, digest, &len);
 	EVP_MD_CTX_free(ctx);
 	/* If the MAC is longer than the MAX then truncate it. */
-	if (len > MAX_MAC_LEN - 4)
-	    len = MAX_MAC_LEN - 4;
-	memmove((u_char *)pkt + length + 4, digest, len);
-	return (len + 4);
+	if (len > MAX_MDG_LEN)
+	    len = MAX_MDG_LEN;
+	memmove((u_char *)pkt + length + KEY_MAC_LEN, digest, len);
+	return (len + KEY_MAC_LEN);
 }
 
 
@@ -89,14 +89,15 @@ MD5authdecrypt(
 	EVP_DigestFinal(ctx, digest, &len);
 	EVP_MD_CTX_free(ctx);
 	/* If the MAC is longer than the MAX then truncate it. */
-	if (len > MAX_MAC_LEN - 4)
-	    len = MAX_MAC_LEN - 4;
-	if (size != (size_t)len + 4) {
+	if (len > MAX_MDG_LEN)
+	    len = MAX_MDG_LEN;
+	if (size != (size_t)len + KEY_MAC_LEN) {
 		msyslog(LOG_ERR,
 		    "MAC decrypt: MAC length error");
 		return (0);
 	}
-	return !isc_tsmemcmp(digest, (u_char *)pkt + length + 4, len);
+	return !isc_tsmemcmp(digest,
+		 (u_char *)pkt + length + KEY_MAC_LEN, len);
 }
 
 /*
@@ -108,7 +109,7 @@ MD5authdecrypt(
 u_int32
 addr2refid(sockaddr_u *addr)
 {
-	u_char		digest[20];
+	u_char		digest[EVP_MAX_MD_SIZE];
 	u_int32		addr_refid;
 	EVP_MD_CTX	*ctx;
 	u_int		len;

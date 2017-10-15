@@ -312,6 +312,7 @@ static void config_monitor(config_tree *);
 static void config_rlimit(config_tree *);
 static void config_system_opts(config_tree *);
 static void config_tinker(config_tree *);
+static int  config_tos_clock(config_tree *);
 static void config_tos(config_tree *);
 static void config_vars(config_tree *);
 
@@ -722,6 +723,21 @@ dump_config_tree(
 					token_name(atrv->type));
 				break;
 #endif
+			case T_Integer:
+				if (atrv->attr == T_Basedate) {
+					struct calendar jd;
+					ntpcal_rd_to_date(&jd, atrv->value.i + DAY_NTP_STARTS);
+					fprintf(df, " %s \"%04hu-%02hu-%02hu\"",
+						keyword(atrv->attr), jd.year,
+						(u_short)jd.month,
+						(u_short)jd.monthday);
+				} else {
+					fprintf(df, " %s %d",
+					keyword(atrv->attr),
+					atrv->value.i);
+				}
+				break;
+				
 			case T_Double:
 				fprintf(df, " %s %s",
 					keyword(atrv->attr),
@@ -1057,10 +1073,44 @@ concat_gen_fifos(
 	return pf1;
 }
 
+void*
+destroy_gen_fifo(
+	void        *fifo,
+	fifo_deleter func
+	)
+{
+	any_node *	np  = NULL;
+	any_node_fifo *	pf1 = fifo;
+
+	if (pf1 != NULL) {
+		if (!func)
+			func = free;
+		for (;;) {
+			UNLINK_FIFO(np, *pf1, link);
+			if (np == NULL)
+				break;
+			(*func)(np);
+		}
+		free(pf1);
+	}
+	return NULL;
+}
 
 /* FUNCTIONS FOR CREATING NODES ON THE SYNTAX TREE
  * -----------------------------------------------
  */
+
+void
+destroy_attr_val(
+	attr_val *	av
+	)
+{
+	if (av) {
+		if (T_String == av->type)
+			free(av->value.s);
+		free(av);
+	}
+}
 
 attr_val *
 create_attr_dval(
@@ -1484,9 +1534,7 @@ destroy_attr_val_fifo(
 			UNLINK_FIFO(av, *av_fifo, link);
 			if (av == NULL)
 				break;
-			if (T_String == av->type)
-				free(av->value.s);
-			free(av);
+			destroy_attr_val(av);
 		}
 		free(av_fifo);
 	}
@@ -2009,6 +2057,35 @@ free_config_auth(
 #endif	/* FREE_CFG_T */
 
 
+/* Configure low-level clock-related parameters. Return TRUE if the
+ * clock might need adjustment like era-checking after the call, FALSE
+ * otherwise.
+ */
+static int/*BOOL*/
+config_tos_clock(
+	config_tree *ptree
+	)
+{
+	int		ret;
+	attr_val *	tos;
+
+	ret = FALSE;
+	tos = HEAD_PFIFO(ptree->orphan_cmds);
+	for (; tos != NULL; tos = tos->link) {
+		switch(tos->attr) {
+
+		default:
+			break;
+
+		case T_Basedate:
+			basedate_set_day(tos->value.i);
+			ret = TRUE;
+			break;
+		}
+	}
+	return ret;
+}
+
 static void
 config_tos(
 	config_tree *ptree
@@ -2034,12 +2111,16 @@ config_tos(
 	/* -*- phase one: inspect / sanitize the values */
 	tos = HEAD_PFIFO(ptree->orphan_cmds);
 	for (; tos != NULL; tos = tos->link) {
-		val = tos->value.d;
+		/* not all attributes are doubles (any more), so loading
+		 * 'val' in all cases is not a good idea: It should be
+		 * done as needed in every case processed here.
+		 */
 		switch(tos->attr) {
 		default:
 			break;
 
 		case T_Bcpollbstep:
+			val = tos->value.d;
 			if (val > 4) {
 				msyslog(LOG_WARNING,
 					"Using maximum bcpollbstep ceiling %d, %d requested",
@@ -2054,6 +2135,7 @@ config_tos(
 			break;
 			
 		case T_Ceiling:
+			val = tos->value.d;
 			if (val > STRATUM_UNSPEC - 1) {
 				msyslog(LOG_WARNING,
 					"Using maximum tos ceiling %d, %d requested",
@@ -2068,18 +2150,21 @@ config_tos(
 			break;
 
 		case T_Minclock:
+			val = tos->value.d;
 			if ((int)tos->value.d < 1)
 				tos->value.d = 1;
 			l_minclock = (int)tos->value.d;
 			break;
 
 		case T_Maxclock:
+			val = tos->value.d;
 			if ((int)tos->value.d < 1)
 				tos->value.d = 1;
 			l_maxclock = (int)tos->value.d;
 			break;
 
 		case T_Minsane:
+			val = tos->value.d;
 			if ((int)tos->value.d < 1)
 				tos->value.d = 1;
 			l_minsane = (int)tos->value.d;
@@ -2097,7 +2182,6 @@ config_tos(
 	/* -*- phase two: forward the values to the protocol machinery */
 	tos = HEAD_PFIFO(ptree->orphan_cmds);
 	for (; tos != NULL; tos = tos->link) {
-		val = tos->value.d;
 		switch(tos->attr) {
 
 		default:
@@ -2150,8 +2234,11 @@ config_tos(
 		case T_Beacon:
 			item = PROTO_BEACON;
 			break;
+
+		case T_Basedate:
+			continue; /* SKIP proto-config for this! */
 		}
-		proto_config(item, 0, val, NULL);
+		proto_config(item, 0, tos->value.d, NULL);
 	}
 }
 
@@ -4420,6 +4507,15 @@ config_ntpd(
 	int/*BOOL*/ input_from_files
 	)
 {
+	/* [Bug 3435] check and esure clock sanity if configured from
+	 * file and clock sanity parameters (-> basedate) are given. Do
+	 * this ASAP, so we don't disturb the closed loop controller.
+	 */
+	if (input_from_files) {
+		if (config_tos_clock(ptree))
+			clamp_systime();
+	}
+	
 	config_nic_rules(ptree, input_from_files);
 	config_monitor(ptree);
 	config_auth(ptree);

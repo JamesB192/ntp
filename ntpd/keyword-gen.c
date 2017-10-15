@@ -153,6 +153,7 @@ struct key_tok ntp_keywords[] = {
 { "orphan",		T_Orphan,		FOLLBY_TOKEN },
 { "orphanwait",		T_Orphanwait,		FOLLBY_TOKEN },
 { "nonvolatile",	T_Nonvolatile,		FOLLBY_TOKEN },
+{ "basedate",		T_Basedate,		FOLLBY_STRING },
 /* access_control_flag */
 { "default",		T_Default,		FOLLBY_TOKEN },
 { "source",		T_Source,		FOLLBY_TOKEN },
