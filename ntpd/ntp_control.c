@@ -3130,7 +3130,9 @@ ctl_getitem(
 			const char *sp1 = reqpt;
 			const char *sp2 = v->text;
 
-			while ((sp1 != tp) && (*sp1 == *sp2)) {
+			/* [Bug 3412] do not compare past NUL byte in name */
+			while (   (sp1 != tp)
+			       && ('\0' != *sp2) && (*sp1 == *sp2)) {
 				++sp1;
 				++sp2;
 			}
