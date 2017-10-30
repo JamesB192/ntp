@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 {
   progname = argv[0];
   UnityBegin("rc_cmdlength.c");
-  RUN_TEST(test_EvaluateCommandLength, 16);
+  RUN_TEST(test_EvaluateCommandLength, 14);
 
   return (UnityEnd());
 }

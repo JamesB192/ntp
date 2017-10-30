@@ -57,13 +57,13 @@ int main(int argc, char *argv[])
 {
   progname = argv[0];
   UnityBegin("ntp_prio_q.c");
-  RUN_TEST(test_AllocateDeallocateNode, 39);
+  RUN_TEST(test_AllocateDeallocateNode, 38);
   RUN_TEST(test_EmptyQueue, 46);
-  RUN_TEST(test_OneElementQueue, 60);
-  RUN_TEST(test_MultipleElementQueue, 88);
-  RUN_TEST(test_CustomOrderQueue, 126);
-  RUN_TEST(test_DestroyNonEmptyQueue, 183);
-  RUN_TEST(test_AppendQueues, 205);
+  RUN_TEST(test_OneElementQueue, 61);
+  RUN_TEST(test_MultipleElementQueue, 90);
+  RUN_TEST(test_CustomOrderQueue, 129);
+  RUN_TEST(test_DestroyNonEmptyQueue, 187);
+  RUN_TEST(test_AppendQueues, 211);
 
   return (UnityEnd());
 }

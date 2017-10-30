@@ -50,6 +50,7 @@
 * test_ntp_scanner_LDADD needs ntpd/ntp_io.o.  HStenn.
 * refclock_jjy.c: Add missing "%s" to an msyslog() call.  HStenn.
 * Build ntpq and libntpq.a with NTP_HARD_*FLAGS.  perlinger@ntp.org
+* Fix trivial warnings from 'make check'. perlinger@ntp.org
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
