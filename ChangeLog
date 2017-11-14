@@ -51,6 +51,7 @@
 * refclock_jjy.c: Add missing "%s" to an msyslog() call.  HStenn.
 * Build ntpq and libntpq.a with NTP_HARD_*FLAGS.  perlinger@ntp.org
 * Fix trivial warnings from 'make check'. perlinger@ntp.org
+* Fix bug in the override portion of the compiler hardening macro. HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
