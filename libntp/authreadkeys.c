@@ -220,7 +220,8 @@ authreadkeys(
 			log_maybe(NULL,
 				  "authreadkeys: invalid type for key %d",
 				  keyno);
-		} else if (EVP_get_digestbynid(keytype) == NULL) {
+		} else if (NID_cmac != keytype &&
+				EVP_get_digestbynid(keytype) == NULL) {
 			log_maybe(NULL,
 				  "authreadkeys: no algorithm for key %d",
 				  keyno);
