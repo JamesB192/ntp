@@ -5,7 +5,7 @@
  * Moved from ntpd/ntp_crypto.c crypto_setup()
  */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+# include <config.h>
 #endif
 #include <ctype.h>
 #include <ntp.h>
@@ -13,11 +13,16 @@
 #include <lib_strbuf.h>
 
 #ifdef OPENSSL
-#include "openssl/crypto.h"
-#include "openssl/err.h"
-#include "openssl/evp.h"
-#include "openssl/opensslv.h"
-#include "libssl_compat.h"
+# include "openssl/cmac.h"
+# include "openssl/crypto.h"
+# include "openssl/err.h"
+# include "openssl/evp.h"
+# include "openssl/opensslv.h"
+# include "libssl_compat.h"
+
+# define MD5_LENGTH	16
+# define CMAC_LENGTH	16
+# define CMAC		"AES128CMAC"
 
 int ssl_init_done;
 
@@ -26,8 +31,9 @@ int ssl_init_done;
 static void
 atexit_ssl_cleanup(void)
 {
-	if (!ssl_init_done)
+	if (!ssl_init_done) {
 		return;
+	}
 
 	ssl_init_done = FALSE;
 	EVP_cleanup();
@@ -94,11 +100,7 @@ keytype_from_text(
 {
 	int		key_type;
 	u_int		digest_len;
-
-	/*----------------------------------------------------------- */
 #ifdef OPENSSL	/* --*-- OpenSSL code --*-- */
-	/*----------------------------------------------------------- */
-
 	char *		upcased;
 	char *		pch;
 	EVP_MD const *	md;
@@ -106,43 +108,85 @@ keytype_from_text(
 	/*
 	 * OpenSSL digest short names are capitalized, so uppercase the
 	 * digest name before passing to OBJ_sn2nid().  If it is not
-	 * recognized but begins with 'M' or 'm' use NID_md5 to be
-	 * consistent with past behavior.
+	 * recognized but matches our CMAC string use NID_cmac, or if
+	 * it begins with 'M' or 'm' use NID_md5 to be consistent with
+	 * past behavior.
 	 */
 	INIT_SSL();
 
 	/* get name in uppercase */
 	LIB_GETBUF(upcased);
 	strlcpy(upcased, text, LIB_BUFLENGTH);
-	for (pch = upcased; '\0' != *pch; ++pch)
+
+	for (pch = upcased; '\0' != *pch; pch++) {
 		*pch = (char)toupper((unsigned char)*pch);
+	}
 
-	md = EVP_get_digestbyname(upcased);
-	if (NULL == md && !strcmp(upcased, "M"))
-		md = EVP_get_digestbyname("MD5");
-	if (NULL == md)
-		return 0;
+	key_type = OBJ_sn2nid(upcased);
 
-	key_type   = EVP_MD_type(md);
-	digest_len = EVP_MD_size(md);
+	if (!key_type && !strncmp(CMAC, upcased, strlen(CMAC) + 1)) {
+		key_type = NID_cmac;
 
-	/*----------------------------------------------------------- */
-#else	/* --*-- NON-SSL CODE --*-- */
-	/*----------------------------------------------------------- */
+		if (debug) {
+			fprintf(stderr, "%s:%d:%s():%s:key\n",
+				__FILE__, __LINE__, __func__, CMAC);
+		}
+	}
+#else
 
-	if ('m' == tolower((unsigned char)text[0]))
+	key_type = 0;
+#endif
+
+	if (!key_type && 'm' == tolower((unsigned char)text[0])) {
 		key_type = NID_md5;
-	else
+	}
+
+	if (!key_type) {
 		return 0;
+	}
 
-	digest_len = 16;
+	if (NULL != pdigest_len) {
+#ifdef OPENSSL
+		const EVP_MD *	md = EVP_get_digestbynid(key_type);
 
-	/*----------------------------------------------------------- */
-#endif	/* --*-- NON-SSL CODE --*-- */
-	/*----------------------------------------------------------- */
+		digest_len = (md) ? EVP_MD_size(md) : 0;
 
-	if (pdigest_len)
+		if (!md || digest_len <= 0) {
+		    if (key_type == NID_cmac) {
+			digest_len = CMAC_LENGTH;
+
+			if (debug) {
+				fprintf(stderr, "%s:%d:%s():%s:len\n",
+					__FILE__, __LINE__, __func__, CMAC);
+			}
+		    } else {
+			fprintf(stderr,
+				"key type %s is not supported by OpenSSL\n",
+				keytype_name(key_type));
+			msyslog(LOG_ERR,
+				"key type %s is not supported by OpenSSL\n",
+				keytype_name(key_type));
+			return 0;
+		    }
+		}
+
+		if (digest_len > max_digest_len) {
+		    fprintf(stderr,
+			    "key type %s %u octet digests are too big, max %lu\n",
+			    keytype_name(key_type), digest_len,
+			    max_digest_len);
+		    msyslog(LOG_ERR,
+			    "key type %s %u octet digests are too big, max %lu",
+			    keytype_name(key_type), digest_len,
+			    max_digest_len);
+		    return 0;
+		}
+#else
+		digest_len = MD5_LENGTH;
+#endif
 		*pdigest_len = digest_len;
+	}
+
 	return key_type;
 }
 
@@ -163,8 +207,18 @@ keytype_name(
 #ifdef OPENSSL
 	INIT_SSL();
 	name = OBJ_nid2sn(nid);
-	if (NULL == name)
+
+	if (NID_cmac == nid) {
+		name = CMAC;
+
+		if (debug) {
+			fprintf(stderr, "%s:%d:%s():%s:nid\n",
+				__FILE__, __LINE__, __func__, CMAC);
+		}
+	} else
+	if (NULL == name) {
 		name = unknown_type;
+	}
 #else	/* !OPENSSL follows */
 	if (NID_md5 == nid)
 		name = "MD5";
@@ -199,3 +253,4 @@ getpass_keytype(
 
 	return getpass(pass_prompt);
 }
+

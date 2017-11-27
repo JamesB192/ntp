@@ -2,10 +2,11 @@
  * ntpq - query an NTP server using mode 6 commands
  */
 #include <config.h>
-#include <stdio.h>
 #include <ctype.h>
 #include <signal.h>
 #include <setjmp.h>
+#include <stddef.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #ifdef HAVE_UNISTD_H
@@ -34,7 +35,15 @@
 #include "openssl/evp.h"
 #include "openssl/objects.h"
 #include "openssl/err.h"
+#ifdef SYS_WINNT
+# include "openssl/opensslv.h"
+# if !defined(HAVE_EVP_MD_DO_ALL_SORTED) && OPENSSL_VERSION_NUMBER > 0x10000000L
+#    define HAVE_EVP_MD_DO_ALL_SORTED	1
+# endif
+#endif
 #include "libssl_compat.h"
+
+#define CMAC "AES128CMAC"
 #endif
 #include <ssl_applink.c>
 
@@ -233,6 +242,7 @@ static void list_md_fn(const EVP_MD *m, const char *from,
 		       const char *to, void *arg );
 # endif
 #endif
+static char *insert_cmac(char *list);
 static char *list_digest_names(void);
 
 /*
@@ -450,6 +460,7 @@ main(
 }
 #endif
 
+
 #ifndef BUILD_AS_LIB
 int
 ntpqmain(
@@ -484,14 +495,16 @@ ntpqmain(
 	    char *msg;
 
 	    list = list_digest_names();
-	    for (icmd = 0; icmd < sizeof(builtins)/sizeof(builtins[0]); icmd++) {
-		if (strcmp("keytype", builtins[icmd].keyword) == 0)
+
+	    for (icmd = 0; icmd < sizeof(builtins)/sizeof(*builtins); icmd++) {
+		if (strcmp("keytype", builtins[icmd].keyword) == 0) {
 		    break;
+		}
 	    }
 
 	    /* CID: 1295478 */
 	    /* This should only "trip" if "keytype" is removed from builtins */
-	    INSIST(icmd < sizeof(builtins)/sizeof(builtins[0]));
+	    INSIST(icmd < sizeof(builtins)/sizeof(*builtins));
 
 #ifdef OPENSSL
 	    builtins[icmd].desc[0] = "digest-name";
@@ -3598,70 +3611,196 @@ ntpq_custom_opt_handler(
 
 #ifdef OPENSSL
 # ifdef HAVE_EVP_MD_DO_ALL_SORTED
+#  define K_PER_LINE	8
+#  define K_NL_PFX_STR	"\n    "
+#  define K_DELIM_STR	", "
+
 struct hstate {
    char *list;
    const char **seen;
    int idx;
 };
-#define K_PER_LINE 8
-#define K_NL_PFX_STR "\n    "
-#define K_DELIM_STR ", "
-static void list_md_fn(const EVP_MD *m, const char *from, const char *to, void *arg )
+
+
+static void
+list_md_fn(const EVP_MD *m, const char *from, const char *to, void *arg)
 {
     size_t 	  len, n, digest_len;
     const char	  *name, **seen;
     struct hstate *hstate = arg;
 
-    if (!m)
-	    return; /* Ignore aliases */
+    /* m is MD obj, from is name or alias, to is base name for alias */
+    if (!m || !from || to) {
+        return; /* Ignore aliases */
+    }
 
-    /* There are duplicates.  Discard if name has been seen.
-     *
-     * Names are capitalized in 'keytype_from_text()' in ssl_init.c; we
-     * have to make sure we do compare case-insensitive when checking
-     * for dupes...
-     */
+    /* Discard MACs that NTP won't accept. */
+    /* Keep this consistent with keytype_from_text() in ssl_init.c. */
+    if (EVP_MD_size(m) > (MAX_MAC_LEN - sizeof(keyid_t))) {
+        return;
+    }
+
     name = EVP_MD_name(m);
-    len  = strlen(name) + 1;
-    for (seen = hstate->seen; *seen; seen++)
-	    if (!strcasecmp(*seen, name))
-		    return;
-    
-    /* Discard MACs that NTP won't accept.
-     * Keep this consistent with keytype_from_text() in ssl_init.c,
-     * which is done most easily by using it...
-     */
-    if (keytype_from_text(name, &digest_len) == 0)
+
+    /* Lowercase names aren't accepted by keytype_from_text in ssl_init.c */
+
+    for (cp = name; *cp; cp++) {
+	if (islower((unsigned char)*cp)) {
 	    return;
+	}
+    }
+
+    len = (cp - name) + 1;
+
+    /* There are duplicates.  Discard if name has been seen. */
+
+    for (seen = hstate->seen; *seen; seen++) {
+        if (!strcmp(*seen, name)) {
+	    return;
+	}
+    }
 
     n = (seen - hstate->seen) + 2;
     hstate->seen = erealloc(hstate->seen, n * sizeof(*seen));
     hstate->seen[n-2] = name;
     hstate->seen[n-1] = NULL;
 
-    if (hstate->list != NULL)
-	    len += strlen(hstate->list);
-    len += (hstate->idx >= K_PER_LINE)? strlen(K_NL_PFX_STR): strlen(K_DELIM_STR);
+    if (hstate->list != NULL) {
+	len += strlen(hstate->list);
+    }
+
+    len += (hstate->idx >= K_PER_LINE)
+		? strlen(K_NL_PFX_STR)
+		: strlen(K_DELIM_STR);
 
     if (hstate->list == NULL) {
-	    hstate->list = (char *)emalloc(len);
-	    hstate->list[0] = '\0';
+        hstate->list = (char *)emalloc(len);
+	hstate->list[0] = '\0';
     } else {
-	    hstate->list = (char *)erealloc(hstate->list, len);
+	hstate->list = (char *)erealloc(hstate->list, len);
     }
-    
+
     sprintf(hstate->list + strlen(hstate->list), "%s%s",
-	    ((hstate->idx >= K_PER_LINE)? K_NL_PFX_STR : K_DELIM_STR),
+	    ((hstate->idx >= K_PER_LINE) ? K_NL_PFX_STR : K_DELIM_STR),
 	    name);
-    if (hstate->idx >= K_PER_LINE)
-	    hstate->idx = 1;
-    else
-	    hstate->idx++;
+
+    if (hstate->idx >= K_PER_LINE) {
+	hstate->idx = 1;
+    } else {
+	hstate->idx++;
+    }
+}
+
+
+/* Insert CMAC into SSL digests list */
+static char *
+insert_cmac(char *list)
+{
+    int insert;
+    size_t len;
+
+
+    /* If list empty, we need to insert CMAC on new line */
+    insert = (!list || !*list);
+
+    if (insert) {
+	len = strlen(K_NL_PFX_STR) + strlen(CMAC);
+	list = (char *)erealloc(list, len + 1);
+	sprintf(list, "%s%s", K_NL_PFX_STR, CMAC);
+    } else {	/* List not empty */
+	/* Check if CMAC already in list - future proofing */
+	const char *cmac_sn;
+	char *cmac_p;
+
+	cmac_sn = OBJ_nid2sn(NID_cmac);
+	cmac_p = list;
+	insert = cmac_sn != NULL && *cmac_sn != '\0';
+
+	/* CMAC in list if found, followed by nul char or ',' */
+	while (insert && NULL != (cmac_p = strstr(cmac_p, cmac_sn))) {
+	    cmac_p += strlen(cmac_sn);
+	    /* Still need to insert if not nul and not ',' */
+	    insert = *cmac_p && ',' != *cmac_p;
+	}
+
+	/* Find proper insertion point */
+	if (insert) {
+	    char *last_nl;
+	    char *point;
+	    char *delim;
+	    int found;
+
+	    /* Default to start if list empty */
+	    found = 0;
+	    delim = list;
+	    len = strlen(list);
+
+	    /* While new lines */
+	    while (delim < list + len && *delim &&
+			!strncmp(K_NL_PFX_STR, delim, strlen(K_NL_PFX_STR))) {
+		point = delim + strlen(K_NL_PFX_STR);
+
+		/* While digest names on line */
+		while (point < list + len && *point) {
+		    /* Another digest after on same or next line? */
+		    delim = strstr( point, K_DELIM_STR);
+		    last_nl = strstr( point, K_NL_PFX_STR);
+
+		    /* No - end of list */
+		    if (!delim && !last_nl) {
+			delim = list + len;
+		    } else
+		    /* New line and no delim or before delim? */
+		    if (last_nl && (!delim || last_nl < delim)) {
+			delim = last_nl;
+		    }
+
+		    /* Found insertion point where CMAC before entry? */
+		    if (strncmp(CMAC, point, delim - point) < 0) {
+			found = 1;
+			break;
+		    }
+
+		    if (delim < list + len && *delim &&
+			    !strncmp(K_DELIM_STR, delim, strlen(K_DELIM_STR))) {
+			point += strlen(K_DELIM_STR);
+		    } else {
+			break;
+		    }
+		} /* While digest names on line */
+	    } /* While new lines */
+
+	    /* If found in list */
+	    if (found) {
+		/* insert cmac and delim */
+		/* Space for list could move - save offset */
+		ptrdiff_t p_offset = point - list;
+		len += strlen(CMAC) + strlen(K_DELIM_STR);
+		list = (char *)erealloc(list, len + 1);
+		point = list + p_offset;
+		/* move to handle src/dest overlap */
+		memmove(point + strlen(CMAC) + strlen(K_DELIM_STR),
+					point, strlen(point) + 1);
+		strncpy(point, CMAC, strlen(CMAC));
+		strncpy(point + strlen(CMAC), K_DELIM_STR, strlen(K_DELIM_STR));
+	    } else {	/* End of list */
+		/* append delim and cmac */
+		len += strlen(K_DELIM_STR) + strlen(CMAC);
+		list = (char *)erealloc(list, len + 1);
+		strcpy(list + strlen(list), K_DELIM_STR);
+		strcpy(list + strlen(list), CMAC);
+	    }
+	} /* insert */
+    } /* List not empty */
+
+    return list;
 }
 # endif
 #endif
 
-static char *list_digest_names(void)
+
+static char *
+list_digest_names(void)
 {
     char *list = NULL;
 
@@ -3669,12 +3808,16 @@ static char *list_digest_names(void)
 # ifdef HAVE_EVP_MD_DO_ALL_SORTED
     struct hstate hstate = { NULL, NULL, K_PER_LINE+1 };
 
-    hstate.seen = (const char **) emalloc_zero(1*sizeof( const char * )); // replaces -> calloc(1, sizeof( const char * ));
+    /* replace calloc(1, sizeof(const char *)) */
+    hstate.seen = (const char **)emalloc_zero(sizeof(const char *));
 
     INIT_SSL();
     EVP_MD_do_all_sorted(list_md_fn, &hstate);
     list = hstate.list;
     free(hstate.seen);
+
+    list = insert_cmac(list);	/* Insert CMAC into SSL digests list */
+
 # else
     list = (char *)emalloc(sizeof("md5, others (upgrade to OpenSSL-1.0 for full list)"));
     strcpy(list, "md5, others (upgrade to OpenSSL-1.0 for full list)");

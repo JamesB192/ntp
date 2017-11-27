@@ -71,7 +71,7 @@
   <dt id="keyid"><tt>keyid <i>keyid</i></tt></dt>
   <dd>This command specifies the key number to be used to authenticate configuration requests. This must correspond to a key ID configured in <tt>ntp.conf</tt> for this purpose.</dd>
   <dt id="keytype"><tt>keytype</tt></dt>
-  <dd>Specify the digest algorithm to use for authenticated requests, with default <tt>MD5</tt>. If the OpenSSL library is installed, digest can be be any message digest algorithm supported by the library. The current selections are: <tt>MD2</tt>, <tt>MD4</tt>, <tt>MD5</tt>, <tt>MDC2</tt>, <tt>RIPEMD160</tt>, <tt>SHA</tt> and <tt>SHA1</tt>.</dd>
+  <dd>Specify the digest algorithm to use for authenticated requests, with default <tt>MD5</tt>. If the OpenSSL library is installed, digest can be be any message digest algorithm supported by the library. The current selections are: <tt>MD2</tt>, <tt>MD4</tt>, <tt>MD5</tt>, <tt>MDC2</tt>, <tt>RIPEMD160</tt>, <tt>SHA</tt>, <tt>SHA1</tt>, and <tt>AES128CMAC</tt>.</dd>
   <dt id="ntpversion"><tt>ntpversion 1 | 2 | 3 | 4</tt></dt>
   <dd>Sets the NTP version number which <tt>ntpq</tt> claims in packets. Defaults to 2, Note that mode-6 control messages (and modes, for that matter) didn't exist in NTP version 1.</dd>
   <dt id="passwd"><tt>passwd</tt></dt>
