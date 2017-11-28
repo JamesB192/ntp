@@ -166,29 +166,52 @@ test_VerifySHA1(void)
 void
 test_VerifyCMAC(void)
 {
-#ifdef OPENSSL
-
 	const char* PKT_DATA =
 	    "sometestdata"				/* Data */
 	    "\0\0\0\0"					/* Key-ID (unused) */
 	    "\x4e\x0c\xf0\xe2\xc7\x8e\xbb\xbf"		/* MAC */
 	    "\x79\xfc\x87\xc7\x8b\xb7\x4a\x0b";
 	const int PKT_LEN = 12;
-
 	struct key cmac;
+
 	cmac.next = NULL;
 	cmac.key_id = 0;
 	cmac.key_len = CMAC_LENGTH;
 	memcpy(&cmac.key_seq, "aes-128-cmac-key", cmac.key_len);
 	memcpy(&cmac.type, CMAC, strlen(CMAC) + 1);
 
-	TEST_ASSERT_TRUE(auth_md5(PKT_DATA, PKT_LEN, CMAC_LENGTH, &cmac));
+	test_VerifyOpenSSLCMAC(&cmac)
+	test_VerifyLocalCMAC(&cmac)
+}
+
+
+void
+test_VerifyOpenSSLCMAC(struct key *cmac)
+{
+#ifdef OPENSSL
+
+	/* XXX: HMS: auth_md5 must be renamed/incorrect. */
+	TEST_ASSERT_TRUE(auth_md5(PKT_DATA, PKT_LEN, CMAC_LENGTH, cmac));
 	
 #else
 	
 	TEST_IGNORE_MESSAGE("OpenSSL not found, skipping...");
 	
 #endif	/* OPENSSL */
+	return;
+}
+
+
+void
+test_VerifyLocalCMAC(struct key *cmac)
+{
+
+	/* XXX: HMS: auth_md5 must be renamed/incorrect. */
+	// TEST_ASSERT_TRUE(auth_md5(PKT_DATA, PKT_LEN, CMAC_LENGTH, cmac));
+
+	TEST_IGNORE_MESSAGE("Hook in the local AES-128-CMAC check!");
+
+	return;
 }
 
 

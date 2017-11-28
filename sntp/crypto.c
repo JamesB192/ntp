@@ -1,12 +1,21 @@
+/*
+ * HMS: we need to test:
+ * - OpenSSL versions, if we are building with them
+ * - our versions
+ *
+ * We may need to test with(out) OPENSSL separately.
+ */
+
 #include <config.h>
 #include "crypto.h"
 #include <ctype.h>
 #include "isc/string.h"
 #include "ntp_md5.h"
 
+/* HMS: We may not have OpenSSL, but we have our own AES-128-CMAC */
+#define  CMAC		"AES128CMAC"
 #ifdef OPENSSL
 # include "openssl/cmac.h"
-# define  CMAC		"AES128CMAC"
 #endif
 
 struct key *key_ptr;
@@ -23,7 +32,7 @@ make_mac(
 {
 	u_int		len = mac_size;
 	int		key_type;
-	
+
 	if (cmp_key->key_len > 64)
 		return 0;
 	if (pkt_size % 4 != 0)
@@ -32,17 +41,16 @@ make_mac(
 	INIT_SSL();
 	key_type = keytype_from_text(cmp_key->type, NULL);
 
-#ifdef OPENSSL
 	/* Check if CMAC key type specific code required */
 	if (key_type == NID_cmac) {
 	    CMAC_CTX *      ctx;
-
 
 	    if (debug) {
 		fprintf(stderr, "%s:%d:%s():%s:nid\n",
 				__FILE__, __LINE__, __func__, CMAC);
 	    }
 
+#ifdef OPENSSL
 	    if (!(ctx = CMAC_CTX_new())) {
 		fprintf(stderr,  "make_mac: CMAC %s CTX new failed.\n", CMAC);
 		msyslog(LOG_ERR, "make_mac: CMAC %s CTX new failed.",   CMAC);
@@ -66,8 +74,10 @@ make_mac(
 	    }
 
 	    CMAC_CTX_cleanup(ctx);
-	} else {	/* generic MAC handling */
 #endif
+	    /* Test our AES-128-CMAC implementation */
+
+	} else {	/* MD5 MAC handling */
 	    EVP_MD_CTX *	ctx;
 
 	    if (!(ctx = EVP_MD_CTX_new())) {
@@ -117,17 +127,15 @@ make_mac(
 #endif
 
 	    EVP_MD_CTX_free(ctx);
-#ifdef OPENSSL
 	}
-#endif
-	
+
 	return (int)len;
 }
 
 
-/* Generates a md5 digest of the key specified in keyid concatenated with the 
+/* Generates a md5 digest of the key specified in keyid concatenated with the
  * ntp packet (exluding the MAC) and compares this digest to the digest in
- * the packet's MAC. If they're equal this function returns 1 (packet is 
+ * the packet's MAC. If they're equal this function returns 1 (packet is
  * authentic) or else 0 (not authentic).
  */
 int
@@ -141,7 +149,7 @@ auth_md5(
 	int  hash_len;
 	int  authentic;
 	char digest[MAX_MDG_LEN];
-	const u_char *pkt_ptr; 
+	const u_char *pkt_ptr;
 	if (mac_size > (int)sizeof(digest))
 		return 0;
 	pkt_ptr = pkt_data;
@@ -180,7 +188,7 @@ hex_val(
 }
 
 /* Load keys from the specified keyfile into the key structures.
- * Returns -1 if the reading failed, otherwise it returns the 
+ * Returns -1 if the reading failed, otherwise it returns the
  * number of keys it read
  */
 int
@@ -189,7 +197,7 @@ auth_init(
 	struct key **keys
 	)
 {
-	FILE *keyf = fopen(keyfile, "r"); 
+	FILE *keyf = fopen(keyfile, "r");
 	struct key *prev = NULL;
 	int scan_cnt, line_cnt = 0;
 	char kbuf[200];
@@ -267,12 +275,12 @@ auth_init(
 		line_cnt++;
 	}
 	fclose(keyf);
-	
+
 	key_ptr = *keys;
 	return key_cnt;
 }
 
-/* Looks for the key with keyid key_id and sets the d_key pointer to the 
+/* Looks for the key with keyid key_id and sets the d_key pointer to the
  * address of the key. If no matching key is found the pointer is not touched.
  */
 void
