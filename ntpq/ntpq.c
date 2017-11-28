@@ -3628,6 +3628,7 @@ list_md_fn(const EVP_MD *m, const char *from, const char *to, void *arg)
     size_t 	  len, n, digest_len;
     const char	  *name, **seen;
     struct hstate *hstate = arg;
+    char	  *cp;
 
     /* m is MD obj, from is name or alias, to is base name for alias */
     if (!m || !from || to) {
