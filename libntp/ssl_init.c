@@ -101,6 +101,7 @@ keytype_from_text(
 	int		key_type;
 	u_int		digest_len;
 #ifdef OPENSSL	/* --*-- OpenSSL code --*-- */
+	const u_long	max_digest_len = MAX_MAC_LEN - sizeof(keyid_t);
 	char *		upcased;
 	char *		pch;
 	EVP_MD const *	md;

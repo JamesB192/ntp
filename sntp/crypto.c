@@ -30,7 +30,7 @@ make_mac(
 		return 0;
 
 	INIT_SSL();
-	key_type = keytype_from_text(cmp_key->type, NULL);
+	key_type = keytype_from_text(cmp_key->typen, NULL);
 
 #ifdef OPENSSL
 	/* Check if CMAC key type specific code required */
@@ -72,40 +72,40 @@ make_mac(
 
 	    if (!(ctx = EVP_MD_CTX_new())) {
 		fprintf(stderr,  "make_mac: MAC %s Digest CTX new failed.\n",
-							cmp_key->type);
+							cmp_key->typen);
 		msyslog(LOG_ERR, "make_mac: MAC %s Digest CTX new failed.",
-							cmp_key->type);
+							cmp_key->typen);
 		len = 0;
 	    }
 #ifdef OPENSSL	/* OpenSSL 1 supports return codes 0 fail, 1 okay */
 	    else
 	    if (!EVP_DigestInit(ctx, EVP_get_digestbynid(key_type))) {
 		fprintf(stderr,  "make_mac: MAC %s Digest Init failed.\n",
-							cmp_key->type);
+							cmp_key->typen);
 		msyslog(LOG_ERR, "make_mac: MAC %s Digest Init failed.",
-							cmp_key->type);
+							cmp_key->typen);
 		len = 0;
 	    } else
 	    if (!EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq,
 						(u_int)cmp_key->key_len)) {
 		fprintf(stderr,  "make_mac: MAC %s Digest Update key failed.\n",
-							cmp_key->type);
+							cmp_key->typen);
 		msyslog(LOG_ERR, "make_mac: MAC %s Digest Update key failed.",
-							cmp_key->type);
+							cmp_key->typen);
 		len = 0;
 	    } else
 	    if (!EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size)) {
 		fprintf(stderr,  "make_mac: MAC %s Digest Update data failed.\n",
-							cmp_key->type);
+							cmp_key->typen);
 		msyslog(LOG_ERR, "make_mac: MAC %s Digest Update data failed.",
-							cmp_key->type);
+							cmp_key->typen);
 		len = 0;
 	    } else
 	    if (!EVP_DigestFinal(ctx, digest, &len)) {
 		fprintf(stderr,  "make_mac: MAC %s Digest Final failed.\n",
-							cmp_key->type);
+							cmp_key->typen);
 		msyslog(LOG_ERR, "make_mac: MAC %s Digest Final failed.",
-							cmp_key->type);
+							cmp_key->typen);
 		len = 0;
 	    }
 #else /* !OPENSSL */
@@ -222,9 +222,9 @@ auth_init(
 		if (octothorpe)
 			*octothorpe = '\0';
 		act = emalloc(sizeof(*act));
-		/* keep width 15 = sizeof struct key.type - 1 synced */
+		/* keep width 15 = sizeof struct key.typen - 1 synced */
 		scan_cnt = sscanf(kbuf, "%d %15s %128s",
-					&act->key_id, act->type, keystring);
+					&act->key_id, act->typen, keystring);
 		if (scan_cnt == 3) {
 			int len = strlen(keystring);
 			goodline = 1;	/* assume best for now */
