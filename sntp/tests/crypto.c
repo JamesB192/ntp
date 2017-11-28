@@ -96,7 +96,7 @@ test_MakeCMac(void)
 	cmac.key_id = 30;
 	cmac.key_len = CMAC_LENGTH;
 	memcpy(&cmac.key_seq, "aes-128-cmac-seq", cmac.key_len);
-	memcpy(&cmac.type, CMAC, strlen(CMAC) + 1);
+	memcpy(&cmac.typen, CMAC, strlen(CMAC) + 1);
 
 	TEST_ASSERT_EQUAL(CMAC_LENGTH,
 		    make_mac(PKT_DATA, PKT_LEN, CMAC_LENGTH, &cmac, actual));
@@ -178,7 +178,7 @@ test_VerifyCMAC(void)
 	cmac.key_id = 0;
 	cmac.key_len = CMAC_LENGTH;
 	memcpy(&cmac.key_seq, "aes-128-cmac-key", cmac.key_len);
-	memcpy(&cmac.type, CMAC, strlen(CMAC) + 1);
+	memcpy(&cmac.typen, CMAC, strlen(CMAC) + 1);
 
 	test_VerifyOpenSSLCMAC(&cmac)
 	test_VerifyLocalCMAC(&cmac)
