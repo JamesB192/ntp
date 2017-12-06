@@ -1,5 +1,6 @@
 ---
 
+* [Bug 3447] AES-128-CMAC (fixes) <perlinger@ntp.org>
 * [Bug 3441] Validate the assumption that AF_UNSPEC is 0.  stenn@ntp.org
 * [Bug 3439] When running multiple commands / hosts in ntpq... <perlinger@ntp.org>
  - applied patch by ggarvey
