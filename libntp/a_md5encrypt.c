@@ -32,8 +32,7 @@ MD5authencrypt(
 	)
 {
 	u_char	digest[EVP_MAX_MD_SIZE];
-	u_int	len;
-/*	EVP_MD_CTX *ctx; */
+	u_int	len = 0;
 
 	/*
 	 * Compute digest of key concatenated with packet. Note: the
@@ -43,96 +42,89 @@ MD5authencrypt(
 	INIT_SSL();
 #ifdef OPENSSL
 	/* Check if CMAC key type specific code required */
-	if (cache_type == NID_cmac) {
-	    CMAC_CTX *      ctx;
-
-	    if (debug) {
-		fprintf(stderr, "%s:%d:%s():%s:nid\n",
+	if (type == NID_cmac) {
+		CMAC_CTX *	ctx;
+		size_t		slen = 0;
+		
+		if (debug) {
+			fprintf(stderr, "%s:%d:%s():%s:nid\n",
 				__FILE__, __LINE__, __func__, CMAC);
-	    }
-
-	    if (!(ctx = CMAC_CTX_new())) {
-		fprintf(stderr,  "MAC encrypt: CMAC %s CTX new failed.\n", CMAC);
-		msyslog(LOG_ERR, "MAC encrypt: CMAC %s CTX new failed.",   CMAC);
-		len = 0;
-	    } else
-	    if (!CMAC_Init(ctx, key, (u_int)AES_128_KEY_SIZE,
-						EVP_aes_128_cbc(), NULL)) {
-		fprintf(stderr,  "MAC encrypt: CMAC %s Init failed.\n",    CMAC);
-		msyslog(LOG_ERR, "MAC encrypt: CMAC %s Init failed.",      CMAC);
-		len = 0;
-	    } else
-	    if (!CMAC_Update(ctx, (u_char *)pkt, (u_int)length)) {
-		fprintf(stderr,  "MAC encrypt: CMAC %s Update failed.\n",  CMAC);
-		msyslog(LOG_ERR, "MAC encrypt: CMAC %s Update failed.",    CMAC);
-		len = 0;
-	    } else
-	    if (!CMAC_Final(ctx, digest, &len)) {
-		fprintf(stderr,  "MAC encrypt: CMAC %s Final failed.\n",   CMAC);
-		msyslog(LOG_ERR, "MAC encrypt: CMAC %s Final failed.",     CMAC);
-		len = 0;
-	    }
-
-	    CMAC_CTX_cleanup(ctx);
-	} else {	/* generic MAC handling */
+		}
+		
+		if (!(ctx = CMAC_CTX_new())) {
+			fprintf(stderr,  "MAC encrypt: CMAC %s CTX new failed.\n", CMAC);
+			msyslog(LOG_ERR, "MAC encrypt: CMAC %s CTX new failed.",   CMAC);
+		}
+		else if (!CMAC_Init(ctx, key, AES_128_KEY_SIZE,
+				    EVP_aes_128_cbc(), NULL)) {
+			fprintf(stderr,  "MAC encrypt: CMAC %s Init failed.\n",    CMAC);
+			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Init failed.",      CMAC);
+		}
+		else if (!CMAC_Update(ctx, pkt, length)) {
+			fprintf(stderr,  "MAC encrypt: CMAC %s Update failed.\n",  CMAC);
+			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Update failed.",    CMAC);
+		}
+		else if (!CMAC_Final(ctx, digest, &slen)) {
+			fprintf(stderr,  "MAC encrypt: CMAC %s Final failed.\n",   CMAC);
+			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Final failed.",     CMAC);
+			slen = 0;
+		}
+		len = (u_int)slen;
+		
+		CMAC_CTX_cleanup(ctx);
+	} else	/* generic MAC handling */
 #endif
-	    EVP_MD_CTX *	ctx;
-
-	    if (!(ctx = EVP_MD_CTX_new())) {
-		fprintf(stderr,  "MAC encrypt: MAC %s Digest CTX new failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest CTX new failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    }
+	{
+		EVP_MD_CTX *	ctx;
+		
+		if (!(ctx = EVP_MD_CTX_new())) {
+			fprintf(stderr,  "MAC encrypt: MAC %s Digest CTX new failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest CTX new failed.",
+				OBJ_nid2sn(type));
+		}
 #ifdef OPENSSL	/* OpenSSL 1 supports return codes 0 fail, 1 okay */
-	    else
-	    if (!EVP_DigestInit(ctx, EVP_get_digestbynid(type))) {
-		fprintf(stderr,  "MAC encrypt: MAC %s Digest Init failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Init failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    } else
-	    if (!EVP_DigestUpdate(ctx, key, (u_int)cache_secretsize)) {
-		fprintf(stderr,  "MAC encrypt: MAC %s Digest Update key failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Update key failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    } else
-	    if (!EVP_DigestUpdate(ctx, (u_char *)pkt, (u_int)length)) {
-		fprintf(stderr,  "MAC encrypt: MAC %s Digest Update data failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Update data failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    } else
-	    if (!EVP_DigestFinal(ctx, digest, &len)) {
-		fprintf(stderr,  "MAC encrypt: MAC %s Digest Final failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Final failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    }
+		else if (!EVP_DigestInit(ctx, EVP_get_digestbynid(type))) {
+			fprintf(stderr,  "MAC encrypt: MAC %s Digest Init failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Init failed.",
+				OBJ_nid2sn(type));
+		}
+		else if (!EVP_DigestUpdate(ctx, key, (u_int)cache_secretsize)) {
+			fprintf(stderr,  "MAC encrypt: MAC %s Digest Update key failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Update key failed.",
+				OBJ_nid2sn(type));
+		}
+		else if (!EVP_DigestUpdate(ctx, (u_char *)pkt, (u_int)length)) {
+			fprintf(stderr,  "MAC encrypt: MAC %s Digest Update data failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Update data failed.",
+				OBJ_nid2sn(type));
+		}
+		else if (!EVP_DigestFinal(ctx, digest, &len)) {
+			fprintf(stderr,  "MAC encrypt: MAC %s Digest Final failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Final failed.",
+				OBJ_nid2sn(type));
+			len = 0;
+		}
 #else /* !OPENSSL */
-	if (!(ctx && EVP_DigestInit(ctx, EVP_get_digestbynid(type)))) {
-		msyslog(LOG_ERR,
-		    "MAC encrypt: digest init failed");
+		if (!(ctx && EVP_DigestInit(ctx, EVP_get_digestbynid(type)))) {
+			msyslog(LOG_ERR,
+				"MAC encrypt: digest init failed");
+			EVP_MD_CTX_free(ctx);
+			return (0);
+		}
+		EVP_DigestUpdate(ctx, key, cache_secretsize);
+		EVP_DigestUpdate(ctx, (u_char *)pkt, length);
+		EVP_DigestFinal(ctx, digest, &len);
+#endif
 		EVP_MD_CTX_free(ctx);
-		return (0);
 	}
-	EVP_DigestUpdate(ctx, key, cache_secretsize);
-	EVP_DigestUpdate(ctx, (u_char *)pkt, length);
-	EVP_DigestFinal(ctx, digest, &len);
-#endif
-	EVP_MD_CTX_free(ctx);
-#ifdef OPENSSL
-	}
-#endif
 	/* If the MAC is longer than the MAX then truncate it. */
 	if (len > MAX_MDG_LEN)
-	    len = MAX_MDG_LEN;
+		len = MAX_MDG_LEN;
 	memmove((u_char *)pkt + length + KEY_MAC_LEN, digest, len);
 	return (len + KEY_MAC_LEN);
 }
@@ -153,8 +145,7 @@ MD5authdecrypt(
 	)
 {
 	u_char	digest[EVP_MAX_MD_SIZE];
-	u_int	len;
-/*	EVP_MD_CTX *ctx; */
+	u_int	len = 0;
 
 	/*
 	 * Compute digest of key concatenated with packet. Note: the
@@ -164,97 +155,89 @@ MD5authdecrypt(
 	INIT_SSL();
 #ifdef OPENSSL
 	/* Check if CMAC key type specific code required */
-	if (cache_type == NID_cmac) {
-	    CMAC_CTX *      ctx;
+	if (type == NID_cmac) {
+		CMAC_CTX *	ctx;
+		size_t		slen = 0;
 
-
-	    if (debug) {
-		fprintf(stderr, "%s:%d:%s():%s:nid\n",
+		if (debug) {
+			fprintf(stderr, "%s:%d:%s():%s:nid\n",
 				__FILE__, __LINE__, __func__, CMAC);
-	    }
-
-	    if (!(ctx = CMAC_CTX_new())) {
-		fprintf(stderr,  "MAC decrypt: CMAC %s CTX new failed.\n", CMAC);
-		msyslog(LOG_ERR, "MAC decrypt: CMAC %s CTX new failed.",   CMAC);
-		len = 0;
-	    } else
-	    if (!CMAC_Init(ctx, key, (u_int)AES_128_KEY_SIZE,
-						EVP_aes_128_cbc(), NULL)) {
-		fprintf(stderr,  "MAC decrypt: CMAC %s Init failed.\n",    CMAC);
-		msyslog(LOG_ERR, "MAC decrypt: CMAC %s Init failed.",      CMAC);
-		len = 0;
-	    } else
-	    if (!CMAC_Update(ctx, (u_char *)pkt, (u_int)length)) {
-		fprintf(stderr,  "MAC decrypt: CMAC %s Update failed.\n",  CMAC);
-		msyslog(LOG_ERR, "MAC decrypt: CMAC %s Update failed.",    CMAC);
-		len = 0;
-	    } else
-	    if (!CMAC_Final(ctx, digest, &len)) {
-		fprintf(stderr,  "MAC decrypt: CMAC %s Final failed.\n",   CMAC);
-		msyslog(LOG_ERR, "MAC decrypt: CMAC %s Final failed.",     CMAC);
-		len = 0;
-	    }
-
-	    CMAC_CTX_cleanup(ctx);
-	} else {	/* generic MAC handling */
+		}
+		
+		if (!(ctx = CMAC_CTX_new())) {
+			fprintf(stderr,  "MAC decrypt: CMAC %s CTX new failed.\n", CMAC);
+			msyslog(LOG_ERR, "MAC decrypt: CMAC %s CTX new failed.",   CMAC);
+		}
+		else if (!CMAC_Init(ctx, key, AES_128_KEY_SIZE,
+				    EVP_aes_128_cbc(), NULL)) {
+			fprintf(stderr,  "MAC decrypt: CMAC %s Init failed.\n",    CMAC);
+			msyslog(LOG_ERR, "MAC decrypt: CMAC %s Init failed.",      CMAC);
+		}
+		else if (!CMAC_Update(ctx, pkt, length)) {
+			fprintf(stderr,  "MAC decrypt: CMAC %s Update failed.\n",  CMAC);
+			msyslog(LOG_ERR, "MAC decrypt: CMAC %s Update failed.",    CMAC);
+		}
+		else if (!CMAC_Final(ctx, digest, &slen)) {
+			fprintf(stderr,  "MAC decrypt: CMAC %s Final failed.\n",   CMAC);
+			msyslog(LOG_ERR, "MAC decrypt: CMAC %s Final failed.",     CMAC);
+			slen = 0;
+		}
+		len = (u_int)slen;
+		
+		CMAC_CTX_cleanup(ctx);
+	} else	/* generic MAC handling */
 #endif
-	    EVP_MD_CTX *	ctx;
-
-	    if (!(ctx = EVP_MD_CTX_new())) {
-		fprintf(stderr,  "MAC decrypt: MAC %s Digest CTX new failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest CTX new failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    }
+	{
+		EVP_MD_CTX *	ctx;
+		
+		if (!(ctx = EVP_MD_CTX_new())) {
+			fprintf(stderr,  "MAC decrypt: MAC %s Digest CTX new failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest CTX new failed.",
+				OBJ_nid2sn(type));
+		}
 #ifdef OPENSSL	/* OpenSSL 1 supports return codes 0 fail, 1 okay */
-	    else
-	    if (!EVP_DigestInit(ctx, EVP_get_digestbynid(type))) {
-		fprintf(stderr,  "MAC decrypt: MAC %s Digest Init failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Init failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    } else
-	    if (!EVP_DigestUpdate(ctx, key, (u_int)cache_secretsize)) {
-		fprintf(stderr,  "MAC decrypt: MAC %s Digest Update key failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Update key failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    } else
-	    if (!EVP_DigestUpdate(ctx, (u_char *)pkt, (u_int)length)) {
-		fprintf(stderr,  "MAC decrypt: MAC %s Digest Update data failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Update data failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    } else
-	    if (!EVP_DigestFinal(ctx, digest, &len)) {
-		fprintf(stderr,  "MAC decrypt: MAC %s Digest Final failed.\n",
-							OBJ_nid2sn(type));
-		msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Final failed.",
-							OBJ_nid2sn(type));
-		len = 0;
-	    }
+		else if (!EVP_DigestInit(ctx, EVP_get_digestbynid(type))) {
+			fprintf(stderr,  "MAC decrypt: MAC %s Digest Init failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Init failed.",
+				OBJ_nid2sn(type));
+		}
+		else if (!EVP_DigestUpdate(ctx, key, (u_int)cache_secretsize)) {
+			fprintf(stderr,  "MAC decrypt: MAC %s Digest Update key failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Update key failed.",
+				OBJ_nid2sn(type));
+		}
+		else if (!EVP_DigestUpdate(ctx, (u_char *)pkt, (u_int)length)) {
+			fprintf(stderr,  "MAC decrypt: MAC %s Digest Update data failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Update data failed.",
+				OBJ_nid2sn(type));
+		}
+		else if (!EVP_DigestFinal(ctx, digest, &len)) {
+			fprintf(stderr,  "MAC decrypt: MAC %s Digest Final failed.\n",
+				OBJ_nid2sn(type));
+			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Final failed.",
+				OBJ_nid2sn(type));
+			len = 0;
+		}
 #else /* !OPENSSL */
-	    if (!(ctx && EVP_DigestInit(ctx, EVP_get_digestbynid(type)))) {
-		    msyslog(LOG_ERR,
-			"MAC decrypt: digest init failed");
-		    EVP_MD_CTX_free(ctx);
-		    return (0);
-	    }
-	    EVP_DigestUpdate(ctx, key, cache_secretsize);
-	    EVP_DigestUpdate(ctx, (u_char *)pkt, (u_int)length);
-	    EVP_DigestFinal(ctx, digest, &len);
+		if (!(ctx && EVP_DigestInit(ctx, EVP_get_digestbynid(type)))) {
+			msyslog(LOG_ERR,
+				"MAC decrypt: digest init failed");
+			EVP_MD_CTX_free(ctx);
+			return (0);
+		}
+		EVP_DigestUpdate(ctx, key, cache_secretsize);
+		EVP_DigestUpdate(ctx, (u_char *)pkt, (u_int)length);
+		EVP_DigestFinal(ctx, digest, &len);
 #endif
-	    EVP_MD_CTX_free(ctx);
-#ifdef OPENSSL
+		EVP_MD_CTX_free(ctx);
 	}
-#endif
 	/* If the MAC is longer than the MAX then truncate it. */
 	if (len > MAX_MDG_LEN)
-	    len = MAX_MDG_LEN;
+		len = MAX_MDG_LEN;
 	if (size != (size_t)len + KEY_MAC_LEN) {
 		msyslog(LOG_ERR,
 		    "MAC decrypt: MAC length error");

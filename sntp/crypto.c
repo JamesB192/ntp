@@ -30,9 +30,10 @@ make_mac(
 	void * digest
 	)
 {
-	u_int		len = mac_size;
+	u_int		len  = 0;
+	size_t		slen = 0;
 	int		key_type;
-
+	
 	if (cmp_key->key_len > 64)
 		return 0;
 	if (pkt_size % 4 != 0)
@@ -41,94 +42,88 @@ make_mac(
 	INIT_SSL();
 	key_type = keytype_from_text(cmp_key->typen, NULL);
 
+#ifdef OPENSSL
 	/* Check if CMAC key type specific code required */
 	if (key_type == NID_cmac) {
-	    CMAC_CTX *      ctx;
-
-	    if (debug) {
-		fprintf(stderr, "%s:%d:%s():%s:nid\n",
+		CMAC_CTX *      ctx;
+		
+		if (debug) {
+			fprintf(stderr, "%s:%d:%s():%s:nid\n",
 				__FILE__, __LINE__, __func__, CMAC);
-	    }
-
-#ifdef OPENSSL
-	    if (!(ctx = CMAC_CTX_new())) {
-		fprintf(stderr,  "make_mac: CMAC %s CTX new failed.\n", CMAC);
-		msyslog(LOG_ERR, "make_mac: CMAC %s CTX new failed.",   CMAC);
-		len = 0;
-	    } else
-	    if (!CMAC_Init(ctx, (const u_char *)cmp_key->key_seq,
-			(u_int)cmp_key->key_len, EVP_aes_128_cbc(), NULL)) {
-		fprintf(stderr,  "make_mac: CMAC %s Init failed.\n",    CMAC);
-		msyslog(LOG_ERR, "make_mac: CMAC %s Init failed.",      CMAC);
-		len = 0;
-	    } else
-	    if (!CMAC_Update(ctx, pkt_data, (u_int)pkt_size)) {
-		fprintf(stderr,  "make_mac: CMAC %s Update failed.\n",  CMAC);
-		msyslog(LOG_ERR, "make_mac: CMAC %s Update failed.",    CMAC);
-		len = 0;
-	    } else
-	    if (!CMAC_Final(ctx, digest, &len)) {
-		fprintf(stderr,  "make_mac: CMAC %s Final failed.\n",   CMAC);
-		msyslog(LOG_ERR, "make_mac: CMAC %s Final failed.",     CMAC);
-		len = 0;
-	    }
-
-	    CMAC_CTX_cleanup(ctx);
+		}
+		
+		if (!(ctx = CMAC_CTX_new())) {
+			fprintf(stderr,  "make_mac: CMAC %s CTX new failed.\n", CMAC);
+			msyslog(LOG_ERR, "make_mac: CMAC %s CTX new failed.",   CMAC);
+		}
+		else if (!CMAC_Init(ctx, cmp_key->key_seq,
+				    (size_t)cmp_key->key_len, EVP_aes_128_cbc(), NULL)) {
+			fprintf(stderr,  "make_mac: CMAC %s Init failed.\n",    CMAC);
+			msyslog(LOG_ERR, "make_mac: CMAC %s Init failed.",      CMAC);
+		}
+		else if (!CMAC_Update(ctx, pkt_data, (size_t)pkt_size)) {
+			fprintf(stderr,  "make_mac: CMAC %s Update failed.\n",  CMAC);
+			msyslog(LOG_ERR, "make_mac: CMAC %s Update failed.",    CMAC);
+		}
+		else if (!CMAC_Final(ctx, digest, &slen)) {
+			fprintf(stderr,  "make_mac: CMAC %s Final failed.\n",   CMAC);
+			msyslog(LOG_ERR, "make_mac: CMAC %s Final failed.",     CMAC);
+			slen = 0;
+		}
+		len = (u_int)slen;
+		
+		CMAC_CTX_cleanup(ctx);
+		/* Test our AES-128-CMAC implementation */
+		
+	} else	/* MD5 MAC handling */
 #endif
-	    /* Test our AES-128-CMAC implementation */
-
-	} else {	/* MD5 MAC handling */
-	    EVP_MD_CTX *	ctx;
-
-	    if (!(ctx = EVP_MD_CTX_new())) {
-		fprintf(stderr,  "make_mac: MAC %s Digest CTX new failed.\n",
-							cmp_key->typen);
-		msyslog(LOG_ERR, "make_mac: MAC %s Digest CTX new failed.",
-							cmp_key->typen);
-		len = 0;
-	    }
+	{
+		EVP_MD_CTX *	ctx;
+		
+		if (!(ctx = EVP_MD_CTX_new())) {
+			fprintf(stderr,  "make_mac: MAC %s Digest CTX new failed.\n",
+				cmp_key->typen);
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest CTX new failed.",
+				cmp_key->typen);
+		}
 #ifdef OPENSSL	/* OpenSSL 1 supports return codes 0 fail, 1 okay */
-	    else
-	    if (!EVP_DigestInit(ctx, EVP_get_digestbynid(key_type))) {
-		fprintf(stderr,  "make_mac: MAC %s Digest Init failed.\n",
-							cmp_key->typen);
-		msyslog(LOG_ERR, "make_mac: MAC %s Digest Init failed.",
-							cmp_key->typen);
-		len = 0;
-	    } else
-	    if (!EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq,
-						(u_int)cmp_key->key_len)) {
-		fprintf(stderr,  "make_mac: MAC %s Digest Update key failed.\n",
-							cmp_key->typen);
-		msyslog(LOG_ERR, "make_mac: MAC %s Digest Update key failed.",
-							cmp_key->typen);
-		len = 0;
-	    } else
-	    if (!EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size)) {
-		fprintf(stderr,  "make_mac: MAC %s Digest Update data failed.\n",
-							cmp_key->typen);
-		msyslog(LOG_ERR, "make_mac: MAC %s Digest Update data failed.",
-							cmp_key->typen);
-		len = 0;
-	    } else
-	    if (!EVP_DigestFinal(ctx, digest, &len)) {
-		fprintf(stderr,  "make_mac: MAC %s Digest Final failed.\n",
-							cmp_key->typen);
-		msyslog(LOG_ERR, "make_mac: MAC %s Digest Final failed.",
-							cmp_key->typen);
-		len = 0;
-	    }
+		else if (!EVP_DigestInit(ctx, EVP_get_digestbynid(key_type))) {
+			fprintf(stderr,  "make_mac: MAC %s Digest Init failed.\n",
+				cmp_key->typen);
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest Init failed.",
+				cmp_key->typen);
+		}
+		else if (!EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq,
+					   (u_int)cmp_key->key_len)) {
+			fprintf(stderr,  "make_mac: MAC %s Digest Update key failed.\n",
+				cmp_key->typen);
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest Update key failed.",
+				cmp_key->typen);
+		}
+		else if (!EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size)) {
+			fprintf(stderr,  "make_mac: MAC %s Digest Update data failed.\n",
+				cmp_key->typen);
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest Update data failed.",
+				cmp_key->typen);
+		}
+		else if (!EVP_DigestFinal(ctx, digest, &len)) {
+			fprintf(stderr,  "make_mac: MAC %s Digest Final failed.\n",
+				cmp_key->typen);
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest Final failed.",
+				cmp_key->typen);
+			len = 0;
+		}
 #else /* !OPENSSL */
-	    EVP_DigestInit(ctx, EVP_get_digestbynid(key_type));
-	    EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq,
-						(u_int)cmp_key->key_len);
-	    EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size);
-	    EVP_DigestFinal(ctx, digest, &len);
+		EVP_DigestInit(ctx, EVP_get_digestbynid(key_type));
+		EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq,
+				 (u_int)cmp_key->key_len);
+		EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size);
+		EVP_DigestFinal(ctx, digest, &len);
 #endif
-
-	    EVP_MD_CTX_free(ctx);
+		
+		EVP_MD_CTX_free(ctx);
 	}
-
+	
 	return (int)len;
 }
 
