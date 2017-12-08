@@ -18,6 +18,161 @@
 # define  AES_128_KEY_SIZE	16
 #endif
 
+typedef struct {
+	const void *	buf;
+	size_t		len;
+} robuffT;
+
+typedef struct {
+	void *		buf;
+	size_t		len;
+} rwbuffT;
+
+#ifdef OPENSSL
+static size_t
+cmac_ctx_size(
+	CMAC_CTX *	ctx)
+{
+	size_t mlen = 0;
+
+	if (ctx) {
+		EVP_CIPHER_CTX * 	cctx;
+		if (NULL != (cctx = CMAC_CTX_get0_cipher_ctx (ctx)))
+			mlen = EVP_CIPHER_CTX_block_size(cctx);
+	}
+	return mlen;
+}
+#endif
+
+
+static size_t
+make_mac(
+	const rwbuffT *	digest,
+	int		ktype,
+	const robuffT *	key,
+	const robuffT *	msg)
+{
+	/*
+	 * Compute digest of key concatenated with packet. Note: the
+	 * key type and digest type have been verified when the key
+	 * was created.
+	 */
+	size_t	retlen = 0;
+	
+#ifdef OPENSSL
+	
+	INIT_SSL();
+
+	/* Check if CMAC key type specific code required */
+	if (ktype == NID_cmac) {
+		CMAC_CTX *	ctx = CMAC_CTX_new();
+		
+		if ( ! ctx) {
+			msyslog(LOG_ERR, "MAC encrypt: CMAC %s CTX new failed.", CMAC);
+			goto cmac_fail;
+		}
+		if (!CMAC_Init(ctx, key->buf, key->len,
+			       EVP_aes_128_cbc(), NULL)) {
+			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Init failed.",    CMAC);
+			goto cmac_fail;
+		}
+		if (cmac_ctx_size(ctx) > digest->len) {
+			msyslog(LOG_ERR, "MAC encrypt: CMAC %s buf too small.",  CMAC);
+			goto cmac_fail;
+		}
+		if (!CMAC_Update(ctx, msg->buf, msg->len)) {
+			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Update failed.",  CMAC);
+			goto cmac_fail;
+		}
+		if (!CMAC_Final(ctx, digest->buf, &retlen)) {
+			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Final failed.",   CMAC);
+			retlen = 0;
+		}
+	  cmac_fail:
+		if (ctx)
+			CMAC_CTX_cleanup(ctx);
+	}
+	else {	/* generic MAC handling */
+		EVP_MD_CTX *	ctx   = EVP_MD_CTX_new();
+		uint		uilen = 0;
+		
+		if ( ! ctx) {
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest CTX new failed.",
+				OBJ_nid2sn(ktype));
+			goto mac_fail;
+		}
+		
+           #ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
+		/* make sure MD5 is allowd */
+		EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
+           #endif
+		
+		if (!EVP_DigestInit(ctx, EVP_get_digestbynid(ktype))) {
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Init failed.",
+				OBJ_nid2sn(ktype));
+			goto mac_fail;
+		}
+		if (EVP_MD_CTX_size(ctx) > digest->len) {
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s buf too small.",
+				OBJ_nid2sn(ktype));
+			goto mac_fail;
+		}
+		if (!EVP_DigestUpdate(ctx, key->buf, (u_int)key->len)) {
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Update key failed.",
+				OBJ_nid2sn(ktype));
+			goto mac_fail;
+		}
+		if (!EVP_DigestUpdate(ctx, msg->buf, (u_int)msg->len)) {
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Update data failed.",
+				OBJ_nid2sn(ktype));
+			goto mac_fail;
+		}
+		if (!EVP_DigestFinal(ctx, digest->buf, &uilen)) {
+			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Final failed.",
+				OBJ_nid2sn(ktype));
+			uilen = 0;
+		}
+	  mac_fail:
+		retlen = (size_t)uilen;
+		
+		if (ctx)
+			EVP_MD_CTX_free(ctx);
+	}
+
+#else /* !OPENSSL follows */
+	
+	if (ktype == NID_md5)
+	{
+		EVP_MD_CTX *	ctx   = EVP_MD_CTX_new();
+		uint		uilen = 0;
+
+		if (digest->len < 16) {
+			msyslog(LOG_ERR, "%s", "MAC encrypt: MAC md5 buf too small.");
+		}
+		else if ( ! ctx) {
+			msyslog(LOG_ERR, "%s", "MAC encrypt: MAC md5 Digest CTX new failed.");
+		}
+		else {
+			EVP_DigestInit(ctx, EVP_get_digestbynid(ktype));
+			EVP_DigestUpdate(ctx, key->buf, key->len);
+			EVP_DigestUpdate(ctx, msg->buf, msg->len);
+			EVP_DigestFinal(ctx, digest->buf, &uilen);
+		}
+		if (ctx)
+			EVP_MD_CTX_free(ctx);
+		retlen = (size_t)uilen;
+	}
+	else
+	{
+		msyslog(LOG_ERR, "MAC encrypt: invalid key type %d"  , ktype);
+	}
+	
+#endif /* !OPENSSL */
+
+	return retlen;
+}
+
+
 /*
  * MD5authencrypt - generate message digest
  *
@@ -27,106 +182,23 @@ size_t
 MD5authencrypt(
 	int		type,	/* hash algorithm */
 	const u_char *	key,	/* key pointer */
+	size_t		klen,	/* key length */
 	u_int32 *	pkt,	/* packet pointer */
 	size_t		length	/* packet length */
 	)
 {
 	u_char	digest[EVP_MAX_MD_SIZE];
-	u_int	len = 0;
+	rwbuffT digb = { digest, sizeof(digest) };
+	robuffT keyb = { key, klen };
+	robuffT msgb = { pkt, length };	
+	size_t	dlen = 0;
 
-	/*
-	 * Compute digest of key concatenated with packet. Note: the
-	 * key type and digest type have been verified when the key
-	 * was creaded.
-	 */
-	INIT_SSL();
-#ifdef OPENSSL
-	/* Check if CMAC key type specific code required */
-	if (type == NID_cmac) {
-		CMAC_CTX *	ctx;
-		size_t		slen = 0;
-		
-		if (debug) {
-			fprintf(stderr, "%s:%d:%s():%s:nid\n",
-				__FILE__, __LINE__, __func__, CMAC);
-		}
-		
-		if (!(ctx = CMAC_CTX_new())) {
-			fprintf(stderr,  "MAC encrypt: CMAC %s CTX new failed.\n", CMAC);
-			msyslog(LOG_ERR, "MAC encrypt: CMAC %s CTX new failed.",   CMAC);
-		}
-		else if (!CMAC_Init(ctx, key, AES_128_KEY_SIZE,
-				    EVP_aes_128_cbc(), NULL)) {
-			fprintf(stderr,  "MAC encrypt: CMAC %s Init failed.\n",    CMAC);
-			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Init failed.",      CMAC);
-		}
-		else if (!CMAC_Update(ctx, pkt, length)) {
-			fprintf(stderr,  "MAC encrypt: CMAC %s Update failed.\n",  CMAC);
-			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Update failed.",    CMAC);
-		}
-		else if (!CMAC_Final(ctx, digest, &slen)) {
-			fprintf(stderr,  "MAC encrypt: CMAC %s Final failed.\n",   CMAC);
-			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Final failed.",     CMAC);
-			slen = 0;
-		}
-		len = (u_int)slen;
-		
-		CMAC_CTX_cleanup(ctx);
-	} else	/* generic MAC handling */
-#endif
-	{
-		EVP_MD_CTX *	ctx;
-		
-		if (!(ctx = EVP_MD_CTX_new())) {
-			fprintf(stderr,  "MAC encrypt: MAC %s Digest CTX new failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest CTX new failed.",
-				OBJ_nid2sn(type));
-		}
-#ifdef OPENSSL	/* OpenSSL 1 supports return codes 0 fail, 1 okay */
-		else if (!EVP_DigestInit(ctx, EVP_get_digestbynid(type))) {
-			fprintf(stderr,  "MAC encrypt: MAC %s Digest Init failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Init failed.",
-				OBJ_nid2sn(type));
-		}
-		else if (!EVP_DigestUpdate(ctx, key, (u_int)cache_secretsize)) {
-			fprintf(stderr,  "MAC encrypt: MAC %s Digest Update key failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Update key failed.",
-				OBJ_nid2sn(type));
-		}
-		else if (!EVP_DigestUpdate(ctx, (u_char *)pkt, (u_int)length)) {
-			fprintf(stderr,  "MAC encrypt: MAC %s Digest Update data failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Update data failed.",
-				OBJ_nid2sn(type));
-		}
-		else if (!EVP_DigestFinal(ctx, digest, &len)) {
-			fprintf(stderr,  "MAC encrypt: MAC %s Digest Final failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Final failed.",
-				OBJ_nid2sn(type));
-			len = 0;
-		}
-#else /* !OPENSSL */
-		if (!(ctx && EVP_DigestInit(ctx, EVP_get_digestbynid(type)))) {
-			msyslog(LOG_ERR,
-				"MAC encrypt: digest init failed");
-			EVP_MD_CTX_free(ctx);
-			return (0);
-		}
-		EVP_DigestUpdate(ctx, key, cache_secretsize);
-		EVP_DigestUpdate(ctx, (u_char *)pkt, length);
-		EVP_DigestFinal(ctx, digest, &len);
-#endif
-		EVP_MD_CTX_free(ctx);
-	}
+	dlen = make_mac(&digb, type, &keyb, &msgb);
 	/* If the MAC is longer than the MAX then truncate it. */
-	if (len > MAX_MDG_LEN)
-		len = MAX_MDG_LEN;
-	memmove((u_char *)pkt + length + KEY_MAC_LEN, digest, len);
-	return (len + KEY_MAC_LEN);
+	if (dlen > MAX_MDG_LEN)
+		dlen = MAX_MDG_LEN;
+	memcpy((u_char *)pkt + length + KEY_MAC_LEN, digest, dlen);
+	return (dlen + KEY_MAC_LEN);
 }
 
 
@@ -139,112 +211,30 @@ int
 MD5authdecrypt(
 	int		type,	/* hash algorithm */
 	const u_char *	key,	/* key pointer */
+	size_t		klen,	/* key length */
 	u_int32	*	pkt,	/* packet pointer */
 	size_t		length,	/* packet length */
 	size_t		size	/* MAC size */
 	)
 {
 	u_char	digest[EVP_MAX_MD_SIZE];
-	u_int	len = 0;
+	rwbuffT digb = { digest, sizeof(digest) };
+	robuffT keyb = { key, klen };
+	robuffT msgb = { pkt, length };	
+	size_t	dlen = 0;
 
-	/*
-	 * Compute digest of key concatenated with packet. Note: the
-	 * key type and digest type have been verified when the key
-	 * was created.
-	 */
-	INIT_SSL();
-#ifdef OPENSSL
-	/* Check if CMAC key type specific code required */
-	if (type == NID_cmac) {
-		CMAC_CTX *	ctx;
-		size_t		slen = 0;
-
-		if (debug) {
-			fprintf(stderr, "%s:%d:%s():%s:nid\n",
-				__FILE__, __LINE__, __func__, CMAC);
-		}
-		
-		if (!(ctx = CMAC_CTX_new())) {
-			fprintf(stderr,  "MAC decrypt: CMAC %s CTX new failed.\n", CMAC);
-			msyslog(LOG_ERR, "MAC decrypt: CMAC %s CTX new failed.",   CMAC);
-		}
-		else if (!CMAC_Init(ctx, key, AES_128_KEY_SIZE,
-				    EVP_aes_128_cbc(), NULL)) {
-			fprintf(stderr,  "MAC decrypt: CMAC %s Init failed.\n",    CMAC);
-			msyslog(LOG_ERR, "MAC decrypt: CMAC %s Init failed.",      CMAC);
-		}
-		else if (!CMAC_Update(ctx, pkt, length)) {
-			fprintf(stderr,  "MAC decrypt: CMAC %s Update failed.\n",  CMAC);
-			msyslog(LOG_ERR, "MAC decrypt: CMAC %s Update failed.",    CMAC);
-		}
-		else if (!CMAC_Final(ctx, digest, &slen)) {
-			fprintf(stderr,  "MAC decrypt: CMAC %s Final failed.\n",   CMAC);
-			msyslog(LOG_ERR, "MAC decrypt: CMAC %s Final failed.",     CMAC);
-			slen = 0;
-		}
-		len = (u_int)slen;
-		
-		CMAC_CTX_cleanup(ctx);
-	} else	/* generic MAC handling */
-#endif
-	{
-		EVP_MD_CTX *	ctx;
-		
-		if (!(ctx = EVP_MD_CTX_new())) {
-			fprintf(stderr,  "MAC decrypt: MAC %s Digest CTX new failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest CTX new failed.",
-				OBJ_nid2sn(type));
-		}
-#ifdef OPENSSL	/* OpenSSL 1 supports return codes 0 fail, 1 okay */
-		else if (!EVP_DigestInit(ctx, EVP_get_digestbynid(type))) {
-			fprintf(stderr,  "MAC decrypt: MAC %s Digest Init failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Init failed.",
-				OBJ_nid2sn(type));
-		}
-		else if (!EVP_DigestUpdate(ctx, key, (u_int)cache_secretsize)) {
-			fprintf(stderr,  "MAC decrypt: MAC %s Digest Update key failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Update key failed.",
-				OBJ_nid2sn(type));
-		}
-		else if (!EVP_DigestUpdate(ctx, (u_char *)pkt, (u_int)length)) {
-			fprintf(stderr,  "MAC decrypt: MAC %s Digest Update data failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Update data failed.",
-				OBJ_nid2sn(type));
-		}
-		else if (!EVP_DigestFinal(ctx, digest, &len)) {
-			fprintf(stderr,  "MAC decrypt: MAC %s Digest Final failed.\n",
-				OBJ_nid2sn(type));
-			msyslog(LOG_ERR, "MAC decrypt: MAC %s Digest Final failed.",
-				OBJ_nid2sn(type));
-			len = 0;
-		}
-#else /* !OPENSSL */
-		if (!(ctx && EVP_DigestInit(ctx, EVP_get_digestbynid(type)))) {
-			msyslog(LOG_ERR,
-				"MAC decrypt: digest init failed");
-			EVP_MD_CTX_free(ctx);
-			return (0);
-		}
-		EVP_DigestUpdate(ctx, key, cache_secretsize);
-		EVP_DigestUpdate(ctx, (u_char *)pkt, (u_int)length);
-		EVP_DigestFinal(ctx, digest, &len);
-#endif
-		EVP_MD_CTX_free(ctx);
-	}
+	dlen = make_mac(&digb, type, &keyb, &msgb);
+	
 	/* If the MAC is longer than the MAX then truncate it. */
-	if (len > MAX_MDG_LEN)
-		len = MAX_MDG_LEN;
-	if (size != (size_t)len + KEY_MAC_LEN) {
+	if (dlen > MAX_MDG_LEN)
+		dlen = MAX_MDG_LEN;
+	if (size != (size_t)dlen + KEY_MAC_LEN) {
 		msyslog(LOG_ERR,
 		    "MAC decrypt: MAC length error");
 		return (0);
 	}
 	return !isc_tsmemcmp(digest,
-		 (u_char *)pkt + length + KEY_MAC_LEN, len);
+		 (u_char *)pkt + length + KEY_MAC_LEN, dlen);
 }
 
 /*
@@ -267,7 +257,6 @@ addr2refid(sockaddr_u *addr)
 	INIT_SSL();
 
 	ctx = EVP_MD_CTX_new();
-	EVP_MD_CTX_init(ctx);
 #ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
 	/* MD5 is not used as a crypto hash here. */
 	EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
