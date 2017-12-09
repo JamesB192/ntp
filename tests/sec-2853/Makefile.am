@@ -5,16 +5,18 @@ CLEANFILES =
 
 std_unity_list = 						\
 	$(top_srcdir)/sntp/unity/auto/generate_test_runner.rb	\
+	$(srcdir)/testconf.yml					\
 	$(NULL)
 
-run_unity =	cd $(srcdir) && ruby ../../sntp/unity/auto/generate_test_runner.rb
+run_unity =	cd $(srcdir) && ruby $(std_unity_list)
 
 check_PROGRAMS = sec-2853
 
 # HMS: we may not need some of these:
 LDADD =					\
-	$(top_builddir)/sntp/unity/libunity.a	\
 	$(top_builddir)/ntpd/rc_cmdlength.o	\
+	$(top_builddir)/sntp/unity/libunity.a	\
+	$(top_builddir)/libntp/libntp.a	\
 	$(LDADD_LIBNTP)			\
 	$(PTHREAD_LIBS)			\
 	$(LDADD_NTP)			\

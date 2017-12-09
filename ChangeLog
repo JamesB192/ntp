@@ -40,6 +40,7 @@
 * [Bug 3358] Spurious KoD log messages in .INIT. phase.  HStenn.
 * [Bug 3016] wrong error position reported for bad ":config pool"
   - fixed location counter & ntpq output <perlinger@ntp.org>
+* [Bug 2878] Tests are cluttering up syslog <perlinger@ntp.org>
 * [Bug 2737] Wrong phone number listed for USNO. ntp-bugs@bodosom.net,
   perlinger@ntp.org
 * [Bug 2557] Fix Thunderbolt init. ntp-bugs@bodosom.net, perlinger@ntp.
