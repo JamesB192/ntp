@@ -10,6 +10,7 @@
 * [Bug 3437] ntpd tries to open socket with AF_UNSPEC domain
  - applied patch (with mods) by Miroslav Lichvar <perlinger@ntp.org>
 * [Bug 3435] anchor NTP era alignment <perlinger@ntp.org>
+* [Bug 3433] sntp crashes when run with -a.  <stenn@ntp.org>
 * [Bug 3430] ntpq dumps core (SIGSEGV) for "keytype md2"
   - fixed several issues with hash algos in ntpd, sntp, ntpq,
     ntpdc and the test suites <perlinger@ntp.org>
@@ -51,6 +52,7 @@
 * refclock_jjy.c: Add missing "%s" to an msyslog() call.  HStenn.
 * Build ntpq and libntpq.a with NTP_HARD_*FLAGS.  perlinger@ntp.org
 * Fix bug in the override portion of the compiler hardening macro. HStenn.
+* record_raw_stats(): Log entire packet.  Log writes.  HStenn.
 * AES-128-CMAC support.  BInglis, HStenn, JPerlinger.
 
 ---

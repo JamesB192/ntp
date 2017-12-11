@@ -198,6 +198,7 @@ auth_init(
 	char kbuf[200];
 	char keystring[129];
 
+	/* HMS: Is it OK to do this later, after we know we have a key file? */
 	INIT_SSL();
 	
 	if (keyf == NULL) {
