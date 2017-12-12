@@ -3177,7 +3177,7 @@ sendpkt(
 	} while (ismcast && src != NULL);
 
 	/* HMS: pkt->rootdisp is usually random here */
-	record_raw_stats(&src->sin, dest,
+	record_raw_stats(src ? &src->sin : NULL, dest,
 			&pkt->org, &pkt->rec, &pkt->xmt, &fp_zero,
 			PKT_MODE(pkt->li_vn_mode),
 			PKT_VERSION(pkt->li_vn_mode),
