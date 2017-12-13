@@ -378,7 +378,6 @@ handle_lookup(
 {
 	struct addrinfo	hints;	/* Local copy is OK */
 	struct dns_ctx *ctx;
-	long		l;
 	char *		name_copy;
 	size_t		name_sz;
 	size_t		octets;
@@ -411,7 +410,7 @@ handle_lookup(
 		ctx->key_id = OPT_VALUE_AUTHENTICATION;
 		get_key(ctx->key_id, &ctx->key);
 		if (NULL == ctx->key) {
-			fprintf(stderr, "%s: Authentication with keyID %d requested, but no matching keyID found in <%s>!",
+			fprintf(stderr, "%s: Authentication with keyID %d requested, but no matching keyID found in <%s>!\n",
 				progname, ctx->key_id, OPT_ARG(KEYFILE));
 			exit(1);
 		}
