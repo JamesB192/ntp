@@ -194,7 +194,7 @@ auth_init(
 {
 	FILE *keyf = fopen(keyfile, "r");
 	struct key *prev = NULL;
-	int scan_cnt, line_cnt = 0;
+	int scan_cnt, line_cnt = 1;
 	char kbuf[200];
 	char keystring[129];
 
@@ -252,8 +252,12 @@ auth_init(
 				}
 			}
 			act->typei = keytype_from_text(act->typen, NULL);
-			if (0 == act->typei)
+			if (0 == act->typei) {
+				printf("%s: line %d: key %d, %s not supported - ignoring\n",
+					keyfile, line_cnt,
+					act->key_id, act->typen);
 				goodline = 0; /* it's bad */
+			}
 		}
 		if (goodline) {
 			act->next = NULL;
@@ -264,8 +268,10 @@ auth_init(
 			prev = act;
 			key_cnt++;
 		} else {
-			msyslog(LOG_DEBUG, "auth_init: scanf %d items, skipping line %d.",
-				scan_cnt, line_cnt);
+			if (debug) {
+				printf("auth_init: scanf %d items, skipping line %d.",
+					scan_cnt, line_cnt);
+			}
 			free(act);
 		}
 		line_cnt++;

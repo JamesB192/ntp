@@ -24,6 +24,7 @@
   - raised receive buffer size to 1200 <perlinger@ntp.org>
 * [Bug 3408] refclock_jjy.c: Avoid a wrong report of the coverity static
   analysis tool. <abe@ntp.org>
+* [Bug 3405] update-leap.in: general cleanup, HTTPS support.  Paul McMath.
 * [Bug 3399] NTP: linker error in 4.2.8p10 during Linux cross-compilation
   - initial patch by timeflies@mail2tor.com  <perlinger@ntp.org>
 * [Bug 3398] tests fail with core dump <perlinger@ntp.org>
@@ -54,6 +55,8 @@
 * Fix bug in the override portion of the compiler hardening macro. HStenn.
 * record_raw_stats(): Log entire packet.  Log writes.  HStenn.
 * AES-128-CMAC support.  BInglis, HStenn, JPerlinger.
+* sntp: tweak key file logging.  HStenn.
+* sntp: pkt_output(): Improve debug output.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>

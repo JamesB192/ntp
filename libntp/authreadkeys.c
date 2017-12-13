@@ -148,6 +148,7 @@ authreadkeys(
 	u_int   nerr;
 	KeyDataT *list = NULL;
 	KeyDataT *next = NULL;
+
 	/*
 	 * Open file.  Complain and return if it can't be opened.
 	 */
