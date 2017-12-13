@@ -52,6 +52,7 @@
 * Fix bug in the override portion of the compiler hardening macro. HStenn.
 * record_raw_stats(): Log entire packet.  Log writes.  HStenn.
 * sntp: tweak key file logging.  HStenn.
+* sntp: pkt_output(): Improve debug output.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
