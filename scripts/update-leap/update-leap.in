@@ -75,7 +75,7 @@ my %SSL_ATTRS = (
 
 our(%opt);
 
-GetOptions(\%opt,
+GetOptions(\%opt,	
 	'C=s',
 	'D=s',
 	'e:60',
@@ -125,6 +125,14 @@ else {
     $TOTERM = 1;
 }
 
+if (defined $opt{q} && defined $opt{v}) {
+    log_fatal(LOG_ERR, '-q and -v options mutually exclusive');
+}
+
+if (defined $opt{L} && defined $opt{f}) {
+    log_fatal(LOG_ERR, '-L and -f options mutually exclusive');
+}
+
 $SIG{INT} = \&signal_catcher;
 $SIG{TERM} = \&signal_catcher;
 $SIG{QUIT} = \&signal_catcher;
@@ -142,14 +150,6 @@ chdir $RUN_DIR || log_fatal("Failed to change dir to $RUN_DIR");
 if (defined $opt{h}) {
     show_help();
     exit 0;
-}
-
-if ($QUIET && $DEBUG) {
-    log_fatal(LOG_ERR, '-q and -d options mutually exclusive');
-}
-
-if ($LEAPFILE && $NTPCONF) {
-    log_fatal(LOG_ERR, '-L and -f options mutually exclusive');
 }
 
 # Parse ntp.conf for path to leapfile if not set by user
@@ -201,6 +201,7 @@ if ( !-e $LEAPFILE || $FORCE || ! verifySHA($LEAPFILE) ||
 	}
 
 	# Failure
+	unlink $TMP_FILE;
 	logger(LOG_INFO, "Download failed. Waiting $INTERVAL minutes before retrying...");
         sleep $INTERVAL * 60 ;
     }
@@ -273,9 +274,9 @@ sub logger {
 # unknown state).
 #
 # HTTP::Tiny doesn't export a method to explicitly close a connected
-# socket, therefore, we instantiate the lexically scoped object in a
-# function; when the function returns, the http object goes out of
-# scope and is destroyed, closing the socket.
+# socket, therefore, we instantiate the lexically scoped $http object in
+# a function; when the function returns, the object goes out of scope
+# and is destroyed, closing the socket.
 sub retrieve_file {
 
     my $fh = shift;

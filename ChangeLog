@@ -57,6 +57,7 @@
 * AES-128-CMAC support.  BInglis, HStenn, JPerlinger.
 * sntp: tweak key file logging.  HStenn.
 * sntp: pkt_output(): Improve debug output.  HStenn.
+* update-leap: updates from Paul McMath.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
