@@ -1,8 +1,23 @@
+/*
+ * HMS: we need to test:
+ * - OpenSSL versions, if we are building with them
+ * - our versions
+ *
+ * We may need to test with(out) OPENSSL separately.
+ */
+
 #include <config.h>
 #include "crypto.h"
 #include <ctype.h>
 #include "isc/string.h"
 #include "ntp_md5.h"
+
+/* HMS: We may not have OpenSSL, but we have our own AES-128-CMAC */
+#define  CMAC		"AES128CMAC"
+#ifdef OPENSSL
+# include "openssl/cmac.h"
+# define  AES_128_KEY_SIZE	16
+#endif /* OPENSSL */
 
 struct key *key_ptr;
 size_t key_cnt = 0;
@@ -16,35 +31,98 @@ make_mac(
 	void * digest
 	)
 {
-	u_int		len = mac_size;
-	EVP_MD_CTX *	ctx;
-	u_char		dbuf[EVP_MAX_MD_SIZE];
+	u_int		len  = 0;
+	size_t		slen = 0;
+	int		key_type;
 	
 	if (cmp_key->key_len > 64)
 		return 0;
 	if (pkt_size % 4 != 0)
 		return 0;
 
-	ctx = EVP_MD_CTX_new();
-	EVP_DigestInit(ctx, EVP_get_digestbynid(cmp_key->typei));
-	EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq, (u_int)cmp_key->key_len);
-	EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size);
-	EVP_DigestFinal(ctx, dbuf, &len);
-	EVP_MD_CTX_free(ctx);
+	INIT_SSL();
+	key_type = keytype_from_text(cmp_key->typen, NULL);
+
+#ifdef OPENSSL
+	/* Check if CMAC key type specific code required */
+	if (key_type == NID_cmac) {
+		CMAC_CTX *      ctx    = NULL;
+		void const *	keyptr = cmp_key->key_seq;
+		u_char		keybuf[AES_128_KEY_SIZE];
+
+		/* adjust key size (zero padded buffer) if necessary */
+		if (AES_128_KEY_SIZE > cmp_key->key_len) {
+			memcpy(keybuf, keyptr, cmp_key->key_len);
+			memset((keybuf + cmp_key->key_len), 0,
+			       (AES_128_KEY_SIZE - cmp_key->key_len));
+			keyptr = keybuf;
+		}
+
+		if (!(ctx = CMAC_CTX_new())) {
+			msyslog(LOG_ERR, "make_mac: CMAC %s CTX new failed.",   CMAC);
+		}
+		else if (!CMAC_Init(ctx, keyptr, AES_128_KEY_SIZE,
+				    EVP_aes_128_cbc(), NULL)) {
+			msyslog(LOG_ERR, "make_mac: CMAC %s Init failed.",      CMAC);
+		}
+		else if (!CMAC_Update(ctx, pkt_data, (size_t)pkt_size)) {
+			msyslog(LOG_ERR, "make_mac: CMAC %s Update failed.",    CMAC);
+		}
+		else if (!CMAC_Final(ctx, digest, &slen)) {
+			msyslog(LOG_ERR, "make_mac: CMAC %s Final failed.",     CMAC);
+			slen = 0;
+		}
+		len = (u_int)slen;
+		
+		CMAC_CTX_cleanup(ctx);
+		/* Test our AES-128-CMAC implementation */
+		
+	} else	/* MD5 MAC handling */
+#endif
+	{
+		EVP_MD_CTX *	ctx;
+		
+		if (!(ctx = EVP_MD_CTX_new())) {
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest CTX new failed.",
+				cmp_key->typen);
+		}
+#ifdef OPENSSL	/* OpenSSL 1 supports return codes 0 fail, 1 okay */
+		else if (!EVP_DigestInit(ctx, EVP_get_digestbynid(key_type))) {
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest Init failed.",
+				cmp_key->typen);
+		}
+		else if (!EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq,
+					   (u_int)cmp_key->key_len)) {
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest Update key failed.",
+				cmp_key->typen);
+		}
+		else if (!EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size)) {
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest Update data failed.",
+				cmp_key->typen);
+		}
+		else if (!EVP_DigestFinal(ctx, digest, &len)) {
+			msyslog(LOG_ERR, "make_mac: MAC %s Digest Final failed.",
+				cmp_key->typen);
+			len = 0;
+		}
+#else /* !OPENSSL */
+		EVP_DigestInit(ctx, EVP_get_digestbynid(key_type));
+		EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq,
+				 (u_int)cmp_key->key_len);
+		EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size);
+		EVP_DigestFinal(ctx, digest, &len);
+#endif
+		
+		EVP_MD_CTX_free(ctx);
+	}
 	
-	/* if the digest is longer than permitted, truncate it. This is
-	 * consistent with the behavior of NTPD/NTPQ/NTPDC...
-	 */
-	if (len > mac_size)
-		len = mac_size;
-	memcpy(digest, dbuf, len);
 	return (int)len;
 }
 
 
-/* Generates a md5 digest of the key specified in keyid concatenated with the 
+/* Generates a md5 digest of the key specified in keyid concatenated with the
  * ntp packet (exluding the MAC) and compares this digest to the digest in
- * the packet's MAC. If they're equal this function returns 1 (packet is 
+ * the packet's MAC. If they're equal this function returns 1 (packet is
  * authentic) or else 0 (not authentic).
  */
 int
@@ -58,7 +136,7 @@ auth_md5(
 	int  hash_len;
 	int  authentic;
 	char digest[MAX_MDG_LEN];
-	const u_char *pkt_ptr; 
+	const u_char *pkt_ptr;
 	if (mac_size > (int)sizeof(digest))
 		return 0;
 	pkt_ptr = pkt_data;
@@ -97,7 +175,7 @@ hex_val(
 }
 
 /* Load keys from the specified keyfile into the key structures.
- * Returns -1 if the reading failed, otherwise it returns the 
+ * Returns -1 if the reading failed, otherwise it returns the
  * number of keys it read
  */
 int
@@ -106,12 +184,13 @@ auth_init(
 	struct key **keys
 	)
 {
-	FILE *keyf = fopen(keyfile, "r"); 
+	FILE *keyf = fopen(keyfile, "r");
 	struct key *prev = NULL;
-	int scan_cnt, line_cnt = 0;
+	int scan_cnt, line_cnt = 1;
 	char kbuf[200];
 	char keystring[129];
 
+	/* HMS: Is it OK to do this later, after we know we have a key file? */
 	INIT_SSL();
 	
 	if (keyf == NULL) {
@@ -139,7 +218,9 @@ auth_init(
 		if (octothorpe)
 			*octothorpe = '\0';
 		act = emalloc(sizeof(*act));
-		scan_cnt = sscanf(kbuf, "%d %19s %128s", &act->key_id, act->typen, keystring);
+		/* keep width 15 = sizeof struct key.typen - 1 synced */
+		scan_cnt = sscanf(kbuf, "%d %15s %128s",
+					&act->key_id, act->typen, keystring);
 		if (scan_cnt == 3) {
 			int len = strlen(keystring);
 			goodline = 1;	/* assume best for now */
@@ -163,8 +244,12 @@ auth_init(
 				}
 			}
 			act->typei = keytype_from_text(act->typen, NULL);
-			if (0 == act->typei)
+			if (0 == act->typei) {
+				printf("%s: line %d: key %d, %s not supported - ignoring\n",
+					keyfile, line_cnt,
+					act->key_id, act->typen);
 				goodline = 0; /* it's bad */
+			}
 		}
 		if (goodline) {
 			act->next = NULL;
@@ -175,19 +260,21 @@ auth_init(
 			prev = act;
 			key_cnt++;
 		} else {
-			msyslog(LOG_DEBUG, "auth_init: scanf %d items, skipping line %d.",
-				scan_cnt, line_cnt);
+			if (debug) {
+				printf("auth_init: scanf %d items, skipping line %d.",
+					scan_cnt, line_cnt);
+			}
 			free(act);
 		}
 		line_cnt++;
 	}
 	fclose(keyf);
-	
+
 	key_ptr = *keys;
 	return key_cnt;
 }
 
-/* Looks for the key with keyid key_id and sets the d_key pointer to the 
+/* Looks for the key with keyid key_id and sets the d_key pointer to the
  * address of the key. If no matching key is found the pointer is not touched.
  */
 void

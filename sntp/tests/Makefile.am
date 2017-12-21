@@ -22,10 +22,11 @@ DISTCLEANFILES =		\
 	$(NULL)
 
 std_unity_list =					\
-	$(srcdir)/../unity/auto/generate_test_runner.rb	\
+	$(top_srcdir)/unity/auto/generate_test_runner.rb\
+	$(srcdir)/testconf.yml				\
 	$(NULL)
 
-run_unity =	cd $(srcdir) && ruby ../unity/auto/generate_test_runner.rb
+run_unity =	cd $(srcdir) && ruby $(std_unity_list)
 
 # Use EXTRA_PROGRAMS for test files that are under development but
 # not production-ready

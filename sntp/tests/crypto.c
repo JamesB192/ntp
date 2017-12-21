@@ -5,16 +5,24 @@
 #include "sntptest.h"
 #include "crypto.h"
 
+#define CMAC "AES128CMAC"
+
 #define MD5_LENGTH 16
 #define SHA1_LENGTH 20
+#define CMAC_LENGTH 16
 
 
 void test_MakeMd5Mac(void);
 void test_MakeSHA1Mac(void);
+void test_MakeCMac(void);
 void test_VerifyCorrectMD5(void);
 void test_VerifySHA1(void);
+void test_VerifyCMAC(void);
 void test_VerifyFailure(void);
 void test_PacketSizeNotMultipleOfFourBytes(void);
+
+void VerifyLocalCMAC(struct key *cmac);
+void VerifyOpenSSLCMAC(struct key *cmac);
 
 
 void
@@ -75,6 +83,38 @@ test_MakeSHA1Mac(void)
 
 
 void
+test_MakeCMac(void)
+{
+#ifdef OPENSSL
+
+	const char* PKT_DATA = "abcdefgh0123";
+	const int PKT_LEN = strlen(PKT_DATA);
+	const char* EXPECTED_DIGEST =
+		"\xdd\x35\xd5\xf5\x14\x23\xd9\xd6"
+		"\x38\x5d\x29\x80\xfe\x51\xb9\x6b";
+	char actual[CMAC_LENGTH];
+
+	struct key cmac;
+	cmac.next = NULL;
+	cmac.key_id = 30;
+	cmac.key_len = CMAC_LENGTH;
+	memcpy(&cmac.key_seq, "aes-128-cmac-seq", cmac.key_len);
+	memcpy(&cmac.typen, CMAC, strlen(CMAC) + 1);
+
+	TEST_ASSERT_EQUAL(CMAC_LENGTH,
+		    make_mac(PKT_DATA, PKT_LEN, CMAC_LENGTH, &cmac, actual));
+
+	TEST_ASSERT_EQUAL_MEMORY(EXPECTED_DIGEST, actual, CMAC_LENGTH);
+	
+#else
+	
+	TEST_IGNORE_MESSAGE("OpenSSL not found, skipping...");
+	
+#endif	/* OPENSSL */
+}
+
+
+void
 test_VerifyCorrectMD5(void)
 {
 	const char* PKT_DATA =
@@ -124,6 +164,60 @@ test_VerifySHA1(void)
 	
 #endif	/* OPENSSL */
 }
+
+
+void
+test_VerifyCMAC(void)
+{
+	const char* PKT_DATA =
+	    "sometestdata"				/* Data */
+	    "\0\0\0\0"					/* Key-ID (unused) */
+	    "\x4e\x0c\xf0\xe2\xc7\x8e\xbb\xbf"		/* MAC */
+	    "\x79\xfc\x87\xc7\x8b\xb7\x4a\x0b";
+	const int PKT_LEN = 12;
+	struct key cmac;
+
+	cmac.next = NULL;
+	cmac.key_id = 0;
+	cmac.key_len = CMAC_LENGTH;
+	memcpy(&cmac.key_seq, "aes-128-cmac-key", cmac.key_len);
+	memcpy(&cmac.typen, CMAC, strlen(CMAC) + 1);
+
+	VerifyOpenSSLCMAC(&cmac);
+	VerifyLocalCMAC(&cmac);
+}
+
+
+void
+VerifyOpenSSLCMAC(struct key *cmac)
+{
+#ifdef OPENSSL
+
+	/* XXX: HMS: auth_md5 must be renamed/incorrect. */
+	// TEST_ASSERT_TRUE(auth_md5(PKT_DATA, PKT_LEN, CMAC_LENGTH, cmac));
+	TEST_IGNORE_MESSAGE("VerifyOpenSSLCMAC needs to be implemented, skipping...");
+
+#else
+	
+	TEST_IGNORE_MESSAGE("OpenSSL not found, skipping...");
+	
+#endif	/* OPENSSL */
+	return;
+}
+
+
+void
+VerifyLocalCMAC(struct key *cmac)
+{
+
+	/* XXX: HMS: auth_md5 must be renamed/incorrect. */
+	// TEST_ASSERT_TRUE(auth_md5(PKT_DATA, PKT_LEN, CMAC_LENGTH, cmac));
+
+	TEST_IGNORE_MESSAGE("Hook in the local AES-128-CMAC check!");
+
+	return;
+}
+
 
 void
 test_VerifyFailure(void)
