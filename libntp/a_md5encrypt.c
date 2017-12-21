@@ -42,8 +42,7 @@ cmac_ctx_size(
 	}
 	return mlen;
 }
-#endif
-
+#endif /*OPENSSL*/
 
 static size_t
 make_mac(
@@ -65,14 +64,23 @@ make_mac(
 
 	/* Check if CMAC key type specific code required */
 	if (ktype == NID_cmac) {
-		CMAC_CTX *	ctx = CMAC_CTX_new();
+		CMAC_CTX *	ctx    = NULL;
+		void const *	keyptr = key->buf;
+		u_char		keybuf[AES_128_KEY_SIZE];
+
+		/* adjust key size (zero padded buffer) if necessary */
+		if (AES_128_KEY_SIZE > key->len) {
+			memcpy(keybuf, keyptr, key->len);
+			memset((keybuf + key->len), 0,
+			       (AES_128_KEY_SIZE - key->len));
+			keyptr = keybuf;
+		}
 		
-		if ( ! ctx) {
+		if (NULL == (ctx = CMAC_CTX_new())) {
 			msyslog(LOG_ERR, "MAC encrypt: CMAC %s CTX new failed.", CMAC);
 			goto cmac_fail;
 		}
-		if (!CMAC_Init(ctx, key->buf, key->len,
-			       EVP_aes_128_cbc(), NULL)) {
+		if (!CMAC_Init(ctx, keyptr, AES_128_KEY_SIZE, EVP_aes_128_cbc(), NULL)) {
 			msyslog(LOG_ERR, "MAC encrypt: CMAC %s Init failed.",    CMAC);
 			goto cmac_fail;
 		}
