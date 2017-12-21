@@ -2207,7 +2207,8 @@ process_packet(
 	    &peer->dstadr->sin : NULL,
 	    &p_org, &p_rec, &p_xmt, &peer->dst,
 	    pleap, pversion, pmode, pstratum, pkt->ppoll, pkt->precision,
-	    p_del, p_disp, pkt->refid);
+	    p_del, p_disp, pkt->refid,
+	    len - MIN_V4_PKT_LEN, (u_char *)&pkt->exten);
 	peer->leap = pleap;
 	peer->stratum = min(pstratum, STRATUM_UNSPEC);
 	peer->pmode = pmode;
