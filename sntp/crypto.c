@@ -19,49 +19,50 @@
 # define  AES_128_KEY_SIZE	16
 #endif /* OPENSSL */
 
+#ifndef EVP_MAX_MD_SIZE
+# define EVP_MAX_MD_SIZE 32
+#endif
+
 struct key *key_ptr;
 size_t key_cnt = 0;
 
-int
-make_mac(
-	const void *pkt_data,
-	int pkt_size,
-	int mac_size,
-	const struct key *cmp_key,
-	void * digest
+typedef struct key Key_T;
+
+static u_int
+compute_mac(
+	u_char		digest[EVP_MAX_MD_SIZE],
+	char const *	macname,
+	void const *	pkt_data,
+	u_int		pkt_size,
+	void const *	key_data,
+	u_int		key_size
 	)
 {
 	u_int		len  = 0;
 	size_t		slen = 0;
 	int		key_type;
 	
-	if (cmp_key->key_len > 64)
-		return 0;
-	if (pkt_size % 4 != 0)
-		return 0;
-
 	INIT_SSL();
-	key_type = keytype_from_text(cmp_key->typen, NULL);
+	key_type = keytype_from_text(macname, NULL);
 
 #ifdef OPENSSL
 	/* Check if CMAC key type specific code required */
 	if (key_type == NID_cmac) {
-		CMAC_CTX *      ctx    = NULL;
-		void const *	keyptr = cmp_key->key_seq;
+		CMAC_CTX *	ctx    = NULL;
 		u_char		keybuf[AES_128_KEY_SIZE];
 
 		/* adjust key size (zero padded buffer) if necessary */
-		if (AES_128_KEY_SIZE > cmp_key->key_len) {
-			memcpy(keybuf, keyptr, cmp_key->key_len);
-			memset((keybuf + cmp_key->key_len), 0,
-			       (AES_128_KEY_SIZE - cmp_key->key_len));
-			keyptr = keybuf;
+		if (AES_128_KEY_SIZE > key_size) {
+			memcpy(keybuf, key_data, key_size);
+			memset((keybuf + key_size), 0,
+			       (AES_128_KEY_SIZE - key_size));
+			key_data = keybuf;
 		}
 
 		if (!(ctx = CMAC_CTX_new())) {
 			msyslog(LOG_ERR, "make_mac: CMAC %s CTX new failed.",   CMAC);
 		}
-		else if (!CMAC_Init(ctx, keyptr, AES_128_KEY_SIZE,
+		else if (!CMAC_Init(ctx, key_data, AES_128_KEY_SIZE,
 				    EVP_aes_128_cbc(), NULL)) {
 			msyslog(LOG_ERR, "make_mac: CMAC %s Init failed.",      CMAC);
 		}
@@ -84,38 +85,66 @@ make_mac(
 		
 		if (!(ctx = EVP_MD_CTX_new())) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest CTX new failed.",
-				cmp_key->typen);
+				macname);
 		}
 #ifdef OPENSSL	/* OpenSSL 1 supports return codes 0 fail, 1 okay */
 		else if (!EVP_DigestInit(ctx, EVP_get_digestbynid(key_type))) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest Init failed.",
-				cmp_key->typen);
+				macname);
 		}
-		else if (!EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq,
-					   (u_int)cmp_key->key_len)) {
+		else if (!EVP_DigestUpdate(ctx, key_data, key_size)) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest Update key failed.",
-				cmp_key->typen);
+				macname);
 		}
-		else if (!EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size)) {
+		else if (!EVP_DigestUpdate(ctx, pkt_data, pkt_size)) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest Update data failed.",
-				cmp_key->typen);
+				macname);
 		}
 		else if (!EVP_DigestFinal(ctx, digest, &len)) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest Final failed.",
-				cmp_key->typen);
+				macname);
 			len = 0;
 		}
 #else /* !OPENSSL */
 		EVP_DigestInit(ctx, EVP_get_digestbynid(key_type));
-		EVP_DigestUpdate(ctx, (const u_char *)cmp_key->key_seq,
-				 (u_int)cmp_key->key_len);
-		EVP_DigestUpdate(ctx, pkt_data, (u_int)pkt_size);
+		EVP_DigestUpdate(ctx, key_data, key_size);
+		EVP_DigestUpdate(ctx, pkt_data, pkt_size);
 		EVP_DigestFinal(ctx, digest, &len);
 #endif
 		
 		EVP_MD_CTX_free(ctx);
 	}
+
+	return len;
+}
+
+int
+make_mac(
+	const void *	pkt_data,
+	int		pkt_size,
+	int		mac_size,
+	Key_T const *	cmp_key,
+	void * 		digest
+	)
+{
+	u_int		len;
+	u_char		dbuf[EVP_MAX_MD_SIZE];
 	
+	if (cmp_key->key_len > 64 || mac_size <= 0)
+		return 0;
+	if (pkt_size % 4 != 0)
+		return 0;
+
+	len = compute_mac(dbuf, cmp_key->typen,
+			  pkt_data, (u_int)pkt_size,
+			  cmp_key->key_seq, (u_int)cmp_key->key_len);
+			  
+
+	if (len) {
+		if (len > (u_int)mac_size)
+			len = (u_int)mac_size;
+		memcpy(digest, dbuf, len);
+	}
 	return (int)len;
 }
 
@@ -127,32 +156,32 @@ make_mac(
  */
 int
 auth_md5(
-	const void *pkt_data,
-	int pkt_size,
-	int mac_size,
-	const struct key *cmp_key
+	void const *	pkt_data,
+	int 		pkt_size,
+	int		mac_size,
+	Key_T const *	cmp_key
 	)
 {
-	int  hash_len;
-	int  authentic;
-	char digest[MAX_MDG_LEN];
-	const u_char *pkt_ptr;
-	if (mac_size > (int)sizeof(digest))
-		return 0;
-	pkt_ptr = pkt_data;
-	hash_len = make_mac(pkt_ptr, pkt_size, sizeof(digest), cmp_key,
-			    digest);
-	if (!hash_len) {
-		authentic = FALSE;
-	} else {
-		/* isc_tsmemcmp will be better when its easy to link
-		 * with.  sntp is a 1-shot program, so snooping for
-		 * timing attacks is Harder.
-		 */
-		authentic = !memcmp(digest, (const char*)pkt_data + pkt_size + 4,
-				    hash_len);
-	}
-	return authentic;
+	u_int		len       = 0;
+	u_char const *	pkt_ptr   = pkt_data;
+	u_char		dbuf[EVP_MAX_MD_SIZE];
+	
+	if (mac_size <= 0 || (size_t)mac_size > sizeof(dbuf))
+		return FALSE;
+	
+	len = compute_mac(dbuf, cmp_key->typen,
+			  pkt_ptr, (u_int)pkt_size,
+			  cmp_key->key_seq, (u_int)cmp_key->key_len);
+
+	pkt_ptr += pkt_size + 4;
+	if (len > (u_int)mac_size)
+		len = (u_int)mac_size;
+	
+	/* isc_tsmemcmp will be better when its easy to link with.  sntp
+	 * is a 1-shot program, so snooping for timing attacks is
+	 * Harder.
+	 */
+	return ((u_int)mac_size == len) && !memcmp(dbuf, pkt_ptr, len);
 }
 
 static int
