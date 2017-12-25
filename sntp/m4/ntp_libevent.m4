@@ -106,7 +106,12 @@ case "$ntp_use_local_libevent" in
 		LDADD_LIBEVENT="$LDADD_LIBEVENT -levent_pthreads"
 	    esac
 	    LDADD_LIBEVENT="$LDADD_LIBEVENT -levent_core"
-	    AC_MSG_RESULT([yes])
+	    ntp_libevent_version="`$PKG_CONFIG --modversion libevent`"
+	    case "$ntp_libevent_version" in
+	     *.*) ;;
+	     *) ntp_libevent_version='(unknown)' ;;
+	    esac
+	    AC_MSG_RESULT([version $ntp_libevent_version])
 	else
 	    ntp_use_local_libevent=yes
 	    # HMS: do we only need to do this if LIBISC_PTHREADS_NOTHREADS
