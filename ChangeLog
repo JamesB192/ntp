@@ -62,6 +62,7 @@
 * sntp: tweak key file logging.  HStenn.
 * sntp: pkt_output(): Improve debug output.  HStenn.
 * update-leap: updates from Paul McMath.
+* When using pkg-config, report --modversion.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
