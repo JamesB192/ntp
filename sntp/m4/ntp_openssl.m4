@@ -90,7 +90,7 @@ case "$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${wit
 	     *.*) ;;
 	     *) ntp_openssl_version='(unknown)' ;;
 	    esac
-	    AC_MSG_RESULT([version $ntp_openssl_version])
+	    AC_MSG_RESULT([yes, version $ntp_openssl_version])
 
 	    break
 	fi
