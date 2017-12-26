@@ -111,7 +111,7 @@ case "$ntp_use_local_libevent" in
 	     *.*) ;;
 	     *) ntp_libevent_version='(unknown)' ;;
 	    esac
-	    AC_MSG_RESULT([version $ntp_libevent_version])
+	    AC_MSG_RESULT([yes, version $ntp_libevent_version])
 	else
 	    ntp_use_local_libevent=yes
 	    # HMS: do we only need to do this if LIBISC_PTHREADS_NOTHREADS
