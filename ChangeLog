@@ -63,6 +63,7 @@
 * sntp: pkt_output(): Improve debug output.  HStenn.
 * update-leap: updates from Paul McMath.
 * When using pkg-config, report --modversion.  HStenn.
+* Clean up libevent configure checks.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
