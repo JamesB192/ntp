@@ -64,6 +64,7 @@
 * update-leap: updates from Paul McMath.
 * When using pkg-config, report --modversion.  HStenn.
 * Clean up libevent configure checks.  HStenn.
+* sntp: show the IP of who sent us a crypto-NAK.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
