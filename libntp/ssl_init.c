@@ -148,8 +148,7 @@ keytype_from_text(
 
 	if (NULL != pdigest_len) {
 #ifdef OPENSSL
-		const EVP_MD *	md = EVP_get_digestbynid(key_type);
-
+		md = EVP_get_digestbynid(key_type);
 		digest_len = (md) ? EVP_MD_size(md) : 0;
 
 		if (!md || digest_len <= 0) {
