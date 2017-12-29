@@ -66,6 +66,7 @@
 * When using pkg-config, report --modversion.  HStenn.
 * Clean up libevent configure checks.  HStenn.
 * sntp: show the IP of who sent us a crypto-NAK.  HStenn.
+* Allow .../N to specify subnet bits for IPs in ntp.keys.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>

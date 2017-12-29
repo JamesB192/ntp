@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#include "ntpd.h"	/* Only for DPRINTF */
-#include "ntp_fp.h"
+//#include "ntpd.h"	/* Only for DPRINTF */
+//#include "ntp_fp.h"
 #include "ntp.h"
 #include "ntp_syslog.h"
 #include "ntp_stdlib.h"
@@ -297,28 +297,68 @@ authreadkeys(
 		}
 
 		token = nexttok(&line);
-		DPRINTF(0, ("authreadkeys: full access list <%s>\n", (token) ? token : "NULL"));
 		if (token != NULL) {	/* A comma-separated IP access list */
 			char *tp = token;
 
 			while (tp) {
 				char *i;
+				char *snp;	/* subnet text pointer */
+				int snbits;
 				sockaddr_u addr;
 
 				i = strchr(tp, (int)',');
-				if (i)
+				if (i) {
 					*i = '\0';
-				DPRINTF(0, ("authreadkeys: access list:  <%s>\n", tp));
+				}
+				snp = strchr(tp, (int)'/');
+				if (snp) {
+					unsigned u;
+					char *sp;
+
+					*snp++ = '\0';
+					snbits = -1;
+					u = 0;
+					sp = snp;
+
+					while (*sp != '\0') {
+						if (!isdigit((unsigned char)*sp))
+						    break;
+						if (u > 1000)
+						    break;	/* overflow */
+						u = (u << 3) + (u << 1);
+						u += *sp++ - '0';       /* ascii dependent */
+					}
+					if (*sp != '\0') {
+						log_maybe(&nerr,
+							  "authreadkeys: Invalid character in subnet specification for <%s/%s> in key %d",
+							  sp, snp, keyno);
+						goto nextip;
+					}
+				} else {
+					snbits = -1;
+				}
 
 				if (is_ip_address(tp, AF_UNSPEC, &addr)) {
-					next->keyacclist = keyacc_new_push(
-						next->keyacclist, &addr);
+					/* Make sure that snbits is valid for addr */
+					if (   snbits == -1
+					   || (snbits >= 0 &&
+					       (  (IS_IPV4(&addr) && snbits <= 32)
+					       || (IS_IPV6(&addr) && snbits <= 128)))) {
+						next->keyacclist = keyacc_new_push(
+							next->keyacclist, &addr, snbits);
+					} else {
+
+						log_maybe(&nerr,
+							  "authreadkeys: invalid IP address/subnet <%s/%s> for key %d",
+							  tp, snp, keyno);
+					}
 				} else {
 					log_maybe(&nerr,
 						  "authreadkeys: invalid IP address <%s> for key %d",
 						  tp, keyno);
 				}
 
+			nextip:
 				if (i) {
 					tp = i + 1;
 				} else {

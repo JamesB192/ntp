@@ -8,9 +8,11 @@ typedef struct keyaccess KeyAccT;
 struct keyaccess {
 	KeyAccT *	next;
 	sockaddr_u	addr;
+	int		subnetbits;
 };
 
-extern KeyAccT* keyacc_new_push(KeyAccT *head, const sockaddr_u *addr);
+extern KeyAccT* keyacc_new_push(KeyAccT *head, const sockaddr_u *addr,
+				int subnetbits);
 extern KeyAccT* keyacc_pop_free(KeyAccT *head);
 extern KeyAccT* keyacc_all_free(KeyAccT *head);
 extern int      keyacc_contains(const KeyAccT *head, const sockaddr_u *addr,
