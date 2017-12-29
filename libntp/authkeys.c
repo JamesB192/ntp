@@ -114,13 +114,16 @@ KeyAccT *cache_keyacclist;	/* key access list */
 KeyAccT*
 keyacc_new_push(
 	KeyAccT          * head,
-	const sockaddr_u * addr
+	const sockaddr_u * addr,
+	int		   subnetbits
 	)
 {
 	KeyAccT *	node = emalloc(sizeof(KeyAccT));
 	
 	memcpy(&node->addr, addr, sizeof(sockaddr_u));
+	node->subnetbits = subnetbits;
 	node->next = head;
+
 	return node;
 }
 
