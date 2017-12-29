@@ -115,7 +115,7 @@ KeyAccT*
 keyacc_new_push(
 	KeyAccT          * head,
 	const sockaddr_u * addr,
-	int		   subnetbits
+	unsigned int	   subnetbits
 	)
 {
 	KeyAccT *	node = emalloc(sizeof(KeyAccT));
@@ -168,7 +168,8 @@ keyacc_contains(
 {
 	if (head) {
 		do {
-			if (SOCK_EQ(&head->addr, addr))
+			if (keyacc_amatch(&head->addr, addr,
+					  head->subnetbits))
 				return TRUE;
 		} while (NULL != (head = head->next));
 		return FALSE;
@@ -177,6 +178,72 @@ keyacc_contains(
 	}
 }
 
+#if CHAR_BIT != 8
+# error "don't know how to handle bytes with that bit size"
+#endif
+
+/* ----------------------------------------------------------------- */
+/* check two addresses for a match, taking a prefix length into account
+ * when doing the compare.
+ *
+ * The ISC lib contains a similar function with not entirely specified
+ * semantics, so it seemed somewhat cleaner to do this from scratch.
+ *
+ * Note: It *is* assumed that the addresses are stored in network byte
+ * order, that is, most significant byte first!
+ */
+int/*BOOL*/
+keyacc_amatch(
+	const sockaddr_u *	a1,
+	const sockaddr_u *	a2,
+	unsigned int		mbits
+	)
+{
+	const uint8_t * pm1;
+	const uint8_t * pm2;
+	uint8_t         msk;
+	unsigned int    len;
+	
+	if (AF(a1) != AF(a2))
+		return FALSE;
+
+	switch (AF(a1)) {
+	case AF_INET:
+		/* IPv4 is easy: clamp size, get byte pointers */
+		if (mbits > sizeof(NSRCADR(a1)) * 8)
+			mbits = sizeof(NSRCADR(a1)) * 8;
+		pm1 = (const void*)&NSRCADR(a1);
+		pm2 = (const void*)&NSRCADR(a2);
+		break;
+
+	case AF_INET6:
+		/* IPv6 is slightly different: Both scopes must match,
+		 * too, before we even consider doing a match!
+		 */
+		if ( ! SCOPE_EQ(a1, a2))
+			return FALSE;
+		if (mbits > sizeof(NSRCADR6(a1)) * 8)
+			mbits = sizeof(NSRCADR6(a1)) * 8;
+		pm1 = (const void*)&NSRCADR6(a1);
+		pm2 = (const void*)&NSRCADR6(a2);
+		break;
+
+	default:
+		/* don't know how to compare that!?! */
+		return FALSE;
+	}
+
+	/* split bit length into byte length and partial byte mask */
+	msk = 0xFFu ^ (0xFFu >> (mbits & 7));
+	len = mbits >> 3;
+
+	if (len && memcmp(pm1, pm2, len))
+		return FALSE;
+	if (msk && ((pm1[len] ^ pm2[len]) & msk))
+		return FALSE;
+	
+	return TRUE;
+}
 
 /*
  * init_auth - initialize internal data
@@ -318,6 +385,10 @@ auth_log2(size_t x)
 	}
 	return (u_short)r;
 }
+
+int/*BOOL*/
+ipaddr_match_masked(const sockaddr_u *,const sockaddr_u *,
+		    unsigned int mbits);
 
 static void
 authcache_flush_id(

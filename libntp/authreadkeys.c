@@ -303,7 +303,7 @@ authreadkeys(
 			while (tp) {
 				char *i;
 				char *snp;	/* subnet text pointer */
-				int snbits;
+				unsigned int snbits;
 				sockaddr_u addr;
 
 				i = strchr(tp, (int)',');
@@ -312,21 +312,18 @@ authreadkeys(
 				}
 				snp = strchr(tp, (int)'/');
 				if (snp) {
-					unsigned u;
 					char *sp;
 
 					*snp++ = '\0';
-					snbits = -1;
-					u = 0;
+					snbits = 0;
 					sp = snp;
 
 					while (*sp != '\0') {
 						if (!isdigit((unsigned char)*sp))
 						    break;
-						if (u > 1000)
+						if (snbits > 1000)
 						    break;	/* overflow */
-						u = (u << 3) + (u << 1);
-						u += *sp++ - '0';       /* ascii dependent */
+						snbits = 10 * snbits + (*sp++ - '0');       /* ascii dependent */
 					}
 					if (*sp != '\0') {
 						log_maybe(&nerr,
@@ -335,23 +332,20 @@ authreadkeys(
 						goto nextip;
 					}
 				} else {
-					snbits = -1;
+					snbits = UINT_MAX;
 				}
 
 				if (is_ip_address(tp, AF_UNSPEC, &addr)) {
 					/* Make sure that snbits is valid for addr */
-					if (   snbits == -1
-					   || (snbits >= 0 &&
-					       (  (IS_IPV4(&addr) && snbits <= 32)
-					       || (IS_IPV6(&addr) && snbits <= 128)))) {
-						next->keyacclist = keyacc_new_push(
-							next->keyacclist, &addr, snbits);
-					} else {
-
-						log_maybe(&nerr,
-							  "authreadkeys: invalid IP address/subnet <%s/%s> for key %d",
+				    if ((snbits < UINT_MAX) &&
+					( (IS_IPV4(&addr) && snbits > 32) ||
+					  (IS_IPV6(&addr) && snbits > 128))) {
+						log_maybe(NULL,
+							  "authreadkeys: excessive subnet mask <%s/%s> for key %d",
 							  tp, snp, keyno);
-					}
+				    }
+				    next->keyacclist = keyacc_new_push(
+					next->keyacclist, &addr, snbits);
 				} else {
 					log_maybe(&nerr,
 						  "authreadkeys: invalid IP address <%s> for key %d",
