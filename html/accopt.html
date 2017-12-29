@@ -20,7 +20,7 @@ color: #FF0000;
 <img src="pic/pogo6.gif" alt="gif" align="left"><a href="http://www.eecis.udel.edu/~mills/pictures.html">from <i>Pogo</i>, Walt Kelly</a>
 <p>The skunk watches for intruders and sprays.</p>
 <p>Last update:
-  <!-- #BeginDate format:En2m -->13-Nov-2014  03:00<!-- #EndDate -->
+  <!-- #BeginDate format:En2m -->26-Jul-2017  20:12<!-- #EndDate -->
   UTC</p>
 <br clear="left">
 <h4>Related Links</h4>
@@ -46,7 +46,7 @@ color: #FF0000;
     restrict source [<i>flag</i>][...]<br>
     restrict <i>address</i> [mask <i>mask</i>] [<i>flag</i>][...]</tt></dt>
   <dd>The <tt><i>address</i></tt> argument expressed in dotted-quad form is the address of a host or network. Alternatively, the <tt><i>address</i></tt> argument can be a valid host DNS name. The <tt><i>mask</i></tt> argument expressed in IPv4 or IPv6 numeric address form defaults to all mask bits on, meaning that the <tt><i>address</i></tt> is treated as the address of an individual host. A default entry (address 0.0.0.0,	mask 0.0.0.0 for IPv4 and address :: mask :: for IPv6) is always the first entry in the list. <tt>restrict default</tt>, with no mask option, modifies both IPv4 and IPv6 default entries. <tt>restrict source</tt> configures a template restriction automatically added at runtime for each association, whether configured, ephemeral, or preemptible, and removed when the association is demobilized.</dd>
-  <dd>Some flags have the effect to deny service, some  have the effect to enable service and some are  conditioned by other flags. The  flags. are not orthogonal, in that more restrictive flags will often make less restrictive ones redundant. The flags that deny service are classed in two categories, those that restrict time service and those that restrict informational queries and attempts to do run-time reconfiguration of the server. One or more of the following flags may be specified:</dd>
+  <dd>Some flags have the effect to deny service, some have the effect to enable service and some are conditioned by other flags. The flags are not orthogonal, in that more restrictive flags will often make less restrictive ones redundant. The flags that deny service are classed in two categories, those that restrict time service and those that restrict informational queries and attempts to do run-time reconfiguration of the server. One or more of the following flags may be specified:</dd>
   <dd>
     <dl>
       <dt><tt>flake</tt></dt>
@@ -60,7 +60,7 @@ color: #FF0000;
       <dt><tt>lowpriotrap</tt></dt>
       <dd>Declare traps set by matching hosts to be low priority. The number of traps a server can maintain is limited (the current limit is 3). Traps are usually assigned on a first come, first served basis, with later trap requestors being denied service. This flag modifies the assignment algorithm by allowing low priority traps to be overridden by later requests for normal priority traps.</dd>
       <dt><tt>mssntp</tt></dt>
-      <dd>Enable Microsoft Windows MS-SNTP authentication using Active Directory services. <span class="style1"><b>Note: Potential users should be aware that these services involve a TCP connection to another process that could potentially block, denying services to other users. Therefore, this flag should be used only for a dedicated  server with no clients other than MS-SNTP.</b></span></dd>
+      <dd>Enable Microsoft Windows MS-SNTP authentication using Active Directory services. <span class="style1"><b>Note: Potential users should be aware that these services involve a TCP connection to another process that could potentially block, denying services to other users. Therefore, this flag should be used only for a dedicated server with no clients other than MS-SNTP.</b></span></dd>
       <dt><tt>nomodify</tt></dt>
       <dd>Deny <tt>ntpq</tt> and <tt>ntpdc</tt> queries which attempt to modify the state of the server (i.e., run time reconfiguration). Queries which return information are permitted.</dd>
       <dt><tt>noquery</tt></dt>
@@ -72,7 +72,7 @@ color: #FF0000;
       <dt><tt>notrap</tt></dt>
       <dd>Decline to provide mode 6 control message trap service to matching hosts. The trap service is a subsystem of the <tt>ntpdc</tt> control message protocol which is intended for use by remote event logging programs.</dd>
       <dt><tt>notrust</tt></dt>
-      <dd>Deny packets that are not cryptographically authenticated. Note carefully how this flag interacts with the <tt>auth</tt> option of the <tt>enable</tt> and <tt>disable</tt> commands. If <tt>auth</tt> is enabled, which is the default, authentication is required for all packets that might mobilize  an association. If <tt>auth</tt> is disabled, but the <tt>notrust</tt> flag is not present, an association can be mobilized whether or not authenticated. If <tt>auth</tt> is disabled, but the <tt>notrust</tt> flag is present, authentication is required only for the specified address/mask range. </dd>
+      <dd>Deny packets that are not cryptographically authenticated. Note carefully how this flag interacts with the <tt>auth</tt> option of the <tt>enable</tt> and <tt>disable</tt> commands. If <tt>auth</tt> is enabled, which is the default, authentication is required for all packets that might mobilize an association. If <tt>auth</tt> is disabled, but the <tt>notrust</tt> flag is not present, an association can be mobilized whether or not authenticated. If <tt>auth</tt> is disabled, but the <tt>notrust</tt> flag is present, authentication is required only for the specified address/mask range. </dd>
       <dt><tt>ntpport</tt></dt>
       <dd>This is actually a match algorithm modifier, rather than a restriction
         flag. Its presence causes the restriction entry to be matched only if the

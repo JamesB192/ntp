@@ -1,42 +1,42 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html;charset=iso-8859-1">
-<meta name="generator" content="HTML Tidy, see www.w3.org">
-<title>ntp-keygen - generate public and private keys</title>
-<link href="scripts/style.css" type="text/css" rel="stylesheet">
-</head>
-<body>
-<h3><tt>ntp-keygen</tt> - generate public and private keys</h3>
-<p><img src="pic/alice23.gif" alt="gif" align="left"><a href="http://www.eecis.udel.edu/%7emills/pictures.html">from <i>Alice's Adventures in Wonderland</i>, Lewis Carroll</a></p>
-<p>Alice holds the key.</p>
-<p>Last update:
-  <!-- #BeginDate format:En2m -->10-Mar-2014  05:11<!-- #EndDate -->
-    UTC</p>
-<br clear="left">
-<h4>Related Links</h4>
-<script type="text/javascript" language="javascript" src="scripts/manual.txt"></script>
-<h4>Table of Contents</h4>
-<ul>
-  <li class="inline"><a href="#synop">Synopsis</a></li>
-  <li class="inline"><a href="#descrip">Description</a></li>
-  <li class="inline"><a href="#run">Running the program</a></li>
-  <li class="inline"><a href="#cmd">Command Line Options</a></li>
-  <li class="inline"><a href="#rand">Random Seed File</a></li>
-  <li class="inline"><a href="#fmt">Cryptographic Data Files</a></li>
-  <li class="inline"><a href="#bug">Bugs</a></li>
-</ul>
-<hr>
-<h4 id="synop">Synopsis</h4>
-<p id="intro"><tt>ntp-keygen [ -deGHIMPT ] [ -b <i>modulus</i> ] [ -c [ RSA-MD2 | RSA-MD5 | RSA-SHA
-  | RSA-SHA1 | RSA-MDC2 | RSA-RIPEMD160 | DSA-SHA | DSA-SHA1 ] ]
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=iso-8859-1">
+		<meta name="generator" content="HTML Tidy, see www.w3.org">
+		<title>ntp-keygen - generate public and private keys</title>
+		<link href="scripts/style.css" type="text/css" rel="stylesheet">
+	</head>
+	<body>
+		<h3><tt>ntp-keygen</tt> - generate public and private keys</h3>
+		<p><img src="pic/alice23.gif" alt="gif" align="left"><a href="http://www.eecis.udel.edu/%7emills/pictures.html">from <i>Alice's Adventures in Wonderland</i>, Lewis Carroll</a></p>
+		<p>Alice holds the key.</p>
+		<p>Last update:
+		<!-- #BeginDate format:En2m -->10-Mar-2014  05:11<!-- #EndDate -->
+		UTC</p>
+		<br clear="left">
+		<h4>Related Links</h4>
+		<script type="text/javascript" language="javascript" src="scripts/manual.txt"></script>
+		<h4>Table of Contents</h4>
+		<ul>
+			<li class="inline"><a href="#synop">Synopsis</a></li>
+			<li class="inline"><a href="#descrip">Description</a></li>
+			<li class="inline"><a href="#run">Running the program</a></li>
+			<li class="inline"><a href="#cmd">Command Line Options</a></li>
+			<li class="inline"><a href="#rand">Random Seed File</a></li>
+			<li class="inline"><a href="#fmt">Cryptographic Data Files</a></li>
+			<li class="inline"><a href="#bug">Bugs</a></li>
+		</ul>
+		<hr>
+		<h4 id="synop">Synopsis</h4>
+		<p id="intro"><tt>ntp-keygen [ -deGHIMPT ] [ -b <i>modulus</i> ] [ -c [ RSA-MD2 | RSA-MD5 | RSA-SHA
+			| RSA-SHA1 | RSA-MDC2 | RSA-RIPEMD160 | DSA-SHA | DSA-SHA1 ] ]
   [ -C <i>cipher</i> ] [-i <i>group</i> ] [ -l <em>days</em>]
   [ -m <i>modulus</i> ]  [ -p <i>passwd1</i> ] [ -q <i>passwd2</i> ] 
   [ -S [ RSA | DSA ] ] [ -s <i>host</i> ] [ -V <i>nkeys</i> ]</tt></p>
 <h4 id="descrip">Description</h4>
 <p>This program generates cryptographic data files used by the NTPv4 authentication and identity schemes. It can generate  message digest keys used in symmetric   key cryptography and, if the OpenSSL software library has been installed, it can generate host keys, sign keys, certificates, and identity keys and parameters used by the Autokey public key cryptography. The message digest keys file is generated in a format compatible with NTPv3. All other files are in PEM-encoded printable ASCII format so they can be embedded as MIME attachments in mail to other sites.</p>
 <p>When used to generate message digest keys, the program produces a file containing
-  ten pseudo-random printable ASCII strings suitable for the MD5 message digest algorithm included in the distribution. If the OpenSSL library is installed, it produces an additional ten hex-encoded random bit strings suitable for the SHA1 and other message digest algorithms. The message digest keys file  must be distributed and stored using secure means beyond the scope of  NTP  itself. Besides the keys used for ordinary NTP associations, additional keys can be defined as passwords for the <tt><a href="ntpq.html">ntpq</a></tt> and <tt><a href="ntpdc.html">ntpdc</a></tt> utility programs.</p>
+  ten pseudo-random printable ASCII strings suitable for the MD5 message digest algorithm included in the distribution. If the OpenSSL library is installed, it produces an additional ten hex-encoded random bit strings suitable for the SHA1, AES-128 CMAC, and other message digest algorithms. The message digest keys file  must be distributed and stored using secure means beyond the scope of  NTP  itself. Besides the keys used for ordinary NTP associations, additional keys can be defined as passwords for the <tt><a href="ntpq.html">ntpq</a></tt> and <tt><a href="ntpdc.html">ntpdc</a></tt> utility programs.</p>
 <p>The remaining generated files are compatible with other OpenSSL applications and other Public Key Infrastructure (PKI) resources. Certificates generated by this program are compatible with extant industry practice, although some users might find the interpretation of X509v3 extension fields somewhat liberal. However, the identity keys are probably not compatible with anything other than Autokey.</p>
 <p>Some files used by this program are encrypted using a private password. The <tt>-p</tt> option specifies the password for local encrypted files and the <tt>-q</tt> option the password for encrypted files sent to remote sites. If no  password is specified, the host name returned by the Unix <tt>gethostname()</tt> function, normally the DNS name of the host, is used.</p>
 <p>The <tt>pw</tt> option of the <tt>crypto</tt> configuration command specifies the read password for previously encrypted local files. This must match the local password used by this program. If not specified, the host name is used. Thus, if files are generated by this program without password, they can be read back by <tt>ntpd</tt> without password, but only on the same host.</p>
@@ -46,7 +46,7 @@
 <p>To test and gain experience with Autokey concepts, log in as root and change to the keys directory, usually <tt>/usr/local/etc</tt>. When run for the first time, or if all files with names beginning <tt>ntpkey</tt> have been removed, use the <tt>ntp-keygen </tt>command without arguments to generate a default RSA host key and matching RSA-MD5 certificate with expiration date one year hence. If run again without options, the program uses the existing keys and parameters and generates only a new certificate with new expiration date one year hence.</p>
 <p>Run the command on as many hosts as necessary. Designate one of them as the trusted host (TH) using <tt>ntp-keygen</tt> with the <tt>-T</tt> option and configure it to synchronize from reliable Internet servers. Then configure the other hosts to synchronize to the TH directly or indirectly. A certificate trail is created when Autokey asks the immediately ascendant host towards the TH to sign its certificate, which is then provided to the immediately descendant host on request. All group hosts should have acyclic certificate trails ending on the TH.</p>
 <p>The host key is used to encrypt the cookie when required and so must be RSA type. By default, the host key is also the sign key used to encrypt signatures. A different sign key can be assigned using the <tt>-S</tt> option and this can be either RSA or DSA type. By default, the signature message digest type is MD5, but any combination of sign key type and message digest type supported by the OpenSSL library can be specified using the <tt>-c</tt> option.</p>
-<dd>The rules say cryptographic media should be generated with proventic filestamps, which means the host should already be synchronized before this program is run. This of course creates a chicken-and-egg problem when the host is started for the first time. Accordingly, the host time should be set by some other means, such as eyeball-and-wristwatch, at least so that the certificate lifetime is within the current year. After that and when the host is synchronized to a proventic source, the certificate should be re-generated.</dd>
+<p>The rules say cryptographic media should be generated with proventic filestamps, which means the host should already be synchronized before this program is run. This of course creates a chicken-and-egg problem when the host is started for the first time. Accordingly, the host time should be set by some other means, such as eyeball-and-wristwatch, at least so that the certificate lifetime is within the current year. After that and when the host is synchronized to a proventic source, the certificate should be re-generated.</p>
 <p>Additional information on trusted groups and identity schemes is on the <a href="autokey.html">Autokey Public-Key Authentication</a> page.</p>
 <h4 id="cmd">Command Line Options</h4>
 <dl>
@@ -100,16 +100,42 @@
 <p>All files begin with two nonencrypted lines. The first line contains the file name in the format <tt>ntpkey_<i>key</i>_<i>host</i>.<i>fstamp</i></tt>. The second line contains the datestamp in conventional Unix <tt>date</tt> format. Lines beginning with <tt>#</tt> are ignored.</p>
 <p>The remainder of the file contains cryptographic data encoded first using ASN.1 rules, then encrypted using the DES-CBC algorithm with given password and finally written in PEM-encoded printable ASCII text preceded and followed by MIME content identifier lines.</p>
 <p>The format of the symmetric keys file, ordinarily named <tt>ntp.keys,</tt> is somewhat different than the other files in the interest of backward compatibility. Ordinarily, the file is generated by this program, but it can be constructed and edited using an ordinary text editor.</p>
-<div align="center">
-  <p><img src="pic/sx5.gif" alt="gif"></p>
-  <p>Figure 1. Typical Symmetric Key File</p>
-</div>
+<table>
+  <caption style="caption-side: bottom;">
+    Figure 1. Typical Symmetric Key File
+  </caption>
+  <tr><td style="border: 1px solid black; border-spacing: 0;">
+	<pre style="color:grey;">
+# ntpkey_MD5key_bk.ntp.org.3595864945
+# Thu Dec 12 19:22:25 2013
+
+1  MD5 L";Nw&lt;`.I&lt;f4U0)247"i  # MD5 key
+2  MD5 &amp;&gt;l0%XXK9O'51VwV&lt;xq~  # MD5 key
+3  MD5 lb4zLW~d^!K:]RsD'qb6  # MD5 key
+4  MD5 Yue:tL[+vR)M`n~bY,'?  # MD5 key
+5  MD5 B;fxlKgr/&amp;4ZTbL6=RxA  # MD5 key
+6  MD5 4eYwa`o}3i@@V@..R9!l  # MD5 key
+7  MD5 `A.([h+;wTQ|xfi%Sn_!  # MD5 key
+8  MD5 45:V,r4]l6y^JH6"Sh?F  # MD5 key
+9  MD5 3-5vcn*6l29DS?Xdsg)*  # MD5 key
+10 MD5 2late4Me              # MD5 key
+11 SHA1 a27872d3030a9025b8446c751b4551a7629af65c  # SHA1 key
+12 SHA1 21bc3b4865dbb9e920902abdccb3e04ff97a5e74  # SHA1 key
+13 SHA1 2b7736fe24fef5ba85ae11594132ab5d6f6daba9  # SHA1 key
+14 SHA  a5332809c8878dd3a5b918819108a111509aeceb  # SHA  key
+15 MD2  2fe16c88c760ff2f16d4267e36c1aa6c926e6964  # MD2  key
+16 MD4  b2691811dc19cfc0e2f9bcacd74213f29812183d  # MD4  key
+17 MD5  e4d6735b8bdad58ec5ffcb087300a17f7fef1f7c  # MD5  key
+18 MDC2 a8d5e2315c025bf3a79174c87fbd10477de2eabc  # MDC2 key
+19 RIPEMD160 77ca332cafb30e3cafb174dcd5b80ded7ba9b3d2  # RIPEMD160 key
+20 AES128CMAC f92ff73eee86c1e7dc638d6489a04e4e555af878  # AES128CMAC key
+  </pre></td></tr></table>
 <p>Figure 1 shows a typical symmetric keys file used by the reference implementation.  Each line of the file contains three fields, first an integer between 1 and 65534, inclusive, representing the key identifier used in the <tt>server</tt> and <tt>peer</tt> configuration commands. Next is the key type for the message digest algorithm, which in the absence of the OpenSSL library must be  <tt>MD5</tt> to designate the  MD5 message digest algorithm. If the OpenSSL library is installed, the key type can be any message digest algorithm supported by that library. However, if compatibility with FIPS 140-2 is required, the key type must be either <tt>SHA</tt> or <tt>SHA1</tt>. The key type can be changed using an ASCII text editor.</p>
 <p>   An MD5 key consists of a   printable ASCII string less than or equal to 16 characters and terminated by  whitespace or a # character.   An OpenSSL key consists of a hex-encoded ASCII string of 40 characters, which is truncated as necessary.</p>
 <p>Note that the keys used by the <tt>ntpq</tt> and <tt>ntpdc</tt> programs are checked against passwords requested by the programs and entered by hand, so it is generally appropriate to specify these keys in human readable ASCII format.</p>
 <p>The <tt>ntp-keygen</tt> program generates a MD5 symmetric keys file <tt>ntpkey_MD5key_<i>hostname.filestamp</i></tt>. Since the file contains private shared keys, it should be visible only to root and distributed by secure means to other subnet hosts. The NTP daemon loads the file <tt>ntp.keys</tt>, so <tt>ntp-keygen</tt> installs a soft link from this name to the generated file. Subsequently, similar soft links must be installed by manual or automated means on the other subnet hosts. While this file is not used with the Autokey Version 2 protocol, it is needed to authenticate some remote configuration commands used by the <a href="ntpq.html"><tt>ntpq</tt></a> and <a href="ntpdc.html"><tt>ntpdc</tt></a> utilities.</p>
 <h4 id="bug">Bugs</h4>
-<p>It can take quite a while to generate some cryptographic values, from one to several minutes with modern architectures such as UltraSPARC and up to tens of minutes to an hour with older architectures such as SPARC IPC.</p>
+<p>It can take quite a while to generate some cryptographic values.</p>
 <hr>
 <script type="text/javascript" language="javascript" src="scripts/footer.txt"></script>
 </body>

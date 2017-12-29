@@ -148,6 +148,7 @@ authreadkeys(
 	u_int   nerr;
 	KeyDataT *list = NULL;
 	KeyDataT *next = NULL;
+
 	/*
 	 * Open file.  Complain and return if it can't be opened.
 	 */
@@ -218,8 +219,14 @@ authreadkeys(
 		keytype = keytype_from_text(token, NULL);
 		if (keytype == 0) {
 			log_maybe(NULL,
-				  "authreadkeys: invalid type/algorithm for key %d",
+				  "authreadkeys: invalid type for key %d",
 				  keyno);
+		} else if (NID_cmac != keytype &&
+				EVP_get_digestbynid(keytype) == NULL) {
+			log_maybe(NULL,
+				  "authreadkeys: no algorithm for key %d",
+				  keyno);
+			keytype = 0;
 		}
 #else	/* !OPENSSL follows */
 		/*

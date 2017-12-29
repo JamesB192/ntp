@@ -5,9 +5,10 @@ CLEANFILES =
 
 std_unity_list = 						\
 	$(top_srcdir)/sntp/unity/auto/generate_test_runner.rb	\
+	$(srcdir)/testconf.yml					\
 	$(NULL)
 
-run_unity =	cd $(srcdir) && ruby ../../sntp/unity/auto/generate_test_runner.rb
+run_unity =	cd $(srcdir) && ruby $(std_unity_list)
 
 check_PROGRAMS = bug-2803
 

@@ -1,4 +1,10 @@
 --
+
+update-leap needs:
+	Net::SSLeay
+	IO::Socket::SSL
+
+--
 NTP 4.2.8p10 (Harlan Stenn <stenn@ntp.org>, 2017/03/21) 
 
 Focus: Security, Bug fixes, enhancements.

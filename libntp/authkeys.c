@@ -795,7 +795,9 @@ authencrypt(
 		return 0;
 	}
 
-	return MD5authencrypt(cache_type, cache_secret, pkt, length);
+	return MD5authencrypt(cache_type,
+			      cache_secret, cache_secretsize,
+			      pkt, length);
 }
 
 
@@ -822,6 +824,7 @@ authdecrypt(
 		return FALSE;
 	}
 
-	return MD5authdecrypt(cache_type, cache_secret, pkt, length,
-			      size);
+	return MD5authdecrypt(cache_type,
+			      cache_secret, cache_secretsize,
+			      pkt, length, size);
 }

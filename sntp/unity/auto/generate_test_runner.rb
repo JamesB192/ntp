@@ -246,7 +246,7 @@ class UnityTestRunnerGenerator
   def create_suite_setup_and_teardown(output)
     unless (@options[:suite_setup].nil?)
       output.puts("\n//=======Suite Setup=====")
-      output.puts("static int suite_setup(void)")
+      output.puts("static void suite_setup(void)")
       output.puts("{")
       output.puts(@options[:suite_setup])
       output.puts("}")
