@@ -3091,6 +3091,7 @@ sendpkt(
 	int	cc;
 	int	rc;
 	u_char	cttl;
+	l_fp	fp_zero = { 0, 0 };
 
 	ismcast = IS_MCAST(dest);
 	if (!ismcast)
@@ -3174,6 +3175,19 @@ sendpkt(
 		if (ismcast)
 			src = src->mclink;
 	} while (ismcast && src != NULL);
+
+	/* HMS: pkt->rootdisp is usually random here */
+	record_raw_stats(src ? &src->sin : NULL, dest,
+			&pkt->org, &pkt->rec, &pkt->xmt, &fp_zero,
+			PKT_MODE(pkt->li_vn_mode),
+			PKT_VERSION(pkt->li_vn_mode),
+			PKT_LEAP(pkt->li_vn_mode),
+			pkt->stratum,
+			pkt->ppoll, pkt->precision,
+			pkt->rootdelay, pkt->rootdisp, pkt->refid,
+			len - MIN_V4_PKT_LEN, (u_char *)&pkt->exten);
+
+	return;
 }
 
 

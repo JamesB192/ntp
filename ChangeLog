@@ -3,6 +3,8 @@
 * [Sec 3414] ntpq: decodearr() can write beyond its 'buf' limits
   - initial patch by <stenn@ntp.org>, extended by <perlinger@ntp.org>
 * [Sec 3412] ctl_getitem(): Don't compare names past NUL. <perlinger@ntp.org>
+* [Bug 3447] AES-128-CMAC (fixes) <perlinger@ntp.org>
+  - refactoring the MAC code, too
 * [Bug 3441] Validate the assumption that AF_UNSPEC is 0.  stenn@ntp.org
 * [Bug 3439] When running multiple commands / hosts in ntpq... <perlinger@ntp.org>
  - applied patch by ggarvey
@@ -11,6 +13,7 @@
 * [Bug 3437] ntpd tries to open socket with AF_UNSPEC domain
  - applied patch (with mods) by Miroslav Lichvar <perlinger@ntp.org>
 * [Bug 3435] anchor NTP era alignment <perlinger@ntp.org>
+* [Bug 3433] sntp crashes when run with -a.  <stenn@ntp.org>
 * [Bug 3430] ntpq dumps core (SIGSEGV) for "keytype md2"
   - fixed several issues with hash algos in ntpd, sntp, ntpq,
     ntpdc and the test suites <perlinger@ntp.org>
@@ -24,6 +27,7 @@
   - raised receive buffer size to 1200 <perlinger@ntp.org>
 * [Bug 3408] refclock_jjy.c: Avoid a wrong report of the coverity static
   analysis tool. <abe@ntp.org>
+* [Bug 3405] update-leap.in: general cleanup, HTTPS support.  Paul McMath.
 * [Bug 3399] NTP: linker error in 4.2.8p10 during Linux cross-compilation
   - initial patch by timeflies@mail2tor.com  <perlinger@ntp.org>
 * [Bug 3398] tests fail with core dump <perlinger@ntp.org>
@@ -41,6 +45,7 @@
 * [Bug 3358] Spurious KoD log messages in .INIT. phase.  HStenn.
 * [Bug 3016] wrong error position reported for bad ":config pool"
   - fixed location counter & ntpq output <perlinger@ntp.org>
+* [Bug 2878] Tests are cluttering up syslog <perlinger@ntp.org>
 * [Bug 2737] Wrong phone number listed for USNO. ntp-bugs@bodosom.net,
   perlinger@ntp.org
 * [Bug 2557] Fix Thunderbolt init. ntp-bugs@bodosom.net, perlinger@ntp.
@@ -51,6 +56,15 @@
 * refclock_jjy.c: Add missing "%s" to an msyslog() call.  HStenn.
 * Build ntpq and libntpq.a with NTP_HARD_*FLAGS.  perlinger@ntp.org
 * Fix trivial warnings from 'make check'. perlinger@ntp.org
+* Fix bug in the override portion of the compiler hardening macro. HStenn.
+* record_raw_stats(): Log entire packet.  Log writes.  HStenn.
+* AES-128-CMAC support.  BInglis, HStenn, JPerlinger.
+* sntp: tweak key file logging.  HStenn.
+* sntp: pkt_output(): Improve debug output.  HStenn.
+* update-leap: updates from Paul McMath.
+* When using pkg-config, report --modversion.  HStenn.
+* Clean up libevent configure checks.  HStenn.
+* sntp: show the IP of who sent us a crypto-NAK.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
