@@ -21,9 +21,9 @@ DISTCLEANFILES =		\
 	testLogfile2.log	\
 	$(NULL)
 
-std_unity_list =					\
-	$(top_srcdir)/unity/auto/generate_test_runner.rb\
-	$(srcdir)/testconf.yml				\
+std_unity_list =						\
+	$(abs_top_srcdir)/unity/auto/generate_test_runner.rb	\
+	$(abs_srcdir)/testconf.yml				\
 	$(NULL)
 
 run_unity =	cd $(srcdir) && ruby $(std_unity_list)
