@@ -7,7 +7,7 @@ std_unity_list =	 						\
 	$(abs_srcdir)/testconf.yml					\
 	$(NULL)
 
-run_unity =	cd $(srcdir) && ruby $(std_unity_list)
+run_unity =	ruby $(std_unity_list)
 
 check_PROGRAMS = 	\
 	test-ntpq	\
@@ -61,7 +61,7 @@ test_ntpq_SOURCES =			\
 	$(NULL)
 
 $(srcdir)/run-t-ntpq.c: $(srcdir)/t-ntpq.c $(std_unity_list)
-	$(run_unity) t-ntpq.c run-t-ntpq.c
+	$(run_unity) $< $@
 
 
 TESTS =

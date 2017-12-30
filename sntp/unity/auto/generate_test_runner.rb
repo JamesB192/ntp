@@ -323,13 +323,13 @@ class UnityTestRunnerGenerator
     output.puts("  progname = argv[0];\n")
 
 
-
+    modname = filename.split(/[\/\\]/).last
 
 
 
     output.puts("  suite_setup();") unless @options[:suite_setup].nil?
 
-    output.puts("  UnityBegin(\"#{filename}\");")
+    output.puts("  UnityBegin(\"#{modname}\");")
 
     if (@options[:use_param_tests])
       tests.each do |test|
