@@ -189,8 +189,14 @@ keyacc_contains(
  * The ISC lib contains a similar function with not entirely specified
  * semantics, so it seemed somewhat cleaner to do this from scratch.
  *
- * Note: It *is* assumed that the addresses are stored in network byte
+ * Note 1: It *is* assumed that the addresses are stored in network byte
  * order, that is, most significant byte first!
+ *
+ * Note 2: "no address" compares unequal to all other addresses, even to
+ * itself. This has the same semantics as NaNs have for floats: *any*
+ * relational or equality operation involving a NaN returns FALSE, even
+ * equality with itself. "no address" is either a NULL pointer argument
+ * or an address of type AF_UNSPEC.
  */
 int/*BOOL*/
 keyacc_amatch(
@@ -203,10 +209,22 @@ keyacc_amatch(
 	const uint8_t * pm2;
 	uint8_t         msk;
 	unsigned int    len;
+
+	/* 1st check: If any address is not an address, it's inequal. */
+	if ( !a1 || (AF_UNSPEC == AF(a1)) ||
+	     !a2 || (AF_UNSPEC == AF(a2))  )
+		return FALSE;
+
+	/* We could check pointers for equality here and shortcut the
+	 * other checks if we find object identity. But that use case is
+	 * too rare to care for it.
+	 */
 	
+	/* 2nd check: Address families must be the same. */
 	if (AF(a1) != AF(a2))
 		return FALSE;
 
+	/* type check: address family determines buffer & size */
 	switch (AF(a1)) {
 	case AF_INET:
 		/* IPv4 is easy: clamp size, get byte pointers */
@@ -233,15 +251,23 @@ keyacc_amatch(
 		return FALSE;
 	}
 
-	/* split bit length into byte length and partial byte mask */
+	/* Split bit length into byte length and partial byte mask.
+	 * Note that the byte mask extends from the MSB of a byte down,
+	 * and that zero shift (--> mbits % 8 == 0) results in an
+	 * all-zero mask.
+	 */
 	msk = 0xFFu ^ (0xFFu >> (mbits & 7));
 	len = mbits >> 3;
 
+	/* 3rd check: Do memcmp() over full bytes, if any */
 	if (len && memcmp(pm1, pm2, len))
 		return FALSE;
+
+	/* 4th check: compare last incomplete byte, if any */
 	if (msk && ((pm1[len] ^ pm2[len]) & msk))
 		return FALSE;
-	
+
+	/* If none of the above failed, we're successfully through. */
 	return TRUE;
 }
 
