@@ -7,7 +7,7 @@ std_unity_list =	 						\
 	$(abs_srcdir)/testconf.yml					\
 	$(NULL)
 
-run_unity =	cd $(srcdir) && ruby $(std_unity_list)
+run_unity =	ruby $(std_unity_list)
 
 check_PROGRAMS =		\
 	test-a_md5encrypt	\
@@ -129,7 +129,7 @@ test_a_md5encrypt_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-a_md5encrypt.c: $(srcdir)/a_md5encrypt.c $(std_unity_list)
-	$(run_unity) a_md5encrypt.c run-a_md5encrypt.c
+	$(run_unity) $< $@
 
 ###
 
@@ -139,7 +139,7 @@ test_atoint_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-atoint.c: $(srcdir)/atoint.c $(std_unity_list)
-	$(run_unity) atoint.c run-atoint.c
+	$(run_unity) $< $@
 
 ###
 
@@ -149,7 +149,7 @@ test_atouint_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-atouint.c: $(srcdir)/atouint.c $(std_unity_list)
-	$(run_unity) atouint.c run-atouint.c
+	$(run_unity) $< $@
 
 ###
 
@@ -159,7 +159,7 @@ test_authkeys_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-authkeys.c: $(srcdir)/authkeys.c $(std_unity_list)
-	$(run_unity) authkeys.c run-authkeys.c
+	$(run_unity) $< $@
 
 ###
 
@@ -170,7 +170,7 @@ test_buftvtots_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-buftvtots.c: $(srcdir)/buftvtots.c $(std_unity_list)
-	$(run_unity) buftvtots.c run-buftvtots.c
+	$(run_unity) $< $@
 
 ###
 
@@ -181,7 +181,7 @@ test_calendar_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-calendar.c: $(srcdir)/calendar.c $(std_unity_list)
-	$(run_unity) calendar.c run-calendar.c
+	$(run_unity) $< $@
 
 ###
 
@@ -196,7 +196,7 @@ test_caltontp_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-caltontp.c: $(srcdir)/caltontp.c $(std_unity_list)
-	$(run_unity) caltontp.c run-caltontp.c
+	$(run_unity) $< $@
 
 ###
 
@@ -212,7 +212,7 @@ test_caljulian_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-caljulian.c: $(srcdir)/caljulian.c $(std_unity_list)
-	$(run_unity) caljulian.c run-caljulian.c
+	$(run_unity) $< $@
 
 ###
 
@@ -223,7 +223,7 @@ test_calyearstart_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-calyearstart.c: $(srcdir)/calyearstart.c $(std_unity_list)
-	$(run_unity) calyearstart.c run-calyearstart.c
+	$(run_unity) $< $@
 
 ###
 
@@ -234,7 +234,7 @@ test_clocktime_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-clocktime.c: $(srcdir)/clocktime.c $(std_unity_list)
-	$(run_unity) clocktime.c run-clocktime.c
+	$(run_unity) $< $@
 
 ###
 
@@ -250,7 +250,7 @@ test_decodenetnum_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-decodenetnum.c: $(srcdir)/decodenetnum.c $(std_unity_list)
-	$(run_unity) decodenetnum.c run-decodenetnum.c
+	$(run_unity) $< $@
 
 ###
 
@@ -260,7 +260,7 @@ test_hextoint_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-hextoint.c: $(srcdir)/hextoint.c $(std_unity_list)
-	$(run_unity) hextoint.c run-hextoint.c
+	$(run_unity) $< $@
 
 ###
 
@@ -271,7 +271,7 @@ test_hextolfp_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-hextolfp.c: $(srcdir)/hextolfp.c $(std_unity_list)
-	$(run_unity) hextolfp.c run-hextolfp.c
+	$(run_unity) $< $@
 
 ###
 
@@ -281,7 +281,7 @@ test_humandate_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-humandate.c: $(srcdir)/humandate.c $(std_unity_list)
-	$(run_unity) humandate.c run-humandate.c
+	$(run_unity) $< $@
 
 ###
 
@@ -291,7 +291,7 @@ test_lfpfunc_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-lfpfunc.c: $(srcdir)/lfpfunc.c $(std_unity_list)
-	$(run_unity) lfpfunc.c run-lfpfunc.c
+	$(run_unity) $< $@
 
 ###
 
@@ -301,7 +301,7 @@ test_lfptostr_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-lfptostr.c: $(srcdir)/lfptostr.c $(std_unity_list)
-	$(run_unity) lfptostr.c run-lfptostr.c
+	$(run_unity) $< $@
 
 ###
 
@@ -311,7 +311,7 @@ test_modetoa_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-modetoa.c: $(srcdir)/modetoa.c $(std_unity_list)
-	$(run_unity) modetoa.c run-modetoa.c
+	$(run_unity) $< $@
 
 ###
 
@@ -321,7 +321,7 @@ test_msyslog_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-msyslog.c: $(srcdir)/msyslog.c $(std_unity_list)
-	$(run_unity) msyslog.c run-msyslog.c
+	$(run_unity) $< $@
 
 ###
 
@@ -332,7 +332,7 @@ test_netof_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-netof.c: $(srcdir)/netof.c $(std_unity_list)
-	$(run_unity) netof.c run-netof.c
+	$(run_unity) $< $@
 
 ###
 
@@ -342,7 +342,7 @@ test_numtoa_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-numtoa.c: $(srcdir)/numtoa.c $(std_unity_list)
-	$(run_unity) numtoa.c run-numtoa.c
+	$(run_unity) $< $@
 
 ###
 
@@ -352,7 +352,7 @@ test_numtohost_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-numtohost.c: $(srcdir)/numtohost.c $(std_unity_list)
-	$(run_unity) numtohost.c run-numtohost.c
+	$(run_unity) $< $@
 
 ###
 
@@ -362,7 +362,7 @@ test_octtoint_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-octtoint.c: $(srcdir)/octtoint.c $(std_unity_list)
-	$(run_unity) octtoint.c run-octtoint.c
+	$(run_unity) $< $@
 
 ###
 
@@ -372,7 +372,7 @@ test_prettydate_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-prettydate.c: $(srcdir)/prettydate.c $(std_unity_list)
-	$(run_unity) prettydate.c run-prettydate.c
+	$(run_unity) $< $@
 
 ###
 
@@ -382,7 +382,7 @@ test_recvbuff_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-recvbuff.c: $(srcdir)/recvbuff.c $(std_unity_list)
-	$(run_unity) recvbuff.c run-recvbuff.c
+	$(run_unity) $< $@
 
 ###
 
@@ -392,7 +392,7 @@ test_refidsmear_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-refidsmear.c: $(srcdir)/refidsmear.c $(std_unity_list)
-	$(run_unity) refidsmear.c run-refidsmear.c
+	$(run_unity) $< $@
 
 ###
 
@@ -402,7 +402,7 @@ test_refnumtoa_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-refnumtoa.c: $(srcdir)/refnumtoa.c $(std_unity_list)
-	$(run_unity) refnumtoa.c run-refnumtoa.c
+	$(run_unity) $< $@
 
 ###
 
@@ -412,7 +412,7 @@ test_sfptostr_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-sfptostr.c: $(srcdir)/sfptostr.c $(std_unity_list)
-	$(run_unity) sfptostr.c run-sfptostr.c
+	$(run_unity) $< $@
 
 ###
 
@@ -423,7 +423,7 @@ test_socktoa_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-socktoa.c: $(srcdir)/socktoa.c $(std_unity_list)
-	$(run_unity) socktoa.c run-socktoa.c
+	$(run_unity) $< $@
 
 ###
 
@@ -433,7 +433,7 @@ test_ssl_init_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-ssl_init.c: $(srcdir)/ssl_init.c $(std_unity_list)
-	$(run_unity) ssl_init.c run-ssl_init.c
+	$(run_unity) $< $@
 
 ###
 
@@ -443,7 +443,7 @@ test_statestr_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-statestr.c: $(srcdir)/statestr.c $(std_unity_list)
-	$(run_unity) statestr.c run-statestr.c
+	$(run_unity) $< $@
 
 ###
 
@@ -459,7 +459,7 @@ test_strtolfp_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-strtolfp.c: $(srcdir)/strtolfp.c $(std_unity_list)
-	$(run_unity) strtolfp.c run-strtolfp.c
+	$(run_unity) $< $@
 
 ###
 
@@ -469,7 +469,7 @@ test_timespecops_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-timespecops.c: $(srcdir)/timespecops.c $(std_unity_list)
-	$(run_unity) timespecops.c run-timespecops.c
+	$(run_unity) $< $@
 
 ###
 
@@ -479,7 +479,7 @@ test_timevalops_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-timevalops.c: $(srcdir)/timevalops.c $(std_unity_list)
-	$(run_unity) timevalops.c run-timevalops.c
+	$(run_unity) $< $@
 
 ###
 
@@ -489,7 +489,7 @@ test_tsafememcmp_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-tsafememcmp.c: $(srcdir)/tsafememcmp.c $(std_unity_list)
-	$(run_unity) tsafememcmp.c run-tsafememcmp.c
+	$(run_unity) $< $@
 
 ###
 
@@ -499,7 +499,7 @@ test_tstotv_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-tstotv.c: $(srcdir)/tstotv.c $(std_unity_list)
-	$(run_unity) tstotv.c run-tstotv.c
+	$(run_unity) $< $@
 
 ###
 
@@ -510,7 +510,7 @@ test_tvtots_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-tvtots.c: $(srcdir)/tvtots.c $(std_unity_list)
-	$(run_unity) tvtots.c run-tvtots.c
+	$(run_unity) $< $@
 
 ###
 
@@ -520,7 +520,7 @@ test_uglydate_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-uglydate.c: $(srcdir)/uglydate.c $(std_unity_list)
-	$(run_unity) uglydate.c run-uglydate.c
+	$(run_unity) $< $@
 
 ###
 
@@ -530,7 +530,7 @@ test_vi64ops_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-vi64ops.c: $(srcdir)/vi64ops.c $(std_unity_list)
-	$(run_unity) vi64ops.c run-vi64ops.c
+	$(run_unity) $< $@
 
 ###
 
@@ -540,7 +540,7 @@ test_ymd2yd_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-ymd2yd.c: $(srcdir)/ymd2yd.c $(std_unity_list)
-	$(run_unity) ymd2yd.c run-ymd2yd.c
+	$(run_unity) $< $@
 
 ###
 

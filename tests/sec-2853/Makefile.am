@@ -8,7 +8,7 @@ std_unity_list =	 						\
 	$(abs_srcdir)/testconf.yml					\
 	$(NULL)
 
-run_unity =	cd $(srcdir) && ruby $(std_unity_list)
+run_unity =	ruby $(std_unity_list)
 
 check_PROGRAMS = sec-2853
 
@@ -45,7 +45,7 @@ sec_2853_SOURCES = 			\
 BUILT_SOURCES += $(srcdir)/run-sec-2853.c
 
 $(srcdir)/run-sec-2853.c: $(srcdir)/sec-2853.c $(std_unity_list)
-	$(run_unity) sec-2853.c run-sec-2853.c
+	$(run_unity) $< $@
 
 # HMS: we may not need some of these:
 #noinst_HEADERS =	ntpdtest.h	\

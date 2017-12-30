@@ -9,7 +9,7 @@ std_unity_list =	 						\
 	$(abs_srcdir)/testconf.yml					\
 	$(NULL)
 
-run_unity =	cd $(srcdir) && ruby $(std_unity_list)
+run_unity =	ruby $(std_unity_list)
 
 check_PROGRAMS =	\
 	first-test	\
@@ -52,7 +52,7 @@ bug_2803_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-ut-2803.c: $(srcdir)/ut-2803.c $(std_unity_list)
-	$(run_unity) ut-2803.c run-ut-2803.c
+	$(run_unity) $< $@
 BUILT_SOURCES	+= run-ut-2803.c
 
 first_test_SOURCES =		\
@@ -61,7 +61,7 @@ first_test_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-uglydate.c: $(srcdir)/uglydate.c $(std_unity_list)
-	$(run_unity) uglydate.c run-uglydate.c
+	$(run_unity) $< $@
 BUILT_SOURCES	+= run-uglydate.c
 
 second_test_SOURCES =		\
@@ -70,7 +70,7 @@ second_test_SOURCES =		\
 	$(NULL)
 
 $(srcdir)/run-modetoa.c: $(srcdir)/modetoa.c $(std_unity_list)
-	$(run_unity) modetoa.c run-modetoa.c
+	$(run_unity) $< $@
 BUILT_SOURCES	+= run-modetoa.c
 
 
