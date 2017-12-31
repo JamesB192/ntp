@@ -608,6 +608,13 @@ receive(
 #endif /* HAVE_NTP_SIGND */
 
 	/*
+	 * Note that there are many places we do not call record_raw_stats().
+	 *
+	 * We only want to call it *after* we've sent a response, or perhaps
+	 * when we've decided to drop a packet.
+	 */
+
+	/*
 	 * Monitor the packet and get restrictions. Note that the packet
 	 * length for control and private mode packets must be checked
 	 * by the service routines. Some restrictions have to be handled
@@ -1048,6 +1055,8 @@ receive(
 	 * an ordinary client, simply toss a server mode packet back
 	 * over the fence. If a manycast client, we have to work a
 	 * little harder.
+	 *
+	 * There are cases here where we do not call record_raw_stats().
 	 */
 	case AM_FXMIT:
 
@@ -1056,6 +1065,21 @@ receive(
 		 * send a crypto-NAK.
 		 */
 		if (!(rbufp->dstadr->flags & INT_MCASTOPEN)) {
+			/* HMS: would be nice to log FAST_XMIT|BADAUTH|RESTRICTED */
+			record_raw_stats(&rbufp->recv_srcadr,
+			    &rbufp->dstadr->sin,
+			    &p_org, &p_rec, &p_xmt, &rbufp->recv_time,
+			    PKT_LEAP(pkt->li_vn_mode),
+			    PKT_VERSION(pkt->li_vn_mode),
+			    PKT_MODE(pkt->li_vn_mode),
+			    PKT_TO_STRATUM(pkt->stratum),
+			    pkt->ppoll,
+			    pkt->precision,
+			    FPTOD(NTOHS_FP(pkt->rootdelay)),
+			    FPTOD(NTOHS_FP(pkt->rootdisp)),
+			    pkt->refid,
+			    rbufp->recv_length - MIN_V4_PKT_LEN, (u_char *)&pkt->exten);
+
 			if (AUTH(restrict_mask & RES_DONTTRUST,
 			   is_authentic)) {
 				fast_xmit(rbufp, MODE_SERVER, skeyid,
@@ -1067,6 +1091,7 @@ receive(
 			} else {
 				sys_restricted++;
 			}
+
 			return;			/* hooray */
 		}
 
@@ -1106,9 +1131,24 @@ receive(
 		 * Respond only if authentication succeeds. Don't do a
 		 * crypto-NAK, as that would not be useful.
 		 */
-		if (AUTH(restrict_mask & RES_DONTTRUST, is_authentic))
+		if (AUTH(restrict_mask & RES_DONTTRUST, is_authentic)) {
+			record_raw_stats(&rbufp->recv_srcadr,
+			    &rbufp->dstadr->sin,
+			    &p_org, &p_rec, &p_xmt, &rbufp->recv_time,
+			    PKT_LEAP(pkt->li_vn_mode),
+			    PKT_VERSION(pkt->li_vn_mode),
+			    PKT_MODE(pkt->li_vn_mode),
+			    PKT_TO_STRATUM(pkt->stratum),
+			    pkt->ppoll,
+			    pkt->precision,
+			    FPTOD(NTOHS_FP(pkt->rootdelay)),
+			    FPTOD(NTOHS_FP(pkt->rootdisp)),
+			    pkt->refid,
+			    rbufp->recv_length - MIN_V4_PKT_LEN, (u_char *)&pkt->exten);
+
 			fast_xmit(rbufp, MODE_SERVER, skeyid,
 			    restrict_mask);
+		}
 		return;				/* hooray */
 
 	/*
@@ -1129,6 +1169,8 @@ receive(
 	 * There is an implosion hazard at the manycast client, since
 	 * the manycast servers send the server packet immediately. If
 	 * the guy is already here, don't fire up a duplicate.
+	 *
+	 * There are cases here where we do not call record_raw_stats().
 	 */
 	case AM_MANYCAST:
 
@@ -1195,6 +1237,8 @@ receive(
 	 * the packet is authentic and we are enabled as broadcast
 	 * client, mobilize a broadcast client association. We don't
 	 * kiss any frogs here.
+	 *
+	 * There are cases here where we do not call record_raw_stats().
 	 */
 	case AM_NEWBCL:
 
@@ -1316,6 +1360,8 @@ receive(
 	 * This is the first packet received from a symmetric active
 	 * peer. If the packet is authentic and the first he sent,
 	 * mobilize a passive association. If not, kiss the frog.
+	 *
+	 * There are cases here where we do not call record_raw_stats().
 	 */
 	case AM_NEWPASS:
 
@@ -1402,6 +1448,8 @@ receive(
 
 	/*
 	 * Process regular packet. Nothing special.
+	 *
+	 * There are cases here where we do not call record_raw_stats().
 	 */
 	case AM_PROCPKT:
 
@@ -1676,7 +1724,8 @@ receive(
 	 * should 'aorg' be all-zero because this really was the original
 	 * transmit timestamp, we'll ignore this reply.  There is a window
 	 * of one nanosecond once every 136 years' time where this is
-	 * possible.  We currently ignore this situation.
+	 * possible.  We currently ignore this situation, as a completely
+	 * zero timestamp is (quietly?) disallowed.
 	 *
 	 * Otherwise, check for bogus packet in basic mode.
 	 * If it is bogus, switch to interleaved mode and resynchronize,
@@ -2203,8 +2252,8 @@ process_packet(
 	/*
 	 * Capture the header values in the client/peer association..
 	 */
-	record_raw_stats(&peer->srcadr, peer->dstadr ?
-	    &peer->dstadr->sin : NULL,
+	record_raw_stats(&peer->srcadr,
+	    peer->dstadr ? &peer->dstadr->sin : NULL,
 	    &p_org, &p_rec, &p_xmt, &peer->dst,
 	    pleap, pversion, pmode, pstratum, pkt->ppoll, pkt->precision,
 	    p_del, p_disp, pkt->refid,
