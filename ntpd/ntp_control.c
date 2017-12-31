@@ -1264,7 +1264,7 @@ process_control(
 			    rbufp->recv_length, properlen, res_keyid,
 			    maclen));
 
-		if (!authistrusted(res_keyid))
+		if (!authistrustedip(res_keyid, &rbufp->recv_srcadr))
 			DPRINTF(3, ("invalid keyid %08x\n", res_keyid));
 		else if (authdecrypt(res_keyid, (u_int32 *)pkt,
 				     rbufp->recv_length - maclen,
