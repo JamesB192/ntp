@@ -582,6 +582,7 @@ process_private(
 		 * him.  If the wrong key was used, or packet doesn't
 		 * have mac, return.
 		 */
+		/* XXX: Use authistrustedip(), or equivalent. */
 		if (!INFO_IS_AUTH(inpkt->auth_seq) || !info_auth_keyid
 		    || ntohl(tailinpkt->keyid) != info_auth_keyid) {
 			DPRINTF(5, ("failed auth %d info_auth_keyid %u pkt keyid %u maclen %lu\n",
