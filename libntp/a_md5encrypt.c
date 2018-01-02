@@ -102,7 +102,7 @@ make_mac(
 	}
 	else {	/* generic MAC handling */
 		EVP_MD_CTX *	ctx   = EVP_MD_CTX_new();
-		uint		uilen = 0;
+		u_int		uilen = 0;
 		
 		if ( ! ctx) {
 			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest CTX new failed.",
@@ -120,7 +120,7 @@ make_mac(
 				OBJ_nid2sn(ktype));
 			goto mac_fail;
 		}
-		if (EVP_MD_CTX_size(ctx) > digest->len) {
+		if ((size_t)EVP_MD_CTX_size(ctx) > digest->len) {
 			msyslog(LOG_ERR, "MAC encrypt: MAC %s buf too small.",
 				OBJ_nid2sn(ktype));
 			goto mac_fail;
