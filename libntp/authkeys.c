@@ -717,20 +717,19 @@ authistrusted(
 {
 	symkey *	sk;
 
-	/* That specific key was already used to authenticate the
-	 * packet. Therefore, the key *must* exist...  There's a chance
-	 * that is not trusted, though.
-	 */
 	if (keyno == cache_keyid) {
 		return (KEY_TRUSTED & cache_flags) &&
 		    keyacc_contains(cache_keyacclist, sau, TRUE);
-	} else {
+	}
+
+	if (NULL != (sk = auth_findkey(keyno))) {
 		authkeyuncached++;
-		sk = auth_findkey(keyno);
-		INSIST(NULL != sk);
 		return (KEY_TRUSTED & sk->flags) &&
 		    keyacc_contains(sk->keyacclist, sau, TRUE);
 	}
+	
+	authkeynotfound++;
+	return FALSE;    
 }
 
 /* Note: There are two locations below where 'strncpy()' is used. While
