@@ -2573,7 +2573,7 @@ config_access(
 			switch (curr_flag->i) {
 
 			default:
-				fatal_error("config-access: flag-type-token=%d", curr_flag->i);
+				fatal_error("config_access: flag-type-token=%d", curr_flag->i);
 
 			case T_Ntpport:
 				mflags |= RESM_NTPONLY;
@@ -2613,6 +2613,10 @@ config_access(
 
 			case T_Nomrulist:
 				flags |= RES_NOMRULIST;
+				break;
+
+			case T_Noepeer:
+				flags |= RES_NOEPEER;
 				break;
 
 			case T_Nopeer:
