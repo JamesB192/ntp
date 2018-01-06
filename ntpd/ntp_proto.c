@@ -1190,7 +1190,9 @@ receive(
 		if (!AUTH(  (!(peer2->cast_flags & MDF_POOL)
 			     && sys_authenticate)
 			  || (restrict_mask & (RES_NOPEER |
-			      RES_DONTTRUST)), is_authentic)) {
+			      RES_DONTTRUST)), is_authentic)
+		    /* MC: RES_NOEPEER? */
+		   ) {
 			sys_restricted++;
 			return;			/* access denied */
 		}
@@ -1256,7 +1258,9 @@ receive(
 			return;			/* not enabled */
 		}
 		if (!AUTH(sys_authenticate | (restrict_mask &
-		    (RES_NOPEER | RES_DONTTRUST)), is_authentic)) {
+			  (RES_NOPEER | RES_DONTTRUST)), is_authentic)
+		    /* NEWBCL: RES_NOEPEER? */
+		   ) {
 			sys_restricted++;
 			return;			/* access denied */
 		}
@@ -1358,8 +1362,9 @@ receive(
 
 	/*
 	 * This is the first packet received from a symmetric active
-	 * peer. If the packet is authentic and the first he sent,
-	 * mobilize a passive association. If not, kiss the frog.
+	 * peer.  If the packet is authentic, the first he sent, and
+	 * RES_NOEPEER is not enabled, mobilize a passive association
+	 * If not, kiss the frog.
 	 *
 	 * There are cases here where we do not call record_raw_stats().
 	 */
@@ -1375,33 +1380,36 @@ receive(
 		}
 #endif /* AUTOKEY */
 		if (!AUTH(sys_authenticate | (restrict_mask &
-		    (RES_NOPEER | RES_DONTTRUST)), is_authentic)) {
-
-			/*
-			 * If authenticated but cannot mobilize an
-			 * association, send a symmetric passive
-			 * response without mobilizing an association.
-			 * This is for drat broken Windows clients. See
-			 * Microsoft KB 875424 for preferred workaround.
-			 */
-			if (AUTH(restrict_mask & RES_DONTTRUST,
-			    is_authentic)) {
-				fast_xmit(rbufp, MODE_PASSIVE, skeyid,
-				    restrict_mask);
-				return;			/* hooray */
-			}
-			if (is_authentic == AUTH_ERROR) {
-				fast_xmit(rbufp, MODE_ACTIVE, 0,
-				    restrict_mask);
-				sys_restricted++;
-				return;
+			  (RES_NOPEER | RES_DONTTRUST)), is_authentic)
+		   ) {
+			if (0 == (restrict_mask & RES_NOEPEER)) {
+				/*
+				 * If authenticated but cannot mobilize an
+				 * association, send a symmetric passive
+				 * response without mobilizing an association.
+				 * This is for drat broken Windows clients. See
+				 * Microsoft KB 875424 for preferred workaround.
+				 */
+				if (AUTH(restrict_mask & RES_DONTTRUST,
+				    is_authentic)) {
+					fast_xmit(rbufp, MODE_PASSIVE, skeyid,
+					    restrict_mask);
+					return;			/* hooray */
+				}
+				if (is_authentic == AUTH_ERROR) {
+					fast_xmit(rbufp, MODE_ACTIVE, 0,
+					    restrict_mask);
+					sys_restricted++;
+					return;
+				}
 			}
 			/* [Bug 2941]
 			 * If we got here, the packet isn't part of an
-			 * existing association, it isn't correctly
-			 * authenticated, and it didn't meet either of
-			 * the previous two special cases so we should
-			 * just drop it on the floor.  For example,
+			 * existing association, either isn't correctly
+			 * authenticated or it is but we are refusing
+			 * ephemeral peer requests, and it didn't meet
+			 * either of the previous two special cases so we
+			 * should just drop it on the floor.  For example,
 			 * crypto-NAKs (is_authentic == AUTH_CRYPTO)
 			 * will make it this far.  This is just
 			 * debug-printed and not logged to avoid log

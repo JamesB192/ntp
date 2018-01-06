@@ -106,6 +106,7 @@
 %token	<Integer>	T_Ellipsis	/* "..." not "ellipsis" */
 %token	<Integer>	T_Enable
 %token	<Integer>	T_End
+%token	<Integer>	T_Epeer
 %token	<Integer>	T_False
 %token	<Integer>	T_File
 %token	<Integer>	T_Filegen
@@ -181,6 +182,7 @@
 %token	<Integer>	T_Nomrulist
 %token	<Integer>	T_None
 %token	<Integer>	T_Nonvolatile
+%token	<Integer>	T_Noepeer
 %token	<Integer>	T_Nopeer
 %token	<Integer>	T_Noquery
 %token	<Integer>	T_Noselect
@@ -876,12 +878,14 @@ ac_flag_list
 	;
 
 access_control_flag
-	:	T_Flake
+	:	T_Epeer
+	|	T_Flake
 	|	T_Ignore
 	|	T_Kod
 	|	T_Mssntp
 	|	T_Limited
 	|	T_Lowpriotrap
+	|	T_Noepeer
 	|	T_Nomodify
 	|	T_Nomrulist
 	|	T_Nopeer

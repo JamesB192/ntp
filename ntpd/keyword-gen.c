@@ -157,6 +157,8 @@ struct key_tok ntp_keywords[] = {
 /* access_control_flag */
 { "default",		T_Default,		FOLLBY_TOKEN },
 { "source",		T_Source,		FOLLBY_TOKEN },
+{ "epeer",		T_Epeer,		FOLLBY_TOKEN },
+{ "noepeer",		T_Noepeer,		FOLLBY_TOKEN },
 { "flake",		T_Flake,		FOLLBY_TOKEN },
 { "ignore",		T_Ignore,		FOLLBY_TOKEN },
 { "limited",		T_Limited,		FOLLBY_TOKEN },

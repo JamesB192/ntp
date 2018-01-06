@@ -847,20 +847,22 @@ struct restrict_u_tag {
 #define	RES_DONTTRUST		0x0004	/* authentication required */
 #define	RES_VERSION		0x0008	/* version mismatch */
 #define	RES_NOPEER		0x0010	/* new association denied */
-#define RES_LIMITED		0x0020	/* packet rate exceeded */
+#define	RES_NOEPEER		0x0020	/* new ephemeral association denied */
+#define RES_LIMITED		0x0040	/* packet rate exceeded */
 #define RES_FLAGS		(RES_IGNORE | RES_DONTSERVE |\
 				    RES_DONTTRUST | RES_VERSION |\
-				    RES_NOPEER | RES_LIMITED)
+				    RES_NOPEER | RES_NOEPEER | RES_LIMITED)
 
-#define	RES_NOQUERY		0x0040	/* mode 6/7 packet denied */
-#define	RES_NOMODIFY		0x0080	/* mode 6/7 modify denied */
-#define	RES_NOTRAP		0x0100	/* mode 6/7 set trap denied */
-#define	RES_LPTRAP		0x0200	/* mode 6/7 low priority trap */
+#define	RES_NOQUERY		0x0080	/* mode 6/7 packet denied */
+#define	RES_NOMODIFY		0x0100	/* mode 6/7 modify denied */
+#define	RES_NOTRAP		0x0200	/* mode 6/7 set trap denied */
+#define	RES_LPTRAP		0x0400	/* mode 6/7 low priority trap */
 
-#define	RES_KOD			0x0400	/* send kiss of death packet */
-#define	RES_MSSNTP		0x0800	/* enable MS-SNTP authentication */
-#define	RES_FLAKE		0x1000	/* flakeway - drop 10% */
-#define	RES_NOMRULIST		0x2000	/* mode 6 mrulist denied */
+#define	RES_KOD			0x0800	/* send kiss of death packet */
+#define	RES_MSSNTP		0x1000	/* enable MS-SNTP authentication */
+#define	RES_FLAKE		0x2000	/* flakeway - drop 10% */
+#define	RES_NOMRULIST		0x4000	/* mode 6 mrulist denied */
+#define RES_UNUSED		0x8000	/* Unused flag bits */
 
 #define	RES_ALLFLAGS		(RES_FLAGS | RES_NOQUERY |	\
 				 RES_NOMODIFY | RES_NOTRAP |	\
