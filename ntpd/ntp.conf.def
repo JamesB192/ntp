@@ -1626,10 +1626,10 @@ and
 queries.
 Time service is not affected.
 .It Cm nopeer
-Deny packets which would result in mobilizing a new association.
-This
-includes broadcast and symmetric active packets when a configured
-association does not exist.
+Deny unauthenticated packets which would result in mobilizing a new association.
+This includes
+broadcast and symmetric active packets
+when a configured association does not exist.
 It also includes
 .Cm pool
 associations, so if you want to use servers from a 
@@ -1637,11 +1637,15 @@ associations, so if you want to use servers from a
 directive and also want to use
 .Cm nopeer
 by default, you'll want a
-.Cm "restrict source ..." line as well that does
+.Cm "restrict source ..."
+line as well that does
 .It not
 include the
 .Cm nopeer
 directive.
+.It Cm noepeer
+Deny packets that would mobilize an ephemeral peering association,
+even if authenticated.
 .It Cm noserve
 Deny all packets except
 .Xr ntpq 1ntpqmdoc
