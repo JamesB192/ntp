@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntp.conf.texi)
 #
-# It has been AutoGen-ed  May 19, 2017 at 12:32:57 PM by AutoGen 5.18.5
+# It has been AutoGen-ed  January  8, 2018 at 12:00:34 AM by AutoGen 5.18.5
 # From the definitions    ntp.conf.def
 # and the template file   agtexi-file.tpl
 @end ignore
@@ -1553,10 +1553,10 @@ and
 queries.
 Time service is not affected.
 @item @code{nopeer}
-Deny packets which would result in mobilizing a new association.
-This
-includes broadcast and symmetric active packets when a configured
-association does not exist.
+Deny unauthenticated packets which would result in mobilizing a new association.
+This includes
+broadcast and symmetric active packets
+when a configured association does not exist.
 It also includes
 @code{pool}
 associations, so if you want to use servers from a 
@@ -1564,11 +1564,15 @@ associations, so if you want to use servers from a
 directive and also want to use
 @code{nopeer}
 by default, you'll want a
-@code{restrict source ...} @code{line} @code{as} @code{well} @code{that} @code{does}
+@code{restrict source ...}
+line as well that does
 @item not
 include the
 @code{nopeer}
 directive.
+@item @code{noepeer}
+Deny packets that would mobilize an ephemeral peering association,
+even if authenticated.
 @item @code{noserve}
 Deny all packets except
 @code{ntpq(1ntpqmdoc)}
