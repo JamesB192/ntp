@@ -3,6 +3,7 @@
 * [Sec 3414] ntpq: decodearr() can write beyond its 'buf' limits
   - initial patch by <stenn@ntp.org>, extended by <perlinger@ntp.org>
 * [Sec 3412] ctl_getitem(): Don't compare names past NUL. <perlinger@ntp.org>
+* [Sec 3012] Sybil vulnerability: noepeer support.  HStenn, JPerlinger.
 * [Bug 3447] AES-128-CMAC (fixes) <perlinger@ntp.org>
   - refactoring the MAC code, too
 * [Bug 3441] Validate the assumption that AF_UNSPEC is 0.  stenn@ntp.org
@@ -68,7 +69,6 @@
 * sntp: show the IP of who sent us a crypto-NAK.  HStenn.
 * Allow .../N to specify subnet bits for IPs in ntp.keys.  HStenn, JPerlinger.
 * authistrustedip() - use it in more places.  HStenn, JPerlinger.
-* noepeer support.  HStenn, JPerlinger.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
