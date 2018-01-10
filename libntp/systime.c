@@ -5,8 +5,10 @@
  *
  */
 #include <config.h>
+#include <math.h>
 
 #include "ntp.h"
+#include "ntpd.h"
 #include "ntp_syslog.h"
 #include "ntp_stdlib.h"
 #include "ntp_random.h"
@@ -111,7 +113,10 @@ set_sys_fuzz(
 	sys_fuzz = fuzz_val;
 	INSIST(sys_fuzz >= 0);
 	INSIST(sys_fuzz <= 1.0);
-	sys_fuzz_nsec = (long)(sys_fuzz * 1e9 + 0.5);
+	/* [Bug 3450] ensure nsec fuzz >= sys_fuzz to reduce chance of
+	 * short falling fuzz advance
+	 */
+	sys_fuzz_nsec = (long)ceil(sys_fuzz * 1e9);
 }
 
 
@@ -169,13 +174,10 @@ get_systime(
         static struct timespec  ts_last;        /* last sampled os time */
 	static struct timespec	ts_prev;	/* prior os time */
 	static l_fp		lfp_prev;	/* prior result */
-	static double		dfuzz_prev;	/* prior fuzz */
 	struct timespec ts;	/* seconds and nanoseconds */
 	struct timespec ts_min;	/* earliest permissible */
 	struct timespec ts_lam;	/* lamport fictional increment */
-	struct timespec ts_prev_log;	/* for msyslog only */
 	double	dfuzz;
-	double	ddelta;
 	l_fp	result;
 	l_fp	lfpfuzz;
 	l_fp	lfpdelta;
@@ -217,21 +219,16 @@ get_systime(
 			if (!lamport_violated)
 				ts = ts_min;
 		}
-		ts_prev_log = ts_prev;
 		ts_prev = ts;
-	} else {
-		/*
-		 * Quiet "ts_prev_log.tv_sec may be used uninitialized"
-		 * warning from x86 gcc 4.5.2.
-		 */
-		ZERO(ts_prev_log);
 	}
 
 	/* convert from timespec to l_fp fixed-point */
 	result = tspec_stamp_to_lfp(ts);
 
 	/*
-	 * Add in the fuzz.
+	 * Add in the fuzz. 'ntp_random()' returns [0..2**31-1] so we
+	 * must scale up the result by 2.0 to cover the full fractional
+	 * range.
 	 */
 	dfuzz = ntp_random() * 2. / FRAC * sys_fuzz;
 	DTOLFP(dfuzz, &lfpfuzz);
@@ -241,30 +238,33 @@ get_systime(
 	 * Ensure result is strictly greater than prior result (ignoring
 	 * sys_residual's effect for now) once sys_fuzz has been
 	 * determined.
+	 *
+	 * [Bug 3450] Rounding errors and time slew can lead to a
+	 * violation of the expected postcondition. This is bound to
+	 * happen from time to time (depending on state of the random
+	 * generator, the current slew and the closeness of system time
+	 * stamps drawn) and does not warrant a syslog entry. Instead it
+	 * makes much more sense to ensure the postcondition and hop
+	 * along silently.
 	 */
 	if (!USING_SIGIO()) {
-		if (!L_ISZERO(&lfp_prev) && !lamport_violated) {
-			if (!L_ISGTU(&result, &lfp_prev) &&
-			    sys_fuzz > 0.) {
-				msyslog(LOG_ERR, "ts_prev %s ts_min %s",
-					tspectoa(ts_prev_log),
-					tspectoa(ts_min));
-				msyslog(LOG_ERR, "ts %s", tspectoa(ts));
-				msyslog(LOG_ERR, "sys_fuzz %ld nsec, prior fuzz %.9f",
-					sys_fuzz_nsec, dfuzz_prev);
-				msyslog(LOG_ERR, "this fuzz %.9f",
-					dfuzz);
-				lfpdelta = lfp_prev;
-				L_SUB(&lfpdelta, &result);
-				LFPTOD(&lfpdelta, ddelta);
-				msyslog(LOG_ERR,
-					"prev get_systime 0x%x.%08x is %.9f later than 0x%x.%08x",
-					lfp_prev.l_ui, lfp_prev.l_uf,
-					ddelta, result.l_ui, result.l_uf);
+		if (!L_ISZERO(&lfp_prev) &&
+		    !lamport_violated    &&
+		    (sys_fuzz > 0.0)      )
+		{
+			lfpdelta = result;
+			L_SUB(&lfpdelta, &lfp_prev);
+			L_SUBUF(&lfpdelta, 1);
+			if (lfpdelta.l_i < 0)
+			{
+				L_NEG(&lfpdelta);
+				DPRINTF(1, ("get_systime: postcond failed by %s secs, fixed\n",
+					    lfptoa(&lfpdelta, 9)));
+				result = lfp_prev;
+				L_ADDUF(&result, 1);
 			}
 		}
 		lfp_prev = result;
-		dfuzz_prev = dfuzz;
 		if (lamport_violated) 
 			lamport_violated = FALSE;
 	}
