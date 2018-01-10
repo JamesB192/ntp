@@ -4,6 +4,8 @@
   - initial patch by <stenn@ntp.org>, extended by <perlinger@ntp.org>
 * [Sec 3412] ctl_getitem(): Don't compare names past NUL. <perlinger@ntp.org>
 * [Sec 3012] Sybil vulnerability: noepeer support.  HStenn, JPerlinger.
+* [Bug 3450] Dubious error messages from plausibility checks in get_systime()
+ - removed error log caused by rounding/slew, ensured postcondition <perlinger@ntp.org>
 * [Bug 3447] AES-128-CMAC (fixes) <perlinger@ntp.org>
   - refactoring the MAC code, too
 * [Bug 3441] Validate the assumption that AF_UNSPEC is 0.  stenn@ntp.org
