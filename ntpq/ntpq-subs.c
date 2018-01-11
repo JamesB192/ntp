@@ -3859,6 +3859,10 @@ sysstats(
 	VDC_INIT("ss_limited",		"rate limited:         ", NTP_STR),
 	VDC_INIT("ss_kodsent",		"KoD responses:        ", NTP_STR),
 	VDC_INIT("ss_processed",	"processed for time:   ", NTP_STR),
+#if 0
+	VDC_INIT("ss_lamport",		"Lamport violations:    ", NTP_STR),
+	VDC_INIT("ss_tsrounding",	"bad timestamp rounding:", NTP_STR),
+#endif
 	VDC_INIT(NULL,			NULL,			  0)
     };
 

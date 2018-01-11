@@ -500,18 +500,19 @@ extern u_int	sys_ttlmax;		/* max ttl mapping vector index */
 /*
  * Statistics counters
  */
-extern u_long	sys_stattime;		/* time since reset */
-extern u_long	sys_received;		/* packets received */
-extern u_long	sys_processed;		/* packets for this host */
-extern u_long	sys_restricted;	 	/* restricted packets */
+extern u_long	sys_badauth;		/* bad authentication */
+extern u_long	sys_badlength;		/* bad length or format */
+extern u_long	sys_declined;		/* declined */
+extern u_long	sys_kodsent;		/* KoD sent */
+extern u_long	sys_lamport;		/* Lamport violation */
+extern u_long	sys_limitrejected;	/* rate exceeded */
 extern u_long	sys_newversion;		/* current version  */
 extern u_long	sys_oldversion;		/* old version */
+extern u_long	sys_processed;		/* packets for this host */
+extern u_long	sys_received;		/* packets received */
 extern u_long	sys_restricted;		/* access denied */
-extern u_long	sys_badlength;		/* bad length or format */
-extern u_long	sys_badauth;		/* bad authentication */
-extern u_long	sys_declined;		/* declined */
-extern u_long	sys_limitrejected;	/* rate exceeded */
-extern u_long	sys_kodsent;		/* KoD sent */
+extern u_long	sys_stattime;		/* time since reset */
+extern u_long	sys_tsrounding;		/* timestamp rounding errors */
 
 /* ntp_request.c */
 extern keyid_t	info_auth_keyid;	/* keyid used to authenticate requests */

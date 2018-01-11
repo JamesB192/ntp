@@ -71,6 +71,8 @@
 * sntp: show the IP of who sent us a crypto-NAK.  HStenn.
 * Allow .../N to specify subnet bits for IPs in ntp.keys.  HStenn, JPerlinger.
 * authistrustedip() - use it in more places.  HStenn, JPerlinger.
+* New sysstats: sys_lamport, sys_tsrounding.  HStenn.
+* Update ntp.keys .../N documentation.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
