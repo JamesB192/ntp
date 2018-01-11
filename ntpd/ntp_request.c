@@ -1151,6 +1151,8 @@ sys_stats(
 	ss->badauth = htonl((u_int32)sys_badauth);
 	ss->limitrejected = htonl((u_int32)sys_limitrejected);
 	ss->received = htonl((u_int32)sys_received);
+	ss->lamport = htonl((u_int32)sys_lamport);
+	ss->tsrounding = htonl((u_int32)sys_tsrounding);
 	(void) more_pkt();
 	flush_pkt();
 }

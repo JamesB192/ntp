@@ -513,6 +513,8 @@ struct info_sys_stats {
 	u_int32 badauth;	/* bad authentication */
 	u_int32 received;	/* packets received */
 	u_int32 limitrejected;	/* rate exceeded */
+	u_int32 lamport;	/* Lamport violations */
+	u_int32 tsrounding;	/* Timestamp rounding errors */
 };
 
 

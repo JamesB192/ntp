@@ -4989,4 +4989,6 @@ proto_clr_stats(void)
 	sys_badauth = 0;
 	sys_limitrejected = 0;
 	sys_kodsent = 0;
+	sys_lamport = 0;
+	sys_tsrounding = 0;
 }

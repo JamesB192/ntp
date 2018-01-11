@@ -30,8 +30,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_NTP_PARSER_H_INCLUDED
-# define YY_YY_NTP_PARSER_H_INCLUDED
+#ifndef YY_YY_Y_TAB_H_INCLUDED
+# define YY_YY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 1
@@ -471,7 +471,7 @@ union YYSTYPE
 	script_info *		Sim_script;
 	script_info_fifo *	Sim_script_fifo;
 
-#line 475 "ntp_parser.h" /* yacc.c:1909  */
+#line 475 "../../ntpd/ntp_parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -484,4 +484,4 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_NTP_PARSER_H_INCLUDED  */
+#endif /* !YY_YY_Y_TAB_H_INCLUDED  */

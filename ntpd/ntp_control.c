@@ -176,56 +176,58 @@ static const struct ctl_proc control_codes[] = {
 #define	CS_SS_LIMITED		41
 #define	CS_SS_KODSENT		42
 #define	CS_SS_PROCESSED		43
-#define	CS_PEERADR		44
-#define	CS_PEERMODE		45
-#define	CS_BCASTDELAY		46
-#define	CS_AUTHDELAY		47
-#define	CS_AUTHKEYS		48
-#define	CS_AUTHFREEK		49
-#define	CS_AUTHKLOOKUPS		50
-#define	CS_AUTHKNOTFOUND	51
-#define	CS_AUTHKUNCACHED	52
-#define	CS_AUTHKEXPIRED		53
-#define	CS_AUTHENCRYPTS		54
-#define	CS_AUTHDECRYPTS		55
-#define	CS_AUTHRESET		56
-#define	CS_K_OFFSET		57
-#define	CS_K_FREQ		58
-#define	CS_K_MAXERR		59
-#define	CS_K_ESTERR		60
-#define	CS_K_STFLAGS		61
-#define	CS_K_TIMECONST		62
-#define	CS_K_PRECISION		63
-#define	CS_K_FREQTOL		64
-#define	CS_K_PPS_FREQ		65
-#define	CS_K_PPS_STABIL		66
-#define	CS_K_PPS_JITTER		67
-#define	CS_K_PPS_CALIBDUR	68
-#define	CS_K_PPS_CALIBS		69
-#define	CS_K_PPS_CALIBERRS	70
-#define	CS_K_PPS_JITEXC		71
-#define	CS_K_PPS_STBEXC		72
+#define	CS_SS_LAMPORT		44
+#define	CS_SS_TSROUNDING	45
+#define	CS_PEERADR		46
+#define	CS_PEERMODE		47
+#define	CS_BCASTDELAY		48
+#define	CS_AUTHDELAY		49
+#define	CS_AUTHKEYS		50
+#define	CS_AUTHFREEK		51
+#define	CS_AUTHKLOOKUPS		52
+#define	CS_AUTHKNOTFOUND	53
+#define	CS_AUTHKUNCACHED	54
+#define	CS_AUTHKEXPIRED		55
+#define	CS_AUTHENCRYPTS		56
+#define	CS_AUTHDECRYPTS		57
+#define	CS_AUTHRESET		58
+#define	CS_K_OFFSET		59
+#define	CS_K_FREQ		60
+#define	CS_K_MAXERR		61
+#define	CS_K_ESTERR		62
+#define	CS_K_STFLAGS		63
+#define	CS_K_TIMECONST		64
+#define	CS_K_PRECISION		65
+#define	CS_K_FREQTOL		66
+#define	CS_K_PPS_FREQ		67
+#define	CS_K_PPS_STABIL		68
+#define	CS_K_PPS_JITTER		69
+#define	CS_K_PPS_CALIBDUR	70
+#define	CS_K_PPS_CALIBS		71
+#define	CS_K_PPS_CALIBERRS	72
+#define	CS_K_PPS_JITEXC		73
+#define	CS_K_PPS_STBEXC		74
 #define	CS_KERN_FIRST		CS_K_OFFSET
 #define	CS_KERN_LAST		CS_K_PPS_STBEXC
-#define	CS_IOSTATS_RESET	73
-#define	CS_TOTAL_RBUF		74
-#define	CS_FREE_RBUF		75
-#define	CS_USED_RBUF		76
-#define	CS_RBUF_LOWATER		77
-#define	CS_IO_DROPPED		78
-#define	CS_IO_IGNORED		79
-#define	CS_IO_RECEIVED		80
-#define	CS_IO_SENT		81
-#define	CS_IO_SENDFAILED	82
-#define	CS_IO_WAKEUPS		83
-#define	CS_IO_GOODWAKEUPS	84
-#define	CS_TIMERSTATS_RESET	85
-#define	CS_TIMER_OVERRUNS	86
-#define	CS_TIMER_XMTS		87
-#define	CS_FUZZ			88
-#define	CS_WANDER_THRESH	89
-#define	CS_LEAPSMEARINTV	90
-#define	CS_LEAPSMEAROFFS	91
+#define	CS_IOSTATS_RESET	75
+#define	CS_TOTAL_RBUF		76
+#define	CS_FREE_RBUF		77
+#define	CS_USED_RBUF		78
+#define	CS_RBUF_LOWATER		79
+#define	CS_IO_DROPPED		80
+#define	CS_IO_IGNORED		81
+#define	CS_IO_RECEIVED		82
+#define	CS_IO_SENT		83
+#define	CS_IO_SENDFAILED	84
+#define	CS_IO_WAKEUPS		85
+#define	CS_IO_GOODWAKEUPS	86
+#define	CS_TIMERSTATS_RESET	87
+#define	CS_TIMER_OVERRUNS	88
+#define	CS_TIMER_XMTS		89
+#define	CS_FUZZ			90
+#define	CS_WANDER_THRESH	91
+#define	CS_LEAPSMEARINTV	92
+#define	CS_LEAPSMEAROFFS	93
 #define	CS_MAX_NOAUTOKEY	CS_LEAPSMEAROFFS
 #ifdef AUTOKEY
 #define	CS_FLAGS		(1 + CS_MAX_NOAUTOKEY)
@@ -376,55 +378,57 @@ static const struct ctl_var sys_var[] = {
 	{ CS_SS_LIMITED,	RO, "ss_limited" },	/* 41 */
 	{ CS_SS_KODSENT,	RO, "ss_kodsent" },	/* 42 */
 	{ CS_SS_PROCESSED,	RO, "ss_processed" },	/* 43 */
-	{ CS_PEERADR,		RO, "peeradr" },	/* 44 */
-	{ CS_PEERMODE,		RO, "peermode" },	/* 45 */
-	{ CS_BCASTDELAY,	RO, "bcastdelay" },	/* 46 */
-	{ CS_AUTHDELAY,		RO, "authdelay" },	/* 47 */
-	{ CS_AUTHKEYS,		RO, "authkeys" },	/* 48 */
-	{ CS_AUTHFREEK,		RO, "authfreek" },	/* 49 */
-	{ CS_AUTHKLOOKUPS,	RO, "authklookups" },	/* 50 */
-	{ CS_AUTHKNOTFOUND,	RO, "authknotfound" },	/* 51 */
-	{ CS_AUTHKUNCACHED,	RO, "authkuncached" },	/* 52 */
-	{ CS_AUTHKEXPIRED,	RO, "authkexpired" },	/* 53 */
-	{ CS_AUTHENCRYPTS,	RO, "authencrypts" },	/* 54 */
-	{ CS_AUTHDECRYPTS,	RO, "authdecrypts" },	/* 55 */
-	{ CS_AUTHRESET,		RO, "authreset" },	/* 56 */
-	{ CS_K_OFFSET,		RO, "koffset" },	/* 57 */
-	{ CS_K_FREQ,		RO, "kfreq" },		/* 58 */
-	{ CS_K_MAXERR,		RO, "kmaxerr" },	/* 59 */
-	{ CS_K_ESTERR,		RO, "kesterr" },	/* 60 */
-	{ CS_K_STFLAGS,		RO, "kstflags" },	/* 61 */
-	{ CS_K_TIMECONST,	RO, "ktimeconst" },	/* 62 */
-	{ CS_K_PRECISION,	RO, "kprecis" },	/* 63 */
-	{ CS_K_FREQTOL,		RO, "kfreqtol" },	/* 64 */
-	{ CS_K_PPS_FREQ,	RO, "kppsfreq" },	/* 65 */
-	{ CS_K_PPS_STABIL,	RO, "kppsstab" },	/* 66 */
-	{ CS_K_PPS_JITTER,	RO, "kppsjitter" },	/* 67 */
-	{ CS_K_PPS_CALIBDUR,	RO, "kppscalibdur" },	/* 68 */
-	{ CS_K_PPS_CALIBS,	RO, "kppscalibs" },	/* 69 */
-	{ CS_K_PPS_CALIBERRS,	RO, "kppscaliberrs" },	/* 70 */
-	{ CS_K_PPS_JITEXC,	RO, "kppsjitexc" },	/* 71 */
-	{ CS_K_PPS_STBEXC,	RO, "kppsstbexc" },	/* 72 */
-	{ CS_IOSTATS_RESET,	RO, "iostats_reset" },	/* 73 */
-	{ CS_TOTAL_RBUF,	RO, "total_rbuf" },	/* 74 */
-	{ CS_FREE_RBUF,		RO, "free_rbuf" },	/* 75 */
-	{ CS_USED_RBUF,		RO, "used_rbuf" },	/* 76 */
-	{ CS_RBUF_LOWATER,	RO, "rbuf_lowater" },	/* 77 */
-	{ CS_IO_DROPPED,	RO, "io_dropped" },	/* 78 */
-	{ CS_IO_IGNORED,	RO, "io_ignored" },	/* 79 */
-	{ CS_IO_RECEIVED,	RO, "io_received" },	/* 80 */
-	{ CS_IO_SENT,		RO, "io_sent" },	/* 81 */
-	{ CS_IO_SENDFAILED,	RO, "io_sendfailed" },	/* 82 */
-	{ CS_IO_WAKEUPS,	RO, "io_wakeups" },	/* 83 */
-	{ CS_IO_GOODWAKEUPS,	RO, "io_goodwakeups" },	/* 84 */
-	{ CS_TIMERSTATS_RESET,	RO, "timerstats_reset" },/* 85 */
-	{ CS_TIMER_OVERRUNS,	RO, "timer_overruns" },	/* 86 */
-	{ CS_TIMER_XMTS,	RO, "timer_xmts" },	/* 87 */
-	{ CS_FUZZ,		RO, "fuzz" },		/* 88 */
-	{ CS_WANDER_THRESH,	RO, "clk_wander_threshold" }, /* 89 */
+	{ CS_SS_LAMPORT,	RO, "ss_lamport" },	/* 44 */
+	{ CS_SS_TSROUNDING,	RO, "ss_tsrounding" },	/* 45 */
+	{ CS_PEERADR,		RO, "peeradr" },	/* 46 */
+	{ CS_PEERMODE,		RO, "peermode" },	/* 47 */
+	{ CS_BCASTDELAY,	RO, "bcastdelay" },	/* 48 */
+	{ CS_AUTHDELAY,		RO, "authdelay" },	/* 49 */
+	{ CS_AUTHKEYS,		RO, "authkeys" },	/* 50 */
+	{ CS_AUTHFREEK,		RO, "authfreek" },	/* 51 */
+	{ CS_AUTHKLOOKUPS,	RO, "authklookups" },	/* 52 */
+	{ CS_AUTHKNOTFOUND,	RO, "authknotfound" },	/* 53 */
+	{ CS_AUTHKUNCACHED,	RO, "authkuncached" },	/* 54 */
+	{ CS_AUTHKEXPIRED,	RO, "authkexpired" },	/* 55 */
+	{ CS_AUTHENCRYPTS,	RO, "authencrypts" },	/* 56 */
+	{ CS_AUTHDECRYPTS,	RO, "authdecrypts" },	/* 57 */
+	{ CS_AUTHRESET,		RO, "authreset" },	/* 58 */
+	{ CS_K_OFFSET,		RO, "koffset" },	/* 59 */
+	{ CS_K_FREQ,		RO, "kfreq" },		/* 60 */
+	{ CS_K_MAXERR,		RO, "kmaxerr" },	/* 61 */
+	{ CS_K_ESTERR,		RO, "kesterr" },	/* 62 */
+	{ CS_K_STFLAGS,		RO, "kstflags" },	/* 63 */
+	{ CS_K_TIMECONST,	RO, "ktimeconst" },	/* 64 */
+	{ CS_K_PRECISION,	RO, "kprecis" },	/* 65 */
+	{ CS_K_FREQTOL,		RO, "kfreqtol" },	/* 66 */
+	{ CS_K_PPS_FREQ,	RO, "kppsfreq" },	/* 67 */
+	{ CS_K_PPS_STABIL,	RO, "kppsstab" },	/* 68 */
+	{ CS_K_PPS_JITTER,	RO, "kppsjitter" },	/* 69 */
+	{ CS_K_PPS_CALIBDUR,	RO, "kppscalibdur" },	/* 70 */
+	{ CS_K_PPS_CALIBS,	RO, "kppscalibs" },	/* 71 */
+	{ CS_K_PPS_CALIBERRS,	RO, "kppscaliberrs" },	/* 72 */
+	{ CS_K_PPS_JITEXC,	RO, "kppsjitexc" },	/* 73 */
+	{ CS_K_PPS_STBEXC,	RO, "kppsstbexc" },	/* 74 */
+	{ CS_IOSTATS_RESET,	RO, "iostats_reset" },	/* 75 */
+	{ CS_TOTAL_RBUF,	RO, "total_rbuf" },	/* 76 */
+	{ CS_FREE_RBUF,		RO, "free_rbuf" },	/* 77 */
+	{ CS_USED_RBUF,		RO, "used_rbuf" },	/* 78 */
+	{ CS_RBUF_LOWATER,	RO, "rbuf_lowater" },	/* 79 */
+	{ CS_IO_DROPPED,	RO, "io_dropped" },	/* 80 */
+	{ CS_IO_IGNORED,	RO, "io_ignored" },	/* 81 */
+	{ CS_IO_RECEIVED,	RO, "io_received" },	/* 82 */
+	{ CS_IO_SENT,		RO, "io_sent" },	/* 83 */
+	{ CS_IO_SENDFAILED,	RO, "io_sendfailed" },	/* 84 */
+	{ CS_IO_WAKEUPS,	RO, "io_wakeups" },	/* 85 */
+	{ CS_IO_GOODWAKEUPS,	RO, "io_goodwakeups" },	/* 86 */
+	{ CS_TIMERSTATS_RESET,	RO, "timerstats_reset" },/* 87 */
+	{ CS_TIMER_OVERRUNS,	RO, "timer_overruns" },	/* 88 */
+	{ CS_TIMER_XMTS,	RO, "timer_xmts" },	/* 89 */
+	{ CS_FUZZ,		RO, "fuzz" },		/* 90 */
+	{ CS_WANDER_THRESH,	RO, "clk_wander_threshold" }, /* 91 */
 
-	{ CS_LEAPSMEARINTV,	RO, "leapsmearinterval" },    /* 90 */
-	{ CS_LEAPSMEAROFFS,	RO, "leapsmearoffset" },      /* 91 */
+	{ CS_LEAPSMEARINTV,	RO, "leapsmearinterval" },    /* 92 */
+	{ CS_LEAPSMEAROFFS,	RO, "leapsmearoffset" },      /* 93 */
 
 #ifdef AUTOKEY
 	{ CS_FLAGS,	RO, "flags" },		/* 1 + CS_MAX_NOAUTOKEY */
@@ -436,7 +440,7 @@ static const struct ctl_var sys_var[] = {
 	{ CS_IDENT,	RO, "ident" },		/* 7 + CS_MAX_NOAUTOKEY */
 	{ CS_DIGEST,	RO, "digest" },		/* 8 + CS_MAX_NOAUTOKEY */
 #endif	/* AUTOKEY */
-	{ 0,		EOV, "" }		/* 87/95 */
+	{ 0,		EOV, "" }		/* 94/102 */
 };
 
 static struct ctl_var *ext_sys_var = NULL;
@@ -2216,6 +2220,14 @@ ctl_putsys(
 
 	case CS_SS_LIMITED:
 		ctl_putuint(sys_var[varid].text, sys_limitrejected);
+		break;
+
+	case CS_SS_LAMPORT:
+		ctl_putuint(sys_var[varid].text, sys_lamport);
+		break;
+
+	case CS_SS_TSROUNDING:
+		ctl_putuint(sys_var[varid].text, sys_tsrounding);
 		break;
 
 	case CS_SS_KODSENT:

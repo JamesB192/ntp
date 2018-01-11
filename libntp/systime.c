@@ -31,6 +31,9 @@
 int	allow_panic = FALSE;		/* allow panic correction (-g) */
 int	enable_panic_check = TRUE;	/* Can we check allow_panic's state? */
 
+u_long	sys_lamport;			/* Lamport violation */
+u_long	sys_tsrounding;			/* timestamp rounding errors */
+
 #ifndef USE_COMPILETIME_PIVOT
 # define USE_COMPILETIME_PIVOT 1
 #endif
@@ -114,7 +117,7 @@ set_sys_fuzz(
 	INSIST(sys_fuzz >= 0);
 	INSIST(sys_fuzz <= 1.0);
 	/* [Bug 3450] ensure nsec fuzz >= sys_fuzz to reduce chance of
-	 * short falling fuzz advance
+	 * short-falling fuzz advance
 	 */
 	sys_fuzz_nsec = (long)ceil(sys_fuzz * 1e9);
 }
@@ -194,8 +197,10 @@ get_systime(
          * introduce small steps backward. It should not be an issue on
          * systems where get_ostime() results in a true syscall.)
          */
-        if (cmp_tspec(add_tspec_ns(ts, 50000000), ts_last) < 0)
+        if (cmp_tspec(add_tspec_ns(ts, 50000000), ts_last) < 0) {
                 lamport_violated = 1;
+                sys_lamport++;
+	}
         ts_last = ts;
 
 	/*
@@ -248,10 +253,10 @@ get_systime(
 	 * along silently.
 	 */
 	if (!USING_SIGIO()) {
-		if (!L_ISZERO(&lfp_prev) &&
-		    !lamport_violated    &&
-		    (sys_fuzz > 0.0)      )
-		{
+		if (   !L_ISZERO(&lfp_prev)
+		    && !lamport_violated
+		    && (sys_fuzz > 0.0)
+		   ) {
 			lfpdelta = result;
 			L_SUB(&lfpdelta, &lfp_prev);
 			L_SUBUF(&lfpdelta, 1);
@@ -262,6 +267,7 @@ get_systime(
 					    lfptoa(&lfpdelta, 9)));
 				result = lfp_prev;
 				L_ADDUF(&result, 1);
+				sys_tsrounding++;
 			}
 		}
 		lfp_prev = result;
