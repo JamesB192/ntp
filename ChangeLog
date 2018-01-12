@@ -74,6 +74,7 @@
 * authistrustedip() - use it in more places.  HStenn, JPerlinger.
 * New sysstats: sys_lamport, sys_tsrounding.  HStenn.
 * Update ntp.keys .../N documentation.  HStenn.
+* Distribute testconf.yml.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>

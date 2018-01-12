@@ -12,6 +12,10 @@ run_unity =	ruby $(std_unity_list)
 
 check_PROGRAMS = bug-2803
 
+EXTRA_DIST =				\
+	testconf.yml			\
+	$(NULL)
+
 # HMS: we may not need some of these:
 LDADD =					\
 	$(top_builddir)/sntp/unity/libunity.a	\

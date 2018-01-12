@@ -70,6 +70,7 @@ EXTRA_DIST =				\
 	data/kod-test-blanks		\
 	data/kod-test-correct		\
 	data/kod-test-empty		\
+	testconf.yml			\
 	$(NULL)
 
 CLEANFILES +=				\

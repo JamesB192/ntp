@@ -9,6 +9,10 @@ std_unity_list =							\
 
 run_unity =	ruby $(std_unity_list)
 
+EXTRA_DIST =				\
+	testconf.yml			\
+	$(NULL)
+
 check_PROGRAMS =		\
 	test-leapsec		\
 	test-ntp_prio_q		\
