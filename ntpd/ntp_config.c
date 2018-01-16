@@ -920,7 +920,6 @@ dump_config_tree(
 		fprintf(df, "\n");
 	}
 
-
 	for (rest_node = HEAD_PFIFO(ptree->restrict_opts);
 	     rest_node != NULL;
 	     rest_node = rest_node->link) {
@@ -928,11 +927,12 @@ dump_config_tree(
 		if (NULL == rest_node->addr) {
 			s = "default";
 			flags = HEAD_PFIFO(rest_node->flags);
-			for ( ; flags != NULL; flags = flags->link)
+			for ( ; flags != NULL; flags = flags->link) {
 				if (T_Source == flags->i) {
 					s = "source";
 					break;
-				}
+				} 
+			}
 		} else {
 			s = rest_node->addr->address;
 		}
@@ -940,6 +940,7 @@ dump_config_tree(
 		if (rest_node->mask != NULL)
 			fprintf(df, " mask %s",
 				rest_node->mask->address);
+		fprintf(df, " ippeerlimit %d", rest_node->ippeerlimit);
 		flags = HEAD_PFIFO(rest_node->flags);
 		for ( ; flags != NULL; flags = flags->link)
 			if (T_Source != flags->i)
@@ -1452,6 +1453,7 @@ restrict_node *
 create_restrict_node(
 	address_node *	addr,
 	address_node *	mask,
+	short		ippeerlimit,
 	int_fifo *	flags,
 	int		line_no
 	)
@@ -1461,6 +1463,7 @@ create_restrict_node(
 	my_node = emalloc_zero(sizeof(*my_node));
 	my_node->addr = addr;
 	my_node->mask = mask;
+	my_node->ippeerlimit = ippeerlimit;
 	my_node->flags = flags;
 	my_node->line_no = line_no;
 
@@ -2445,6 +2448,7 @@ config_access(
 	int			restrict_default;
 	u_short			flags;
 	u_short			mflags;
+	short			ippeerlimit;
 	int			range_err;
 	const char *		signd_warning =
 #ifdef HAVE_NTP_SIGND
@@ -2562,7 +2566,9 @@ config_access(
 	}
 
 	/* Configure the restrict options */
+	ippeerlimit = -1;
 	my_node = HEAD_PFIFO(ptree->restrict_opts);
+	/* Grab the ippeerlmit */
 	for (; my_node != NULL; my_node = my_node->link) {
 		/* Parse the flags */
 		flags = 0;
@@ -2680,10 +2686,10 @@ config_access(
 				restrict_default = 1;
 			} else {
 				/* apply "restrict source ..." */
-				DPRINTF(1, ("restrict source template mflags %x flags %x\n",
-					mflags, flags));
-				hack_restrict(RESTRICT_FLAGS, NULL,
-					      NULL, mflags, flags, 0);
+				DPRINTF(1, ("restrict source template ippeerlimit %d mflags %x flags %x\n",
+					ippeerlimit, mflags, flags));
+				hack_restrict(RESTRICT_FLAGS, NULL, NULL,
+					      ippeerlimit, mflags, flags, 0);
 				continue;
 			}
 		} else {
@@ -2752,15 +2758,15 @@ config_access(
 		if (restrict_default) {
 			AF(&addr) = AF_INET;
 			AF(&mask) = AF_INET;
-			hack_restrict(RESTRICT_FLAGS, &addr,
-				      &mask, mflags, flags, 0);
+			hack_restrict(RESTRICT_FLAGS, &addr, &mask,
+				      ippeerlimit, mflags, flags, 0);
 			AF(&addr) = AF_INET6;
 			AF(&mask) = AF_INET6;
 		}
 
 		do {
-			hack_restrict(RESTRICT_FLAGS, &addr,
-				      &mask, mflags, flags, 0);
+			hack_restrict(RESTRICT_FLAGS, &addr, &mask,
+				      ippeerlimit, mflags, flags, 0);
 			if (pai != NULL &&
 			    NULL != (pai = pai->ai_next)) {
 				INSIST(pai->ai_addr != NULL);

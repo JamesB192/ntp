@@ -824,11 +824,12 @@ typedef struct res_addr6_tag {
 
 typedef struct restrict_u_tag	restrict_u;
 struct restrict_u_tag {
-	restrict_u *		link;	/* link to next entry */
-	u_int32			count;	/* number of packets matched */
-	u_short			flags;	/* accesslist flags */
-	u_short			mflags;	/* match flags */
-	u_long			expire;	/* valid until time */
+	restrict_u *	link;		/* link to next entry */
+	u_int32		count;		/* number of packets matched */
+	u_short		flags;		/* accesslist flags */
+	u_short		mflags;		/* match flags */
+	short		ippeerlimit;	/* IP peer limit */
+	u_long		expire;		/* valid until time */
 	union {				/* variant starting here */
 		res_addr4 v4;
 		res_addr6 v6;
