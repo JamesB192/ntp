@@ -133,6 +133,7 @@
 %token	<Integer>	T_Interface
 %token	<Integer>	T_Intrange		/* not a token */
 %token	<Integer>	T_Io
+%token	<Integer>	T_Ippeerlimit
 %token	<Integer>	T_Ipv4
 %token	<Integer>	T_Ipv4_flag
 %token	<Integer>	T_Ipv6
@@ -306,6 +307,7 @@
 %type	<Integer>	interface_command
 %type	<Integer>	interface_nic
 %type	<Address_node>	ip_address
+%type	<Integer>	res_ippeerlimit
 %type	<Integer>	link_nolink
 %type	<Attr_val>	log_config_command
 %type	<Attr_val_fifo>	log_config_list
@@ -802,31 +804,31 @@ access_control_command
 		{
 			CONCAT_G_FIFOS(cfgt.mru_opts, $2);
 		}
-	|	T_Restrict address ac_flag_list
+	|	T_Restrict address res_ippeerlimit ac_flag_list
 		{
 			restrict_node *rn;
 
-			rn = create_restrict_node($2, NULL, $3,
+			rn = create_restrict_node($2, NULL, $3, $4,
 						  lex_current()->curpos.nline);
 			APPEND_G_FIFO(cfgt.restrict_opts, rn);
 		}
-	|	T_Restrict address T_Mask ip_address ac_flag_list
+	|	T_Restrict address T_Mask ip_address res_ippeerlimit ac_flag_list
 		{
 			restrict_node *rn;
 
-			rn = create_restrict_node($2, $4, $5,
+			rn = create_restrict_node($2, $4, $5, $6,
 						  lex_current()->curpos.nline);
 			APPEND_G_FIFO(cfgt.restrict_opts, rn);
 		}
-	|	T_Restrict T_Default ac_flag_list
+	|	T_Restrict T_Default res_ippeerlimit ac_flag_list
 		{
 			restrict_node *rn;
 
-			rn = create_restrict_node(NULL, NULL, $3,
+			rn = create_restrict_node(NULL, NULL, $3, $4,
 						  lex_current()->curpos.nline);
 			APPEND_G_FIFO(cfgt.restrict_opts, rn);
 		}
-	|	T_Restrict T_Ipv4_flag T_Default ac_flag_list
+	|	T_Restrict T_Ipv4_flag T_Default res_ippeerlimit ac_flag_list
 		{
 			restrict_node *rn;
 
@@ -837,11 +839,11 @@ access_control_command
 				create_address_node(
 					estrdup("0.0.0.0"),
 					AF_INET),
-				$4,
+				$4, $5,
 				lex_current()->curpos.nline);
 			APPEND_G_FIFO(cfgt.restrict_opts, rn);
 		}
-	|	T_Restrict T_Ipv6_flag T_Default ac_flag_list
+	|	T_Restrict T_Ipv6_flag T_Default res_ippeerlimit ac_flag_list
 		{
 			restrict_node *rn;
 
@@ -852,18 +854,39 @@ access_control_command
 				create_address_node(
 					estrdup("::"),
 					AF_INET6),
-				$4,
+				$4, $5,
 				lex_current()->curpos.nline);
 			APPEND_G_FIFO(cfgt.restrict_opts, rn);
 		}
-	|	T_Restrict T_Source ac_flag_list
+	|	T_Restrict T_Source res_ippeerlimit ac_flag_list
 		{
 			restrict_node *	rn;
 
-			APPEND_G_FIFO($3, create_int_node($2));
+			APPEND_G_FIFO($4, create_int_node($2));
 			rn = create_restrict_node(
-				NULL, NULL, $3, lex_current()->curpos.nline);
+				NULL, NULL, $3, $4, lex_current()->curpos.nline);
 			APPEND_G_FIFO(cfgt.restrict_opts, rn);
+		}
+	;
+
+res_ippeerlimit
+	:	/* empty ippeerlimit defaults to -1 (unlimited) */
+			{ $$ = -1; }
+	|	T_Ippeerlimit  T_Integer
+		{
+			if (($2 < -1) || ($2 > 100)) {
+				struct FILE_INFO * ip_ctx;
+
+				ip_ctx = lex_current();
+				msyslog(LOG_ERR,
+					"Unreasonable ippeerlimit value (%d) in %s line %d, column %d.  Using 0.",
+					$2,
+					ip_ctx->fname,
+					ip_ctx->errpos.nline,
+					ip_ctx->errpos.ncol);
+				$2 = 0;
+			}
+			$$ = $2;
 		}
 	;
 

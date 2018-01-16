@@ -1,7 +1,7 @@
 ---
 
 * [Sec 3415] Permit blocking authenticated symmetric/passive associations.
-  - HStenn, JPerlinger.
+  Implement ippeerlimit.  HStenn, JPerlinger.
 * [Sec 3414] ntpq: decodearr() can write beyond its 'buf' limits
   - initial patch by <stenn@ntp.org>, extended by <perlinger@ntp.org>
 * [Sec 3412] ctl_getitem(): Don't compare names past NUL. <perlinger@ntp.org>

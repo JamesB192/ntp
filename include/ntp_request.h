@@ -669,6 +669,7 @@ struct info_restrict {
 struct conf_restrict {
 	u_int32	addr;		/* match address */
 	u_int32 mask;		/* match mask */
+	short ippeerlimit;	/* ip peer limit */
 	u_short flags;		/* restrict flags */
 	u_short mflags;		/* match flags */
 	u_int v6_flag;		/* is this v6 or not */

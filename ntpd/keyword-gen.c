@@ -161,6 +161,7 @@ struct key_tok ntp_keywords[] = {
 { "noepeer",		T_Noepeer,		FOLLBY_TOKEN },
 { "flake",		T_Flake,		FOLLBY_TOKEN },
 { "ignore",		T_Ignore,		FOLLBY_TOKEN },
+{ "ippeerlimit",	T_Ippeerlimit,		FOLLBY_TOKEN },
 { "limited",		T_Limited,		FOLLBY_TOKEN },
 { "mssntp",		T_Mssntp,		FOLLBY_TOKEN },
 { "kod",		T_Kod,			FOLLBY_TOKEN },

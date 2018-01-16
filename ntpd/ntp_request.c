@@ -1840,6 +1840,7 @@ do_restrict(
 		memcpy(&cr, datap, item_sz);
 		cr.flags = ntohs(cr.flags);
 		cr.mflags = ntohs(cr.mflags);
+		cr.ippeerlimit = ntohs(cr.ippeerlimit);
 		if (client_v6_capable && cr.v6_flag) {
 			AF(&matchaddr) = AF_INET6;
 			AF(&matchmask) = AF_INET6;
@@ -1852,7 +1853,7 @@ do_restrict(
 			NSRCADR(&matchmask) = cr.mask;
 		}
 		hack_restrict(op, &matchaddr, &matchmask, cr.mflags,
-			      cr.flags, 0);
+			      cr.ippeerlimit, cr.flags, 0);
 		datap += item_sz;
 	}
 

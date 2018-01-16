@@ -96,6 +96,7 @@ static	restrict_u	restrict_def6;
 static	int		restrict_source_enabled;
 static	u_short		restrict_source_flags;
 static	u_short		restrict_source_mflags;
+static	short		restrict_source_ippeerlimit;
 
 /*
  * private functions
@@ -484,6 +485,7 @@ hack_restrict(
 	int		op,
 	sockaddr_u *	resaddr,
 	sockaddr_u *	resmask,
+	short		ippeerlimit,
 	u_short		mflags,
 	u_short		flags,
 	u_long		expire
@@ -494,14 +496,15 @@ hack_restrict(
 	restrict_u *	res;
 	restrict_u **	plisthead;
 
-	DPRINTF(1, ("restrict: op %d addr %s mask %s mflags %08x flags %08x\n",
-		    op, stoa(resaddr), stoa(resmask), mflags, flags));
+	DPRINTF(1, ("restrict: op %d addr %s mask %s ippeerlimit %d mflags %08x flags %08x\n",
+		    op, stoa(resaddr), stoa(resmask), ippeerlimit, mflags, flags));
 
 	if (NULL == resaddr) {
 		REQUIRE(NULL == resmask);
 		REQUIRE(RESTRICT_FLAGS == op);
 		restrict_source_flags = flags;
 		restrict_source_mflags = mflags;
+		restrict_source_ippeerlimit = ippeerlimit;
 		restrict_source_enabled = 1;
 		return;
 	}
@@ -639,7 +642,7 @@ restrict_source(
 	SET_HOSTMASK(&onesmask, AF(addr));
 	if (farewell) {
 		hack_restrict(RESTRICT_REMOVE, addr, &onesmask,
-			      0, 0, 0);
+			      -2, 0, 0, 0);
 		DPRINTF(1, ("restrict_source: %s removed", stoa(addr)));
 		return;
 	}
@@ -672,8 +675,8 @@ restrict_source(
 		return;
 
 	hack_restrict(RESTRICT_FLAGS, addr, &onesmask,
-		      restrict_source_mflags, restrict_source_flags,
-		      expire);
+		      restrict_source_ippeerlimit, restrict_source_mflags,
+		      restrict_source_flags, expire);
 	DPRINTF(1, ("restrict_source: %s host restriction added\n", 
 		    stoa(addr)));
 }
