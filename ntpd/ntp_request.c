@@ -838,7 +838,7 @@ peer_info (
 #endif
 		datap += item_sz;
 
-		pp = findexistingpeer(&addr, NULL, NULL, -1, 0);
+		pp = findexistingpeer(&addr, NULL, NULL, -1, 0, NULL);
 		if (NULL == pp)
 			continue;
 		if (IS_IPV6(srcadr)) {
@@ -982,7 +982,7 @@ peer_stats (
 
 		datap += item_sz;
 
-		pp = findexistingpeer(&addr, NULL, NULL, -1, 0);
+		pp = findexistingpeer(&addr, NULL, NULL, -1, 0, NULL);
 		if (NULL == pp)
 			continue;
 
@@ -1452,7 +1452,7 @@ do_unconf(
 			p = NULL;
 			do {
 				p = findexistingpeer(
-					&peeraddr, NULL, p, -1, 0);
+					&peeraddr, NULL, p, -1, 0, NULL);
 			} while (p && !(FLAG_CONFIG & p->flags));
 			
 			if (!loops && !p) {
@@ -1979,7 +1979,7 @@ reset_peer(
 #ifdef ISC_PLATFORM_HAVESALEN
 		peeraddr.sa.sa_len = SOCKLEN(&peeraddr);
 #endif
-		p = findexistingpeer(&peeraddr, NULL, NULL, -1, 0);
+		p = findexistingpeer(&peeraddr, NULL, NULL, -1, 0, NULL);
 		if (NULL == p)
 			bad++;
 		datap += item_sz;
@@ -2012,10 +2012,10 @@ reset_peer(
 #ifdef ISC_PLATFORM_HAVESALEN
 		peeraddr.sa.sa_len = SOCKLEN(&peeraddr);
 #endif
-		p = findexistingpeer(&peeraddr, NULL, NULL, -1, 0);
+		p = findexistingpeer(&peeraddr, NULL, NULL, -1, 0, NULL);
 		while (p != NULL) {
 			peer_reset(p);
-			p = findexistingpeer(&peeraddr, NULL, p, -1, 0);
+			p = findexistingpeer(&peeraddr, NULL, p, -1, 0, NULL);
 		}
 		datap += item_sz;
 	}
@@ -2496,7 +2496,7 @@ get_clock_info(
 	while (items-- > 0 && ic) {
 		NSRCADR(&addr) = *clkaddr++;
 		if (!ISREFCLOCKADR(&addr) || NULL ==
-		    findexistingpeer(&addr, NULL, NULL, -1, 0)) {
+		    findexistingpeer(&addr, NULL, NULL, -1, 0, NULL)) {
 			req_ack(srcadr, inter, inpkt, INFO_ERR_NODATA);
 			return;
 		}
@@ -2560,7 +2560,7 @@ set_clock_fudge(
 #endif
 		SET_PORT(&addr, NTP_PORT);
 		if (!ISREFCLOCKADR(&addr) || NULL ==
-		    findexistingpeer(&addr, NULL, NULL, -1, 0)) {
+		    findexistingpeer(&addr, NULL, NULL, -1, 0, NULL)) {
 			req_ack(srcadr, inter, inpkt, INFO_ERR_NODATA);
 			return;
 		}
@@ -2635,7 +2635,7 @@ get_clkbug_info(
 	while (items-- > 0 && ic) {
 		NSRCADR(&addr) = *clkaddr++;
 		if (!ISREFCLOCKADR(&addr) || NULL ==
-		    findexistingpeer(&addr, NULL, NULL, -1, 0)) {
+		    findexistingpeer(&addr, NULL, NULL, -1, 0, NULL)) {
 			req_ack(srcadr, inter, inpkt, INFO_ERR_NODATA);
 			return;
 		}

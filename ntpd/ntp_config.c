@@ -4210,7 +4210,7 @@ config_unpeers(
 		if (rc > 0) {
 			DPRINTF(1, ("unpeer: searching for %s\n",
 				    stoa(&peeraddr)));
-			p = findexistingpeer(&peeraddr, NULL, NULL, -1, 0);
+			p = findexistingpeer(&peeraddr, NULL, NULL, -1, 0, NULL);
 			if (p != NULL) {
 				msyslog(LOG_NOTICE, "unpeered %s",
 					stoa(&peeraddr));
@@ -4290,7 +4290,7 @@ unpeer_name_resolved(
 		memcpy(&peeraddr, res->ai_addr, res->ai_addrlen);
 		DPRINTF(1, ("unpeer: searching for peer %s\n",
 			    stoa(&peeraddr)));
-		peer = findexistingpeer(&peeraddr, NULL, NULL, -1, 0);
+		peer = findexistingpeer(&peeraddr, NULL, NULL, -1, 0, NULL);
 		if (peer != NULL) {
 			af = AF(&peeraddr);
 			fam_spec = (AF_INET6 == af)
