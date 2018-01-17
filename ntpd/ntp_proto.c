@@ -631,15 +631,15 @@ receive(
 	}
 	restrict_mask = restrictions(&rbufp->recv_srcadr);
 	pkt = &rbufp->recv_pkt;
-	DPRINTF(2, ("receive: at %ld %s<-%s flags %x restrict %03x org %#010x.%08x xmt %#010x.%08x\n",
-		    current_time, stoa(&rbufp->dstadr->sin),
-		    stoa(&rbufp->recv_srcadr), rbufp->dstadr->flags,
-		    restrict_mask, ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
-		    ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf)));
 	hisversion = PKT_VERSION(pkt->li_vn_mode);
 	hisleap = PKT_LEAP(pkt->li_vn_mode);
 	hismode = (int)PKT_MODE(pkt->li_vn_mode);
 	hisstratum = PKT_TO_STRATUM(pkt->stratum);
+	DPRINTF(2, ("receive: at %ld %s<-%s mode %d flags %x restrict %03x org %#010x.%08x xmt %#010x.%08x\n",
+		    current_time, stoa(&rbufp->dstadr->sin),
+		    stoa(&rbufp->recv_srcadr), hismode, rbufp->dstadr->flags,
+		    restrict_mask, ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
+		    ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf)));
 
 	/* See basic mode and broadcast checks, below */
 	INSIST(0 != hisstratum);
@@ -4394,7 +4394,7 @@ pool_xmit(
 		/* copy_addrinfo_list ai_addr points to a sockaddr_u */
 		rmtadr = (sockaddr_u *)(void *)pool->ai->ai_addr;
 		pool->ai = pool->ai->ai_next;
-		p = findexistingpeer(rmtadr, NULL, NULL, MODE_CLIENT, 0);
+		p = findexistingpeer(rmtadr, NULL, NULL, MODE_CLIENT, 0, NULL);
 	} while (p != NULL && pool->ai != NULL);
 	if (p != NULL)
 		return;	/* out of addresses, re-query DNS next poll */
