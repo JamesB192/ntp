@@ -645,11 +645,13 @@ receive(
 	INSIST(0 != hisstratum);
 
 	if (restrict_mask & RES_IGNORE) {
+		DPRINTF(2, ("receive: drop: RES_IGNORE\n"));
 		sys_restricted++;
 		return;				/* ignore everything */
 	}
 	if (hismode == MODE_PRIVATE) {
 		if (!ntp_mode7 || (restrict_mask & RES_NOQUERY)) {
+			DPRINTF(2, ("receive: drop: RES_NOQUERY\n"));
 			sys_restricted++;
 			return;			/* no query private */
 		}
@@ -659,6 +661,7 @@ receive(
 	}
 	if (hismode == MODE_CONTROL) {
 		if (restrict_mask & RES_NOQUERY) {
+			DPRINTF(2, ("receive: drop: RES_NOQUERY\n"));
 			sys_restricted++;
 			return;			/* no query control */
 		}
@@ -666,6 +669,7 @@ receive(
 		return;
 	}
 	if (restrict_mask & RES_DONTSERVE) {
+		DPRINTF(2, ("receive: drop: RES_DONTSERVE\n"));
 		sys_restricted++;
 		return;				/* no time serve */
 	}
@@ -676,6 +680,7 @@ receive(
 	 */
 	if (restrict_mask & RES_FLAKE) {
 		if ((double)ntp_random() / 0x7fffffff < .1) {
+			DPRINTF(2, ("receive: drop: RES_FLAKE\n"));
 			sys_restricted++;
 			return;			/* no flakeway */
 		}
@@ -691,6 +696,7 @@ receive(
 		   && hisversion >= NTP_OLDVERSION) {
 		sys_oldversion++;		/* previous version */
 	} else {
+		DPRINTF(2, ("receive: drop: RES_VERSION\n"));
 		sys_badlength++;
 		return;				/* old version */
 	}
@@ -705,6 +711,7 @@ receive(
 		if (hisversion == NTP_OLDVERSION) {
 			hismode = MODE_CLIENT;
 		} else {
+			DPRINTF(2, ("receive: drop: MODE_UNSPEC\n"));
 			sys_badlength++;
 			return;                 /* invalid mode */
 		}
@@ -733,6 +740,7 @@ receive(
 #endif /*AUTOKEY */
 
 		if (has_mac % 4 != 0 || has_mac < (int)MIN_MAC_LEN) {
+			DPRINTF(2, ("receive: drop: bad post-packet length\n"));
 			sys_badlength++;
 			return;			/* bad length */
 		}
@@ -746,6 +754,7 @@ receive(
 			if (   len % 4 != 0
 			    || len < 4
 			    || (int)len + authlen > rbufp->recv_length) {
+				DPRINTF(2, ("receive: drop: bad EF length\n"));
 				sys_badlength++;
 				return;		/* bad length */
 			}
@@ -762,6 +771,7 @@ receive(
 				if (   hostlen >= sizeof(hostname)
 				    || hostlen > len -
 						offsetof(struct exten, pkt)) {
+					DPRINTF(2, ("receive: drop: bad autokey hostname length\n"));
 					sys_badlength++;
 					return;		/* bad length */
 				}
@@ -769,6 +779,7 @@ receive(
 				hostname[hostlen] = '\0';
 				groupname = strchr(hostname, '@');
 				if (groupname == NULL) {
+					DPRINTF(2, ("receive: drop: empty autokey groupname\n"));
 					sys_declined++;
 					return;
 				}
@@ -784,6 +795,7 @@ receive(
 	 * If has_mac is < 0 we had a malformed packet.
 	 */
 	if (has_mac < 0) {
+		DPRINTF(2, ("receive: drop: post-packet under-read\n"));
 		sys_badlength++;
 		return;		/* bad length */
 	}
@@ -792,6 +804,7 @@ receive(
 	 * If authentication required, a MAC must be present.
 	 */
 	if (restrict_mask & RES_DONTTRUST && has_mac == 0) {
+		DPRINTF(2, ("receive: drop: RES_DONTTRUST\n"));
 		sys_restricted++;
 		return;				/* access denied */
 	}
@@ -808,9 +821,12 @@ receive(
 		if (   !(restrict_mask & RES_KOD)
 		    || MODE_BROADCAST == hismode
 		    || MODE_SERVER == hismode) {
-			if (MODE_SERVER == hismode)
+			if (MODE_SERVER == hismode) {
 				DPRINTF(1, ("Possibly self-induced rate limiting of MODE_SERVER from %s\n",
 					stoa(&rbufp->recv_srcadr)));
+			} else {
+				DPRINTF(2, ("receive: drop: RES_KOD\n"));
+			}
 			return;			/* rate exceeded */
 		}
 		if (hismode == MODE_CLIENT)
@@ -961,6 +977,7 @@ receive(
 			 * % can't happen
 			 */
 			if (has_mac < (int)MAX_MD5_LEN) {
+				DPRINTF(2, ("receive: drop: MD5 digest too short\n"));
 				sys_badauth++;
 				return;
 			}
@@ -977,6 +994,7 @@ receive(
 				if (   crypto_flags
 				    && rbufp->dstadr ==
 				       ANY_INTERFACE_CHOOSE(&rbufp->recv_srcadr)) {
+					DPRINTF(2, ("receive: drop: BCAST from wildcard\n"));
 					sys_restricted++;
 					return;	     /* no wildcard */
 				}
@@ -1089,6 +1107,7 @@ receive(
 				    restrict_mask);
 				sys_badauth++;
 			} else {
+				DPRINTF(2, ("receive: AM_FXMIT drop: !mcast restricted\n"));
 				sys_restricted++;
 			}
 
@@ -1100,6 +1119,7 @@ receive(
 		 * configured as a manycast server.
 		 */
 		if (!sys_manycastserver) {
+			DPRINTF(2, ("receive: AM_FXMIT drop: Not manycastserver\n"));
 			sys_restricted++;
 			return;			/* not enabled */
 		}
@@ -1109,6 +1129,7 @@ receive(
 		 * Do not respond if not the same group.
 		 */
 		if (group_test(groupname, NULL)) {
+			DPRINTF(2, ("receive: AM_FXMIT drop: empty groupname\n"));
 			sys_declined++;
 			return;
 		}
@@ -1123,6 +1144,7 @@ receive(
 		    || sys_stratum >= hisstratum
 		    || (!sys_cohort && sys_stratum == hisstratum + 1)
 		    || rbufp->dstadr->addr_refid == pkt->refid) {
+			DPRINTF(2, ("receive: AM_FXMIT drop: LEAP_NOTINSYNC || stratum || loop\n"));
 			sys_declined++;
 			return;			/* no help */
 		}
@@ -1179,11 +1201,13 @@ receive(
 		 * Do not respond if not the same group.
 		 */
 		if (group_test(groupname, NULL)) {
+			DPRINTF(2, ("receive: AM_MANYCAST drop: empty groupname\n"));
 			sys_declined++;
 			return;
 		}
 #endif /* AUTOKEY */
 		if ((peer2 = findmanycastpeer(rbufp)) == NULL) {
+			DPRINTF(2, ("receive: AM_MANYCAST drop: No manycast peer\n"));
 			sys_restricted++;
 			return;			/* not enabled */
 		}
@@ -1193,6 +1217,7 @@ receive(
 			      RES_DONTTRUST)), is_authentic)
 		    /* MC: RES_NOEPEER? */
 		   ) {
+			DPRINTF(2, ("receive: AM_MANYCAST drop: bad auth || (NOPEER|DONTTRUST)\n"));
 			sys_restricted++;
 			return;			/* access denied */
 		}
@@ -1204,6 +1229,7 @@ receive(
 		if (   hisleap == LEAP_NOTINSYNC
 		    || hisstratum < sys_floor
 		    || hisstratum >= sys_ceiling) {
+			DPRINTF(2, ("receive: AM_MANYCAST drop: unsync/stratum\n"));
 			sys_declined++;
 			return;			/* no help */
 		}
@@ -1213,6 +1239,7 @@ receive(
 			       (FLAG_IBURST & peer2->flags), MDF_UCAST |
 			       MDF_UCLNT, 0, skeyid, sys_ident);
 		if (NULL == peer) {
+			DPRINTF(2, ("receive: AM_MANYCAST drop: duplicate\n"));
 			sys_declined++;
 			return;			/* ignore duplicate  */
 		}
@@ -1249,11 +1276,13 @@ receive(
 		 * Do not respond if not the same group.
 		 */
 		if (group_test(groupname, sys_ident)) {
+			DPRINTF(2, ("receive: AM_NEWBCL drop: groupname mismatch\n"));
 			sys_declined++;
 			return;
 		}
 #endif /* AUTOKEY */
 		if (sys_bclient == 0) {
+			DPRINTF(2, ("receive: AM_NEWBCL drop: not a bclient\n"));
 			sys_restricted++;
 			return;			/* not enabled */
 		}
@@ -1261,6 +1290,7 @@ receive(
 			  (RES_NOPEER | RES_DONTTRUST)), is_authentic)
 		    /* NEWBCL: RES_NOEPEER? */
 		   ) {
+			DPRINTF(2, ("receive: AM_NEWBCL drop: AUTH failed\n"));
 			sys_restricted++;
 			return;			/* access denied */
 		}
@@ -1272,6 +1302,7 @@ receive(
 		if (   hisleap == LEAP_NOTINSYNC
 		    || hisstratum < sys_floor
 		    || hisstratum >= sys_ceiling) {
+			DPRINTF(2, ("receive: AM_NEWBCL drop: Unsync or bad stratum\n"));
 			sys_declined++;
 			return;			/* no help */
 		}
@@ -1283,6 +1314,7 @@ receive(
 		 */
 		if (   crypto_flags && skeyid > NTP_MAXKEY
 		    && (opcode & 0xffff0000) != (CRYPTO_ASSOC | CRYPTO_RESP)) {
+			DPRINTF(2, ("receive: AM_NEWBCL drop: Autokey but not CRYPTO_ASSOC\n"));
 			sys_declined++;
 			return;			/* protocol error */
 		}
@@ -1313,6 +1345,7 @@ receive(
 			 */
 			if (crypto_flags && skeyid > NTP_MAXKEY) {
 				sys_restricted++;
+				DPRINTF(2, ("receive: AM_NEWBCL drop: Autokey but not 2-way\n"));
 				return;		/* no autokey */
 			}
 #endif	/* AUTOKEY */
@@ -1326,6 +1359,7 @@ receive(
 			    pkt->ppoll, pkt->ppoll, FLAG_PREEMPT,
 			    MDF_BCLNT, 0, skeyid, sys_ident);
 			if (NULL == peer) {
+				DPRINTF(2, ("receive: AM_NEWBCL drop: duplicate\n"));
 				sys_restricted++;
 				return;		/* ignore duplicate */
 
@@ -1349,6 +1383,7 @@ receive(
 		    FLAG_BC_VOL | FLAG_IBURST | FLAG_PREEMPT, MDF_BCLNT,
 		    0, skeyid, sys_ident);
 		if (NULL == peer) {
+			DPRINTF(2, ("receive: AM_NEWBCL drop: empty newpeer() failed\n"));
 			sys_restricted++;
 			return;			/* ignore duplicate */
 		}
@@ -1375,6 +1410,7 @@ receive(
 		 * Do not respond if not the same group.
 		 */
 		if (group_test(groupname, sys_ident)) {
+			DPRINTF(2, ("receive: AM_NEWPASS drop: Autokey group mismatch\n"));
 			sys_declined++;
 			return;
 		}
@@ -1436,6 +1472,7 @@ receive(
 		 */
 		if (   hisleap != LEAP_NOTINSYNC
 		    && (hisstratum < sys_floor || hisstratum >= sys_ceiling)) {
+			DPRINTF(2, ("receive: AM_NEWPASS drop: Autokey group mismatch\n"));
 			sys_declined++;
 			return;			/* no help */
 		}
@@ -1448,6 +1485,7 @@ receive(
 		    rbufp->dstadr, MODE_PASSIVE, hisversion, pkt->ppoll,
 		    NTP_MAXDPOLL, 0, MDF_UCAST, 0, skeyid,
 		    sys_ident)) == NULL) {
+			DPRINTF(2, ("receive: AM_NEWPASS drop: newpeer() failed\n"));
 			sys_declined++;
 			return;			/* ignore duplicate */
 		}
@@ -1466,6 +1504,7 @@ receive(
 		 * Do not respond if not the same group.
 		 */
 		if (group_test(groupname, peer->ident)) {
+			DPRINTF(2, ("receive: AM_PROCPKT drop: Autokey group mismatch\n"));
 			sys_declined++;
 			return;
 		}
@@ -1574,6 +1613,7 @@ receive(
 			}
 
 			if (bail) {
+				DPRINTF(2, ("receive: AM_PROCPKT drop: bail\n"));
 				peer->timelastrec = current_time;
 				sys_declined++;
 				return;
@@ -1589,6 +1629,7 @@ receive(
 	 * attempt to deny service, just ignore it.
 	 */
 	case AM_ERR:
+		DPRINTF(2, ("receive: AM_ERR drop.\n"));
 		sys_declined++;
 		return;
 
@@ -1596,6 +1637,7 @@ receive(
 	 * For everything else there is the bit bucket.
 	 */
 	default:
+		DPRINTF(2, ("receive: default drop.\n"));
 		sys_declined++;
 		return;
 	}
@@ -1609,6 +1651,7 @@ receive(
 	if (   is_authentic != AUTH_CRYPTO
 	    && (   ((peer->flags & FLAG_SKEY) && skeyid <= NTP_MAXKEY)
 	        || (!(peer->flags & FLAG_SKEY) && skeyid > NTP_MAXKEY))) {
+		DPRINTF(2, ("receive: drop: Autokey but wrong/bad auth\n"));
 		sys_badauth++;
 		return;
 	}
@@ -1648,6 +1691,7 @@ receive(
 	 * the most recent packet, authenticated or not.
 	 */
 	} else if (L_ISEQU(&peer->xmt, &p_xmt)) {
+		DPRINTF(2, ("receive: drop: Duplicate xmit\n"));
 		peer->flash |= TEST1;			/* duplicate */
 		peer->oldpkt++;
 		return;
@@ -1825,6 +1869,7 @@ receive(
 	 */
 	} else if (   !L_ISZERO(&peer->dst)
 		   && !L_ISEQU(&p_org, &peer->dst)) {
+		DPRINTF(2, ("receive: drop: Bogus packet in interleaved symmetric mode\n"));
 		peer->bogusorg++;
 		peer->flags |= FLAG_XBOGUS;
 		peer->flash |= TEST2;		/* bogus */
@@ -1846,6 +1891,7 @@ receive(
 			if (unpeer_crypto_nak_early) {
 				unpeer(peer);
 			}
+			DPRINTF(2, ("receive: drop: PREEMPT crypto_NAK\n"));
 			return;
 		}
 #ifdef AUTOKEY
@@ -1853,6 +1899,7 @@ receive(
 			peer_clear(peer, "AUTH");
 		}
 #endif	/* AUTOKEY */
+		DPRINTF(2, ("receive: drop: crypto_NAK\n"));
 		return;
 
 	/*
@@ -1890,6 +1937,7 @@ receive(
 			peer_clear(peer, "AUTH");
 		}
 #endif	/* AUTOKEY */
+		DPRINTF(2, ("receive: drop: Bad or missing AUTH\n"));
 		return;
 	}
 
