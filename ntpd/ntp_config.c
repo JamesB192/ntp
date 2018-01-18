@@ -529,7 +529,7 @@ dump_config_tree(
 	setvar_node *setv_node;
 	nic_rule_node *rule_node;
 	int_node *i_n;
-	int_node *flags;
+	int_node *flag_tok_fifo;
 	int_node *counter_set;
 	string_node *str_node;
 
@@ -926,9 +926,9 @@ dump_config_tree(
 
 		if (NULL == rest_node->addr) {
 			s = "default";
-			flags = HEAD_PFIFO(rest_node->flags);
-			for ( ; flags != NULL; flags = flags->link) {
-				if (T_Source == flags->i) {
+			flag_tok_fifo = HEAD_PFIFO(rest_node->flag_tok_fifo);
+			for ( ; flag_tok_fifo != NULL; flag_tok_fifo = flag_tok_fifo->link) {
+				if (T_Source == flag_tok_fifo->i) {
 					s = "source";
 					break;
 				} 
@@ -941,10 +941,10 @@ dump_config_tree(
 			fprintf(df, " mask %s",
 				rest_node->mask->address);
 		fprintf(df, " ippeerlimit %d", rest_node->ippeerlimit);
-		flags = HEAD_PFIFO(rest_node->flags);
-		for ( ; flags != NULL; flags = flags->link)
-			if (T_Source != flags->i)
-				fprintf(df, " %s", keyword(flags->i));
+		flag_tok_fifo = HEAD_PFIFO(rest_node->flag_tok_fifo);
+		for ( ; flag_tok_fifo != NULL; flag_tok_fifo = flag_tok_fifo->link)
+			if (T_Source != flag_tok_fifo->i)
+				fprintf(df, " %s", keyword(flag_tok_fifo->i));
 		fprintf(df, "\n");
 	}
 
@@ -1454,7 +1454,7 @@ create_restrict_node(
 	address_node *	addr,
 	address_node *	mask,
 	short		ippeerlimit,
-	int_fifo *	flags,
+	int_fifo *	flag_tok_fifo,
 	int		line_no
 	)
 {
@@ -1464,7 +1464,7 @@ create_restrict_node(
 	my_node->addr = addr;
 	my_node->mask = mask;
 	my_node->ippeerlimit = ippeerlimit;
-	my_node->flags = flags;
+	my_node->flag_tok_fifo = flag_tok_fifo;
 	my_node->line_no = line_no;
 
 	return my_node;
@@ -1481,7 +1481,7 @@ destroy_restrict_node(
 	 */
 	destroy_address_node(my_node->addr);
 	destroy_address_node(my_node->mask);
-	destroy_int_fifo(my_node->flags);
+	destroy_int_fifo(my_node->flag_tok_fifo);
 	free(my_node);
 }
 
@@ -2438,7 +2438,7 @@ config_access(
 	static int		warned_signd;
 	attr_val *		my_opt;
 	restrict_node *		my_node;
-	int_node *		curr_flag;
+	int_node *		curr_tok_fifo;
 	sockaddr_u		addr;
 	sockaddr_u		mask;
 	struct addrinfo		hints;
@@ -2574,12 +2574,12 @@ config_access(
 		flags = 0;
 		mflags = 0;
 
-		curr_flag = HEAD_PFIFO(my_node->flags);
-		for (; curr_flag != NULL; curr_flag = curr_flag->link) {
-			switch (curr_flag->i) {
+		curr_tok_fifo = HEAD_PFIFO(my_node->flag_tok_fifo);
+		for (; curr_tok_fifo != NULL; curr_tok_fifo = curr_tok_fifo->link) {
+			switch (curr_tok_fifo->i) {
 
 			default:
-				fatal_error("config_access: flag-type-token=%d", curr_flag->i);
+				fatal_error("config_access: flag-type-token=%d", curr_tok_fifo->i);
 
 			case T_Ntpport:
 				mflags |= RESM_NTPONLY;
@@ -3103,17 +3103,17 @@ apply_enable_disable(
 	int		enable
 	)
 {
-	attr_val *curr_flag;
+	attr_val *curr_tok_fifo;
 	int option;
 #ifdef BC_LIST_FRAMEWORK_NOT_YET_USED
 	bc_entry *pentry;
 #endif
 
-	for (curr_flag = HEAD_PFIFO(fifo);
-	     curr_flag != NULL;
-	     curr_flag = curr_flag->link) {
+	for (curr_tok_fifo = HEAD_PFIFO(fifo);
+	     curr_tok_fifo != NULL;
+	     curr_tok_fifo = curr_tok_fifo->link) {
 
-		option = curr_flag->value.i;
+		option = curr_tok_fifo->value.i;
 		switch (option) {
 
 		default:

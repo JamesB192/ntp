@@ -110,7 +110,7 @@ struct restrict_node_tag {
 	restrict_node *	link;
 	address_node *	addr;
 	address_node *	mask;
-	int_fifo *	flags;
+	int_fifo *	flag_tok_fifo;
 	int		line_no;
 	short		ippeerlimit;
 };
