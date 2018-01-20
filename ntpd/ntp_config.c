@@ -364,6 +364,9 @@ static u_int32 get_match(const char *, struct masks *);
 static u_int32 get_logmask(const char *);
 static int/*BOOL*/ is_refclk_addr(const address_node * addr);
 
+static char *	rflagstoa(u_short);
+static char *	rmflagstoa(u_short);
+
 
 #ifndef SIM
 static int getnetnum(const char *num, sockaddr_u *addr, int complain,
@@ -939,8 +942,8 @@ dump_config_tree(
 				} 
 			}
 		} else {
-			char *ap = rest_node->addr->address;
-			char *mp;
+			cons char *ap = rest_node->addr->address;
+			cons char *mp = "";
 
 			if (rest_node->mask)
 				mp = rest_node->mask->address;
