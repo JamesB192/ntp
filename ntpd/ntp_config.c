@@ -942,8 +942,8 @@ dump_config_tree(
 				} 
 			}
 		} else {
-			cons char *ap = rest_node->addr->address;
-			cons char *mp = "";
+			const char *ap = rest_node->addr->address;
+			const char *mp = "";
 
 			if (rest_node->mask)
 				mp = rest_node->mask->address;
