@@ -149,9 +149,9 @@ typedef struct peer_resolved_ctx_tag {
 extern int yydebug;			/* ntp_parser.c (.y) */
 config_tree cfgt;			/* Parser output stored here */
 struct config_tree_tag *cfg_tree_history;	/* History of configs */
-char	*sys_phone[MAXPHONE] = {NULL};	/* ACTS phone numbers */
+char *	sys_phone[MAXPHONE] = {NULL};	/* ACTS phone numbers */
 char	default_keysdir[] = NTP_KEYSDIR;
-char	*keysdir = default_keysdir;	/* crypto keys directory */
+char *	keysdir = default_keysdir;	/* crypto keys directory */
 char *	saveconfigdir;
 #if defined(HAVE_SCHED_SETSCHEDULER)
 int	config_priority_override = 0;
@@ -364,8 +364,7 @@ static u_int32 get_match(const char *, struct masks *);
 static u_int32 get_logmask(const char *);
 static int/*BOOL*/ is_refclk_addr(const address_node * addr);
 
-static char *	rflagstoa(u_short);
-static char *	rmflagstoa(u_short);
+static void	appendstr(char *, size_t, char *);
 
 
 #ifndef SIM
@@ -2596,6 +2595,7 @@ config_access(
 	ippeerlimit = -1;
 	my_node = HEAD_PFIFO(ptree->restrict_opts);
 	/* Grab the ippeerlmit */
+
 	for (; my_node != NULL; my_node = my_node->link) {
 		/* Parse the flags */
 		flags = 0;
@@ -5243,3 +5243,140 @@ ntp_rlimit(
 	}
 }
 #endif	/* HAVE_SETRLIMIT */
+
+
+char *
+build_mflags(u_short mflags)
+{
+	static char mfs[1024];
+
+	mfs[0] = '\0';
+
+	if (mflags & RESM_NTPONLY) {
+		mflags &= ~RESM_NTPONLY;
+		appendstr(mfs, sizeof mfs, "ntponly");
+	}
+
+	if (mflags & RESM_SOURCE) {
+		mflags &= ~RESM_SOURCE;
+		appendstr(mfs, sizeof mfs, "source");
+	}
+
+	if (mflags) {
+		char string[10];
+
+		snprintf(string, sizeof string, "%0x", mflags);
+		appendstr(mfs, sizeof mfs, string);
+	}
+
+	return mfs;
+}
+
+
+char *
+build_rflags(u_short flags)
+{
+	static char mfs[1024];
+
+	mfs[0] = '\0';
+
+	if (flags & RES_FLAKE) {
+		flags &= ~RES_FLAKE;
+		appendstr(mfs, sizeof mfs, "flake");
+	}
+
+	if (flags & RES_IGNORE) {
+		flags &= ~RES_IGNORE;
+		appendstr(mfs, sizeof mfs, "ignore");
+	}
+
+	if (flags & RES_KOD) {
+		flags &= ~RES_KOD;
+		appendstr(mfs, sizeof mfs, "kod");
+	}
+
+	if (flags & RES_MSSNTP) {
+		flags &= ~RES_MSSNTP;
+		appendstr(mfs, sizeof mfs, "mssntp");
+	}
+
+	if (flags & RES_LIMITED) {
+		flags &= ~RES_LIMITED;
+		appendstr(mfs, sizeof mfs, "limited");
+	}
+
+	if (flags & RES_LPTRAP) {
+		flags &= ~RES_LPTRAP;
+		appendstr(mfs, sizeof mfs, "lptrap");
+	}
+
+	if (flags & RES_NOMODIFY) {
+		flags &= ~RES_NOMODIFY;
+		appendstr(mfs, sizeof mfs, "nomodify");
+	}
+
+	if (flags & RES_NOMRULIST) {
+		flags &= ~RES_NOMRULIST;
+		appendstr(mfs, sizeof mfs, "nomrulist");
+	}
+
+	if (flags & RES_NOEPEER) {
+		flags &= ~RES_NOEPEER;
+		appendstr(mfs, sizeof mfs, "noepeer");
+	}
+
+	if (flags & RES_NOPEER) {
+		flags &= ~RES_NOPEER;
+		appendstr(mfs, sizeof mfs, "nopeer");
+	}
+
+	if (flags & RES_NOQUERY) {
+		flags &= ~RES_NOQUERY;
+		appendstr(mfs, sizeof mfs, "noquery");
+	}
+
+	if (flags & RES_DONTSERVE) {
+		flags &= ~RES_DONTSERVE;
+		appendstr(mfs, sizeof mfs, "dontserve");
+	}
+
+	if (flags & RES_NOTRAP) {
+		flags &= ~RES_NOTRAP;
+		appendstr(mfs, sizeof mfs, "notrap");
+	}
+
+	if (flags & RES_DONTTRUST) {
+		flags &= ~RES_DONTTRUST;
+		appendstr(mfs, sizeof mfs, "notrust");
+	}
+
+	if (flags & RES_VERSION) {
+		flags &= ~RES_VERSION;
+		appendstr(mfs, sizeof mfs, "version");
+	}
+
+	if (flags) {
+		char string[10];
+
+		snprintf(string, sizeof string, "%0x", flags);
+		appendstr(mfs, sizeof mfs, string);
+	}
+
+	return mfs;
+}
+
+
+static void
+appendstr(
+	char *string,
+	size_t s,
+	char *new
+	)
+{
+	if (*string != '\0') {
+		(void)strlcat(string, ",", s);
+	}
+	(void)strlcat(string, new, s);
+
+	return;
+}
