@@ -555,7 +555,10 @@ dump_config_tree(
 			ptree->source.value.s);
 	}
 
-	/* For options I didn't find documentation I'll just output its name and the cor. value */
+	/*
+	 * For options without documentation we just output the name
+	 * and its data value
+	 */
 	atrv = HEAD_PFIFO(ptree->vars);
 	for ( ; atrv != NULL; atrv = atrv->link) {
 		switch (atrv->type) {
@@ -923,9 +926,11 @@ dump_config_tree(
 	for (rest_node = HEAD_PFIFO(ptree->restrict_opts);
 	     rest_node != NULL;
 	     rest_node = rest_node->link) {
+		int is_default = 0;
 
 		if (NULL == rest_node->addr) {
 			s = "default";
+			/* Don't need to set is_default=1 here */
 			flag_tok_fifo = HEAD_PFIFO(rest_node->flag_tok_fifo);
 			for ( ; flag_tok_fifo != NULL; flag_tok_fifo = flag_tok_fifo->link) {
 				if (T_Source == flag_tok_fifo->i) {
@@ -934,10 +939,29 @@ dump_config_tree(
 				} 
 			}
 		} else {
-			s = rest_node->addr->address;
+			char *ap = rest_node->addr->address;
+			char *mp;
+
+			if (rest_node->mask)
+				mp = rest_node->mask->address;
+
+			if (   rest_node->addr->type == AF_INET
+			    && !strcmp(ap, "0.0.0.0")
+			    && !strcmp(mp, "0.0.0.0")) {
+				is_default = 1;
+				s = "-4 default";
+			} else if (   rest_node->mask
+				   && rest_node->mask->type == AF_INET6
+				   && !strcmp(ap, "::")
+				   && !strcmp(mp, "::")) {
+				is_default = 1;
+				s = "-6 default";
+			} else {
+				s = ap;
+			}
 		}
 		fprintf(df, "restrict %s", s);
-		if (rest_node->mask != NULL)
+		if (rest_node->mask != NULL && !is_default)
 			fprintf(df, " mask %s",
 				rest_node->mask->address);
 		fprintf(df, " ippeerlimit %d", rest_node->ippeerlimit);
@@ -2817,6 +2841,9 @@ config_rlimit(
 
 		case T_Memlock:
 			/* What if we HAVE_OPT(SAVECONFIGQUIT) ? */
+			if (HAVE_OPT( SAVECONFIGQUIT )) {
+				break;
+			}
 			if (rlimit_av->value.i == -1) {
 # if defined(HAVE_MLOCKALL)
 				if (cur_memlock != 0) {
@@ -5149,6 +5176,9 @@ ntp_rlimit(
 	switch (rl_what) {
 # ifdef RLIMIT_MEMLOCK
 	    case RLIMIT_MEMLOCK:
+		if (HAVE_OPT( SAVECONFIGQUIT )) {
+			break;
+		}
 		/*
 		 * The default RLIMIT_MEMLOCK is very low on Linux systems.
 		 * Unless we increase this limit malloc calls are likely to

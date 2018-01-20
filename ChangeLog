@@ -80,6 +80,7 @@
 * Distribute testconf.yml.  HStenn.
 * Add DPRINTF(2,...) lines to receive() for packet drops.  HStenn.
 * Rename the configuration flag fifo variables.  HStenn.
+* Improve saveconfig output.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
