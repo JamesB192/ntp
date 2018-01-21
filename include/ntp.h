@@ -840,8 +840,9 @@ struct restrict_u_tag {
 #define	V6_SIZEOF_RESTRICT_U	(offsetof(restrict_u, u)	\
 				 + sizeof(res_addr6))
 
-char *build_rflags(u_short flags);
+char *build_iflags(u_int32 flags);
 char *build_mflags(u_short flags);
+char *build_rflags(u_short flags);
 
 /*
  * Access flags

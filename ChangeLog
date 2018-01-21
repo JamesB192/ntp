@@ -82,6 +82,7 @@
 * Rename the configuration flag fifo variables.  HStenn.
 * Improve saveconfig output.  HStenn.
 * Decode restrict flags on receive() debug output.  HStenn.
+* Decode interface flags on receive() debug output.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>

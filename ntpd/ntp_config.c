@@ -5246,6 +5246,79 @@ ntp_rlimit(
 
 
 char *
+build_iflags(u_int32 iflags)
+{
+	static char ifs[1024];
+
+	ifs[0] = '\0';
+
+	if (iflags & INT_UP) {
+		iflags &= ~INT_UP;
+		appendstr(ifs, sizeof ifs, "up");
+	}
+
+	if (iflags & INT_PPP) {
+		iflags &= ~INT_PPP;
+		appendstr(ifs, sizeof ifs, "ppp");
+	}
+
+	if (iflags & INT_LOOPBACK) {
+		iflags &= ~INT_LOOPBACK;
+		appendstr(ifs, sizeof ifs, "loopback");
+	}
+
+	if (iflags & INT_BROADCAST) {
+		iflags &= ~INT_BROADCAST;
+		appendstr(ifs, sizeof ifs, "broadcast");
+	}
+
+	if (iflags & INT_MULTICAST) {
+		iflags &= ~INT_MULTICAST;
+		appendstr(ifs, sizeof ifs, "multicast");
+	}
+
+	if (iflags & INT_BCASTOPEN) {
+		iflags &= ~INT_BCASTOPEN;
+		appendstr(ifs, sizeof ifs, "bcastopen");
+	}
+
+	if (iflags & INT_MCASTOPEN) {
+		iflags &= ~INT_MCASTOPEN;
+		appendstr(ifs, sizeof ifs, "mcastopen");
+	}
+
+	if (iflags & INT_WILDCARD) {
+		iflags &= ~INT_WILDCARD;
+		appendstr(ifs, sizeof ifs, "wildcard");
+	}
+
+	if (iflags & INT_MCASTIF) {
+		iflags &= ~INT_MCASTIF;
+		appendstr(ifs, sizeof ifs, "MCASTif");
+	}
+
+	if (iflags & INT_PRIVACY) {
+		iflags &= ~INT_PRIVACY;
+		appendstr(ifs, sizeof ifs, "IPv6privacy");
+	}
+
+	if (iflags & INT_BCASTXMIT) {
+		iflags &= ~INT_BCASTXMIT;
+		appendstr(ifs, sizeof ifs, "bcastxmit");
+	}
+
+	if (iflags) {
+		char string[10];
+
+		snprintf(string, sizeof string, "%0x", iflags);
+		appendstr(ifs, sizeof ifs, string);
+	}
+
+	return ifs;
+}
+
+
+char *
 build_mflags(u_short mflags)
 {
 	static char mfs[1024];
@@ -5276,93 +5349,93 @@ build_mflags(u_short mflags)
 char *
 build_rflags(u_short flags)
 {
-	static char mfs[1024];
+	static char rfs[1024];
 
-	mfs[0] = '\0';
+	rfs[0] = '\0';
 
 	if (flags & RES_FLAKE) {
 		flags &= ~RES_FLAKE;
-		appendstr(mfs, sizeof mfs, "flake");
+		appendstr(rfs, sizeof rfs, "flake");
 	}
 
 	if (flags & RES_IGNORE) {
 		flags &= ~RES_IGNORE;
-		appendstr(mfs, sizeof mfs, "ignore");
+		appendstr(rfs, sizeof rfs, "ignore");
 	}
 
 	if (flags & RES_KOD) {
 		flags &= ~RES_KOD;
-		appendstr(mfs, sizeof mfs, "kod");
+		appendstr(rfs, sizeof rfs, "kod");
 	}
 
 	if (flags & RES_MSSNTP) {
 		flags &= ~RES_MSSNTP;
-		appendstr(mfs, sizeof mfs, "mssntp");
+		appendstr(rfs, sizeof rfs, "mssntp");
 	}
 
 	if (flags & RES_LIMITED) {
 		flags &= ~RES_LIMITED;
-		appendstr(mfs, sizeof mfs, "limited");
+		appendstr(rfs, sizeof rfs, "limited");
 	}
 
 	if (flags & RES_LPTRAP) {
 		flags &= ~RES_LPTRAP;
-		appendstr(mfs, sizeof mfs, "lptrap");
+		appendstr(rfs, sizeof rfs, "lptrap");
 	}
 
 	if (flags & RES_NOMODIFY) {
 		flags &= ~RES_NOMODIFY;
-		appendstr(mfs, sizeof mfs, "nomodify");
+		appendstr(rfs, sizeof rfs, "nomodify");
 	}
 
 	if (flags & RES_NOMRULIST) {
 		flags &= ~RES_NOMRULIST;
-		appendstr(mfs, sizeof mfs, "nomrulist");
+		appendstr(rfs, sizeof rfs, "nomrulist");
 	}
 
 	if (flags & RES_NOEPEER) {
 		flags &= ~RES_NOEPEER;
-		appendstr(mfs, sizeof mfs, "noepeer");
+		appendstr(rfs, sizeof rfs, "noepeer");
 	}
 
 	if (flags & RES_NOPEER) {
 		flags &= ~RES_NOPEER;
-		appendstr(mfs, sizeof mfs, "nopeer");
+		appendstr(rfs, sizeof rfs, "nopeer");
 	}
 
 	if (flags & RES_NOQUERY) {
 		flags &= ~RES_NOQUERY;
-		appendstr(mfs, sizeof mfs, "noquery");
+		appendstr(rfs, sizeof rfs, "noquery");
 	}
 
 	if (flags & RES_DONTSERVE) {
 		flags &= ~RES_DONTSERVE;
-		appendstr(mfs, sizeof mfs, "dontserve");
+		appendstr(rfs, sizeof rfs, "dontserve");
 	}
 
 	if (flags & RES_NOTRAP) {
 		flags &= ~RES_NOTRAP;
-		appendstr(mfs, sizeof mfs, "notrap");
+		appendstr(rfs, sizeof rfs, "notrap");
 	}
 
 	if (flags & RES_DONTTRUST) {
 		flags &= ~RES_DONTTRUST;
-		appendstr(mfs, sizeof mfs, "notrust");
+		appendstr(rfs, sizeof rfs, "notrust");
 	}
 
 	if (flags & RES_VERSION) {
 		flags &= ~RES_VERSION;
-		appendstr(mfs, sizeof mfs, "version");
+		appendstr(rfs, sizeof rfs, "version");
 	}
 
 	if (flags) {
 		char string[10];
 
 		snprintf(string, sizeof string, "%0x", flags);
-		appendstr(mfs, sizeof mfs, string);
+		appendstr(rfs, sizeof rfs, string);
 	}
 
-	return mfs;
+	return rfs;
 }
 
 
