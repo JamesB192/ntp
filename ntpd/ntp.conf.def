@@ -1639,7 +1639,7 @@ directive and also want to use
 by default, you'll want a
 .Cm "restrict source ..."
 line as well that does
-.It not
+.Em not
 include the
 .Cm nopeer
 directive.
@@ -2020,6 +2020,7 @@ and even though there are a number of protections built in to
 broadcast mode, attempts to perform  a replay attack are possible.
 This value defaults to 0, but can be changed
 to any number of poll intervals between 0 and 4.
+.El
 .Ss Manycast Options
 .Bl -tag -width indent
 .It Xo Ic tos
@@ -2365,7 +2366,7 @@ specific drivers in the
 page
 (available as part of the HTML documentation
 provided in
-.Pa /usr/share/doc/ntp ) .
+.Pa /usr/share/doc/ntp ).
 .It Cm stratum Ar int
 Specifies the stratum number assigned to the driver, an integer
 between 0 and 15.
@@ -3033,7 +3034,7 @@ holds the names of the reference clock variables.
 .It Cm sysinfo
 Display operational summary.
 .It Cm sysstats
-Show statistucs counters maintained in the protocol module.
+Show statistics counters maintained in the protocol module.
 .It Xo Ic tinker
 .Oo
 .Cm allan Ar allan |
@@ -3153,8 +3154,7 @@ interface used may vary from time to time with routing changes.
 This command specifies a list of TTL values in increasing order.
 Up to 8 values can be specified.
 In
-.Cm
-manycast
+.Cm manycast
 mode these values are used in-turn in an expanding-ring search.
 The default is eight multiples of 32 starting at 31.
 .Pp
