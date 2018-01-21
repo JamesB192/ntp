@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntp.conf.texi)
 #
-# It has been AutoGen-ed  January 21, 2018 at 03:03:16 AM by AutoGen 5.18.5
+# It has been AutoGen-ed  January 21, 2018 at 12:41:56 PM by AutoGen 5.18.5
 # From the definitions    ntp.conf.def
 # and the template file   agtexi-file.tpl
 @end ignore
@@ -1566,7 +1566,7 @@ directive and also want to use
 by default, you'll want a
 @code{restrict source ...}
 line as well that does
-@item not
+@emph{not}
 include the
 @code{nopeer}
 directive.
@@ -1944,6 +1944,7 @@ and even though there are a number of protections built in to
 broadcast mode, attempts to perform  a replay attack are possible.
 This value defaults to 0, but can be changed
 to any number of poll intervals between 0 and 4.
+@end table
 @subsubsection Manycast Options
 @table @asis
 @item @code{tos} @code{[@code{ceiling} @kbd{ceiling} | @code{cohort} @code{@{} @code{0} | @code{1} @code{@}} | @code{floor} @kbd{floor} | @code{minclock} @kbd{minclock} | @code{minsane} @kbd{minsane}]}
@@ -2259,7 +2260,7 @@ specific drivers in the
 page
 (available as part of the HTML documentation
 provided in
-@file{/usr/share/doc/ntp}).
+@file{/usr/share/doc/ntp} @file{).}
 @item @code{stratum} @kbd{int}
 Specifies the stratum number assigned to the driver, an integer
 between 0 and 15.
@@ -2858,7 +2859,7 @@ holds the names of the reference clock variables.
 @item @code{sysinfo}
 Display operational summary.
 @item @code{sysstats}
-Show statistucs counters maintained in the protocol module.
+Show statistics counters maintained in the protocol module.
 @item @code{tinker} @code{[@code{allan} @kbd{allan} | @code{dispersion} @kbd{dispersion} | @code{freq} @kbd{freq} | @code{huffpuff} @kbd{huffpuff} | @code{panic} @kbd{panic} | @code{step} @kbd{step} | @code{stepback} @kbd{stepback} | @code{stepfwd} @kbd{stepfwd} | @code{stepout} @kbd{stepout}]}
 This command can be used to alter several system variables in
 very exceptional circumstances.
@@ -2948,7 +2949,6 @@ name space.
 The
 @code{assocID}
 is required, as the same name can occur in both name spaces.
-
 @item @code{trap} @kbd{host_address} @code{[@code{port} @kbd{port_number}]} @code{[@code{interface} @kbd{interface_address}]}
 This command configures a trap receiver at the given host
 address and port number for sending messages with the specified
@@ -2964,7 +2964,7 @@ interface used may vary from time to time with routing changes.
 This command specifies a list of TTL values in increasing order.
 Up to 8 values can be specified.
 In
-manycast
+@code{manycast}
 mode these values are used in-turn in an expanding-ring search.
 The default is eight multiples of 32 starting at 31.
 

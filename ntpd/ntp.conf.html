@@ -1554,10 +1554,10 @@ and
 <code>ntpdc(1ntpdcmdoc)</code>
 queries. 
 Time service is not affected. 
-<br><dt><code>nopeer</code><dd>Deny packets which would result in mobilizing a new association. 
-This
-includes broadcast and symmetric active packets when a configured
-association does not exist. 
+<br><dt><code>nopeer</code><dd>Deny unauthenticated packets which would result in mobilizing a new association. 
+This includes
+broadcast and symmetric active packets
+when a configured association does not exist. 
 It also includes
 <code>pool</code>
 associations, so if you want to use servers from a
@@ -1565,10 +1565,13 @@ associations, so if you want to use servers from a
 directive and also want to use
 <code>nopeer</code>
 by default, you'll want a
-<code>restrict source ...</code> <code>line</code> <code>as</code> <code>well</code> <code>that</code> <code>does</code>
+<code>restrict source ...</code>
+line as well that does
 <br><dt>not<dd>include the
 <code>nopeer</code>
 directive. 
+<br><dt><code>noepeer</code><dd>Deny packets that would mobilize an ephemeral peering association,
+even if authenticated. 
 <br><dt><code>noserve</code><dd>Deny all packets except
 <code>ntpq(1ntpqmdoc)</code>
 and
@@ -2499,27 +2502,90 @@ This option is useful for sites that run
 <code>ntpd(1ntpdmdoc)</code>
 on multiple hosts, with (mostly) common options (e.g., a
 restriction list). 
-<br><dt><code>leapsmearinterval</code> <kbd>seconds</kbd><dd>This EXPERIMENTAL option is only available if
-<code>ntpd(1ntpdmdoc)</code>
+<br><dt><code>interface</code><dd><code>[listen | ignore | drop]</code>
+<code>[all | ipv4 | ipv6 | wildcard </code><kbd>name</kbd><code> | </code><kbd>address</kbd><code> [/ </code><kbd>prefixlen</kbd><code>]
+The
+interface
+directive controls which network addresses
+ntpd(1ntpdmdoc)
+opens, and whether input is dropped without processing. 
+The first parameter determines the aciton  for addresses
+which match the second parameter. 
+The second parameter specifies a class of addresses,
+or a specific interface name,
+or an address. 
+In the address case,
+</code><kbd>prefixlen</kbd><code>
+determines how many bits must match  for this rule to apply. 
+ignore
+prevents opening matching addresses,
+drop
+causes
+ntpd(1ntpdmdoc)
+to open the address and drop all received packets without examination. 
+Multiple
+interface
+directives can be used. 
+The last rule which matches a particular address determines the action for it. 
+interface
+directives are disabled if any
+-I,
+--interface,
+-L,
+or
+--novirtualips
+command-line options are specified in the configuration file,
+all available network addresses are opened. 
+The
+nic
+directive is an alias for
+interface. 
+<br><dt>leapfile </code><kbd>leapfile</kbd><code><dd>This command loads the IERS leapseconds file and initializes the
+leapsecond values for the next leapsecond event, leapfile expiration
+time, and TAI offset. 
+The file can be obtained directly from the IERS at
+https://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list
+or
+ftp://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list. 
+The
+leapfile
+is scanned when
+ntpd(1ntpdmdoc)
+processes the
+leapfile directive or when
+ntpd detects that the
+</code><kbd>leapfile</kbd><code>
+has changed. 
+ntpd
+checks once a day to see if the
+</code><kbd>leapfile</kbd><code>
+has changed. 
+The
+update-leap(1update_leapmdoc)
+script can be run to see if the
+</code><kbd>leapfile</kbd><code>
+should be updated. 
+<br><dt>leapsmearinterval </code><kbd>seconds</kbd><code><dd>This EXPERIMENTAL option is only available if
+ntpd(1ntpdmdoc)
 was built with the
-<code>--enable-leap-smear</code>
+--enable-leap-smear
 option to the
-<code>configure</code>
+configure
 script. 
 It specifies the interval over which a leap second correction will be applied. 
 Recommended values for this option are between
 7200 (2 hours) and 86400 (24 hours). 
 .Sy DO NOT USE THIS OPTION ON PUBLIC-ACCESS SERVERS! 
 See http://bugs.ntp.org/2855 for more information. 
-<br><dt><code>logconfig</code> <kbd>configkeyword</kbd><dd>This command controls the amount and type of output written to
+<br><dt>logconfig </code><kbd>configkeyword</kbd><code><dd>This command controls the amount and type of output written to
 the system
-<code>syslog(3)</code>
+syslog(3)
 facility or the alternate
-<code>logfile</code>
+logfile
 log file. 
 By default, all output is turned on. 
 All
-<kbd>configkeyword</kbd>
+</code><kbd>configkeyword</kbd><code>
 keywords can be prefixed with
 &lsquo;=&rsquo;,
 &lsquo;+&rsquo;
@@ -2528,36 +2594,36 @@ and
 where
 &lsquo;=&rsquo;
 sets the
-<code>syslog(3)</code>
+syslog(3)
 priority mask,
 &lsquo;+&rsquo;
 adds and
 &lsquo;-&rsquo;
 removes
 messages. 
-<code>syslog(3)</code>
+syslog(3)
 messages can be controlled in four
 classes
-(<code>clock</code>, <code>peer</code>, <code>sys</code> and <code>sync</code>). 
+(clock, peer, sys and sync). 
 Within these classes four types of messages can be
 controlled: informational messages
-(<code>info</code>),
+(info),
 event messages
-(<code>events</code>),
+(events),
 statistics messages
-(<code>statistics</code>)
+(statistics)
 and
 status messages
-(<code>status</code>).
+(status).
 
           <p>Configuration keywords are formed by concatenating the message class with
 the event class. 
 The
-<code>all</code>
+all
 prefix can be used instead of a message class. 
 A
 message class may also be followed by the
-<code>all</code>
+all
 keyword to enable/disable all
 messages of the respective message class. 
 Thus, a minimal log configuration
@@ -2566,7 +2632,7 @@ could look like this:
      </pre>
 
           <p>This would just list the synchronizations state of
-<code>ntpd(1ntpdmdoc)</code>
+ntpd(1ntpdmdoc)
 and the major system events. 
 For a simple reference server, the
 following minimum message configuration could be useful:
@@ -2577,45 +2643,178 @@ following minimum message configuration could be useful:
 synchronization information. 
 All other events and messages about
 peers, system events and so on is suppressed. 
-<br><dt><code>logfile</code> <kbd>logfile</kbd><dd>This command specifies the location of an alternate log file to
+<br><dt>logfile </code><kbd>logfile</kbd><code><dd>This command specifies the location of an alternate log file to
 be used instead of the default system
-<code>syslog(3)</code>
+syslog(3)
 facility. 
 This is the same operation as the
-<code>-l</code>
+-l
 command line option. 
-<br><dt><code>setvar</code> <kbd>variable</kbd> <code>[default]</code><dd>This command adds an additional system variable. 
+<br><dt>mru<dd>[maxdepth </code><kbd>count</kbd><code> | maxmem </code><kbd>kilobytes</kbd><code> | mindepth </code><kbd>count</kbd><code> | maxage </code><kbd>seconds</kbd><code> | initialloc </code><kbd>count</kbd><code> | initmem </code><kbd>kilobytes</kbd><code> | incalloc </code><kbd>count</kbd><code> | incmem </code><kbd>kilobytes</kbd><code>]
+Controls size limite of the monitoring facility's Most Recently Used
+(MRU) list
+of client addresses, which is also used by the
+rate control facility.
+               <dl>
+<dt>maxdepth </code><kbd>count</kbd><code><br><dt>maxmem </code><kbd>kilobytes</kbd><code><dd>Equivalent upper limits on the size of the MRU list, in terms of entries or kilobytes. 
+The acutal limit will be up to
+incalloc
+entries or
+incmem
+kilobytes larger. 
+As with all of the
+mru
+options offered in units of entries or kilobytes, if both
+maxdepth
+and
+maxmem are used, the last one used controls. 
+The default is 1024 kilobytes. 
+<br><dt>mindepth </code><kbd>count</kbd><code><dd>Lower limit on the MRU list size. 
+When the MRU list has fewer than
+mindepth
+entries, existing entries are never removed to make room for newer ones,
+regardless of their age. 
+The default is 600 entries. 
+<br><dt>maxage </code><kbd>seconds</kbd><code><dd>Once the MRU list has
+mindepth
+entries and an additional client is to ba added to the list,
+if the oldest entry was updated more than
+maxage
+seconds ago, that entry is removed and its storage is reused. 
+If the oldest entry was updated more recently the MRU list is grown,
+subject to
+maxdepth / moxmem. 
+The default is 64 seconds. 
+<br><dt>initalloc </code><kbd>count</kbd><code><br><dt>initmem </code><kbd>kilobytes</kbd><code><dd>Initial memory allocation at the time the monitoringfacility is first enabled,
+in terms of the number of entries or kilobytes. 
+The default is 4 kilobytes. 
+<br><dt>incalloc </code><kbd>count</kbd><code><br><dt>incmem </code><kbd>kilobytes</kbd><code><dd>Size of additional memory allocations when growing the MRU list, in entries or kilobytes. 
+The default is 4 kilobytes. 
+</dl>
+          <br><dt>nonvolatile </code><kbd>threshold</kbd><code><dd>Specify the
+</code><kbd>threshold</kbd><code>
+delta in seconds before an hourly change to the
+driftfile
+(frequency file) will be written, with a default value of 1e-7 (0.1 PPM). 
+The frequency file is inspected each hour. 
+If the difference between the current frequency and the last value written
+exceeds the threshold, the file is written and the
+threshold
+becomes the new threshold value. 
+If the threshold is not exceeeded, it is reduced by half. 
+This is intended to reduce the number of file writes
+for embedded systems with nonvolatile memory. 
+<br><dt>phone </code><kbd>dial</kbd> <kbd>...</kbd><code><dd>This command is used in conjunction with
+the ACTS modem driver (type 18)
+or the JJY driver (type 40, mode 100 - 180). 
+For the ACTS modem driver (type 18), the arguments consist of
+a maximum of 10 telephone numbers used to dial USNO, NIST, or European
+time service. 
+For the JJY driver (type 40 mode 100 - 180), the argument is
+one telephone number used to dial the telephone JJY service. 
+The Hayes command ATDT is normally prepended to the number. 
+The number can contain other modem control codes as well. 
+<br><dt>reset<dd>[allpeers]
+[auth]
+[ctl]
+[io]
+[mem]
+[sys]
+[timer]
+Reset one or more groups of counters maintained by
+ntpd
+and exposed by
+ntpq
+and
+ntpdc. 
+<br><dt>rlimit [memlock </code><kbd>Nmegabytes</kbd><code> | stacksize </code><kbd>N4kPages</kbd><code> filenum </code><kbd>Nfiledescriptors</kbd><code>]<dd>
+               <dl>
+<dt>memlock </code><kbd>Nmegabytes</kbd><code><dd>Specify the number of megabytes of memory that should be
+allocated and locked. 
+Probably only available under Linux, this option may be useful
+when dropping root (the
+-i
+option). 
+The default is 32 megabytes on non-Linux machines, and -1 under Linux. 
+-1 means "do not lock the process into memory". 
+0 means "lock whatever memory the process wants into memory". 
+<br><dt>stacksize </code><kbd>N4kPages</kbd><code><dd>Specifies the maximum size of the process stack on systems with the
+mlockall()
+function. 
+Defaults to 50 4k pages (200 4k pages in OpenBSD). 
+<br><dt>filenum </code><kbd>Nfiledescriptors</kbd><code><dd>Specifies the maximum number of file descriptors ntpd may have open at once. 
+Defaults to the system default. 
+</dl>
+          <br><dt>saveconfigdir </code><kbd>directory_path</kbd><code><dd>Specify the directory in which to write configuration snapshots
+requested with
+.Cm ntpq 's
+saveconfig
+command. 
+If
+saveconfigdir
+does not appear in the configuration file,
+saveconfig
+requests are rejected by
+ntpd. 
+<br><dt>saveconfig </code><kbd>filename</kbd><code><dd>Write the current configuration, including any runtime
+modifications given with
+:config
+or
+config-from-file
+to the
+ntpd
+host's
+</code><kbd>filename</kbd><code>
+in the
+saveconfigdir. 
+This command will be rejected unless the
+saveconfigdir
+directive appears in
+.Cm ntpd 's
+configuration file. 
+</code><kbd>filename</kbd><code>
+can use
+strftime(3)
+format directives to substitute the current date and time,
+for example,
+saveconfig\ ntp-%Y%m%d-%H%M%S.conf. 
+The filename used is stored in the system variable
+savedconfig. 
+Authentication is required. 
+<br><dt>setvar </code><kbd>variable</kbd><code> [default]<dd>This command adds an additional system variable. 
 These
 variables can be used to distribute additional information such as
 the access policy. 
 If the variable of the form
-<code>name</code><code>=</code><kbd>value</kbd>
+name=</code><kbd>value</kbd><code>
 is followed by the
-<code>default</code>
+default
 keyword, the
 variable will be listed as part of the default system variables
-(<code>rv</code> command)). 
+(rv command)). 
 These additional variables serve
 informational purposes only. 
 They are not related to the protocol
 other that they can be listed. 
 The known protocol variables will
 always override any variables defined via the
-<code>setvar</code>
+setvar
 mechanism. 
 There are three special variables that contain the names
 of all variable of the same group. 
 The
-<code>sys_var_list</code>
+sys_var_list
 holds
 the names of all system variables. 
 The
-<code>peer_var_list</code>
+peer_var_list
 holds
 the names of all peer variables and the
-<code>clock_var_list</code>
+clock_var_list
 holds the names of the reference clock variables. 
-<br><dt><code>tinker</code> <code>[allan </code><kbd>allan</kbd><code> | dispersion </code><kbd>dispersion</kbd><code> | freq </code><kbd>freq</kbd><code> | huffpuff </code><kbd>huffpuff</kbd><code> | panic </code><kbd>panic</kbd><code> | step </code><kbd>step</kbd><code> | stepback </code><kbd>stepback</kbd><code> | stepfwd </code><kbd>stepfwd</kbd><code> | stepout </code><kbd>stepout</kbd><code>]</code><dd>This command can be used to alter several system variables in
+<br><dt>sysinfo<dd>Display operational summary. 
+<br><dt>sysstats<dd>Show statistucs counters maintained in the protocol module. 
+<br><dt>tinker [allan </code><kbd>allan</kbd><code> | dispersion </code><kbd>dispersion</kbd><code> | freq </code><kbd>freq</kbd><code> | huffpuff </code><kbd>huffpuff</kbd><code> | panic </code><kbd>panic</kbd><code> | step </code><kbd>step</kbd><code> | stepback </code><kbd>stepback</kbd><code> | stepfwd </code><kbd>stepfwd</kbd><code> | stepout </code><kbd>stepout</kbd><code>]<dd>This command can be used to alter several system variables in
 very exceptional circumstances. 
 It should occur in the
 configuration file before any other configuration options. 
@@ -2634,18 +2833,18 @@ no help from the support group.
 
           <p>The variables operate as follows:
                <dl>
-<dt><code>allan</code> <kbd>allan</kbd><dd>The argument becomes the new value for the minimum Allan
+<dt>allan </code><kbd>allan</kbd><code><dd>The argument becomes the new value for the minimum Allan
 intercept, which is a parameter of the PLL/FLL clock discipline
 algorithm. 
 The value in log2 seconds defaults to 7 (1024 s), which is also the lower
 limit. 
-<br><dt><code>dispersion</code> <kbd>dispersion</kbd><dd>The argument becomes the new value for the dispersion increase rate,
+<br><dt>dispersion </code><kbd>dispersion</kbd><code><dd>The argument becomes the new value for the dispersion increase rate,
 normally .000015 s/s. 
-<br><dt><code>freq</code> <kbd>freq</kbd><dd>The argument becomes the initial value of the frequency offset in
+<br><dt>freq </code><kbd>freq</kbd><code><dd>The argument becomes the initial value of the frequency offset in
 parts-per-million. 
 This overrides the value in the frequency file, if
 present, and avoids the initial training state if it is not. 
-<br><dt><code>huffpuff</code> <kbd>huffpuff</kbd><dd>The argument becomes the new value for the experimental
+<br><dt>huffpuff </code><kbd>huffpuff</kbd><code><dd>The argument becomes the new value for the experimental
 huff-n'-puff filter span, which determines the most recent interval
 the algorithm will search for a minimum delay. 
 The lower limit is
@@ -2653,11 +2852,11 @@ The lower limit is
 There
 is no default, since the filter is not enabled unless this command
 is given. 
-<br><dt><code>panic</code> <kbd>panic</kbd><dd>The argument is the panic threshold, normally 1000 s. 
+<br><dt>panic </code><kbd>panic</kbd><code><dd>The argument is the panic threshold, normally 1000 s. 
 If set to zero,
 the panic sanity check is disabled and a clock offset of any value will
 be accepted. 
-<br><dt><code>step</code> <kbd>step</kbd><dd>The argument is the step threshold, which by default is 0.128 s. 
+<br><dt>step </code><kbd>step</kbd><code><dd>The argument is the step threshold, which by default is 0.128 s. 
 It can
 be set to any positive number in seconds. 
 If set to zero, step
@@ -2665,7 +2864,7 @@ adjustments will never occur.
 Note: The kernel time discipline is
 disabled if the step threshold is set to zero or greater than the
 default. 
-<br><dt><code>stepback</code> <kbd>stepback</kbd><dd>The argument is the step threshold for the backward direction,
+<br><dt>stepback </code><kbd>stepback</kbd><code><dd>The argument is the step threshold for the backward direction,
 which by default is 0.128 s. 
 It can
 be set to any positive number in seconds. 
@@ -2675,32 +2874,26 @@ Note: The kernel time discipline is
 disabled if
 each direction of step threshold are either
 set to zero or greater than .5 second. 
-<br><dt><code>stepfwd</code> <kbd>stepfwd</kbd><dd>As for stepback, but for the forward direction. 
-<br><dt><code>stepout</code> <kbd>stepout</kbd><dd>The argument is the stepout timeout, which by default is 900 s. 
+<br><dt>stepfwd </code><kbd>stepfwd</kbd><code><dd>As for stepback, but for the forward direction. 
+<br><dt>stepout </code><kbd>stepout</kbd><code><dd>The argument is the stepout timeout, which by default is 900 s. 
 It can
 be set to any positive number in seconds. 
 If set to zero, the stepout
 pulses will not be suppressed. 
 </dl>
-          <br><dt><code>rlimit</code> <code>[memlock </code><kbd>Nmegabytes</kbd><code> | stacksize </code><kbd>N4kPages</kbd><code> filenum </code><kbd>Nfiledescriptors</kbd><code>]</code><dd>
-               <dl>
-<dt><code>memlock</code> <kbd>Nmegabytes</kbd><dd>Specify the number of megabytes of memory that should be
-allocated and locked. 
-Probably only available under Linux, this option may be useful
-when dropping root (the
-<code>-i</code>
-option). 
-The default is 32 megabytes on non-Linux machines, and -1 under Linux. 
--1 means "do not lock the process into memory". 
-0 means "lock whatever memory the process wants into memory". 
-<br><dt><code>stacksize</code> <kbd>N4kPages</kbd><dd>Specifies the maximum size of the process stack on systems with the
-<code>mlockall()</code>
-function. 
-Defaults to 50 4k pages (200 4k pages in OpenBSD). 
-<br><dt><code>filenum</code> <kbd>Nfiledescriptors</kbd><dd>Specifies the maximum number of file descriptors ntpd may have open at once. 
-Defaults to the system default. 
-</dl>
-          <br><dt><code>trap</code> <kbd>host_address</kbd> <code>[port </code><kbd>port_number</kbd><code>]</code> <code>[interface </code><kbd>interface_address</kbd><code>]</code><dd>This command configures a trap receiver at the given host
+          <br><dt>writevar </code><kbd>assocID\ name</kbd> <kbd>=</kbd> <kbd>value</kbd> <kbd>[,...]</kbd><code><dd>Write (create or update) the specified variables. 
+If the
+assocID
+is zero, the variablea re from the
+system variables
+name space, otherwise they are from the
+peer variables
+name space. 
+The
+assocID
+is required, as the same name can occur in both name spaces.
+
+          <br><dt>trap </code><kbd>host_address</kbd><code> [port </code><kbd>port_number</kbd><code>] [interface </code><kbd>interface_address</kbd><code>]<dd>This command configures a trap receiver at the given host
 address and port number for sending messages with the specified
 local interface address. 
 If the port number is unspecified, a value
@@ -2709,7 +2902,13 @@ If the interface address is not specified, the
 message is sent with a source address of the local interface the
 message is sent through. 
 Note that on a multihomed host the
-interface used may vary from time to time with routing changes.
+interface used may vary from time to time with routing changes. 
+<br><dt>ttl </code><kbd>hop</kbd> <kbd>...</kbd><code><dd>This command specifies a list of TTL values in increasing order. 
+Up to 8 values can be specified. 
+In
+manycast
+mode these values are used in-turn in an expanding-ring search. 
+The default is eight multiples of 32 starting at 31.
 
           <p>The trap receiver will generally log event messages and other
 information from the server in a log file. 
@@ -2717,7 +2916,7 @@ While such monitor
 programs may also request their own trap dynamically, configuring a
 trap receiver will ensure that no messages are lost when the server
 is started. 
-<br><dt><code>hop</code> <kbd>...</kbd><dd>This command specifies a list of TTL values in increasing order, up to 8
+<br><dt>hop </code><kbd>...</kbd><code><dd>This command specifies a list of TTL values in increasing order, up to 8
 values can be specified. 
 In manycast mode these values are used in turn in
 an expanding-ring search. 
@@ -2725,8 +2924,8 @@ The default is eight multiples of 32 starting at
 31. 
 </dl>
 
-       <p>This section was generated by <strong>AutoGen</strong>,
-using the <code>agtexi-cmd</code> template and the option descriptions for the <code>ntp.conf</code> program. 
+       <p>This section was generated by </code><strong>AutoGen</strong><code>,
+using the agtexi-cmd template and the option descriptions for the ntp.conf program. 
 This software is released under the NTP license, &lt;http://ntp.org/license&gt;.
 
      <ul class="menu">
@@ -2736,7 +2935,7 @@ This software is released under the NTP license, &lt;http://ntp.org/license&gt;.
 <li><a accesskey="4" href="#ntp_002econf-Notes">ntp.conf Notes</a>:                   Notes
 </ul>
 
-<div class="node">
+       <p></code><div class="node">
 <a name="ntp.conf-Files"></a>
 <a name="ntp_002econf-Files"></a>
 <p><hr>
