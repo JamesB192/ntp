@@ -65,12 +65,12 @@ int main(int argc, char *argv[])
   UnityBegin("ntp_restrict.c");
   RUN_TEST(test_RestrictionsAreEmptyAfterInit, 63);
   RUN_TEST(test_ReturnsCorrectDefaultRestrictions, 90);
-  RUN_TEST(test_HackingDefaultRestriction, 102);
-  RUN_TEST(test_CantRemoveDefaultEntry, 126);
-  RUN_TEST(test_AddingNewRestriction, 138);
-  RUN_TEST(test_TheMostFittingRestrictionIsMatched, 152);
-  RUN_TEST(test_DeletedRestrictionIsNotMatched, 175);
-  RUN_TEST(test_RestrictUnflagWorks, 200);
+  RUN_TEST(test_HackingDefaultRestriction, 103);
+  RUN_TEST(test_CantRemoveDefaultEntry, 129);
+  RUN_TEST(test_AddingNewRestriction, 143);
+  RUN_TEST(test_TheMostFittingRestrictionIsMatched, 159);
+  RUN_TEST(test_DeletedRestrictionIsNotMatched, 184);
+  RUN_TEST(test_RestrictUnflagWorks, 211);
 
   return (UnityEnd());
 }

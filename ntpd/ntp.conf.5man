@@ -10,11 +10,11 @@
 .ds B-Font B
 .ds I-Font I
 .ds R-Font R
-.TH ntp.conf 5man "21 Jan 2018" "4.2.8p10" "File Formats"
+.TH ntp.conf 5man "22 Jan 2018" "4.2.8p10" "File Formats"
 .\"
 .\" EDIT THIS FILE WITH CAUTION (in-mem file)
 .\"
-.\" It has been AutoGen-ed January 21, 2018 at 12:41:58 PM by AutoGen 5.18.5
+.\" It has been AutoGen-ed January 22, 2018 at 11:49:11 AM by AutoGen 5.18.5
 .\" From the definitions ntp.conf.def
 .\" and the template file agman-cmd.tpl
 .SH NAME
@@ -1665,7 +1665,7 @@ The
 subcommand specifies the probability of discard
 for packets that overflow the rate-control window.
 .TP 7
-.NOP \f\*[B-Font]restrict\f[] \f\*[B-Font]address\f[] [\f\*[B-Font]mask\f[] \f\*[I-Font]mask\f[]] [\f\*[I-Font]flag\f[] \f\*[I-Font]...\f[]]
+.NOP \f\*[B-Font]restrict\f[] \f\*[B-Font]address\f[] [\f\*[B-Font]mask\f[] \f\*[I-Font]mask\f[]] [\f\*[B-Font]ippeerlimit\f[] \f\*[I-Font]int\f[]] [\f\*[I-Font]flag\f[] \f\*[I-Font]...\f[]]
 The
 \f\*[I-Font]address\f[]
 argument expressed in
@@ -1689,6 +1689,15 @@ Note that text string
 \f\*[B-Font]default\f[],
 with no mask option, may
 be used to indicate the default entry.
+The
+\f\*[B-Font]ippeerlimit\f[]
+directive limits the number of peer requests for each IP to
+\f\*[I-Font]int\f[],
+where a value of \-1 means "unlimited", the current default.
+A value of 0 means "none".
+There would usually be at most 1 peering request per IP,
+but if the remote peering requests are behind a proxy
+there could well be more than 1 per IP.
 In the current implementation,
 \f\*[B-Font]flag\f[]
 always
@@ -1744,6 +1753,19 @@ This flag
 modifies the assignment algorithm by allowing low priority traps to
 be overridden by later requests for normal priority traps.
 .TP 7
+.NOP \f\*[B-Font]noepeer\f[]
+Deny ephemeral peer requests,
+even if they come from an authenticated source.
+Note that the ability to use a symmetric key for authentication may be restricted to
+one or more IPs or subnets via the third field of the
+\fIntp.keys\f[]
+file.
+This restriction is not enabled by default,
+to maintain backward compatability.
+Expect
+\f\*[B-Font]noepeer\f[]
+to become the default in ntp-4.4.
+.TP 7
 .NOP \f\*[B-Font]nomodify\f[]
 Deny
 \fCntpq\f[]\fR(1ntpqmdoc)\f[]
@@ -1780,10 +1802,6 @@ line as well that does
 include the
 \f\*[B-Font]nopeer\f[]
 directive.
-.TP 7
-.NOP \f\*[B-Font]noepeer\f[]
-Deny packets that would mobilize an ephemeral peering association,
-even if authenticated.
 .TP 7
 .NOP \f\*[B-Font]noserve\f[]
 Deny all packets except
@@ -2819,9 +2837,7 @@ This option is useful for sites that run
 on multiple hosts, with (mostly) common options (e.g., a
 restriction list).
 .TP 7
-.NOP \f\*[B-Font]interface\f[]
-[\f\*[B-Font]listen\f[] | \f\*[B-Font]ignore\f[] | \f\*[B-Font]drop\f[]]
-[\f\*[B-Font]all\f[] | \f\*[B-Font]ipv4\f[] | \f\*[B-Font]ipv6\f[] | \f\*[B-Font]wildcard\f[] \f\*[I-Font]name\f[] | \f\*[I-Font]address\f[] [\f\*[B-Font]/\f[] \f\*[I-Font]prefixlen\f[]]
+.NOP \f\*[B-Font]interface\f[] [\f\*[B-Font]listen\f[] | \f\*[B-Font]ignore\f[] | \f\*[B-Font]drop\f[]] [\f\*[B-Font]all\f[] | \f\*[B-Font]ipv4\f[] | \f\*[B-Font]ipv6\f[] | \f\*[B-Font]wildcard\f[] \f\*[I-Font]name\f[] | \f\*[I-Font]address\f[] [\f\*[B-Font]/\f[] \f\*[I-Font]prefixlen\f[]]]
 The
 \f\*[B-Font]interface\f[]
 directive controls which network addresses
@@ -2991,8 +3007,7 @@ This is the same operation as the
 \f\*[B-Font]\-l\f[]
 command line option.
 .TP 7
-.NOP \f\*[B-Font]mru\f[]
-[\f\*[B-Font]maxdepth\f[] \f\*[I-Font]count\f[] | \f\*[B-Font]maxmem\f[] \f\*[I-Font]kilobytes\f[] | \f\*[B-Font]mindepth\f[] \f\*[I-Font]count\f[] | \f\*[B-Font]maxage\f[] \f\*[I-Font]seconds\f[] | \f\*[B-Font]initialloc\f[] \f\*[I-Font]count\f[] | \f\*[B-Font]initmem\f[] \f\*[I-Font]kilobytes\f[] | \f\*[B-Font]incalloc\f[] \f\*[I-Font]count\f[] | \f\*[B-Font]incmem\f[] \f\*[I-Font]kilobytes\f[]]
+.NOP \f\*[B-Font]mru\f[] [\f\*[B-Font]maxdepth\f[] \f\*[I-Font]count\f[] | \f\*[B-Font]maxmem\f[] \f\*[I-Font]kilobytes\f[] | \f\*[B-Font]mindepth\f[] \f\*[I-Font]count\f[] | \f\*[B-Font]maxage\f[] \f\*[I-Font]seconds\f[] | \f\*[B-Font]initialloc\f[] \f\*[I-Font]count\f[] | \f\*[B-Font]initmem\f[] \f\*[I-Font]kilobytes\f[] | \f\*[B-Font]incalloc\f[] \f\*[I-Font]count\f[] | \f\*[B-Font]incmem\f[] \f\*[I-Font]kilobytes\f[]]
 Controls size limite of the monitoring facility's Most Recently Used
 (MRU) list
 of client addresses, which is also used by the
@@ -3077,14 +3092,7 @@ one telephone number used to dial the telephone JJY service.
 The Hayes command ATDT is normally prepended to the number.
 The number can contain other modem control codes as well.
 .TP 7
-.NOP \f\*[B-Font]reset\f[]
-[\f\*[B-Font]allpeers\f[]]
-[\f\*[B-Font]auth\f[]]
-[\f\*[B-Font]ctl\f[]]
-[\f\*[B-Font]io\f[]]
-[\f\*[B-Font]mem\f[]]
-[\f\*[B-Font]sys\f[]]
-[\f\*[B-Font]timer\f[]]
+.NOP \f\*[B-Font]reset\f[] [\f\*[B-Font]allpeers\f[]] [\f\*[B-Font]auth\f[]] [\f\*[B-Font]ctl\f[]] [\f\*[B-Font]io\f[]] [\f\*[B-Font]mem\f[]] [\f\*[B-Font]sys\f[]] [\f\*[B-Font]timer\f[]]
 Reset one or more groups of counters maintained by
 \f\*[B-Font]ntpd\f[]
 and exposed by
