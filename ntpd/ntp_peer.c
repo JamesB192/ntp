@@ -568,6 +568,7 @@ peer_config(
 	sockaddr_u *	srcadr,
 	const char *	hostname,
 	endpt *		dstadr,
+	int		ippeerlimit,
 	u_char		hmode,
 	u_char		version,
 	u_char		minpoll,
@@ -618,7 +619,7 @@ peer_config(
 		flags |= FLAG_IBURST;
 	if ((MDF_ACAST | MDF_POOL) & cast_flags)
 		flags &= ~FLAG_PREEMPT;
-	return newpeer(srcadr, hostname, dstadr, hmode, version,
+	return newpeer(srcadr, hostname, dstadr, ippeerlimit, hmode, version,
 	    minpoll, maxpoll, flags, cast_flags, ttl, key, ident);
 }
 
@@ -760,6 +761,7 @@ newpeer(
 	sockaddr_u *	srcadr,
 	const char *	hostname,
 	endpt *		dstadr,
+	int		ippeerlimit,
 	u_char		hmode,
 	u_char		version,
 	u_char		minpoll,
@@ -847,6 +849,18 @@ DPRINTF(1, ("newpeer(%s) found no existing and %d other associations\n",
 		    ? hostname
 		    : stoa(srcadr),
 		ip_count));
+
+	/* Check ippeerlimit wrt ip_count */
+	if (ippeerlimit > -1) {
+		if (ip_count + 1 > ippeerlimit) {
+			DPRINTF(2, ("newpeer(%s) denied - ippeerlimit %d\n",
+				(hostname)
+				    ? hostname
+				    : stoa(srcadr),
+				ippeerlimit));
+			return NULL;
+		}
+	}
 
 	/*
 	 * Allocate a new peer structure. Some dirt here, since some of

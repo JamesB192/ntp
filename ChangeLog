@@ -85,6 +85,7 @@
 * Decode interface flags on receive() debug output.  HStenn.
 * Warn the user if deprecated "driftfile name WanderThreshold" is used.  HStenn.
 * Update the documentation in ntp.conf.def .  HStenn.
+* restrictions() must return restrict flags and ippeerlimit.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
