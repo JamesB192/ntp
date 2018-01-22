@@ -579,6 +579,7 @@ receive(
 	u_char	hisleap;		/* packet leap indicator */
 	u_char	hismode;		/* packet mode */
 	u_char	hisstratum;		/* packet stratum */
+	r4addr	r4a;			/* address restrictions */
 	u_short	restrict_mask;		/* restrict bits */
 	const char *hm_str;		/* hismode string */
 	const char *am_str;		/* association match string */
@@ -629,7 +630,9 @@ receive(
 		sys_badlength++;
 		return;				/* bogus port */
 	}
-	restrict_mask = restrictions(&rbufp->recv_srcadr);
+	restrictions(&rbufp->recv_srcadr, &r4a);
+	restrict_mask = r4a.rflags;
+
 	pkt = &rbufp->recv_pkt;
 	hisversion = PKT_VERSION(pkt->li_vn_mode);
 	hisleap = PKT_LEAP(pkt->li_vn_mode);
@@ -1235,7 +1238,7 @@ receive(
 			sys_declined++;
 			return;			/* no help */
 		}
-		peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr,
+		peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr, -1,
 			       MODE_CLIENT, hisversion, peer2->minpoll,
 			       peer2->maxpoll, FLAG_PREEMPT |
 			       (FLAG_IBURST & peer2->flags), MDF_UCAST |
@@ -1356,10 +1359,9 @@ receive(
 			 * Do not execute the volley. Start out in
 			 * broadcast client mode.
 			 */
-			peer = newpeer(&rbufp->recv_srcadr, NULL,
-			    match_ep, MODE_BCLIENT, hisversion,
-			    pkt->ppoll, pkt->ppoll, FLAG_PREEMPT,
-			    MDF_BCLNT, 0, skeyid, sys_ident);
+			peer = newpeer(&rbufp->recv_srcadr, NULL, match_ep, -1,
+			    MODE_BCLIENT, hisversion, pkt->ppoll, pkt->ppoll,
+			    FLAG_PREEMPT, MDF_BCLNT, 0, skeyid, sys_ident);
 			if (NULL == peer) {
 				DPRINTF(2, ("receive: AM_NEWBCL drop: duplicate\n"));
 				sys_restricted++;
@@ -1380,7 +1382,7 @@ receive(
 		 * packet, normally 6 (64 s) and that the poll interval
 		 * is fixed at this value.
 		 */
-		peer = newpeer(&rbufp->recv_srcadr, NULL, match_ep,
+		peer = newpeer(&rbufp->recv_srcadr, NULL, match_ep, -1,
 		    MODE_CLIENT, hisversion, pkt->ppoll, pkt->ppoll,
 		    FLAG_BC_VOL | FLAG_IBURST | FLAG_PREEMPT, MDF_BCLNT,
 		    0, skeyid, sys_ident);
@@ -1481,12 +1483,13 @@ receive(
 
 		/*
 		 * The message is correctly authenticated and allowed.
-		 * Mobilize a symmetric passive association.
+		 * Mobilize a symmetric passive association, if we won't
+		 * exceed the ippeerlimit.
 		 */
-		if ((peer = newpeer(&rbufp->recv_srcadr, NULL,
-		    rbufp->dstadr, MODE_PASSIVE, hisversion, pkt->ppoll,
-		    NTP_MAXDPOLL, 0, MDF_UCAST, 0, skeyid,
-		    sys_ident)) == NULL) {
+		if ((peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr,
+				    -1, MODE_PASSIVE, hisversion, pkt->ppoll,
+				    NTP_MAXDPOLL, 0, MDF_UCAST, 0, skeyid,
+				    sys_ident)) == NULL) {
 			DPRINTF(2, ("receive: AM_NEWPASS drop: newpeer() failed\n"));
 			sys_declined++;
 			return;			/* ignore duplicate */
@@ -4408,6 +4411,7 @@ pool_xmit(
 	int			rc;
 	struct interface *	lcladr;
 	sockaddr_u *		rmtadr;
+	r4addr			r4a;
 	int			restrict_mask;
 	struct peer *		p;
 	l_fp			xmt_tx;
@@ -4448,7 +4452,8 @@ pool_xmit(
 	} while (p != NULL && pool->ai != NULL);
 	if (p != NULL)
 		return;	/* out of addresses, re-query DNS next poll */
-	restrict_mask = restrictions(rmtadr);
+	restrictions(rmtadr, &r4a);
+	restrict_mask = r4a.rflags;
 	if (RES_FLAGS & restrict_mask)
 		restrict_source(rmtadr, 0,
 				current_time + POOL_SOLICIT_WINDOW + 1);

@@ -3978,6 +3978,9 @@ config_peers(
 		 * If we have a numeric address, we can safely
 		 * proceed in the mainline with it.  Otherwise, hand
 		 * the hostname off to the blocking child.
+		 *
+		 * Note that if we're told to add the peer here, we
+		 * do that regardless of ippeerlimit.
 		 */
 		if (is_ip_address(*cmdline_servers, AF_UNSPEC,
 				  &peeraddr)) {
@@ -3989,6 +3992,7 @@ config_peers(
 					&peeraddr,
 					NULL,
 					NULL,
+					-1,
 					MODE_CLIENT,
 					NTP_VERSION,
 					0,
@@ -4039,6 +4043,7 @@ config_peers(
 				&peeraddr,
 				curr_peer->addr->address,
 				NULL,
+				-1,
 				hmode,
 				curr_peer->peerversion,
 				curr_peer->minpoll,
@@ -4062,6 +4067,7 @@ config_peers(
 					&peeraddr,
 					NULL,
 					NULL,
+					-1,
 					hmode,
 					curr_peer->peerversion,
 					curr_peer->minpoll,
@@ -4162,6 +4168,7 @@ peer_name_resolved(
 				&peeraddr,
 				NULL,
 				NULL,
+				-1,
 				ctx->hmode,
 				ctx->version,
 				ctx->minpoll,

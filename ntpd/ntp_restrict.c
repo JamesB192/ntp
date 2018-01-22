@@ -411,19 +411,23 @@ res_sorts_before6(
 
 
 /*
- * restrictions - return restrictions for this host
+ * restrictions - return restrictions for this host in *r4a
  */
-u_short
+void
 restrictions(
-	sockaddr_u *srcadr
+	sockaddr_u *srcadr,
+	r4addr *r4a
 	)
 {
 	restrict_u *match;
 	struct in6_addr *pin6;
-	u_short flags;
+
+	REQUIRE(NULL != r4a);
 
 	res_calls++;
-	flags = 0;
+	r4a->rflags = RES_IGNORE;
+	r4a->ippeerlimit = 0;
+
 	/* IPv4 source address */
 	if (IS_IPV4(srcadr)) {
 		/*
@@ -432,7 +436,7 @@ restrictions(
 		 * not later!)
 		 */
 		if (IN_CLASSD(SRCADR(srcadr)))
-			return (int)RES_IGNORE;
+			return;
 
 		match = match_restrict4_addr(SRCADR(srcadr),
 					     SRCPORT(srcadr));
@@ -449,7 +453,8 @@ restrictions(
 			res_not_found++;
 		else
 			res_found++;
-		flags = match->flags;
+		r4a->rflags = match->flags;
+		r4a->ippeerlimit = match->ippeerlimit;
 	}
 
 	/* IPv6 source address */
@@ -462,7 +467,7 @@ restrictions(
 		 * not later!)
 		 */
 		if (IN6_IS_ADDR_MULTICAST(pin6))
-			return (int)RES_IGNORE;
+			return;
 
 		match = match_restrict6_addr(pin6, SRCPORT(srcadr));
 		INSIST(match != NULL);
@@ -471,9 +476,10 @@ restrictions(
 			res_not_found++;
 		else
 			res_found++;
-		flags = match->flags;
+		r4a->rflags = match->flags;
+		r4a->ippeerlimit = match->ippeerlimit;
 	}
-	return (flags);
+	return;
 }
 
 

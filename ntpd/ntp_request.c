@@ -1369,10 +1369,13 @@ do_conf(
 		 *
 		 *   - minpoll/maxpoll, but they are treated properly
 		 *     for all cases internally. Checking not necessary.
+		 *
+		 * Note that we ignore any previously-specified ippeerlimit.
+		 * If we're told to create the peer, we create the peer.
 		 */
 		
 		/* finally create the peer */
-		if (peer_config(&peeraddr, NULL, NULL,
+		if (peer_config(&peeraddr, NULL, NULL, -1,
 		    temp_cp.hmode, temp_cp.version, temp_cp.minpoll, 
 		    temp_cp.maxpoll, fl, temp_cp.ttl, temp_cp.keyid,
 		    NULL) == 0)

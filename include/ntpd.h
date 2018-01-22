@@ -172,15 +172,15 @@ extern	struct peer *findexistingpeer(sockaddr_u *, const char *,
 extern	struct peer *findpeer	(struct recvbuf *, int, int *);
 extern	struct peer *findpeerbyassoc(associd_t);
 extern  void	set_peerdstadr	(struct peer *, endpt *);
-extern	struct peer *newpeer	(sockaddr_u *, const char *,
-				 endpt *, u_char, u_char,
-				 u_char, u_char, u_int, u_char, u_int32,
+extern	struct peer *newpeer	(sockaddr_u *, const char *, endpt *,
+				 int, u_char, u_char, u_char, u_char,
+				 u_int, u_char, u_int32,
 				 keyid_t, const char *);
 extern	void	peer_all_reset	(void);
 extern	void	peer_clr_stats	(void);
-extern	struct peer *peer_config(sockaddr_u *, const char *,
-				 endpt *, u_char, u_char,
-				 u_char, u_char, u_int, u_int32,
+extern	struct peer *peer_config(sockaddr_u *, const char *, endpt *,
+				 int, u_char, u_char, u_char, u_char,
+				 u_int, u_int32,
 				 keyid_t, const char *);
 extern	void	peer_reset	(struct peer *);
 extern	void	refresh_all_peerinterfaces(void);
@@ -257,7 +257,7 @@ extern	void	reset_auth_stats(void);
 
 /* ntp_restrict.c */
 extern	void	init_restrict	(void);
-extern	u_short	restrictions	(sockaddr_u *);
+extern	void	restrictions	(sockaddr_u *, r4addr *);
 extern	void	hack_restrict	(int, sockaddr_u *, sockaddr_u *,
 				 short, u_short, u_short, u_long);
 extern	void	restrict_source	(sockaddr_u *, int, u_long);
