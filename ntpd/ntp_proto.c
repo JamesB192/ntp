@@ -1238,11 +1238,11 @@ receive(
 			sys_declined++;
 			return;			/* no help */
 		}
-		peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr, -1,
-			       MODE_CLIENT, hisversion, peer2->minpoll,
-			       peer2->maxpoll, FLAG_PREEMPT |
-			       (FLAG_IBURST & peer2->flags), MDF_UCAST |
-			       MDF_UCLNT, 0, skeyid, sys_ident);
+		peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr,
+			       r4a.ippeerlimit, MODE_CLIENT, hisversion,
+			       peer2->minpoll, peer2->maxpoll,
+			       FLAG_PREEMPT | (FLAG_IBURST & peer2->flags),
+			       MDF_UCAST | MDF_UCLNT, 0, skeyid, sys_ident);
 		if (NULL == peer) {
 			DPRINTF(2, ("receive: AM_MANYCAST drop: duplicate\n"));
 			sys_declined++;
@@ -1359,8 +1359,9 @@ receive(
 			 * Do not execute the volley. Start out in
 			 * broadcast client mode.
 			 */
-			peer = newpeer(&rbufp->recv_srcadr, NULL, match_ep, -1,
-			    MODE_BCLIENT, hisversion, pkt->ppoll, pkt->ppoll,
+			peer = newpeer(&rbufp->recv_srcadr, NULL, match_ep,
+			    r4a.ippeerlimit, MODE_BCLIENT, hisversion,
+			    pkt->ppoll, pkt->ppoll,
 			    FLAG_PREEMPT, MDF_BCLNT, 0, skeyid, sys_ident);
 			if (NULL == peer) {
 				DPRINTF(2, ("receive: AM_NEWBCL drop: duplicate\n"));
@@ -1382,8 +1383,9 @@ receive(
 		 * packet, normally 6 (64 s) and that the poll interval
 		 * is fixed at this value.
 		 */
-		peer = newpeer(&rbufp->recv_srcadr, NULL, match_ep, -1,
-		    MODE_CLIENT, hisversion, pkt->ppoll, pkt->ppoll,
+		peer = newpeer(&rbufp->recv_srcadr, NULL, match_ep,
+		    r4a.ippeerlimit, MODE_CLIENT, hisversion,
+		    pkt->ppoll, pkt->ppoll,
 		    FLAG_BC_VOL | FLAG_IBURST | FLAG_PREEMPT, MDF_BCLNT,
 		    0, skeyid, sys_ident);
 		if (NULL == peer) {
@@ -1487,9 +1489,9 @@ receive(
 		 * exceed the ippeerlimit.
 		 */
 		if ((peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr,
-				    -1, MODE_PASSIVE, hisversion, pkt->ppoll,
-				    NTP_MAXDPOLL, 0, MDF_UCAST, 0, skeyid,
-				    sys_ident)) == NULL) {
+				    r4a.ippeerlimit, MODE_PASSIVE, hisversion,
+				    pkt->ppoll, NTP_MAXDPOLL, 0, MDF_UCAST, 0,
+				    skeyid, sys_ident)) == NULL) {
 			DPRINTF(2, ("receive: AM_NEWPASS drop: newpeer() failed\n"));
 			sys_declined++;
 			return;			/* ignore duplicate */
