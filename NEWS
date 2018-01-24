@@ -14,11 +14,10 @@ update-leap needs the following perl modules:
 	Net::SSLeay
 	IO::Socket::SSL
 
-Likely no longer needed:
- New sysstats variables: sys_lamport, sys_tsrounding
- See them with: ntpq -c "rv 0 ss_lamport,ss_tsrounding"
- sys_lamport counts the number of observed Lamport violations, while
- sys_tsrounding counts observed timestamp rounding events.
+New sysstats variables: sys_lamport, sys_tsrounding
+See them with: ntpq -c "rv 0 ss_lamport,ss_tsrounding"
+sys_lamport counts the number of observed Lamport violations, while
+sys_tsrounding counts observed timestamp rounding events.
 
 New ntp.conf items:
 
@@ -28,21 +27,21 @@ New ntp.conf items:
 The 'noepeer' directive will disallow all ephemeral/passive peer
 requests.
 
-The 'ippeerlimit' directive limits the number of peer associations
+The 'ippeerlimit' directive limits the number of time associations
 for each IP in the designated set of addresses.  This limit does not
-apply to explicitly-configured peers.  A value of -1, the current
-default, means an unlimited number of peers may connect from a single
-IP.  0 means "none", etc.  Ordinarily the only way multiple peers would
-come from the same IP would be if the remote side was using a proxy.
-But a trusted peer might become compromised, in which case an attacker
-might be able to spin up multiple authenticated peering sessions
+apply to explicitly-configured associations.  A value of -1, the current
+default, means an unlimited number of associations may connect from a
+single IP.  0 means "none", etc.  Ordinarily the only way multiple
+associations would come from the same IP would be if the remote side
+was using a proxy.  But a trusted machine might become compromised,
+in which case an attacker might spin up multiple authenticated sessions
 from different ports.  This directive should be helpful in this case.
 
 New ntp.keys feature: Each IP in the optional list of IPs in the 4th
-field may contain a /subnetbits specification, which 'widens the scope'
-of IPs that may use this key.  This IP/subnet restriction can be used
-to limit the IPs that may use the key in most all situations where a
-key is used.
+field may contain a /subnetbits specification, which identifies  the
+scope of IPs that may use this key.  This IP/subnet restriction can be
+used to limit the IPs that may use the key in most all situations where
+a key is used.
 --
 NTP 4.2.8p10 (Harlan Stenn <stenn@ntp.org>, 2017/03/21) 
 
