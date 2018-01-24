@@ -635,6 +635,8 @@ reference clocks, ..., 16 for unsynchronized server clocks
 unicast or manycast client,
 .Ic b :
 broadcast or multicast client,
+.Ic p :
+pool source,
 .Ic l :
 local (reference clock),
 .Ic s :

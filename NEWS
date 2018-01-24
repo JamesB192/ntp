@@ -8,7 +8,7 @@ Focus: Security, Bug fixes, enhancements.
 Severity: MEDIUM ?
 
 This release fixes 1 medium-, 2 low-/medium-, and 1 informational/medum-severity
-vulnerabilities, and provides 58 other non-security fixes and improvements:
+vulnerabilities, and provides 59 other non-security fixes and improvements:
 
 update-leap needs the following perl modules:
 	Net::SSLeay

@@ -1,9 +1,9 @@
-.Dd May 19 2017
+.Dd January 24 2018
 .Dt NTPQ 1ntpqmdoc User Commands
 .Os
 .\"  EDIT THIS FILE WITH CAUTION  (ntpq-opts.mdoc)
 .\"
-.\"  It has been AutoGen-ed  May 19, 2017 at 12:33:22 PM by AutoGen 5.18.5
+.\"  It has been AutoGen-ed  January 24, 2018 at 08:38:42 AM by AutoGen 5.18.5
 .\"  From the definitions    ntpq-opts.def
 .\"  and the template file   agmdoc-cmd.tpl
 .Sh NAME
@@ -525,6 +525,8 @@ reference clocks, ..., 16 for unsynchronized server clocks
 unicast or manycast client,
 .Ic b :
 broadcast or multicast client,
+.Ic p :
+pool source,
 .Ic l :
 local (reference clock),
 .Ic s :
