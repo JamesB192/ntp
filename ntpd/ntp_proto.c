@@ -638,9 +638,9 @@ receive(
 	hisleap = PKT_LEAP(pkt->li_vn_mode);
 	hismode = (int)PKT_MODE(pkt->li_vn_mode);
 	hisstratum = PKT_TO_STRATUM(pkt->stratum);
-	DPRINTF(2, ("receive: at %ld %s<-%s mode %d iflags %s restrict %s org %#010x.%08x xmt %#010x.%08x\n",
+	DPRINTF(2, ("receive: at %ld %s<-%s ippeerlimit %d mode %d iflags %s restrict %s org %#010x.%08x xmt %#010x.%08x\n",
 		    current_time, stoa(&rbufp->dstadr->sin),
-		    stoa(&rbufp->recv_srcadr), hismode,
+		    stoa(&rbufp->recv_srcadr), r4a.ippeerlimit, hismode,
 		    build_iflags(rbufp->dstadr->flags),
 		    build_rflags(restrict_mask),
 		    ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
