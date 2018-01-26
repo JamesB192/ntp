@@ -549,6 +549,7 @@ hack_restrict(
 
 	match.flags = flags;
 	match.mflags = mflags;
+	match.ippeerlimit = ippeerlimit;
 	match.expire = expire;
 	res = match_restrict_entry(&match, v6);
 
