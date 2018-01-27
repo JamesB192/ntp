@@ -2679,7 +2679,7 @@ The
 directive controls which network addresses
 .Xr ntpd 1ntpdmdoc
 opens, and whether input is dropped without processing.
-The first parameter determines the aciton  for addresses
+The first parameter determines the action  for addresses
 which match the second parameter.
 The second parameter specifies a class of addresses,
 or a specific interface name,
