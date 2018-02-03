@@ -1,7 +1,8 @@
 /*
  * ntp_proto.c - NTP version 4 protocol machinery
  *
- * ATTENTION: Get approval from Dave Mills on all changes to this file!
+ * ATTENTION: Get approval from Harlan on all changes to this file!
+ *	    (Harlan will be discussing these changes with Dave Mills.)
  *
  */
 #ifdef HAVE_CONFIG_H
@@ -37,28 +38,34 @@
 #define	AUTH(x, y)	((x) ? (y) == AUTH_OK \
 			     : (y) == AUTH_OK || (y) == AUTH_NONE)
 
-#define	AUTH_NONE	0	/* authentication not required */
-#define	AUTH_OK		1	/* authentication OK */
-#define	AUTH_ERROR	2	/* authentication error */
-#define	AUTH_CRYPTO	3	/* crypto_NAK */
+typedef enum
+auth_state {
+	AUTH_UNKNOWN = -1,	/* Unknown */
+	AUTH_NONE,		/* authentication not required */
+	AUTH_OK,		/* authentication OK */
+	AUTH_ERROR,		/* authentication error */
+	AUTH_CRYPTO		/* crypto_NAK */
+} auth_code;
 
 /*
  * Set up Kiss Code values
  */
 
-enum kiss_codes {
+typedef enum
+kiss_codes {
 	NOKISS,				/* No Kiss Code */
 	RATEKISS,			/* Rate limit Kiss Code */
 	DENYKISS,			/* Deny Kiss */
 	RSTRKISS,			/* Restricted Kiss */
 	XKISS				/* Experimental Kiss */
-};
+} kiss_code;
 
-enum nak_error_codes {
+typedef enum
+nak_error_codes {
 	NONAK,				/* No NAK seen */
 	INVALIDNAK,			/* NAK cannot be used */
 	VALIDNAK			/* NAK is valid */
-};
+} nak_code;
 
 /*
  * traffic shaping parameters
@@ -181,7 +188,7 @@ int unpeer_digest_early		= 1;	/* bad digest (TEST5) */
 int dynamic_interleave = DYNAMIC_INTERLEAVE;	/* Bug 2978 mitigation */
 
 int kiss_code_check(u_char hisleap, u_char hisstratum, u_char hismode, u_int32 refid);
-enum nak_error_codes valid_NAK(struct peer *peer, struct recvbuf *rbufp, u_char hismode);
+nak_code	valid_NAK	(struct peer *peer, struct recvbuf *rbufp, u_char hismode);
 static	double	root_distance	(struct peer *);
 static	void	clock_combine	(peer_select *, int, int);
 static	void	peer_xmit	(struct peer *);
@@ -268,7 +275,7 @@ kiss_code_check(
 /* 
  * Check that NAK is valid
  */
-enum nak_error_codes
+nak_code
 valid_NAK(
 	  struct peer *peer,
 	  struct recvbuf *rbufp,
@@ -586,8 +593,8 @@ receive(
 	int	kissCode = NOKISS;	/* Kiss Code */
 	int	has_mac;		/* length of MAC field */
 	int	authlen;		/* offset of MAC field */
-	int	is_authentic = AUTH_NONE;	/* cryptosum ok */
-	int	crypto_nak_test;	/* result of crypto-NAK check */
+	auth_code is_authentic = AUTH_UNKNOWN;	/* Was AUTH_NONE */
+	nak_code crypto_nak_test;	/* result of crypto-NAK check */
 	int	retcode = AM_NOMATCH;	/* match code */
 	keyid_t	skeyid = 0;		/* key IDs */
 	u_int32	opcode = 0;		/* extension field opcode */
@@ -692,6 +699,18 @@ receive(
 	}
 
 	/*
+	** Format Layer Checks
+	**
+	** Validate the packet format.  The packet size, packet header,
+	** and any extension field lengths are checked.  We identify
+	** the beginning of the MAC, to identify the upper limit of
+	** of the hash computation.
+	**
+	** In case of a format layer check violation, the packet is
+	** discarded with no further processing.
+	*/
+
+	/*
 	 * Version check must be after the query packets, since they
 	 * intentionally use an early version.
 	 */
@@ -733,6 +752,16 @@ receive(
 	 * is a runt and discarded forthwith. If greater than 6, an
 	 * extension field is present, so we subtract the length of the
 	 * field and go around again.
+	 *
+	 * Note the above description is lame.  We should/could also check
+	 * the two bytes that make up the EF type and subtype, and then
+	 * check the two bytes that tell us the EF length.  A legacy MAC
+	 * has a 4 byte keyID, and for conforming symmetric keys its value
+	 * must be <= 64k, meaning the top two bytes will always be zero.
+	 * Since the EF Type of 0 is reserved/unused, there's no way a
+	 * conforming legacy MAC could ever be misinterpreted as an EF.
+	 *
+	 * There is more, but this isn't the place to document it.
 	 */
 
 	authlen = LEN_PKT_NOMAC;
@@ -749,6 +778,10 @@ receive(
 			sys_badlength++;
 			return;			/* bad length */
 		}
+		/*
+		 * This next test is clearly wrong - it needlessly
+		 * prohibits short EFs (which don't yet exist)
+		 */
 		if (has_mac <= (int)MAX_MAC_LEN) {
 			skeyid = ntohl(((u_int32 *)pkt)[authlen / 4]);
 			break;
@@ -806,7 +839,18 @@ receive(
 	}
 
 	/*
-	 * If authentication required, a MAC must be present.
+	** Packet Data Verification Layer
+	**
+	** This layer verifies the packet data content.  If 
+	** authentication is required, a MAC must be present.
+	** If a MAC is present, it must validate.
+	** Crypto-NAK?  Look - a shiny thing!
+	**
+	** If authentication fails, we're done.
+	*/
+
+	/*
+	 * If authentication is explicitly required, a MAC must be present.
 	 */
 	if (restrict_mask & RES_DONTTRUST && has_mac == 0) {
 		DPRINTF(2, ("receive: drop: RES_DONTTRUST\n"));
@@ -863,6 +907,7 @@ receive(
 	 * multicaster, the broadcast address is null, so we use the
 	 * unicast address anyway. Don't ask.
 	 */
+
 	peer = findpeer(rbufp,  hismode, &retcode);
 	dstadr_sin = &rbufp->dstadr->sin;
 	NTOHL_FP(&pkt->org, &p_org);
@@ -947,6 +992,14 @@ receive(
 #endif /* HAVE_NTP_SIGND */
 
 	} else {
+		/*
+		 * has_mac is not 0
+		 * Not a VALID_NAK
+		 * Not an MS-SNTP SIGND  packet
+		 *
+		 * So there is a MAC here.
+		 */
+
 		restrict_mask &= ~RES_MSSNTP;
 #ifdef AUTOKEY
 		/*
@@ -1060,6 +1113,80 @@ receive(
 			    ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
 			    ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf)));
 	}
+
+
+	/*
+	 * Bug 3454:
+	 *
+	 * Now come at this from a different perspective:
+	 * - If we expect a MAC and it's not there, we drop it.
+	 * - If we expect one keyID and get another, we drop it.
+	 * - If we have a MAC ahd it hasn't been validated yet, try.
+	 * - if the provided MAC doesn't validate, we drop it.
+	 *
+	 * There might be more to this.
+	 */
+	if (0 != peer && 0 != peer->keyid) {
+		/* Should we msyslog() any of these? */
+
+		/*
+		 * This should catch:
+		 * - no keyID where one is expected,
+		 * - different keyID than what we expect.
+		 */
+		if (peer->keyid != skeyid) {
+			DPRINTF(2, ("receive: drop: Wanted keyID %d, got %d from %s\n",
+				    peer->keyid, skeyid,
+				    stoa(&rbufp->recv_srcadr)));
+			sys_restricted++;
+			return;			/* drop: access denied */
+		}
+
+		/*
+		 * if has_mac != 0 ...
+		 * - If it has not yet been validated, do so.
+		 *   (under what circumstances might that happen?)
+		 * - if missing or bad MAC, log and drop.
+		 */
+		if (0 != has_mac) {
+			if (is_authentic == AUTH_UNKNOWN) {
+				/* How can this happen? */
+				DPRINTF(2, ("receive: 3454 check: AUTH_UNKNOWN from %s\n",
+				    stoa(&rbufp->recv_srcadr)));
+				if (!authdecrypt(skeyid, (u_int32 *)pkt, authlen,
+				    has_mac)) {
+					/* MAC invalid or not found */
+					is_authentic = AUTH_ERROR;
+				} else {
+					is_authentic = AUTH_OK;
+				}
+			}
+			if (is_authentic != AUTH_OK) {
+				DPRINTF(2, ("receive: drop: missing or bad MAC from %s\n",
+					    stoa(&rbufp->recv_srcadr)));
+				sys_restricted++;
+				return;		/* drop: access denied */
+			}
+		}
+	}
+	/**/
+
+	/*
+	** On-Wire Protocol Layer
+	**
+	** Verify protocol operations consistent with the on-wire protocol.
+	** The protocol discards bogus and duplicate packets as well as
+	** minimizes disruptions doe to protocol restarts and dropped
+	** packets.  The operations are controlled by two timestamps:
+	** the transmit timestamp saved in the client state variables,
+	** and the origin timestamp in the server packet header.  The
+	** comparison of these two timestamps is called the loopback test.
+	** The transmit timestamp functions as a nonce to verify that the
+	** response corresponds to the original request.  The transmit
+	** timestamp also serves to discard replays of the most recent
+	** packet.  Upon failure of either test, the packet is discarded
+	** with no further action.
+	*/
 
 	/*
 	 * The association matching rules are implemented by a set of
@@ -1433,7 +1560,7 @@ receive(
 				 * Microsoft KB 875424 for preferred workaround.
 				 */
 				if (AUTH(restrict_mask & RES_DONTTRUST,
-				    is_authentic)) {
+					 is_authentic)) {
 					fast_xmit(rbufp, MODE_PASSIVE, skeyid,
 					    restrict_mask);
 					return;			/* hooray */
