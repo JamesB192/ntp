@@ -2,6 +2,7 @@
 
 * [Sec 3454] Unauthenticated packet can reset authenticated interleave
   associations.  HStenn.
+* [Sec 3453] Interleaved symmetric mode cannot recover from bad state.  HStenn.
 * [Sec 3415] Permit blocking authenticated symmetric/passive associations.
   Implement ippeerlimit.  HStenn, JPerlinger.
 * [Sec 3414] ntpq: decodearr() can write beyond its 'buf' limits
