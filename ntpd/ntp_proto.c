@@ -2007,7 +2007,9 @@ receive(
 		peer->bogusorg++;
 		peer->flags |= FLAG_XBOGUS;
 		peer->flash |= TEST2;		/* bogus */
+#ifdef BUG3453
 		return; /* Bogus packet, we are done */
+#endif
 	}
 
 	/**/
