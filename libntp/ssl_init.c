@@ -20,7 +20,6 @@
 # include "openssl/opensslv.h"
 # include "libssl_compat.h"
 
-# define MD5_LENGTH	16
 # define CMAC_LENGTH	16
 # define CMAC		"AES128CMAC"
 
@@ -83,6 +82,8 @@ ssl_check_version(void)
 	INIT_SSL();
 }
 
+#else	/* !OPENSSL */
+# define MD5_LENGTH	16
 #endif	/* OPENSSL */
 
 
