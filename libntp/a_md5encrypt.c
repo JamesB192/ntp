@@ -114,8 +114,9 @@ make_mac(
 		/* make sure MD5 is allowd */
 		EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
            #endif
-		
-		if (!EVP_DigestInit(ctx, EVP_get_digestbynid(ktype))) {
+		/* [Bug 3457] DON'T use plain EVP_DigestInit! It would
+		 * kill the flags! */
+		if (!EVP_DigestInit_ex(ctx, EVP_get_digestbynid(ktype), NULL)) {
 			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Init failed.",
 				OBJ_nid2sn(ktype));
 			goto mac_fail;
@@ -265,10 +266,12 @@ addr2refid(sockaddr_u *addr)
 	INIT_SSL();
 
 	ctx = EVP_MD_CTX_new();
-#ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
+#   ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
 	/* MD5 is not used as a crypto hash here. */
 	EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
-#endif
+#   endif
+	/* [Bug 3457] DON'T use plain EVP_DigestInit! It would kill the
+	 * flags! */
 	if (!EVP_DigestInit_ex(ctx, EVP_md5(), NULL)) {
 		msyslog(LOG_ERR,
 		    "MD5 init failed");
