@@ -3643,7 +3643,13 @@ static u_int32 derive_nonce(
 	}
 
 	ctx = EVP_MD_CTX_new();
+#   if defined(OPENSSL) && defined(EVP_MD_CTX_FLAG_NON_FIPS_ALLOW)
+	/* [Bug 3457] set flags and don't kill them again */
+	EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
+	EVP_DigestInit_ex(ctx, EVP_get_digestbynid(NID_md5), NULL);
+#   else	
 	EVP_DigestInit(ctx, EVP_get_digestbynid(NID_md5));
+#   endif
 	EVP_DigestUpdate(ctx, salt, sizeof(salt));
 	EVP_DigestUpdate(ctx, &ts_i, sizeof(ts_i));
 	EVP_DigestUpdate(ctx, &ts_f, sizeof(ts_f));

@@ -86,21 +86,30 @@ compute_mac(
 		if (!(ctx = EVP_MD_CTX_new())) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest CTX new failed.",
 				macname);
+			goto mac_fail;
 		}
 #ifdef OPENSSL	/* OpenSSL 1 supports return codes 0 fail, 1 okay */
-		else if (!EVP_DigestInit(ctx, EVP_get_digestbynid(key_type))) {
+#	    ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
+		EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
+#	    endif
+		/* [Bug 3457] DON'T use plain EVP_DigestInit! It would
+		 *  kill the flags! */
+		if (!EVP_DigestInit_ex(ctx, EVP_get_digestbynid(key_type), NULL)) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest Init failed.",
 				macname);
+			goto mac_fail;
 		}
-		else if (!EVP_DigestUpdate(ctx, key_data, key_size)) {
+		if (!EVP_DigestUpdate(ctx, key_data, key_size)) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest Update key failed.",
 				macname);
+			goto mac_fail;
 		}
-		else if (!EVP_DigestUpdate(ctx, pkt_data, pkt_size)) {
+		if (!EVP_DigestUpdate(ctx, pkt_data, pkt_size)) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest Update data failed.",
 				macname);
+			goto mac_fail;
 		}
-		else if (!EVP_DigestFinal(ctx, digest, &len)) {
+		if (!EVP_DigestFinal(ctx, digest, &len)) {
 			msyslog(LOG_ERR, "make_mac: MAC %s Digest Final failed.",
 				macname);
 			len = 0;
@@ -111,7 +120,7 @@ compute_mac(
 		EVP_DigestUpdate(ctx, pkt_data, pkt_size);
 		EVP_DigestFinal(ctx, digest, &len);
 #endif
-		
+	  mac_fail:
 		EVP_MD_CTX_free(ctx);
 	}
 
