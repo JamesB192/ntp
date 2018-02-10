@@ -826,7 +826,7 @@ typedef struct restrict_u_tag	restrict_u;
 struct restrict_u_tag {
 	restrict_u *	link;		/* link to next entry */
 	u_int32		count;		/* number of packets matched */
-	u_short		flags;		/* accesslist flags */
+	u_short		rflags;		/* restrict (accesslist) flags */
 	u_short		mflags;		/* match flags */
 	short		ippeerlimit;	/* IP peer limit */
 	u_long		expire;		/* valid until time */
@@ -847,11 +847,11 @@ struct r4addr_tag {
 };
 
 char *build_iflags(u_int32 flags);
-char *build_mflags(u_short flags);
-char *build_rflags(u_short flags);
+char *build_mflags(u_short mflags);
+char *build_rflags(u_short rflags);
 
 /*
- * Access flags
+ * Restrict (Access) flags (rflags)
  */
 #define	RES_IGNORE		0x0001	/* ignore packet */
 #define	RES_DONTSERVE		0x0002	/* access denied */
@@ -882,7 +882,7 @@ char *build_rflags(u_short flags);
 				 RES_NOMRULIST)
 
 /*
- * Match flags
+ * Match flags (mflags)
  */
 #define	RESM_INTERFACE		0x1000	/* this is an interface */
 #define	RESM_NTPONLY		0x2000	/* match source port 123 */
@@ -891,10 +891,13 @@ char *build_rflags(u_short flags);
 /*
  * Restriction configuration ops
  */
-#define	RESTRICT_FLAGS		1	/* add flags to restrict entry */
-#define	RESTRICT_UNFLAG		2	/* remove flags from restrict entry */
-#define	RESTRICT_REMOVE		3	/* remove a restrict entry */
-#define	RESTRICT_REMOVEIF	4	/* remove an interface restrict entry */
+typedef enum
+restrict_ops {
+	RESTRICT_FLAGS = 1,	/* add rflags to restrict entry */
+	RESTRICT_UNFLAG,	/* remove rflags from restrict entry */
+	RESTRICT_REMOVE,	/* remove a restrict entry */
+	RESTRICT_REMOVEIF,	/* remove an interface restrict entry */
+} restrict_op;
 
 /*
  * Endpoint structure for the select algorithm
