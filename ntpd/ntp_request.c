@@ -87,7 +87,7 @@ static	void	list_restrict	(sockaddr_u *, endpt *, struct req_pkt *);
 static	void	do_resaddflags	(sockaddr_u *, endpt *, struct req_pkt *);
 static	void	do_ressubflags	(sockaddr_u *, endpt *, struct req_pkt *);
 static	void	do_unrestrict	(sockaddr_u *, endpt *, struct req_pkt *);
-static	void	do_restrict	(sockaddr_u *, endpt *, struct req_pkt *, int);
+static	void	do_restrict	(sockaddr_u *, endpt *, struct req_pkt *, restrict_op);
 static	void	mon_getlist	(sockaddr_u *, endpt *, struct req_pkt *);
 static	void	reset_stats	(sockaddr_u *, endpt *, struct req_pkt *);
 static	void	reset_peer	(sockaddr_u *, endpt *, struct req_pkt *);
@@ -1659,7 +1659,7 @@ list_restrict4(
 			pir->v6_flag = 0;
 		pir->mask = htonl(res->u.v4.mask);
 		pir->count = htonl(res->count);
-		pir->flags = htons(res->flags);
+		pir->rflags = htons(res->rflags);
 		pir->mflags = htons(res->mflags);
 		pir = (struct info_restrict *)more_pkt();
 	}
@@ -1690,7 +1690,7 @@ list_restrict6(
 		pir->mask6 = res->u.v6.mask;
 		pir->v6_flag = 1;
 		pir->count = htonl(res->count);
-		pir->flags = htons(res->flags);
+		pir->rflags = htons(res->rflags);
 		pir->mflags = htons(res->mflags);
 		pir = (struct info_restrict *)more_pkt();
 	}
@@ -1779,7 +1779,7 @@ do_restrict(
 	sockaddr_u *srcadr,
 	endpt *inter,
 	struct req_pkt *inpkt,
-	int op
+	restrict_op op
 	)
 {
 	char *			datap;
@@ -1789,6 +1789,18 @@ do_restrict(
 	sockaddr_u		matchaddr;
 	sockaddr_u		matchmask;
 	int			bad;
+
+	switch(op) {
+	    case RESTRICT_FLAGS:
+	    case RESTRICT_UNFLAG:
+	    case RESTRICT_REMOVE:
+	    case RESTRICT_REMOVEIF:
+	    	break;
+
+	    default:
+		req_ack(srcadr, inter, inpkt, INFO_ERR_FMT);
+		return;
+	}
 
 	/*
 	 * Do a check of the flags to make sure that only
@@ -1803,7 +1815,7 @@ do_restrict(
 		return;
 	}
 
-	bad = FALSE;
+	bad = 0;
 	while (items-- > 0 && !bad) {
 		memcpy(&cr, datap, item_sz);
 		cr.flags = ntohs(cr.flags);
