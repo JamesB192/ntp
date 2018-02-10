@@ -71,14 +71,14 @@ void test_RestrictionsAreEmptyAfterInit(void)
 	memset(rl6, 0, sizeof(restrict_u));
 
 	TEST_ASSERT_EQUAL(rl4->count, restrictlist4->count);
-	TEST_ASSERT_EQUAL(rl4->flags, restrictlist4->flags);
+	TEST_ASSERT_EQUAL(rl4->rflags, restrictlist4->rflags);
 	TEST_ASSERT_EQUAL(rl4->mflags, restrictlist4->mflags);
 	TEST_ASSERT_EQUAL(rl4->expire, restrictlist4->expire);
 	TEST_ASSERT_EQUAL(rl4->u.v4.addr, restrictlist4->u.v4.addr);
 	TEST_ASSERT_EQUAL(rl4->u.v4.mask, restrictlist4->u.v4.mask);
 
 	TEST_ASSERT_EQUAL(rl6->count, restrictlist6->count);
-	TEST_ASSERT_EQUAL(rl6->flags, restrictlist6->flags);
+	TEST_ASSERT_EQUAL(rl6->rflags, restrictlist6->rflags);
 	TEST_ASSERT_EQUAL(rl6->mflags, restrictlist6->mflags);
 	TEST_ASSERT_EQUAL(rl6->expire, restrictlist6->expire);
 
@@ -108,7 +108,7 @@ void test_HackingDefaultRestriction(void)
 	*	and check if restriction() returns that flag
 	*/
 
-	const u_short flags = 42;
+	const u_short rflags = 42;
 	r4addr r4a;
 
 	sockaddr_u resaddr = create_sockaddr_u(AF_INET,
@@ -116,13 +116,13 @@ void test_HackingDefaultRestriction(void)
 	sockaddr_u resmask = create_sockaddr_u(AF_INET,
 		54321, "0.0.0.0");
 
-	hack_restrict(RESTRICT_FLAGS, &resaddr, &resmask, -1, 0, flags, 0);
+	hack_restrict(RESTRICT_FLAGS, &resaddr, &resmask, -1, 0, rflags, 0);
 
 	sockaddr_u sockaddr = create_sockaddr_u(AF_INET,
 		54321, "111.123.251.124");
 
 	restrictions(&sockaddr, &r4a);
-	TEST_ASSERT_EQUAL(flags, r4a.rflags);
+	TEST_ASSERT_EQUAL(rflags, r4a.rflags);
 }
 
 
@@ -147,12 +147,12 @@ void test_AddingNewRestriction(void)
 	sockaddr_u resmask = create_sockaddr_u(AF_INET, 54321, "128.0.0.0");
 	r4addr r4a;
 
-	const u_short flags = 42;
+	const u_short rflags = 42;
 
-	hack_restrict(RESTRICT_FLAGS, &resaddr, &resmask, -1, 0, flags, 0);
+	hack_restrict(RESTRICT_FLAGS, &resaddr, &resmask, -1, 0, rflags, 0);
 
 	restrictions(&resaddr, &r4a);
-	TEST_ASSERT_EQUAL(flags, r4a.rflags);
+	TEST_ASSERT_EQUAL(rflags, r4a.rflags);
 }
 
 

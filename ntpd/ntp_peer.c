@@ -860,6 +860,12 @@ DPRINTF(1, ("newpeer(%s) found no existing and %d other associations\n",
 				ippeerlimit));
 			return NULL;
 		}
+	} else {
+		DPRINTF(1, ("newpeer(%s) - ippeerlimit %d ignored\n",
+			(hostname)
+			    ? hostname
+			    : stoa(srcadr),
+			ippeerlimit));
 	}
 
 	/*

@@ -4428,6 +4428,7 @@ send_restrict_entry(
 		while (sent[which])
 			which = (which + 1) % COUNTOF(sent);
 
+		/* XXX: Numbers?  Really? */
 		switch (which) {
 
 		case 0:
@@ -4450,7 +4451,7 @@ send_restrict_entry(
 		case 3:
 			snprintf(tag, sizeof(tag), flags_fmt, idx);
 			match_str = res_match_flags(pres->mflags);
-			access_str = res_access_flags(pres->flags);
+			access_str = res_access_flags(pres->rflags);
 			if ('\0' == match_str[0]) {
 				pch = access_str;
 			} else {

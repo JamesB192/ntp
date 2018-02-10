@@ -654,7 +654,7 @@ struct info_restrict {
 	u_int32 addr;		/* match address */
 	u_int32 mask;		/* match mask */
 	u_int32 count;		/* number of packets matched */
-	u_short flags;		/* restrict flags */
+	u_short rflags;		/* restrict flags */
 	u_short mflags;		/* match flags */
 	u_int v6_flag;		/* is this v6 or not */
 	u_int unused1;		/* unused, padding for addr6 */

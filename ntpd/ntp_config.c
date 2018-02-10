@@ -2472,7 +2472,7 @@ config_access(
 	struct addrinfo *	pai;
 	int			rc;
 	int			restrict_default;
-	u_short			flags;
+	u_short			rflags;
 	u_short			mflags;
 	short			ippeerlimit;
 	int			range_err;
@@ -2592,13 +2592,16 @@ config_access(
 	}
 
 	/* Configure the restrict options */
-	ippeerlimit = -1;
 	my_node = HEAD_PFIFO(ptree->restrict_opts);
-	/* Grab the ippeerlmit */
 
 	for (; my_node != NULL; my_node = my_node->link) {
+		/* Grab the ippeerlmit */
+		ippeerlimit = my_node->ippeerlimit;
+
+DPRINTF(1, ("config_access: top-level node %p: ippeerlimit %d\n", my_node, ippeerlimit));
+
 		/* Parse the flags */
-		flags = 0;
+		rflags = 0;
 		mflags = 0;
 
 		curr_tok_fifo = HEAD_PFIFO(my_node->flag_tok_fifo);
@@ -2617,75 +2620,75 @@ config_access(
 				break;
 
 			case T_Flake:
-				flags |= RES_FLAKE;
+				rflags |= RES_FLAKE;
 				break;
 
 			case T_Ignore:
-				flags |= RES_IGNORE;
+				rflags |= RES_IGNORE;
 				break;
 
 			case T_Kod:
-				flags |= RES_KOD;
+				rflags |= RES_KOD;
 				break;
 
 			case T_Mssntp:
-				flags |= RES_MSSNTP;
+				rflags |= RES_MSSNTP;
 				break;
 
 			case T_Limited:
-				flags |= RES_LIMITED;
+				rflags |= RES_LIMITED;
 				break;
 
 			case T_Lowpriotrap:
-				flags |= RES_LPTRAP;
+				rflags |= RES_LPTRAP;
 				break;
 
 			case T_Nomodify:
-				flags |= RES_NOMODIFY;
+				rflags |= RES_NOMODIFY;
 				break;
 
 			case T_Nomrulist:
-				flags |= RES_NOMRULIST;
+				rflags |= RES_NOMRULIST;
 				break;
 
 			case T_Noepeer:
-				flags |= RES_NOEPEER;
+				rflags |= RES_NOEPEER;
 				break;
 
 			case T_Nopeer:
-				flags |= RES_NOPEER;
+				rflags |= RES_NOPEER;
 				break;
 
 			case T_Noquery:
-				flags |= RES_NOQUERY;
+				rflags |= RES_NOQUERY;
 				break;
 
 			case T_Noserve:
-				flags |= RES_DONTSERVE;
+				rflags |= RES_DONTSERVE;
 				break;
 
 			case T_Notrap:
-				flags |= RES_NOTRAP;
+				rflags |= RES_NOTRAP;
 				break;
 
 			case T_Notrust:
-				flags |= RES_DONTTRUST;
+				rflags |= RES_DONTTRUST;
 				break;
 
 			case T_Version:
-				flags |= RES_VERSION;
+				rflags |= RES_VERSION;
 				break;
 			}
 		}
 
-		if ((RES_MSSNTP & flags) && !warned_signd) {
+		if ((RES_MSSNTP & rflags) && !warned_signd) {
 			warned_signd = 1;
 			fprintf(stderr, "%s\n", signd_warning);
 			msyslog(LOG_WARNING, "%s", signd_warning);
 		}
 
 		/* It would be swell if we could identify the line number */
-		if ((RES_KOD & flags) && !(RES_LIMITED & flags)) {
+		if ((RES_KOD & rflags) && !(RES_LIMITED & rflags)) {
 			const char *kod_where = (my_node->addr)
 					  ? my_node->addr->address
 					  : (mflags & RESM_SOURCE)
@@ -2713,10 +2716,10 @@ config_access(
 				restrict_default = 1;
 			} else {
 				/* apply "restrict source ..." */
-				DPRINTF(1, ("restrict source template ippeerlimit %d mflags %x flags %x\n",
-					ippeerlimit, mflags, flags));
+				DPRINTF(1, ("restrict source template ippeerlimit %d mflags %x rflags %x\n",
+					ippeerlimit, mflags, rflags));
 				hack_restrict(RESTRICT_FLAGS, NULL, NULL,
-					      ippeerlimit, mflags, flags, 0);
+					      ippeerlimit, mflags, rflags, 0);
 				continue;
 			}
 		} else {
@@ -2786,14 +2789,14 @@ config_access(
 			AF(&addr) = AF_INET;
 			AF(&mask) = AF_INET;
 			hack_restrict(RESTRICT_FLAGS, &addr, &mask,
-				      ippeerlimit, mflags, flags, 0);
+				      ippeerlimit, mflags, rflags, 0);
 			AF(&addr) = AF_INET6;
 			AF(&mask) = AF_INET6;
 		}
 
 		do {
 			hack_restrict(RESTRICT_FLAGS, &addr, &mask,
-				      ippeerlimit, mflags, flags, 0);
+				      ippeerlimit, mflags, rflags, 0);
 			if (pai != NULL &&
 			    NULL != (pai = pai->ai_next)) {
 				INSIST(pai->ai_addr != NULL);
@@ -4587,6 +4590,12 @@ config_ntpd(
 	config_fudge(ptree);
 	config_reset_counters(ptree);
 
+#ifdef DEBUG
+	if (debug > 1) {
+		dump_restricts();
+	}
+#endif
+
 #ifdef TEST_BLOCKING_WORKER
 	{
 		struct addrinfo hints;
@@ -5354,92 +5363,96 @@ build_mflags(u_short mflags)
 
 
 char *
-build_rflags(u_short flags)
+build_rflags(u_short rflags)
 {
 	static char rfs[1024];
 
 	rfs[0] = '\0';
 
-	if (flags & RES_FLAKE) {
-		flags &= ~RES_FLAKE;
+	if (rflags & RES_FLAKE) {
+		rflags &= ~RES_FLAKE;
 		appendstr(rfs, sizeof rfs, "flake");
 	}
 
-	if (flags & RES_IGNORE) {
-		flags &= ~RES_IGNORE;
+	if (rflags & RES_IGNORE) {
+		rflags &= ~RES_IGNORE;
 		appendstr(rfs, sizeof rfs, "ignore");
 	}
 
-	if (flags & RES_KOD) {
-		flags &= ~RES_KOD;
+	if (rflags & RES_KOD) {
+		rflags &= ~RES_KOD;
 		appendstr(rfs, sizeof rfs, "kod");
 	}
 
-	if (flags & RES_MSSNTP) {
-		flags &= ~RES_MSSNTP;
+	if (rflags & RES_MSSNTP) {
+		rflags &= ~RES_MSSNTP;
 		appendstr(rfs, sizeof rfs, "mssntp");
 	}
 
-	if (flags & RES_LIMITED) {
-		flags &= ~RES_LIMITED;
+	if (rflags & RES_LIMITED) {
+		rflags &= ~RES_LIMITED;
 		appendstr(rfs, sizeof rfs, "limited");
 	}
 
-	if (flags & RES_LPTRAP) {
-		flags &= ~RES_LPTRAP;
+	if (rflags & RES_LPTRAP) {
+		rflags &= ~RES_LPTRAP;
 		appendstr(rfs, sizeof rfs, "lptrap");
 	}
 
-	if (flags & RES_NOMODIFY) {
-		flags &= ~RES_NOMODIFY;
+	if (rflags & RES_NOMODIFY) {
+		rflags &= ~RES_NOMODIFY;
 		appendstr(rfs, sizeof rfs, "nomodify");
 	}
 
-	if (flags & RES_NOMRULIST) {
-		flags &= ~RES_NOMRULIST;
+	if (rflags & RES_NOMRULIST) {
+		rflags &= ~RES_NOMRULIST;
 		appendstr(rfs, sizeof rfs, "nomrulist");
 	}
 
-	if (flags & RES_NOEPEER) {
-		flags &= ~RES_NOEPEER;
+	if (rflags & RES_NOEPEER) {
+		rflags &= ~RES_NOEPEER;
 		appendstr(rfs, sizeof rfs, "noepeer");
 	}
 
-	if (flags & RES_NOPEER) {
-		flags &= ~RES_NOPEER;
+	if (rflags & RES_NOPEER) {
+		rflags &= ~RES_NOPEER;
 		appendstr(rfs, sizeof rfs, "nopeer");
 	}
 
-	if (flags & RES_NOQUERY) {
-		flags &= ~RES_NOQUERY;
+	if (rflags & RES_NOQUERY) {
+		rflags &= ~RES_NOQUERY;
 		appendstr(rfs, sizeof rfs, "noquery");
 	}
 
-	if (flags & RES_DONTSERVE) {
-		flags &= ~RES_DONTSERVE;
+	if (rflags & RES_DONTSERVE) {
+		rflags &= ~RES_DONTSERVE;
 		appendstr(rfs, sizeof rfs, "dontserve");
 	}
 
-	if (flags & RES_NOTRAP) {
-		flags &= ~RES_NOTRAP;
+	if (rflags & RES_NOTRAP) {
+		rflags &= ~RES_NOTRAP;
 		appendstr(rfs, sizeof rfs, "notrap");
 	}
 
-	if (flags & RES_DONTTRUST) {
-		flags &= ~RES_DONTTRUST;
+	if (rflags & RES_DONTTRUST) {
+		rflags &= ~RES_DONTTRUST;
 		appendstr(rfs, sizeof rfs, "notrust");
 	}
 
-	if (flags & RES_VERSION) {
-		flags &= ~RES_VERSION;
+	if (rflags & RES_VERSION) {
+		rflags &= ~RES_VERSION;
 		appendstr(rfs, sizeof rfs, "version");
 	}
 
-	if (flags) {
+	if (rflags) {
 		char string[10];
 
-		snprintf(string, sizeof string, "%0x", flags);
+		snprintf(string, sizeof string, "%0x", rflags);
 		appendstr(rfs, sizeof rfs, string);
+	}
+
+	if ('\0' == rfs[0]) {
+		appendstr(rfs, sizeof rfs, "(none)");
 	}
 
 	return rfs;

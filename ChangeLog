@@ -92,6 +92,8 @@
 * Update the documentation in ntp.conf.def .  HStenn.
 * restrictions() must return restrict flags and ippeerlimit.  HStenn.
 * Update ntpq peer documentation to describe the 'p' type.  HStenn.
+* Rename restrict 'flags' to 'rflags.  Use an enum for the values.  HStenn.
+* Provide dump_restricts() for debugging.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
