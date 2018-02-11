@@ -1891,7 +1891,7 @@ gpsd_init_socket(
 	 */
 	ov = 1;
 	rc = setsockopt(up->fdt, IPPROTO_TCP, TCP_NODELAY,
-			(char*)&ov, sizeof(ov));
+			(void *)&ov, sizeof(ov));
 	if (-1 == rc) {
 		if (syslogok(pp, up))
 			msyslog(LOG_INFO,
