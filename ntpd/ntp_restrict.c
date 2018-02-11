@@ -86,6 +86,8 @@ static	u_long res_limited_refcnt;
 
 /*
  * Our default entries.
+ *
+ * We can make this cleaner with c99 support: see init_restrict().
  */
 static	restrict_u	restrict_def4;
 static	restrict_u	restrict_def6;
@@ -221,6 +223,10 @@ init_restrict(void)
 	 * behavior as but reversed implementation compared to the docs.
 	 * 
 	 */
+
+	restrict_def4.ippeerlimit = -1;		/* Cleaner if we have C99 */
+	restrict_def6.ippeerlimit = -1;		/* Cleaner if we have C99 */
+
 	LINK_SLIST(restrictlist4, &restrict_def4, link);
 	LINK_SLIST(restrictlist6, &restrict_def6, link);
 	restrictcount = 2;
