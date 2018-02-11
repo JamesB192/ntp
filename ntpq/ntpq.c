@@ -748,7 +748,7 @@ openhost(
 		int err;
 
 		err = setsockopt(INVALID_SOCKET, SOL_SOCKET, SO_OPENTYPE,
-				 (char *)&optionValue, sizeof(optionValue));
+				 (void *)&optionValue, sizeof(optionValue));
 		if (err) {
 			mfprintf(stderr,
 				 "setsockopt(SO_SYNCHRONOUS_NONALERT)"
@@ -772,7 +772,7 @@ openhost(
 # ifdef SO_RCVBUF
 	{ int rbufsize = DATASIZE + 2048;	/* 2K for slop */
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF,
-		       &rbufsize, sizeof(int)) == -1)
+		       (void *)&rbufsize, sizeof(int)) == -1)
 		error("setsockopt");
 	}
 # endif
