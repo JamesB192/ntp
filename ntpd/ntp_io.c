@@ -2730,6 +2730,7 @@ io_multicast_add(
 	if (ep->fd != INVALID_SOCKET) {
 		ep->ignore_packets = ISC_FALSE;
 		ep->flags |= INT_MCASTIF;
+		ep->ifindex = SCOPE(addr);
 
 		strlcpy(ep->name, "multicast", sizeof(ep->name));
 		DPRINT_INTERFACE(2, (ep, "multicast add ", "\n"));
