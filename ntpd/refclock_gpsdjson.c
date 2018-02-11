@@ -1999,7 +1999,7 @@ gpsd_test_socket(
 	/* check for socket error */
 	ec = 0;
 	lc = sizeof(ec);
-	rc = getsockopt(up->fdt, SOL_SOCKET, SO_ERROR, &ec, &lc);
+	rc = getsockopt(up->fdt, SOL_SOCKET, SO_ERROR, (void *)&ec, &lc);
 	if (-1 == rc || 0 != ec) {
 		const char *errtxt;
 		if (0 == ec)
