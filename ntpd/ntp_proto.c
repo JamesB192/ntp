@@ -1664,7 +1664,7 @@ receive(
 
 			/* This is noteworthy, not error-worthy */
 			if (pkt->ppoll != peer->ppoll) {
-				msyslog(LOG_INFO, "receive: broadcast poll from %s changed from %ud to %ud",
+				msyslog(LOG_INFO, "receive: broadcast poll from %s changed from %u to %u",
 					stoa(&rbufp->recv_srcadr),
 					peer->ppoll, pkt->ppoll);
 			}
@@ -1672,7 +1672,7 @@ receive(
 			/* This is error-worthy */
 			if (pkt->ppoll < peer->minpoll ||
 			    pkt->ppoll > peer->maxpoll  ) {
-				msyslog(LOG_INFO, "receive: broadcast poll of %ud from %s is out-of-range (%d to %d)!",
+				msyslog(LOG_INFO, "receive: broadcast poll of %u from %s is out-of-range (%d to %d)!",
 					pkt->ppoll, stoa(&rbufp->recv_srcadr),
 					peer->minpoll, peer->maxpoll);
 				++bail;
