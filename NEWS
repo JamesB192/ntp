@@ -11,7 +11,43 @@ This release fixes 2 low-/medium-, 1 informational/medum-, and 2 low-severity
 vulnerabilities in ntpd, one medium-severity vulernability in ntpq, and
 provides 65 other non-security fixes and improvements:
 
-* NTP Bug 3454: More soon
+* NTP Bug 3454: Unauthenticated packet can reset authenticated interleaved
+	association (LOW/MED)
+   Date Resolved: Stable (4.2.8p11) 27 Feb 2018
+   References: Sec 3454
+   Affects: ntp-4.2.6, up to but not including ntp-4.2.8p11.
+   CVSS2: MED 4.3 (AV:N/AC:M/Au:N/C:N/I:N/A:P) This could score between
+	2.9 and 6.8.
+   CVSS3: LOW 3.1 CVSS:3.0/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L This could
+	score between 2.6 and 3.1
+   Summary:
+	The NTP Protocol allows for both non-authenticated and
+	authenticated associations, in client/server, symmetric (peer),
+	and several broadcast modes. In addition to the basic NTP
+	operational modes, symmetric mode and broadcast servers can
+	support an interleaved mode of operation. In ntp-4.2.8p4 a bug
+	was inadvertently introduced into the protocol engine that
+	allows a non-authenticated zero-origin (reset) packet to reset
+	an authenticated interleaved peer association. If an attacker
+	can send a packet with a zero-origin timestamp and the source
+	IP address of the "other side" of an interleaved association,
+	the 'victim' ntpd will reset its association. The attacker must
+	continue sending these packets in order to maintain the
+	disruption of the association. In ntp-4.0.0 thru ntp-4.2.8p6,
+	interleave mode could be entered dynamically. As of ntp-4.2.8p7,
+	interleaved mode must be explicitly configured/enabled.
+   Mitigation:
+	Implement BCP-38.
+	Upgrade to 4.2.8p11, or later, from the NTP Project Download Page
+	    or the NTP Public Services Project Download Page.
+	If you are unable to upgrade to 4.2.8p11 or later and have
+	    'peer HOST xleave' lines in your ntp.conf file, remove the
+	    'xleave' option.
+	Have enough sources of time.
+	Properly monitor your ntpd instances.
+	If ntpd stops running, auto-restart it without -g .
+   Credit:
+   	This weakness was discovered by Miroslav Lichvar of Red Hat.
 
 * NTP Bug 3453: Interleaved symmetric mode cannot recover from bad
 	state (LOW/MED)
