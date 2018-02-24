@@ -14,7 +14,7 @@ provides 65 other non-security fixes and improvements:
 * NTP Bug 3454: Unauthenticated packet can reset authenticated interleaved
 	association (LOW/MED)
    Date Resolved: Stable (4.2.8p11) 27 Feb 2018
-   References: Sec 3454 / CVE-2018-7185
+   References: Sec 3454 / CVE-2018-7185 / VU#961909
    Affects: ntp-4.2.6, up to but not including ntp-4.2.8p11.
    CVSS2: MED 4.3 (AV:N/AC:M/Au:N/C:N/I:N/A:P) This could score between
 	2.9 and 6.8.
@@ -52,7 +52,7 @@ provides 65 other non-security fixes and improvements:
 * NTP Bug 3453: Interleaved symmetric mode cannot recover from bad
 	state (LOW/MED)
    Date Resolved: Stable (4.2.8p11) 27 Feb 2018
-   References: Sec 3453 / CVE-2018-7184
+   References: Sec 3453 / CVE-2018-7184 / VU#961909
    Affects: ntpd in ntp-4.2.8p4, up to but not including ntp-4.2.8p11.
    CVSS2: MED 4.3 (AV:N/AC:M/Au:N/C:P/I:N/A:N)
 	Could score between 2.9 and 6.8.
@@ -82,7 +82,7 @@ provides 65 other non-security fixes and improvements:
 * NTP Bug 3415: Provide a way to prevent authenticated symmetric passive
 	peering (LOW)
    Date Resolved: Stable (4.2.8p11) 27 Feb 2018
-   References: Sec 3415 / CVE-2018-7170
+   References: Sec 3415 / CVE-2018-7170 / VU#961909
    	       Sec 3012 / CVE-2016-1549 / VU#718152
    Affects: All ntp-4 releases up to, but not including 4.2.8p7, and
    	4.3.0 up to, but not including 4.3.92.  Resolved in 4.2.8p11.
@@ -121,7 +121,7 @@ provides 65 other non-security fixes and improvements:
 
 * ntpq Bug 3414: decodearr() can write beyond its 'buf' limits (Medium)
    Date Resolved: 27 Feb 2018
-   References: Sec 3414 / CVE-2018-7183
+   References: Sec 3414 / CVE-2018-7183 / VU#961909
    Affects: ntpq in ntp-4.2.8p6, up to but not including ntp-4.2.8p11.
    CVSS2: MED 6.8 (AV:N/AC:M/Au:N/C:P/I:P/A:P)
    CVSS3: MED 5.0 CVSS:3.0/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:L/A:L
@@ -145,7 +145,7 @@ provides 65 other non-security fixes and improvements:
 * NTP Bug 3412: ctl_getitem(): buffer read overrun leads to undefined
 	behavior and information leak (Info/Medium)
    Date Resolved: 27 Feb 2018
-   References: Sec 3412 / CVE-2018-7182
+   References: Sec 3412 / CVE-2018-7182 / VU#961909
    Affects: ntp-4.2.8p6, up to but not including ntp-4.2.8p11.
    CVSS2: INFO 0.0 - MED 5.0 (AV:N/AC:L/Au:N/C:P/I:N/A:N) 0.0 if C:N
    CVSS3: NONE 0.0 - MED 5.3 CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N
