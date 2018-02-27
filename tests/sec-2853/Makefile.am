@@ -24,6 +24,7 @@ LDADD =					\
 	$(LDADD_LIBNTP)			\
 	$(PTHREAD_LIBS)			\
 	$(LDADD_NTP)			\
+	$(LIBM)				\
 	$(NULL)
 
 AM_CFLAGS   = $(CFLAGS_NTP)
