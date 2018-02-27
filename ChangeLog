@@ -97,6 +97,7 @@
 * Rename restrict 'flags' to 'rflags.  Use an enum for the values.  HStenn.
 * Provide dump_restricts() for debugging.  HStenn.
 * Use consistent 4th arg type for [gs]etsockopt.  JPerlinger.
+* Some tests might need LIBM.  HStenn.
 
 ---
 (4.2.8p10) 2017/03/21 Released by Harlan Stenn <stenn@ntp.org>
