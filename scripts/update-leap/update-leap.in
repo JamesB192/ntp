@@ -81,7 +81,7 @@ GetOptions(\%opt,
 	'e:60',
 	'F',
 	'f=s',
-	'h',
+	'h|help',
 	'i:10',
 	'L=s',
 	'l=s',
@@ -140,17 +140,17 @@ $SIG{QUIT} = \&signal_catcher;
 # Take some security precautions
 close STDIN;
 
-if ($< != $RUN_UID) {
-    log_fatal(LOG_ERR, 'User ' . getpwuid($<) . " (UID $<) tried to run $PROG");
-}
-
-chdir $RUN_DIR || log_fatal("Failed to change dir to $RUN_DIR");
-
 # Show help
 if (defined $opt{h}) {
     show_help();
     exit 0;
 }
+
+if ($< != $RUN_UID) {
+    log_fatal(LOG_ERR, 'User ' . getpwuid($<) . " (UID $<) tried to run $PROG");
+}
+
+chdir $RUN_DIR || log_fatal("Failed to change dir to $RUN_DIR");
 
 # Parse ntp.conf for path to leapfile if not set by user
 if (! $LEAPFILE) {
