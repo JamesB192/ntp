@@ -10,11 +10,11 @@
 .ds B-Font B
 .ds I-Font I
 .ds R-Font R
-.TH ntp.conf 5man "22 Jan 2018" "4.2.8p10" "File Formats"
+.TH ntp.conf 5man "27 Feb 2018" "4.2.8p10" "File Formats"
 .\"
 .\" EDIT THIS FILE WITH CAUTION (in-mem file)
 .\"
-.\" It has been AutoGen-ed January 22, 2018 at 11:49:11 AM by AutoGen 5.18.5
+.\" It has been AutoGen-ed February 27, 2018 at 07:25:55 AM by AutoGen 5.18.5
 .\" From the definitions ntp.conf.def
 .\" and the template file agman-cmd.tpl
 .SH NAME
@@ -2208,7 +2208,7 @@ there is clear benefit to having the clients notice this change
 as soon as possible.
 Attacks such as replay attacks can happen, however,
 and even though there are a number of protections built in to
-broadcast mode, attempts to perform  a replay attack are possible.
+broadcast mode, attempts to perform a replay attack are possible.
 This value defaults to 0, but can be changed
 to any number of poll intervals between 0 and 4.
 .PP
@@ -2843,14 +2843,14 @@ The
 directive controls which network addresses
 \fCntpd\f[]\fR(1ntpdmdoc)\f[]
 opens, and whether input is dropped without processing.
-The first parameter determines the aciton  for addresses
+The first parameter determines the action for addresses
 which match the second parameter.
 The second parameter specifies a class of addresses,
 or a specific interface name,
 or an address.
 In the address case,
 \f\*[I-Font]prefixlen\f[]
-determines how many bits must match  for this rule to apply.
+determines how many bits must match for this rule to apply.
 \f\*[B-Font]ignore\f[]
 prevents opening matching addresses,
 \f\*[B-Font]drop\f[]
