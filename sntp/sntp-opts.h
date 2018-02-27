@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (sntp-opts.h)
  *
- *  It has been AutoGen-ed  December 11, 2017 at 08:51:08 AM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  February 27, 2018 at 07:23:09 AM by AutoGen 5.18.5
  *  From the definitions    sntp-opts.def
  *  and the template file   options
  *
