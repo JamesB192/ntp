@@ -3383,6 +3383,10 @@ config_ttl(
 	size_t i = 0;
 	int_node *curr_ttl;
 
+	/* [Bug 3465] There is a built-in default for the TTLs. We must
+	 * overwrite 'sys_ttlmax' if we change that preset, and leave it
+	 * alone otherwise!
+	 */
 	curr_ttl = HEAD_PFIFO(ptree->ttl);
 	for (; curr_ttl != NULL; curr_ttl = curr_ttl->link) {
 		if (i < COUNTOF(sys_ttl))
@@ -3392,7 +3396,8 @@ config_ttl(
 				"ttl: Number of TTL entries exceeds %zu. Ignoring TTL %d...",
 				COUNTOF(sys_ttl), curr_ttl->i);
 	}
-	sys_ttlmax = (i) ? (i - 1) : 0;
+	if (0 != i) /* anything written back at all? */
+		sys_ttlmax = i - 1;
 }
 #endif	/* !SIM */
 
