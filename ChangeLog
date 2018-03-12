@@ -1,4 +1,7 @@
 ---
+* [Bug 3470] ntpd4.2.8p11 fails to compile without OpenSSL <perlinger@ntp.org>
+
+---
 (4.2.8p11) 2018/02/27 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3454] Unauthenticated packet can reset authenticated interleave
