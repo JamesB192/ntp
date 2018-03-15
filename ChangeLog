@@ -1,4 +1,7 @@
 ---
+
+* [Bug 3471] Check for openssl/[ch]mac.h.  HStenn.
+---
 (4.2.8p11) 2018/02/27 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3454] Unauthenticated packet can reset authenticated interleave
