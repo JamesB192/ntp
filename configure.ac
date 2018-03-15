@@ -3014,6 +3014,24 @@ AC_MSG_RESULT([$ans])
 
 NTP_OPENSSL
 
+AC_MSG_CHECKING([if we want to include CMAC support])
+case "$ntp_openssl" in
+ yes)
+    AC_ARG_ENABLE(
+    	[cmac],
+	AS_HELP_STRING(
+	    [--enable-cmac],
+	    [? include AES-128-CMAC support]
+	    ),
+	[ntp_cmac=$enableval],
+	[ntp_cmac=yes]
+    )
+    ;;
+ *) [ntp_cmac=no]
+    ;;
+esac
+AC_MSG_RESULT([$ntp_cmac])
+
 NTP_CRYPTO_RAND
 
 # if we are using OpenSSL (--with-crypto), by default Autokey is enabled
