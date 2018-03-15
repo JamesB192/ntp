@@ -1,4 +1,8 @@
 ---
+* [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
+  - plus some more work on warnings for unchecked results
+
+---
 (4.2.8p11) 2018/02/27 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3454] Unauthenticated packet can reset authenticated interleave
