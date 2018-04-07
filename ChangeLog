@@ -1,6 +1,8 @@
 ---
 * [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
   - plus some more work on warnings for unchecked results
+* [Bug 2821] minor build issues <perlinger@ntp.org>
+ - applied patches by Christos Zoulas, including real bug fixes
 
 ---
 (4.2.8p11) 2018/02/27 Released by Harlan Stenn <stenn@ntp.org>

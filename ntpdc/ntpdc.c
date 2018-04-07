@@ -944,7 +944,7 @@ sendrequest(
 	if (!maclen) {  
 		fprintf(stderr, "Key not found\n");
 		return 1;
-	} else if (maclen != (int)(info_auth_hashlen + sizeof(keyid_t))) {
+	} else if (maclen != (size_t)(info_auth_hashlen + sizeof(keyid_t))) {
 		fprintf(stderr,
 			"%zu octet MAC, %zu expected with %zu octet digest\n",
 			maclen, (info_auth_hashlen + sizeof(keyid_t)),

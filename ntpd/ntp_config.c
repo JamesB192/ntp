@@ -364,7 +364,7 @@ static u_int32 get_match(const char *, struct masks *);
 static u_int32 get_logmask(const char *);
 static int/*BOOL*/ is_refclk_addr(const address_node * addr);
 
-static void	appendstr(char *, size_t, char *);
+static void	appendstr(char *, size_t, const char *);
 
 
 #ifndef SIM
@@ -5463,7 +5463,7 @@ static void
 appendstr(
 	char *string,
 	size_t s,
-	char *new
+	const char *new
 	)
 {
 	if (*string != '\0') {
