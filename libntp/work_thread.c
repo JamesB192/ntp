@@ -373,8 +373,10 @@ send_blocking_resp_internal(
 	/* queue consumer wake-up notification */
 	if (empty)
 	{
-#	    ifdef WORK_PIPE
-		write(c->resp_write_pipe, "", 1);
+#	    ifdef WORK_PIPE		
+		if (1 != write(c->resp_write_pipe, "", 1))
+			msyslog(LOG_ERR, "%s",
+				"async resolver notifation failed");
 #	    else
 		tickle_sem(c->responses_pending);
 #	    endif
