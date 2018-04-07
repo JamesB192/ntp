@@ -634,7 +634,7 @@ true_send(
 		size_t len = strlen(cmd);
 
 		true_debug(peer, "Send '%s'\n", cmd);
-		if (refclock_write(peer, cmd, len, NULL) != len)
+		if (refclock_write(peer, cmd, len, NULL) != (ssize_t)len)
 			refclock_report(peer, CEVNT_FAULT);
 		else
 			pp->polls++;
