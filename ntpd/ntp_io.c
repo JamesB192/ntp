@@ -3133,7 +3133,7 @@ sendpkt(
 	int	cc;
 	int	rc;
 	u_char	cttl;
-	l_fp	fp_zero = { 0, 0 };
+	l_fp	fp_zero = { { 0 }, 0 };
 
 	ismcast = IS_MCAST(dest);
 	if (!ismcast)
