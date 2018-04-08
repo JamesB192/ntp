@@ -153,7 +153,7 @@ make_mac(
 	if (ktype == NID_md5)
 	{
 		EVP_MD_CTX *	ctx   = EVP_MD_CTX_new();
-		uint		uilen = 0;
+		u_int		uilen = 0;
 
 		if (digest->len < 16) {
 			msyslog(LOG_ERR, "%s", "MAC encrypt: MAC md5 buf too small.");
