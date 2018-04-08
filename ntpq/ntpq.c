@@ -2504,7 +2504,7 @@ ntp_poll(
 /*
  * showdrefid2str - return a string explanation of the value of drefid
  */
-static char *
+static const char *
 showdrefid2str(void)
 {
 	switch (drefid) {
@@ -3321,7 +3321,7 @@ outputarr(
 	    *bp++ = ' ';
 
 	for (i = narr; i > 0; i--) {
-		if (i != narr)
+		if (i != (size_t)narr)
 		    *bp++ = ' ';
 		cp = lfptoms(lfp, 2);
 		len = strlen(cp);
@@ -3639,10 +3639,10 @@ struct hstate {
 static void
 list_md_fn(const EVP_MD *m, const char *from, const char *to, void *arg)
 {
-    size_t 	  len, n, digest_len;
+    size_t 	  len, n;
     const char	  *name, **seen;
     struct hstate *hstate = arg;
-    char	  *cp;
+    const char	  *cp;
 
     /* m is MD obj, from is name or alias, to is base name for alias */
     if (!m || !from || to) {
@@ -3651,7 +3651,7 @@ list_md_fn(const EVP_MD *m, const char *from, const char *to, void *arg)
 
     /* Discard MACs that NTP won't accept. */
     /* Keep this consistent with keytype_from_text() in ssl_init.c. */
-    if (EVP_MD_size(m) > (MAX_MAC_LEN - sizeof(keyid_t))) {
+    if ((size_t)EVP_MD_size(m) > (MAX_MAC_LEN - sizeof(keyid_t))) {
         return;
     }
 
