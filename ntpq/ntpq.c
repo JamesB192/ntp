@@ -32,18 +32,20 @@
 #include "ntp_lineedit.h"
 #include "ntp_debug.h"
 #ifdef OPENSSL
-#include "openssl/evp.h"
-#include "openssl/objects.h"
-#include "openssl/err.h"
-#ifdef SYS_WINNT
-# include "openssl/opensslv.h"
-# if !defined(HAVE_EVP_MD_DO_ALL_SORTED) && OPENSSL_VERSION_NUMBER > 0x10000000L
-#    define HAVE_EVP_MD_DO_ALL_SORTED	1
+# include "openssl/evp.h"
+# include "openssl/objects.h"
+# include "openssl/err.h"
+# ifdef SYS_WINNT
+#  include "openssl/opensslv.h"
+#  if !defined(HAVE_EVP_MD_DO_ALL_SORTED) && OPENSSL_VERSION_NUMBER > 0x10000000L
+#     define HAVE_EVP_MD_DO_ALL_SORTED	1
+#  endif
 # endif
-#endif
-#include "libssl_compat.h"
-
-#define CMAC "AES128CMAC"
+# include "libssl_compat.h"
+# ifdef HAVE_OPENSSL_CMAC_H
+#  include <openssl/cmac.h>
+#  define CMAC "AES128CMAC"
+# endif
 #endif
 #include <ssl_applink.c>
 
@@ -3711,6 +3713,7 @@ list_md_fn(const EVP_MD *m, const char *from, const char *to, void *arg)
 static char *
 insert_cmac(char *list)
 {
+#ifdef ENABLE_CMAC
     int insert;
     size_t len;
 
@@ -3807,7 +3810,7 @@ insert_cmac(char *list)
 	    }
 	} /* insert */
     } /* List not empty */
-
+#endif /*ENABLE_CMAC*/
     return list;
 }
 # endif
