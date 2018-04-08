@@ -2381,7 +2381,7 @@ fetch_nonce(
 		return FALSE;
 	}
 	chars = rsize - (sizeof(nonce_eq) - 1);
-	if (chars >= (int)cb_nonce)
+	if (chars >= cb_nonce)
 		return FALSE;
 	memcpy(nonce, rdata + sizeof(nonce_eq) - 1, chars);
 	nonce[chars] = '\0';
