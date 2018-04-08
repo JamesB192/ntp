@@ -1110,7 +1110,7 @@ save_config(
 	 */
 	prc = snprintf(fullpath, sizeof(fullpath), "%s%s",
 		       saveconfigdir, filename);
-	if (prc < 0 || prc >= sizeof(fullpath)) {
+	if (prc < 0 || (size_t)prc >= sizeof(fullpath)) {
 		ctl_printf("saveconfig exceeded maximum path length (%u)",
 			   (u_int)sizeof(fullpath));
 		ctl_flushpkt(0);
@@ -1127,8 +1127,8 @@ save_config(
 		fptr = fdopen(fd, "w");
 
 	if (NULL == fptr || -1 == dump_all_config_trees(fptr, 1)) {
-		ctl_printf("Unable to save configuration to file '%s': %m",
-			   filename);
+		ctl_printf("Unable to save configuration to file '%s': %s",
+			   filename, strerror(errno));
 		msyslog(LOG_ERR,
 			"saveconfig %s from %s failed", filename,
 			stoa(&rbufp->recv_srcadr));
@@ -1677,7 +1677,7 @@ ctl_putuint(
 	int  rc;
 
 	rc = snprintf(buffer, sizeof(buffer), "%lu", uval);
-	INSIST(rc >= 0 && rc < sizeof(buffer));
+	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
 	ctl_putunqstr(tag, buffer, rc);
 }
 
@@ -1764,7 +1764,7 @@ ctl_putint(
 	int  rc;
 	
 	rc = snprintf(buffer, sizeof(buffer), "%ld", ival);
-	INSIST(rc >= 0 && rc < sizeof(buffer));
+	INSIST(rc >= 0 && (size_t)rc < sizeof(buffer));
 	ctl_putunqstr(tag, buffer, rc);
 }
 
@@ -1878,7 +1878,7 @@ ctl_printf(
 	va_start(va, fmt);
 	rc = vsnprintf(fmtbuf, sizeof(fmtbuf), fmt, va);
 	va_end(va);
-	if (rc < 0 || rc >= sizeof(fmtbuf))
+	if (rc < 0 || (size_t)rc >= sizeof(fmtbuf))
 		strcpy(fmtbuf + sizeof(fmtbuf) - strlen(ellipsis) - 1,
 		       ellipsis);
 	ctl_putdata(fmtbuf, strlen(fmtbuf), 0);
