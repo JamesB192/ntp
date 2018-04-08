@@ -1,15 +1,15 @@
 ---
 
 * [Bug 3471] Check for openssl/[ch]mac.h.  HStenn.
- - add #define ENABLE_CMAC support in configure.  HStenn.
+  - add #define ENABLE_CMAC support in configure.  HStenn.
 * [Bug 3470] ntpd4.2.8p11 fails to compile without OpenSSL <perlinger@ntp.org>
 * [Bug 3467] Potential memory fault in ntpq [...] <perlinger@ntp.org>
- - fixed IO redirection and CTRL-C handling in ntq and ntpdc
+  - fixed IO redirection and CTRL-C handling in ntq and ntpdc
 * [Bug 3465] Default TTL values cannot be used <perlinger@ntp.org>
 * [Bug 3456] Use uintptr_t rather than size_t to store an integer in a pointer
- - According to Brooks Davis, there was only one location <perlinger@ntp.org>
+  - According to Brooks Davis, there was only one location <perlinger@ntp.org>
 * [Bug 2821] minor build issues <perlinger@ntp.org>
- - applied patches by Christos Zoulas, including real bug fixes
+  - applied patches by Christos Zoulas, including real bug fixes
 
 ---
 (4.2.8p11) 2018/02/27 Released by Harlan Stenn <stenn@ntp.org>
@@ -25,19 +25,19 @@
 * [Sec 3012] Sybil vulnerability: noepeer support.  HStenn, JPerlinger.
 * [Bug 3457] OpenSSL FIPS mode regression <perlinger@ntp.org>
 * [Bug 3455] ntpd doesn't use scope id when binding multicast <perlinger@ntp.org>
- - applied patch by Sean Haugh 
+  - applied patch by Sean Haugh 
 * [Bug 3452] PARSE driver prints uninitialized memory. <perlinger@ntp.org>
 * [Bug 3450] Dubious error messages from plausibility checks in get_systime()
- - removed error log caused by rounding/slew, ensured postcondition <perlinger@ntp.org>
+  - removed error log caused by rounding/slew, ensured postcondition <perlinger@ntp.org>
 * [Bug 3447] AES-128-CMAC (fixes) <perlinger@ntp.org>
   - refactoring the MAC code, too
 * [Bug 3441] Validate the assumption that AF_UNSPEC is 0.  stenn@ntp.org
 * [Bug 3439] When running multiple commands / hosts in ntpq... <perlinger@ntp.org>
- - applied patch by ggarvey
+  - applied patch by ggarvey
 * [Bug 3438] Negative values and values > 999 days in... <perlinger@ntp.org>
- - applied patch by ggarvey (with minor mods)
+  - applied patch by ggarvey (with minor mods)
 * [Bug 3437] ntpd tries to open socket with AF_UNSPEC domain
- - applied patch (with mods) by Miroslav Lichvar <perlinger@ntp.org>
+  - applied patch (with mods) by Miroslav Lichvar <perlinger@ntp.org>
 * [Bug 3435] anchor NTP era alignment <perlinger@ntp.org>
 * [Bug 3433] sntp crashes when run with -a.  <stenn@ntp.org>
 * [Bug 3430] ntpq dumps core (SIGSEGV) for "keytype md2"
