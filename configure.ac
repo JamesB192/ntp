@@ -4391,6 +4391,10 @@ NTP_PROBLEM_TESTS
 
 ###
 
+AC_CHECK_DECLS([sigsetjmp,siglongjmp], [], [], [[#include <setjmp.h>]])
+
+###
+
 AC_DEFINE_DIR([NTP_KEYSDIR], [sysconfdir],
     [Default location of crypto key info])
 

@@ -1153,7 +1153,7 @@ printassoc(
 	 * Output a header
 	 */
 	(void) fprintf(fp,
-			   "\nind assid status  conf reach auth condition  last_event cnt\n");
+			   "ind assid status  conf reach auth condition  last_event cnt\n");
 	(void) fprintf(fp,
 			   "===========================================================\n");
 	for (i = 0; i < numassoc; i++) {
