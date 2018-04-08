@@ -651,6 +651,73 @@ refclock_gtraw(
 	return (bmax);
 }
 
+/*
+ * refclock_fdwrite()
+ *
+ * Write data to a clock device. Does the necessary result checks and
+ * logging, and encapsulates OS dependencies.
+ */
+#ifdef SYS_WINNT
+extern int async_write(int fd, const void * buf, unsigned int len);
+#endif
+
+size_t
+refclock_fdwrite(
+	const struct peer *	peer,
+	int			fd,
+	const void *		buf,
+	size_t			len,
+	const char *		what
+	)
+{
+	size_t	nret, nout;
+	int	nerr;
+	
+	nout = (INT_MAX > len) ? len : INT_MAX;
+#   ifdef SYS_WINNT
+	nret = (size_t)async_write(fd, buf, (unsigned int)nout);
+#   else
+	nret = (size_t)write(fd, buf, nout);
+#   endif
+	if (NULL != what) {
+		if (nret == FDWRITE_ERROR) {
+			nerr = errno;
+			msyslog(LOG_INFO,
+				"%s: write %s failed, fd=%d, %m",
+				refnumtoa(&peer->srcadr), what,
+				fd);
+			errno = nerr;
+		} else if (nret != len) {
+			nerr = errno;
+			msyslog(LOG_NOTICE,
+				"%s: %s shortened, fd=%d, wrote %zu of %zu bytes",
+				refnumtoa(&peer->srcadr), what,
+				fd, nret, len);
+			errno = nerr;
+		}
+	}
+	return nret;
+}
+
+size_t
+refclock_write(
+	const struct peer *	peer,
+	const void *		buf,
+	size_t			len,
+	const char *		what
+	)
+{
+	if ( ! (peer && peer->procptr)) {
+		if (NULL != what)
+			msyslog(LOG_INFO,
+				"%s: write %s failed, invalid clock peer",
+				refnumtoa(&peer->srcadr), what);
+		errno = EINVAL;
+		return FDWRITE_ERROR;
+	}
+	return refclock_fdwrite(peer, peer->procptr->io.fd,
+				buf, len, what);
+}
 
 /*
  * indicate_refclock_packet()
