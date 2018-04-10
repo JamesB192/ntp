@@ -3072,6 +3072,10 @@ peer_clear(
 		peer->stratum = STRATUM_UNSPEC;
 		memcpy(&peer->refid, ident, 4);
 #ifdef REFCLOCK
+	} else {
+		/* Clear refclock sample filter */
+		peer->procptr->codeproc = 0;
+		peer->procptr->coderecv = 0;
 	}
 #endif
 
