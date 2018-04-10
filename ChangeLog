@@ -4,6 +4,8 @@
   - applied patch by Gerry Garvey
 * [Bug 3479] ctl_putrefid() allows unsafe characters through to ntpq <perlinger@ntp.org>
   - applied patch by Gerry Garvey (with mods)
+* [Bug 3474] Missing pmode in mode7 peer info response <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
 * [Bug 3471] Check for openssl/[ch]mac.h.  HStenn.
   - add #define ENABLE_CMAC support in configure.  HStenn.
 * [Bug 3470] ntpd4.2.8p11 fails to compile without OpenSSL <perlinger@ntp.org>
