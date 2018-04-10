@@ -1827,7 +1827,9 @@ ctl_putrefid(
 
 	bytes.w = refid;
 	for (nc = 0; nc < sizeof(bytes.b) && bytes.b[nc]; ++nc)
-		if (!isprint(bytes.b[nc]))
+		if (  !isprint(bytes.b[nc])
+		    || isspace(bytes.b[nc])
+		    || bytes.b[nc] == ','  )
 			bytes.b[nc] = '.';
 	ctl_putunqstr(tag, (const char*)bytes.b, nc);
 }
