@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3480] Refclock sample filter not cleared on clock STEP <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
 * [Bug 3471] Check for openssl/[ch]mac.h.  HStenn.
   - add #define ENABLE_CMAC support in configure.  HStenn.
 * [Bug 3470] ntpd4.2.8p11 fails to compile without OpenSSL <perlinger@ntp.org>
