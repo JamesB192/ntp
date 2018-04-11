@@ -2,6 +2,8 @@
 
 * [Bug 3485] Undefined sockaddr used in error messages in ntp_config.c <perlinger@ntp.org>
   - applied patch by Gerry Garvey
+* [Bug 3482] Fixes for compilation warnings (ntp_io.c & ntpq-subs.c) <perlinger@ntp.org>
+  - applied patch by Gerry Garvey (with mods)
 * [Bug 3480] Refclock sample filter not cleared on clock STEP <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3479] ctl_putrefid() allows unsafe characters through to ntpq <perlinger@ntp.org>

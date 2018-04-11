@@ -1475,31 +1475,36 @@ prettyinterval(
 	}
 
 	if (diff <= 2048) {
-		snprintf(buf, cb, "%ld", diff);
+		snprintf(buf, cb, "%u", (unsigned int)diff);
 		return buf;
 	}
 
 	diff = (diff + 29) / 60;
 	if (diff <= 300) {
-		snprintf(buf, cb, "%ldm", diff);
+		snprintf(buf, cb, "%um", (unsigned int)diff);
 		return buf;
 	}
 
 	diff = (diff + 29) / 60;
 	if (diff <= 96) {
-		snprintf(buf, cb, "%ldh", diff);
+		snprintf(buf, cb, "%uh", (unsigned int)diff);
 		return buf;
 	}
 
 	diff = (diff + 11) / 24;
 	if (diff <= 999) {
-		snprintf(buf, cb, "%ldd", diff);
+		snprintf(buf, cb, "%ud", (unsigned int)diff);
 		return buf;
 	}
 
 	/* years are only approximated... */
 	diff = (long)floor(diff / 365.25 + 0.5);
-	snprintf(buf, cb, "%ldy", diff);
+	if (diff <= 999) {
+		snprintf(buf, cb, "%uy", (unsigned int)diff);
+		return buf;
+	}
+	/* Ok, this amounts to infinity... */
+	strlcpy(buf, "INF", cb);
 	return buf;
 }
 
@@ -1639,9 +1644,12 @@ doprintpeers(
 	l_fp ts;
 	u_long poll_sec;
 	char type = '?';
-	char whenbuf[8], pollbuf[8];
 	char clock_name[LENHOSTNAME];
-
+	char whenbuf[12], pollbuf[12];
+	/* [Bug 3482] formally whenbuf & pollbuf should be able to hold
+	 * a full signed int. Not that we would use that much string
+	 * data for it...
+	 */
 	get_systime(&ts);
 	
 	have_srchost = FALSE;
