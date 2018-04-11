@@ -1606,7 +1606,9 @@ ctl_putstr(
 	    args[3].len = 1;
 	    ctl_putdata_ex(args, 4, FALSE);
 	} else {
-	    ctl_putdata_ex(args, 1, FALSE);
+	    args[1].buf = "=\"\"";
+	    args[1].len = 3;
+	    ctl_putdata_ex(args, 2, FALSE);
 	}
 }
 
