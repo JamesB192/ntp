@@ -9,6 +9,8 @@
 * [Bug 3471] Check for openssl/[ch]mac.h.  HStenn.
   - add #define ENABLE_CMAC support in configure.  HStenn.
 * [Bug 3470] ntpd4.2.8p11 fails to compile without OpenSSL <perlinger@ntp.org>
+* [Bug 3469] Incomplete string compare [...] in is_refclk_addr <perlinger@ntp.org>
+  - patch by Stephen Friedl
 * [Bug 3467] Potential memory fault in ntpq [...] <perlinger@ntp.org>
   - fixed IO redirection and CTRL-C handling in ntq and ntpdc
 * [Bug 3465] Default TTL values cannot be used <perlinger@ntp.org>

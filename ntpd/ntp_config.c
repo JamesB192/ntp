@@ -4850,7 +4850,7 @@ is_refclk_addr(
 	const address_node * addr
 	)
 {
-	return addr && addr->address && !strncmp(addr->address, "127.127.", 6);
+	return addr && addr->address && !strncmp(addr->address, "127.127.", 8);
 }
 
 static void
