@@ -3626,10 +3626,8 @@ config_fudge(
 			err_flag = 1;
 			msyslog(LOG_ERR,
 				"unrecognized fudge reference clock address %s, line ignored",
-				stoa(&addr_sock));
-		}
-
-		if (!ISREFCLOCKADR(&addr_sock)) {
+				addr_node->address);
+		} else if (!ISREFCLOCKADR(&addr_sock)) {
 			err_flag = 1;
 			msyslog(LOG_ERR,
 				"inappropriate address %s for the fudge command, line ignored",
@@ -3701,7 +3699,7 @@ config_fudge(
 				msyslog(LOG_ERR,
 					"Unexpected fudge flag %s (%d) for %s",
 					token_name(curr_opt->attr),
-					curr_opt->attr, stoa(&addr_sock));
+					curr_opt->attr, addr_node->address);
 				exit(curr_opt->attr ? curr_opt->attr : 1);
 			}
 		}
