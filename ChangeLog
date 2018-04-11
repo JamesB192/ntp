@@ -10,6 +10,8 @@
   - applied patch by Gerry Garvey (with mods)
 * [Bug 3476]ctl_putstr() sends empty unquoted string [...] <perlinger@ntp.org>
   - applied patch by Gerry Garvey (with mods); not sure if that's bug or feature, though
+* [Bug 3475] modify prettydate() to suppress output of zero time <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
 * [Bug 3474] Missing pmode in mode7 peer info response <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3471] Check for openssl/[ch]mac.h.  HStenn.
