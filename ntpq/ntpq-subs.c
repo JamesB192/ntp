@@ -1643,6 +1643,7 @@ doprintpeers(
 	l_fp rec;
 	l_fp ts;
 	u_long poll_sec;
+	u_long flash = 0;
 	char type = '?';
 	char clock_name[LENHOSTNAME];
 	char whenbuf[12], pollbuf[12];
@@ -1779,6 +1780,8 @@ doprintpeers(
 		} else if (!strcmp("reftime", name)) {
 			if (!decodets(value, &reftime))
 				L_CLR(&reftime);
+		} else if (!strcmp("flash", name)) {
+		    decodeuint(value, &flash);
 		} else {
 			// fprintf(stderr, "UNRECOGNIZED name=%s ", name);
 		}
@@ -1858,7 +1861,9 @@ doprintpeers(
 							+ 1 + 15 + 1, "");
 		else
 			fprintf(fp, "%c%-15.15s ", c, clock_name);
-		if (!have_da_rid) {
+		if ((flash & TEST12) && (pvl != opeervarlist)) {
+			drlen = fprintf(fp, "(loop)");
+		} else if (!have_da_rid) {
 			drlen = 0;
 		} else {
 			drlen = strlen(dstadr_refid);

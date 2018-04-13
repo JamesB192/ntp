@@ -27,6 +27,8 @@
   - initial patch by Hal Murray; also fixed refclock_report() trouble
 * [Bug 3456] Use uintptr_t rather than size_t to store an integer in a pointer
   - According to Brooks Davis, there was only one location <perlinger@ntp.org>
+* [Bug 3449] ntpq - display "loop" instead of refid [...] <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
 * [Bug 2821] minor build issues <perlinger@ntp.org>
   - applied patches by Christos Zoulas, including real bug fixes
 
