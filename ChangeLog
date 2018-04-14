@@ -29,6 +29,8 @@
   - According to Brooks Davis, there was only one location <perlinger@ntp.org>
 * [Bug 3434] ntpd clears STA_UNSYNC on start <perlinger@ntp.org>
   - applied patch by Miroslav Lichvar
+* [Bug 3121] Drop root privileges for the forked DNS worker <perlinger@ntp.org>
+  - integrated patch by  Reinhard Max
 * [Bug 2821] minor build issues <perlinger@ntp.org>
   - applied patches by Christos Zoulas, including real bug fixes
 
