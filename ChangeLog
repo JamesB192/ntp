@@ -29,6 +29,8 @@
   - According to Brooks Davis, there was only one location <perlinger@ntp.org>
 * [Bug 3449] ntpq - display "loop" instead of refid [...] <perlinger@ntp.org>
   - applied patch by Gerry Garvey
+* [Bug 3445] Symmetric peer won't sync on startup <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
 * [Bug 3434] ntpd clears STA_UNSYNC on start <perlinger@ntp.org>
   - applied patch by Miroslav Lichvar
 * [Bug 3121] Drop root privileges for the forked DNS worker <perlinger@ntp.org>
