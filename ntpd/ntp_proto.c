@@ -372,6 +372,13 @@ transmit(
 	hpoll = peer->hpoll;
 
 	/*
+	 * If we haven't received anything (even if unsync) since last
+	 * send, reset ppoll.
+	 */
+	if (peer->outdate > peer->timelastrec && !peer->reach)
+		peer->ppoll = peer->maxpoll;
+	
+	/*
 	 * In broadcast mode the poll interval is never changed from
 	 * minpoll.
 	 */
@@ -2431,6 +2438,7 @@ process_packet(
 		peer->seldisptoolarge++;
 		DPRINTF(1, ("packet: flash header %04x\n",
 			    peer->flash));
+		poll_update(peer, peer->hpoll);	/* ppoll updated? */
 		return;
 	}
 
@@ -2977,8 +2985,6 @@ poll_update(
 	} else {
 		if (peer->retry > 0)
 			hpoll = peer->minpoll;
-		else if (!(peer->reach))
-			hpoll = peer->hpoll;
 		else
 			hpoll = min(peer->ppoll, peer->hpoll);
 #ifdef REFCLOCK
