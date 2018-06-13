@@ -3370,43 +3370,60 @@ tstflags(
 	u_long val
 	)
 {
-	register char *cp, *s;
-	size_t cb;
-	register int i;
-	register const char *sep;
+#	if CBLEN < 10
+#	 error BLEN is too small -- increase!
+#	endif
 
-	sep = "";
+	char *cp, *s;
+	size_t cb, i;
+	int l;
+
 	s = cp = circ_buf[nextcb];
 	if (++nextcb >= NUMCB)
 		nextcb = 0;
 	cb = sizeof(circ_buf[0]);
 
-	snprintf(cp, cb, "%02lx", val);
-	cp += strlen(cp);
-	cb -= strlen(cp);
+	l = snprintf(cp, cb, "%02lx", val);
+	if (l < 0 || (size_t)l >= cb)
+		goto fail;
+	cp += l;
+	cb -= l;
 	if (!val) {
-		strlcat(cp, " ok", cb);
-		cp += strlen(cp);
-		cb -= strlen(cp);
+		l = strlcat(cp, " ok", cb);
+		if ((size_t)l >= cb)
+			goto fail;
+		cp += l;
+		cb -= l;
 	} else {
-		if (cb) {
-			*cp++ = ' ';
-			cb--;
-		}
-		for (i = 0; i < (int)COUNTOF(tstflagnames); i++) {
+		const char *sep;
+		
+		sep = " ";
+		for (i = 0; i < COUNTOF(tstflagnames); i++) {
 			if (val & 0x1) {
-				snprintf(cp, cb, "%s%s", sep,
-					 tstflagnames[i]);
+				l = snprintf(cp, cb, "%s%s", sep,
+					     tstflagnames[i]);
+				if (l < 0)
+					goto fail;
+				if ((size_t)l >= cb) {
+					cp += cb - 4;
+					cb = 4;
+					l = strlcpy (cp, "...", cb);
+					cp += l;
+					cb -= l;
+					break;
+				}
 				sep = ", ";
-				cp += strlen(cp);
-				cb -= strlen(cp);
+				cp += l;
+				cb -= l;
 			}
 			val >>= 1;
 		}
 	}
-	if (cb)
-		*cp = '\0';
 
+	return s;
+
+  fail:
+	*cp = '\0';
 	return s;
 }
 
