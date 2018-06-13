@@ -611,6 +611,7 @@ detach_from_terminal(
 	return;
 }
 
+#ifdef HAVE_DROPROOT
 /*
  * Map user name/number to user ID
 */
@@ -732,6 +733,7 @@ set_user_group_ids(
 
 	return 1;
 }
+#endif /* HAVE_DROPROOT */
 #endif /* !SIM */
 
 /*

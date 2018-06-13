@@ -37,6 +37,8 @@
   - integrated patch by  Reinhard Max
 * [Bug 2821] minor build issues <perlinger@ntp.org>
   - applied patches by Christos Zoulas, including real bug fixes
+* html/authopt.html: cleanup, from <stenn@ntp.org>
+* ntpd/ntpd.c: DROPROOT cleanup.  <stenn@ntp.org>
 
 ---
 (4.2.8p11) 2018/02/27 Released by Harlan Stenn <stenn@ntp.org>
