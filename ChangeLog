@@ -35,6 +35,7 @@
   - applied patch by Gerry Garvey
 * [Bug 3434] ntpd clears STA_UNSYNC on start <perlinger@ntp.org>
   - applied patch by Miroslav Lichvar
+* [Sec 3012] noepeer tweaks.  <stenn@ntp.org>
 * [Bug 3121] Drop root privileges for the forked DNS worker <perlinger@ntp.org>
   - integrated patch by  Reinhard Max
 * [Bug 2821] minor build issues <perlinger@ntp.org>
