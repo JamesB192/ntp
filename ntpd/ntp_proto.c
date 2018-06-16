@@ -33,7 +33,7 @@
 
 /*
  * This macro defines the authentication state. If x is 1 authentication
- * is required; othewise it is optional.
+ * is required; otherwise it is optional.
  */
 #define	AUTH(x, y)	((x) ? (y) == AUTH_OK \
 			     : (y) == AUTH_OK || (y) == AUTH_NONE)
@@ -652,7 +652,7 @@ receive(
 	hisleap = PKT_LEAP(pkt->li_vn_mode);
 	hismode = (int)PKT_MODE(pkt->li_vn_mode);
 	hisstratum = PKT_TO_STRATUM(pkt->stratum);
-	DPRINTF(2, ("receive: at %ld %s<-%s ippeerlimit %d mode %d iflags %s restrict %s org %#010x.%08x xmt %#010x.%08x\n",
+	DPRINTF(1, ("receive: at %ld %s<-%s ippeerlimit %d mode %d iflags %s restrict %s org %#010x.%08x xmt %#010x.%08x\n",
 		    current_time, stoa(&rbufp->dstadr->sin),
 		    stoa(&rbufp->recv_srcadr), r4a.ippeerlimit, hismode,
 		    build_iflags(rbufp->dstadr->flags),
@@ -964,7 +964,7 @@ receive(
 	if (has_mac == 0) {
 		restrict_mask &= ~RES_MSSNTP;
 		is_authentic = AUTH_NONE; /* not required */
-		DPRINTF(2, ("receive: at %ld %s<-%s mode %d/%s:%s len %d org %#010x.%08x xmt %#010x.%08x NOMAC\n",
+		DPRINTF(1, ("receive: at %ld %s<-%s mode %d/%s:%s len %d org %#010x.%08x xmt %#010x.%08x NOMAC\n",
 			    current_time, stoa(dstadr_sin),
 			    stoa(&rbufp->recv_srcadr), hismode, hm_str, am_str,
 			    authlen,
@@ -973,7 +973,7 @@ receive(
 	} else if (crypto_nak_test == VALIDNAK) {
 		restrict_mask &= ~RES_MSSNTP;
 		is_authentic = AUTH_CRYPTO; /* crypto-NAK */
-		DPRINTF(2, ("receive: at %ld %s<-%s mode %d/%s:%s keyid %08x len %d auth %d org %#010x.%08x xmt %#010x.%08x MAC4\n",
+		DPRINTF(1, ("receive: at %ld %s<-%s mode %d/%s:%s keyid %08x len %d auth %d org %#010x.%08x xmt %#010x.%08x CRYPTONAK\n",
 			    current_time, stoa(dstadr_sin),
 			    stoa(&rbufp->recv_srcadr), hismode, hm_str, am_str,
 			    skeyid, authlen + has_mac, is_authentic,
@@ -996,6 +996,12 @@ receive(
 		   && (memcmp(zero_key, (char *)pkt + authlen + 4,
 			      MAX_MD5_LEN - 4) == 0)) {
 		is_authentic = AUTH_NONE;
+		DPRINTF(1, ("receive: at %ld %s<-%s mode %d/%s:%s len %d org %#010x.%08x xmt %#010x.%08x SIGND\n",
+			    current_time, stoa(dstadr_sin),
+			    stoa(&rbufp->recv_srcadr), hismode, hm_str, am_str,
+			    authlen,
+			    ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
+			    ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf)));
 #endif /* HAVE_NTP_SIGND */
 
 	} else {
@@ -1113,7 +1119,7 @@ receive(
 		if (crypto_flags && skeyid > NTP_MAXKEY)
 			authtrust(skeyid, 0);
 #endif	/* AUTOKEY */
-		DPRINTF(2, ("receive: at %ld %s<-%s mode %d/%s:%s keyid %08x len %d auth %d org %#010x.%08x xmt %#010x.%08x\n",
+		DPRINTF(1, ("receive: at %ld %s<-%s mode %d/%s:%s keyid %08x len %d auth %d org %#010x.%08x xmt %#010x.%08x MAC\n",
 			    current_time, stoa(dstadr_sin),
 			    stoa(&rbufp->recv_srcadr), hismode, hm_str, am_str,
 			    skeyid, authlen + has_mac, is_authentic,
@@ -1205,6 +1211,8 @@ receive(
 	 * client association; a symmetric active packet mobilizes a
 	 * symmetric passive association.
 	 */
+	DPRINTF(1, ("receive: MATCH_ASSOC dispatch: mode %d/%s:%s \n",
+		hismode, hm_str, am_str));
 	switch (retcode) {
 
 	/*
@@ -1536,14 +1544,17 @@ receive(
 		return;				/* hooray */
 
 	/*
-	 * This is the first packet received from a symmetric active
-	 * peer.  If the packet is authentic, the first he sent, and
-	 * RES_NOEPEER is not enabled, mobilize a passive association
-	 * If not, kiss the frog.
+	 * This is the first packet received from a potential ephemeral
+	 * symmetric active peer.  If NOEPEER is enabled, drop it.  If
+	 * the packet meets our authenticty requirements and is the
+	 * first he sent, mobilize a passive association.
+	 * Otherwise, kiss the frog.
 	 *
 	 * There are cases here where we do not call record_raw_stats().
 	 */
 	case AM_NEWPASS:
+
+		DEBUG_REQUIRE(MODE_ACTIVE == hismode);
 
 #ifdef AUTOKEY
 		/*
@@ -1555,29 +1566,34 @@ receive(
 			return;
 		}
 #endif /* AUTOKEY */
+
+		if (restrict_mask & RES_NOEPEER) {
+			DPRINTF(2, ("receive: AM_NEWPASS drop: NOEPEER\n"));
+			sys_declined++;
+			return;
+		}
+
 		if (!AUTH(sys_authenticate | (restrict_mask &
 			  (RES_NOPEER | RES_DONTTRUST)), is_authentic)
 		   ) {
-			if (0 == (restrict_mask & RES_NOEPEER)) {
-				/*
-				 * If authenticated but cannot mobilize an
-				 * association, send a symmetric passive
-				 * response without mobilizing an association.
-				 * This is for drat broken Windows clients. See
-				 * Microsoft KB 875424 for preferred workaround.
-				 */
-				if (AUTH(restrict_mask & RES_DONTTRUST,
-					 is_authentic)) {
-					fast_xmit(rbufp, MODE_PASSIVE, skeyid,
-					    restrict_mask);
-					return;			/* hooray */
-				}
-				if (is_authentic == AUTH_ERROR) {
-					fast_xmit(rbufp, MODE_ACTIVE, 0,
-					    restrict_mask);
-					sys_restricted++;
-					return;
-				}
+			/*
+			 * If authenticated but cannot mobilize an
+			 * association, send a symmetric passive
+			 * response without mobilizing an association.
+			 * This is for drat broken Windows clients. See
+			 * Microsoft KB 875424 for preferred workaround.
+			 */
+			if (AUTH(restrict_mask & RES_DONTTRUST,
+				 is_authentic)) {
+				fast_xmit(rbufp, MODE_PASSIVE, skeyid,
+				    restrict_mask);
+				return;			/* hooray */
+			}
+			if (is_authentic == AUTH_ERROR) {
+				fast_xmit(rbufp, MODE_ACTIVE, 0,
+				    restrict_mask);
+				sys_restricted++;
+				return;
 			}
 			/* [Bug 2941]
 			 * If we got here, the packet isn't part of an
