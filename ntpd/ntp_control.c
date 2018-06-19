@@ -1951,10 +1951,10 @@ ctl_putsys(
 		break;
 
 	case CS_REFID:
-		if (sys_stratum > 1 && sys_stratum < STRATUM_UNSPEC)
-			ctl_putadr(sys_var[varid].text, sys_refid, NULL);
-		else
+		if (REFID_ISTEXT(sys_stratum))
 			ctl_putrefid(sys_var[varid].text, sys_refid);
+		else
+			ctl_putadr(sys_var[varid].text, sys_refid, NULL);
 		break;
 
 	case CS_REFTIME:
@@ -2678,11 +2678,10 @@ ctl_putpeer(
 			break;
 		}
 #endif
-		if (p->stratum > 1 && p->stratum < STRATUM_UNSPEC)
-			ctl_putadr(peer_var[id].text, p->refid,
-				   NULL);
-		else
+		if (REFID_ISTEXT(p->stratum))
 			ctl_putrefid(peer_var[id].text, p->refid);
+		else
+			ctl_putadr(peer_var[id].text, p->refid, NULL);
 		break;
 
 	case CP_REFTIME:
