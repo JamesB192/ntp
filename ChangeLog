@@ -1,3 +1,5 @@
+* [Bug 3442] Fixes for ntpdate as suggested by Gerry Garvey,
+  with modifications
   New macro REFID_ISTEXT() which is also used in ntpd/ntp_control.c.
 
 ---
