@@ -429,7 +429,7 @@ ntpdatemain (
 		default:
 			break;
 	    }
-	
+
 	if (errflg) {
 		(void) fprintf(stderr,
 		    "usage: %s [-46bBdqsuv] [-a key#] [-e delay] [-k file] [-p samples] [-o version#] [-t timeo] server ...\n",
@@ -956,7 +956,7 @@ clock_filter(
 	int ord[NTP_SHIFT];
 
 	INSIST((0 < sys_samples) && (sys_samples <= NTP_SHIFT));
-	
+
 	/*
 	 * Sort indices into increasing delay order
 	 */
@@ -1062,7 +1062,7 @@ clock_select(void)
 		}
 		if (server->delay > NTP_MAXWGT) {
 			if (debug)
-				printf("%s: Server dropped: server too far away\n", 
+				printf("%s: Server dropped: server too far away\n",
 					ntoa(&server->srcadr));
 			continue;	/* too far away */
 		}
@@ -1073,14 +1073,14 @@ clock_select(void)
 		}
 		if (!L_ISHIS(&server->org, &server->reftime)) {
 			if (debug)
-				printf("%s: Server dropped: server is very broken\n", 
+				printf("%s: Server dropped: server is very broken\n",
 				       ntoa(&server->srcadr));
 			continue;	/* very broken host */
 		}
 		if ((server->org.l_ui - server->reftime.l_ui)
 		    >= NTP_MAXAGE) {
 			if (debug)
-				printf("%s: Server dropped: Server has gone too long without sync\n", 
+				printf("%s: Server dropped: Server has gone too long without sync\n",
 				       ntoa(&server->srcadr));
 			continue;	/* too long without sync */
 		}
@@ -1440,7 +1440,7 @@ findserver(
 	if (SRCPORT(addr) != NTP_PORT)
 		return 0;
 
-	for (server = sys_servers; server != NULL; 
+	for (server = sys_servers; server != NULL;
 	     server = server->next_server) {
 		if (SOCK_EQ(addr, &server->srcadr))
 			return server;
@@ -1451,7 +1451,7 @@ findserver(
 		}
 	}
 
-	if (mc_server != NULL) {	
+	if (mc_server != NULL) {
 
 		struct server *sp;
 
@@ -1494,7 +1494,7 @@ timer(void)
 	 * who's event timers have expired.  Give these to
 	 * the transmit routine.
 	 */
-	for (server = sys_servers; server != NULL; 
+	for (server = sys_servers; server != NULL;
 	     server = server->next_server) {
 		if (server->event_time != 0
 		    && server->event_time <= current_time)
@@ -1520,7 +1520,7 @@ alarming(
 	alarm_flag++;
 }
 #else	/* SYS_WINNT follows */
-void CALLBACK 
+void CALLBACK
 alarming(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
 {
 	UNUSED_ARG(uTimerID); UNUSED_ARG(uMsg); UNUSED_ARG(dwUser);
@@ -2227,7 +2227,7 @@ isc_boolean_t ntp_port_inuse(int af, u_short port)
 	 * Check if NTP socket is already in use on this system
 	 * This is only for Windows Systems, as they tend not to fail on the real bind() below
 	 */
-	
+
 	SOCKET checksocket;
 	struct sockaddr_in checkservice;
 	checksocket = socket(af, SOCK_DGRAM, 0);
