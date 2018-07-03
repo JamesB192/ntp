@@ -654,29 +654,26 @@ openhost(
 {
 	const char svc[] = "ntp";
 	char temphost[LENHOSTNAME];
-	int a_info, i;
+	int a_info;
 	struct addrinfo hints, *ai;
 	sockaddr_u addr;
 	size_t octets;
-	register const char *cp;
+	const char *cp;
 	char name[LENHOSTNAME];
 
 	/*
 	 * We need to get by the [] if they were entered
 	 */
-
-	cp = hname;
-
-	if (*cp == '[') {
-		cp++;
-		for (i = 0; *cp && *cp != ']'; cp++, i++)
-			name[i] = *cp;
-		if (*cp == ']') {
-			name[i] = '\0';
-			hname = name;
-		} else {
+	if (*hname == '[') {
+		cp = strchr(hname + 1, ']');
+		if (!cp || (octets = (size_t)(cp - hname) - 1) >= sizeof(name)) {
+			errno = EINVAL;
+			warning("%s", "bad hostname/address");
 			return 0;
 		}
+		memcpy(name, hname + 1, octets);
+		name[octets] = '\0';
+		hname = name;
 	}
 
 	/*
