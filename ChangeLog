@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3506] NTPD/SCM interact not well <perlinger@ntp.org>
+  - changed interaction with SCM to signal pending startup
 * [Bug 3486] Buffer overflow in ntpq/ntpq.c:tstflags() <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3485] Undefined sockaddr used in error messages in ntp_config.c <perlinger@ntp.org>
