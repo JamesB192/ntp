@@ -1,5 +1,7 @@
 ---
 
+* [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
+  - fixed stack buffer overflow in NTPQ/NTPDC <perlinger@ntp.org>
 * [Bug 3486] Buffer overflow in ntpq/ntpq.c:tstflags() <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3485] Undefined sockaddr used in error messages in ntp_config.c <perlinger@ntp.org>
