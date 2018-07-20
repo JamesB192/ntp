@@ -1,6 +1,6 @@
 ---
 
-* [Bug 3506] NTPD/SCM interact not well <perlinger@ntp.org>
+* [Bug 3506] Service Control Manager interacts poorly with NTPD <perlinger@ntp.org>
   - changed interaction with SCM to signal pending startup
 * [Bug 3486] Buffer overflow in ntpq/ntpq.c:tstflags() <perlinger@ntp.org>
   - applied patch by Gerry Garvey
