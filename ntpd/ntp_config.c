@@ -382,14 +382,14 @@ static void fatal_error(const char *fmt, ...)
 #endif
 {
 	va_list va;
-	
+
 	va_start(va, fmt);
 	mvsyslog(LOG_EMERG, fmt, va);
 	va_end(va);
 	_exit(1);
 }
 
-    
+
 /* FUNCTIONS FOR INITIALIZATION
  * ----------------------------
  */
@@ -742,7 +742,7 @@ dump_config_tree(
 					atrv->value.i);
 				}
 				break;
-				
+
 			case T_Double:
 				fprintf(df, " %s %s",
 					keyword(atrv->attr),
@@ -938,7 +938,7 @@ dump_config_tree(
 				if (T_Source == flag_tok_fifo->i) {
 					s = "source";
 					break;
-				} 
+				}
 			}
 		} else {
 			const char *ap = rest_node->addr->address;
@@ -1446,7 +1446,7 @@ create_unpeer_node(
 		/* accumulate with overflow retention */
 		u = (10 * u + *pch - '0') | (u & 0xFF000000u);
 	}
-	
+
 	if (!*pch && u <= ASSOCID_MAX) {
 		my_node->assocID = (associd_t)u;
 		my_node->addr = NULL;
@@ -2132,7 +2132,7 @@ config_tos(
 	 * since three variables with interdependecies are involved. We
 	 * just log an error but do not stop: This might be caused by
 	 * remote config, and it might be fixed by remote config, too.
-	 */ 
+	 */
 	int l_maxclock = sys_maxclock;
 	int l_minclock = sys_minclock;
 	int l_minsane  = sys_minsane;
@@ -2162,7 +2162,7 @@ config_tos(
 				tos->value.d = 0;
 			}
 			break;
-			
+
 		case T_Ceiling:
 			val = tos->value.d;
 			if (val > STRATUM_UNSPEC - 1) {
@@ -2207,7 +2207,7 @@ config_tos(
 			" - daemon will not operate properly!",
 			l_minsane, l_minclock, l_maxclock);
 	}
-	
+
 	/* -*- phase two: forward the values to the protocol machinery */
 	tos = HEAD_PFIFO(ptree->orphan_cmds);
 	for (; tos != NULL; tos = tos->link) {
@@ -4568,7 +4568,7 @@ config_ntpd(
 		if (config_tos_clock(ptree))
 			clamp_systime();
 	}
-	
+
 	config_nic_rules(ptree, input_from_files);
 	config_monitor(ptree);
 	config_auth(ptree);

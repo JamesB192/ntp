@@ -36,6 +36,9 @@
   - applied patch by Gerry Garvey
 * [Bug 3445] Symmetric peer won't sync on startup <perlinger@ntp.org>
   - applied patch by Gerry Garvey
+* [Bug 3442] Fixes for ntpdate as suggested by Gerry Garvey,
+  with modifications
+  New macro REFID_ISTEXT() which is also used in ntpd/ntp_control.c.
 * [Bug 3434] ntpd clears STA_UNSYNC on start <perlinger@ntp.org>
   - applied patch by Miroslav Lichvar
 * [Sec 3012] noepeer tweaks.  <stenn@ntp.org>
@@ -60,7 +63,7 @@
 * [Sec 3012] Sybil vulnerability: noepeer support.  HStenn, JPerlinger.
 * [Bug 3457] OpenSSL FIPS mode regression <perlinger@ntp.org>
 * [Bug 3455] ntpd doesn't use scope id when binding multicast <perlinger@ntp.org>
-  - applied patch by Sean Haugh 
+ - applied patch by Sean Haugh 
 * [Bug 3452] PARSE driver prints uninitialized memory. <perlinger@ntp.org>
 * [Bug 3450] Dubious error messages from plausibility checks in get_systime()
   - removed error log caused by rounding/slew, ensured postcondition <perlinger@ntp.org>
