@@ -3076,10 +3076,146 @@ trunc_left(
 char circ_buf[NUMCB][CBLEN];
 int nextcb = 0;
 
+/* --------------------------------------------------------------------
+ * Parsing a response value list
+ *
+ * This sounds simple (and it actually is not really hard) but it has
+ * some pitfalls.
+ *
+ * Rule1: CR/LF is never embedded in an item
+ * Rule2: An item is a name, optionally followed by a value
+ * Rule3: The value is separated from the name by a '='
+ * Rule4: Items are separated by a ','
+ * Rule5: values can be quoted by '"', in which case they can contain
+ *        arbitrary characters but *not* '"', CR and LF
+ *
+ * There are a few implementations out there that require a somewhat
+ * relaxed attitude when parsing a value list, especially since we want
+ * to copy names and values into local buffers. If these would overflow,
+ * the item should be skipped without terminating the parsing sequence.
+ *
+ * Also, for empty values, there might be a '=' after the name or not;
+ * we treat that equivalent.
+ *
+ * Parsing an item definitely breaks on a CR/LF. If an item is not
+ * followed by a comma (','), parsing stops. In the middle of a quoted
+ * character sequence CR/LF terminates the parsing finally without
+ * returning a value.
+ *
+ * White space and other noise is ignored when parsing the data buffer;
+ * only CR, LF, ',', '=' and '"' are characters with a special meaning.
+ * White space is stripped from the names and values *after* working
+ * through the buffer, before making the local copies. If whitespace
+ * stripping results in an empty name, parsing resumes.
+ */
+
+/*
+ * nextvar parsing helpers
+ */
+
+/* predicate: allowed chars inside a quoted string */
+static int/*BOOL*/ cp_qschar(int ch)
+{
+	return ch && (ch != '"' && ch != '\r' && ch != '\n');
+}
+
+/* predicate: allowed chars inside an unquoted string */
+static int/*BOOL*/ cp_uqchar(int ch)
+{
+	return ch && (ch != ',' && ch != '"' && ch != '\r' && ch != '\n');
+}
+
+/* predicate: allowed chars inside a value name */
+static int/*BOOL*/ cp_namechar(int ch)
+{
+	return ch && (ch != ',' && ch != '=' && ch != '\r' && ch != '\n'); 
+}
+
+/* predicate: characters *between* list items. We're relaxed here. */
+static int/*BOOL*/ cp_ivspace(int ch)
+{
+	return (ch == ',' || (ch > 0 && ch <= ' ')); 
+}
+
+/* get current character (or NUL when on end) */
+static inline int
+pf_getch(
+	const char **	datap,
+	const char *	endp
+	)
+{
+	return (*datap != endp)
+	    ? *(const unsigned char*)*datap
+	    : '\0';
+}
+
+/* get next character (or NUL when on end) */
+static inline int
+pf_nextch(
+	const char **	datap,
+	const char *	endp
+	)
+{
+	return (*datap != endp && ++(*datap) != endp)
+	    ? *(const unsigned char*)*datap
+	    : '\0';
+}
+
+static size_t
+str_strip(
+	const char ** 	datap,
+	size_t		len
+	)
+{
+	static const char empty[] = "";
+	
+	if (*datap && len) {
+		const char * cpl = *datap;
+		const char * cpr = cpl + len;
+		
+		while (cpl != cpr && *(const unsigned char*)cpl <= ' ')
+			++cpl;
+		while (cpl != cpr && *(const unsigned char*)(cpr - 1) <= ' ')
+			--cpr;
+		*datap = cpl;		
+		len = (size_t)(cpr - cpl);
+	} else {
+		*datap = empty;
+		len = 0;
+	}
+	return len;
+}
+
+static void
+pf_error(
+	const char *	what,
+	const char *	where,
+	const char *	whend
+	)
+{
+#   ifndef BUILD_AS_LIB
+	
+	FILE *	ofp = (debug > 0) ? stdout : stderr;
+	size_t	len = (size_t)(whend - where);
+	
+	if (len > 50) /* *must* fit into an 'int'! */
+		len = 50;
+	fprintf(ofp, "nextvar: %s: '%.*s'\n",
+		what, (int)len, where);
+	
+#   else  /*defined(BUILD_AS_LIB)*/
+
+	UNUSED_ARG(what);
+	UNUSED_ARG(where);
+	UNUSED_ARG(whend);
+	
+#   endif /*defined(BUILD_AS_LIB)*/
+}
+
 /*
  * nextvar - find the next variable in the buffer
  */
-int
+int/*BOOL*/
 nextvar(
 	size_t *datalen,
 	const char **datap,
@@ -3087,92 +3223,124 @@ nextvar(
 	char **vvalue
 	)
 {
-	const char *cp;
-	const char *np;
-	const char *cpend;
-	size_t srclen;
-	size_t len;
-	static char name[MAXVARLEN];
-	static char value[MAXVALLEN];
+	enum PState 	{ sDone, sInit, sName, sValU, sValQ };
+	
+	static char	name[MAXVARLEN], value[MAXVALLEN];
 
-	cp = *datap;
-	cpend = cp + *datalen;
+	const char	*cp, *cpend;
+	const char	*np, *vp;
+	size_t		nlen, vlen;
+	int		ch;
+	enum PState	st;
+	
+	cpend = *datap + *datalen;
 
-	/*
-	 * Space past commas and white space
+  again:
+	np   = vp   = NULL;
+	nlen = vlen = 0;
+	
+	st = sInit;
+	ch = pf_getch(datap, cpend);
+
+	while (st != sDone) {
+		switch (st)
+		{
+		case sInit:	/* handle inter-item chars */
+			while (cp_ivspace(ch))
+				ch = pf_nextch(datap, cpend);
+			if (cp_namechar(ch)) {
+				np = *datap;
+				cp = np;
+				st = sName;
+				ch = pf_nextch(datap, cpend);
+			} else {
+				goto final_done;
+			}
+			break;
+			    
+		case sName:	/* collect name */
+			while (cp_namechar(ch))
+				ch = pf_nextch(datap, cpend);
+			nlen = (size_t)(*datap - np);
+			if (ch == '=') {
+				ch = pf_nextch(datap, cpend);
+				vp = *datap;
+				st = sValU;
+			} else {
+				if (ch != ',')
+					*datap = cpend;
+				st = sDone;
+			}
+			break;
+			
+		case sValU:	/* collect unquoted part(s) of value */
+			while (cp_uqchar(ch))
+				ch = pf_nextch(datap, cpend);
+			if (ch == '"') {
+				ch = pf_nextch(datap, cpend);
+				st = sValQ;
+			} else {
+				vlen = (size_t)(*datap - vp);
+				if (ch != ',')
+					*datap = cpend;
+				st = sDone;
+			}
+			break;
+			
+		case sValQ:	/* collect quoted part(s) of value */
+			while (cp_qschar(ch))
+				ch = pf_nextch(datap, cpend);
+			if (ch == '"') {
+				ch = pf_nextch(datap, cpend);
+				st = sValU;
+			} else {
+				pf_error("no closing quote, stop", cp, cpend);
+				goto final_done;
+			}
+			break;
+			
+		default:
+			pf_error("state machine error, stop", *datap, cpend);
+			goto final_done;
+		}
+	}
+
+	/* If name or value do not fit their buffer, croak and start
+	 * over. If there's no name at all after whitespace stripping,
+	 * redo silently.
 	 */
-	while (cp < cpend && (*cp == ',' || isspace(pgetc(cp))))
-		cp++;
-	if (cp >= cpend)
-		return 0;
+	nlen = str_strip(&np, nlen);
+	vlen = str_strip(&vp, vlen);
+	
+	if (nlen == 0) {
+		goto again;
+	}
+	if (nlen >= sizeof(name)) {
+		pf_error("runaway name", np, cpend);
+		goto again;
+	}
+	if (vlen >= sizeof(value)) {
+		pf_error("runaway value", vp, cpend);
+		goto again;
+	}
 
-	/*
-	 * Copy name until we hit a ',', an '=', a '\r' or a '\n'.  Backspace
-	 * over any white space and terminate it.
-	 */
-	srclen = strcspn(cp, ",=\r\n");
-	srclen = min(srclen, (size_t)(cpend - cp));
-	len = srclen;
-	while (len > 0 && isspace(pgetc(&cp[len - 1])))
-		len--;
-	if (len >= sizeof(name))
-	    return 0;
-	if (len > 0)
-		memcpy(name, cp, len);
-	name[len] = '\0';
+	/* copy name and value into NUL-terminated buffers */
+	memcpy(name, np, nlen);
+	name[nlen] = '\0';
 	*vname = name;
-	cp += srclen;
-
-	/*
-	 * Check if we hit the end of the buffer or a ','.  If so we are done.
-	 */
-	if (cp >= cpend || *cp == ',' || *cp == '\r' || *cp == '\n') {
-		if (cp < cpend)
-			cp++;
-		*datap = cp;
-		*datalen = size2int_sat(cpend - cp);
-		*vvalue = NULL;
-		return 1;
-	}
-
-	/*
-	 * So far, so good.  Copy out the value
-	 */
-	cp++;	/* past '=' */
-	while (cp < cpend && (isspace(pgetc(cp)) && *cp != '\r' && *cp != '\n'))
-		cp++;
-	np = cp;
-	if ('"' == *np) {
-		do {
-			np++;
-		} while (np < cpend && '"' != *np);
-		if (np < cpend && '"' == *np)
-			np++;
-	} else {
-		while (np < cpend && ',' != *np && '\r' != *np)
-			np++;
-	}
-	len = np - cp;
-	if (np > cpend || len >= sizeof(value) ||
-	    (np < cpend && ',' != *np && '\r' != *np))
-		return 0;
-	memcpy(value, cp, len);
-	/*
-	 * Trim off any trailing whitespace
-	 */
-	while (len > 0 && isspace(pgetc(&value[len - 1])))
-		len--;
-	value[len] = '\0';
-
-	/*
-	 * Return this.  All done.
-	 */
-	if (np < cpend && ',' == *np)
-		np++;
-	*datap = np;
-	*datalen = size2int_sat(cpend - np);
+	
+	memcpy(value, vp, vlen);
+	value[vlen] = '\0';
 	*vvalue = value;
-	return 1;
+
+	/* check if there's more to do or if we are finshed */
+	*datalen = (size_t)(cpend - *datap);
+	return TRUE;
+
+  final_done:
+	*datap = cpend;
+	*datalen = 0;
+	return FALSE;
 }
 
 

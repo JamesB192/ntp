@@ -104,6 +104,10 @@
 #endif
 #endif
 
+#ifdef SYS_WINNT
+# include "ntservice.h"
+#endif
+
 #ifdef _AIX
 # include <ulimit.h>
 #endif /* _AIX */
@@ -522,7 +526,7 @@ set_process_priority(void)
 }
 #endif	/* !SIM */
 
-#ifndef SIM
+#if !defined(SIM) && !defined(SYS_WINNT)
 /*
  * Detach from terminal (much like daemon())
  * Nothe that this function calls exit()
@@ -924,6 +928,11 @@ ntpdmain(
 	init_lib();
 # ifdef SYS_WINNT
 	/*
+	 * Make sure the service is initialized before we do anything else
+	 */
+	ntservice_init();
+
+	/*
 	 * Start interpolation thread, must occur before first
 	 * get_systime()
 	 */
@@ -1319,6 +1328,10 @@ int scmp_sc[] = {
 		msyslog(LOG_DEBUG, "%s: seccomp_load() succeeded", __func__);
 	}
 #endif /* LIBSECCOMP and KERN_SECCOMP */
+
+#ifdef SYS_WINNT
+	ntservice_isup();
+#endif
 
 # ifdef HAVE_IO_COMPLETION_PORT
 
