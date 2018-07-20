@@ -446,6 +446,7 @@ doaddvlist(
 
 	len = strlen(vars);
 	while (nextvar(&len, &vars, &name, &value)) {
+		INSIST(name && value);
 		vl = findlistvar(vlist, name);
 		if (NULL == vl) {
 			fprintf(stderr, "Variable list full\n");
@@ -481,6 +482,7 @@ dormvlist(
 
 	len = strlen(vars);
 	while (nextvar(&len, &vars, &name, &value)) {
+		INSIST(name && value);
 		vl = findlistvar(vlist, name);
 		if (vl == 0 || vl->name == 0) {
 			(void) fprintf(stderr, "Variable `%s' not found\n",
@@ -1666,6 +1668,7 @@ doprintpeers(
 	ZERO(estdisp);
 
 	while (nextvar(&datalen, &data, &name, &value)) {
+		INSIST(name && value);
 		if (!strcmp("srcadr", name) ||
 		    !strcmp("peeradr", name)) {
 			if (!decodenetnum(value, &srcadr))
@@ -2660,6 +2663,7 @@ collect_mru_list(
 		have_addr_older = FALSE;
 		have_last_older = FALSE;
 		while (!qres && nextvar(&rsize, &rdata, &tag, &val)) {
+			INSIST(tag && val);
 			if (debug > 1)
 				fprintf(stderr, "nextvar gave: %s = %s\n",
 					tag, val);
@@ -3404,11 +3408,9 @@ ifstats(
 	fields = 0;
 	ui = 0;
 	while (nextvar(&dsize, &datap, &tag, &val)) {
+		INSIST(tag && val);
 		if (debug > 1)
-			fprintf(stderr, "nextvar gave: %s = %s\n", tag,
-				(NULL == val)
-				    ? ""
-				    : val);
+		    fprintf(stderr, "nextvar gave: %s = %s\n", tag, val);
 		comprende = FALSE;
 		switch(tag[0]) {
 
@@ -3420,7 +3422,7 @@ ifstats(
 
 		case 'b':
 			if (1 == sscanf(tag, bcast_fmt, &ui) &&
-			    (NULL == val ||
+			    ('\0' == *val ||
 			     decodenetnum(val, &row.bcast)))
 				comprende = TRUE;
 			break;
@@ -3446,7 +3448,6 @@ ifstats(
 		case 'n':
 			if (1 == sscanf(tag, name_fmt, &ui)) {
 				/* strip quotes */
-				INSIST(val);
 				len = strlen(val);
 				if (len >= 2 &&
 				    len - 2 < sizeof(row.name)) {
@@ -3620,11 +3621,9 @@ reslist(
 	fields = 0;
 	ui = 0;
 	while (nextvar(&dsize, &datap, &tag, &val)) {
+		INSIST(tag && val);
 		if (debug > 1)
-			fprintf(stderr, "nextvar gave: %s = %s\n", tag,
-				(NULL == val)
-				    ? ""
-				    : val);
+			fprintf(stderr, "nextvar gave: %s = %s\n", tag, val);
 		comprende = FALSE;
 		switch(tag[0]) {
 
@@ -3731,8 +3730,7 @@ collect_display_vdc(
 	 * the retrieved values.
 	 */
 	while (nextvar(&rsize, &rdata, &tag, &val)) {
-		if (NULL == val)
-			continue;
+		INSIST(tag && val);
 		n = 0;
 		for (pvdc = table; pvdc->tag != NULL; pvdc++) {
 			len = strlen(pvdc->tag);
@@ -3957,9 +3955,9 @@ monstats(
 	)
 {
     static vdc monstats_vdc[] = {
-	VDC_INIT("mru_enabled",	"enabled:            ", NTP_STR),
+	VDC_INIT("mru_enabled",		"enabled:            ", NTP_STR),
 	VDC_INIT("mru_depth",		"addresses:          ", NTP_STR),
-	VDC_INIT("mru_deepest",	"peak addresses:     ", NTP_STR),
+	VDC_INIT("mru_deepest",		"peak addresses:     ", NTP_STR),
 	VDC_INIT("mru_maxdepth",	"maximum addresses:  ", NTP_STR),
 	VDC_INIT("mru_mindepth",	"reclaim above count:", NTP_STR),
 	VDC_INIT("mru_maxage",		"reclaim older than: ", NTP_STR),

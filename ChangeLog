@@ -2,11 +2,14 @@
 
 * [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
   - fixed stack buffer overflow in NTPQ/NTPDC <perlinger@ntp.org>
+* [Bug 3506] Service Control Manager interacts poorly with NTPD <perlinger@ntp.org>
+  - changed interaction with SCM to signal pending startup
 * [Bug 3486] Buffer overflow in ntpq/ntpq.c:tstflags() <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3485] Undefined sockaddr used in error messages in ntp_config.c <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3484] ntpq response from ntpd is incorrect when REFID is null <perlinger@ntp.org>
+  - rework of ntpq 'nextvar()' key/value parsing
 * [Bug 3482] Fixes for compilation warnings (ntp_io.c & ntpq-subs.c) <perlinger@ntp.org>
   - applied patch by Gerry Garvey (with mods)
 * [Bug 3480] Refclock sample filter not cleared on clock STEP <perlinger@ntp.org>
@@ -35,6 +38,9 @@
   - applied patch by Gerry Garvey
 * [Bug 3445] Symmetric peer won't sync on startup <perlinger@ntp.org>
   - applied patch by Gerry Garvey
+* [Bug 3442] Fixes for ntpdate as suggested by Gerry Garvey,
+  with modifications
+  New macro REFID_ISTEXT() which is also used in ntpd/ntp_control.c.
 * [Bug 3434] ntpd clears STA_UNSYNC on start <perlinger@ntp.org>
   - applied patch by Miroslav Lichvar
 * [Sec 3012] noepeer tweaks.  <stenn@ntp.org>
@@ -59,7 +65,7 @@
 * [Sec 3012] Sybil vulnerability: noepeer support.  HStenn, JPerlinger.
 * [Bug 3457] OpenSSL FIPS mode regression <perlinger@ntp.org>
 * [Bug 3455] ntpd doesn't use scope id when binding multicast <perlinger@ntp.org>
-  - applied patch by Sean Haugh 
+ - applied patch by Sean Haugh 
 * [Bug 3452] PARSE driver prints uninitialized memory. <perlinger@ntp.org>
 * [Bug 3450] Dubious error messages from plausibility checks in get_systime()
   - removed error log caused by rounding/slew, ensured postcondition <perlinger@ntp.org>
