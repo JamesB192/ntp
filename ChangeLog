@@ -2,6 +2,7 @@
 
 * [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
   - fixed stack buffer overflow in NTPQ/NTPDC <perlinger@ntp.org>
+* [Sec 3012] noepeer tweaks.  <stenn@ntp.org>
 * [Bug 3506] Service Control Manager interacts poorly with NTPD <perlinger@ntp.org>
   - changed interaction with SCM to signal pending startup
 * [Bug 3486] Buffer overflow in ntpq/ntpq.c:tstflags() <perlinger@ntp.org>
@@ -43,7 +44,7 @@
   New macro REFID_ISTEXT() which is also used in ntpd/ntp_control.c.
 * [Bug 3434] ntpd clears STA_UNSYNC on start <perlinger@ntp.org>
   - applied patch by Miroslav Lichvar
-* [Sec 3012] noepeer tweaks.  <stenn@ntp.org>
+* [Bug 3426] ntpdate.html -t default is 2 seconds.  Leonid Evdokimov.
 * [Bug 3121] Drop root privileges for the forked DNS worker <perlinger@ntp.org>
   - integrated patch by  Reinhard Max
 * [Bug 2821] minor build issues <perlinger@ntp.org>
