@@ -52,6 +52,7 @@
   - applied patches by Christos Zoulas, including real bug fixes
 * html/authopt.html: cleanup, from <stenn@ntp.org>
 * ntpd/ntpd.c: DROPROOT cleanup.  <stenn@ntp.org>
+* Symmetric key range is 1-65535.  Update docs.  <stenn@ntp.org>
 
 ---
 (4.2.8p11) 2018/02/27 Released by Harlan Stenn <stenn@ntp.org>

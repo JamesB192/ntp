@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntp.conf.texi)
 #
-# It has been AutoGen-ed  February 27, 2018 at 05:14:34 PM by AutoGen 5.18.5
+# It has been AutoGen-ed  July 24, 2018 at 07:23:47 AM by AutoGen 5.18.5
 # From the definitions    ntp.conf.def
 # and the template file   agtexi-file.tpl
 @end ignore
@@ -284,7 +284,7 @@ option.
 All packets sent to and received from the server or peer are to
 include authentication fields encrypted using the specified
 @kbd{key}
-identifier with values from 1 to 65534, inclusive.
+identifier with values from 1 to 65535, inclusive.
 The
 default is to include no encryption field.
 @item @code{minpoll} @kbd{minpoll}
