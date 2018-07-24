@@ -327,7 +327,7 @@ option.
 All packets sent to and received from the server or peer are to
 include authentication fields encrypted using the specified
 .Ar key
-identifier with values from 1 to 65534, inclusive.
+identifier with values from 1 to 65535, inclusive.
 The
 default is to include no encryption field.
 .It Cm minpoll Ar minpoll

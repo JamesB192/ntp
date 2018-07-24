@@ -18,7 +18,7 @@
 <img src="pic/alice44.gif" alt="gif" align="left"><a href="http://www.eecis.udel.edu/%7emills/pictures.html">from <i>Alice's Adventures in Wonderland</i>, Lewis Carroll</a>
 <p>Our resident cryptographer; now you see him, now you don't.</p>
 <p>Last update:
-  <!-- #BeginDate format:En2m -->25-May-2018  00:53<!-- #EndDate -->
+  <!-- #BeginDate format:En2m -->24-Jul-2018  07:27<!-- #EndDate -->
   UTC</p>
 <br clear="left">
 <h4>Related Links</h4>
@@ -34,7 +34,7 @@
   <dd>Specifies the key ID for the <a
 	href="ntpq.html"><tt>ntpq</tt></a> utility, which uses the
     standard protocol defined in RFC-1305.  The <tt><i>keyid</i></tt> argument is the key ID for a <a href="#trustedkey">trusted
-    key</a>, where the value can be in the range 1 to 65534,
+    key</a>, where the value can be in the range 1 to 65535,
     inclusive.</dd>
   <dt id="crypto"><tt>crypto [digest <i>digest</i>] [host <i>name</i>] [ident <i>name</i>] [pw <i>password</i>] [randfile <i>file</i>]</tt></dt>
   <dd>This command  activates the Autokey public key cryptography
@@ -75,7 +75,7 @@
   <dd>Specifies the key ID for the <a href="ntpdc.html"><tt>ntpdc</tt></a> utility program, which
     uses a proprietary protocol specific to this implementation of <tt>ntpd</tt>.  The <tt><i>keyid</i></tt> argument is a key ID
     for a <a href="#trustedkey">trusted key</a>, in the range 1 to
-    65534, inclusive.</dd>
+    65535, inclusive.</dd>
   <dt id="revoke"><tt>revoke [<i>logsec</i>]</tt></dt>
   <dd>Specifies the interval between re-randomization of certain cryptographic values used by the Autokey scheme, as a power of 2 in seconds, with default 17 (36 hr).  See the <a href="autokey.html">Autokey Public-Key Authentication</a> page for further information.</dd>
   <dt id="trustedkey"><tt>trustedkey [<i>keyid</i> | (<i>lowid</i> ... <i>highid</i>)] [...]</tt></dt>
