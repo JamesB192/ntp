@@ -1,9 +1,9 @@
-.Dd February 27 2018
+.Dd July 24 2018
 .Dt NTP_CONF 5mdoc File Formats
 .Os
 .\"  EDIT THIS FILE WITH CAUTION  (ntp.mdoc)
 .\"
-.\"  It has been AutoGen-ed  February 27, 2018 at 05:14:42 PM by AutoGen 5.18.5
+.\"  It has been AutoGen-ed  July 24, 2018 at 07:23:43 AM by AutoGen 5.18.5
 .\"  From the definitions    ntp.conf.def
 .\"  and the template file   agmdoc-cmd.tpl
 .Sh NAME
@@ -325,7 +325,7 @@ option.
 All packets sent to and received from the server or peer are to
 include authentication fields encrypted using the specified
 .Ar key
-identifier with values from 1 to 65534, inclusive.
+identifier with values from 1 to 65535, inclusive.
 The
 default is to include no encryption field.
 .It Cm minpoll Ar minpoll
