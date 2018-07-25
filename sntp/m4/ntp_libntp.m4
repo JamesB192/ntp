@@ -699,7 +699,7 @@ AC_ARG_ENABLE(
     [trustedbsd_mac],
     [AS_HELP_STRING(
 	[--enable-trustedbsd-mac],
-	[- Use TrustedBSD MAC policy for non-root clock control]
+	[s Use TrustedBSD MAC policy for non-root clock control]
     )],
     [ntp_use_trustedbsd_mac=$enableval]
 )
