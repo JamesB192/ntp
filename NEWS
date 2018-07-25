@@ -1,5 +1,5 @@
 --
-NTP 4.2.8p12 (Harlan Stenn <stenn@ntp.org>, 2018/08/07)
+NTP 4.2.8p12 (Harlan Stenn <stenn@ntp.org>, 2018/08/09)
 
 NOTE: this NEWS file will be undergoing more revisions.
 
@@ -9,7 +9,7 @@ Severity: MEDIUM
 
 This release fixes a "hole" in the noepeer capability introduced to ntpd
 in ntp-4.2.8p11, and a buffer overflow in the openhost() function used by
-ntpq and ntpdc.  It also provides 26 other bugfixes, and 3 other improvements:
+ntpq and ntpdc.  It also provides 26 other bugfixes, and 4 other improvements:
 
 * [Sec 3505]
 
