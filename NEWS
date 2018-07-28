@@ -11,9 +11,9 @@ This release fixes a "hole" in the noepeer capability introduced to ntpd
 in ntp-4.2.8p11, and a buffer overflow in the openhost() function used by
 ntpq and ntpdc.  It also provides 26 other bugfixes, and 4 other improvements:
 
-* [Sec 3505]
+* [Sec 3505] Buffer overflow in the openhost() call of ntpq and ntpdc.
 
-* [Sec 3012] 
+* [Sec 3012] Fix a hole in the new "noepeer" processing.
 
 * Bug Fixes:
  [Bug 3509] Add support for running as non-root on FreeBSD, Darwin,

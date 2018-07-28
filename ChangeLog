@@ -1,7 +1,8 @@
 ---
 
 * [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
-  - fixed stack buffer overflow in NTPQ/NTPDC <perlinger@ntp.org>
+  - fixed stack buffer overflow in the openhost() command-line call
+    of NTPQ/NTPDC <perlinger@ntp.org>
 * [Sec 3012] noepeer tweaks.  <stenn@ntp.org>
 * [Bug 3509] Add support for running as non-root on FreeBSD, Darwin,
              other TrustedBSD platforms
