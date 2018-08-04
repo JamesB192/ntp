@@ -16,6 +16,7 @@ ntpq and ntpdc.  It also provides 26 other bugfixes, and 4 other improvements:
 * [Sec 3012] Fix a hole in the new "noepeer" processing.
 
 * Bug Fixes:
+ [Bug 3521] Fix a logic bug in the INVALIDNAK checks.  <stenn@ntp.org>
  [Bug 3509] Add support for running as non-root on FreeBSD, Darwin,
             other TrustedBSD platforms
  - applied patch by Ian Lepore <perlinger@ntp.org>

@@ -4,6 +4,7 @@
   - fixed stack buffer overflow in the openhost() command-line call
     of NTPQ/NTPDC <perlinger@ntp.org>
 * [Sec 3012] noepeer tweaks.  <stenn@ntp.org>
+* [Bug 3521] Fix a logic bug in the INVALIDNAK checks.  <stenn@ntp.org>
 * [Bug 3509] Add support for running as non-root on FreeBSD, Darwin,
              other TrustedBSD platforms
   - applied patch by Ian Lepore <perlinger@ntp.org>
