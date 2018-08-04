@@ -272,7 +272,7 @@ kiss_code_check(
 }
 
 
-/* 
+/*
  * Check that NAK is valid
  */
 nak_code
@@ -315,7 +315,7 @@ valid_NAK(
 		return INVALIDNAK;
 	}
 
-	/* 
+	/*
 	 * Make sure that the extra field in the packet is all zeros
 	 */
 	rpkt = &rbufp->recv_pkt;
@@ -324,10 +324,13 @@ valid_NAK(
 		return INVALIDNAK;
 	}
 
-	/* 
-	 * Only valid if peer uses a key
+	/*
+	 * During the first few packets of the autokey dance there will
+	 * not (yet) be a keyid, but in this case FLAG_SKEY is set.
+	 * So the NAK is invalid if either there's no peer, or
+	 * if the keyid is 0 and FLAG_SKEY is not set.
 	 */
-	if (!peer || !peer->keyid || !(peer->flags & FLAG_SKEY)) {
+	if (!peer || (!peer->keyid && !(peer->flags & FLAG_SKEY))) {
 		return INVALIDNAK;
 	}
 
@@ -377,7 +380,7 @@ transmit(
 	 */
 	if (peer->outdate > peer->timelastrec && !peer->reach)
 		peer->ppoll = peer->maxpoll;
-	
+
 	/*
 	 * In broadcast mode the poll interval is never changed from
 	 * minpoll.
@@ -744,7 +747,7 @@ receive(
 		} else {
 			DPRINTF(2, ("receive: drop: MODE_UNSPEC\n"));
 			sys_badlength++;
-			return;                 /* invalid mode */
+			return;			/* invalid mode */
 		}
 	}
 
@@ -848,7 +851,7 @@ receive(
 	/*
 	** Packet Data Verification Layer
 	**
-	** This layer verifies the packet data content.  If 
+	** This layer verifies the packet data content.  If
 	** authentication is required, a MAC must be present.
 	** If a MAC is present, it must validate.
 	** Crypto-NAK?  Look - a shiny thing!
@@ -956,7 +959,7 @@ receive(
 		if (0 != peer) {
 			peer->badNAK++;
 		}
-		msyslog(LOG_ERR, "Invalid-NAK error at %ld %s<-%s", 
+		msyslog(LOG_ERR, "Invalid-NAK error at %ld %s<-%s",
 			current_time, stoa(dstadr_sin), stoa(&rbufp->recv_srcadr));
 		return;
 	}
@@ -1008,7 +1011,7 @@ receive(
 		/*
 		 * has_mac is not 0
 		 * Not a VALID_NAK
-		 * Not an MS-SNTP SIGND  packet
+		 * Not an MS-SNTP SIGND packet
 		 *
 		 * So there is a MAC here.
 		 */
@@ -1067,7 +1070,7 @@ receive(
 				       ANY_INTERFACE_CHOOSE(&rbufp->recv_srcadr)) {
 					DPRINTF(2, ("receive: drop: BCAST from wildcard\n"));
 					sys_restricted++;
-					return;	     /* no wildcard */
+					return;		/* no wildcard */
 				}
 				pkeyid = 0;
 				if (!SOCK_UNSPEC(&rbufp->dstadr->bcast))
@@ -1388,7 +1391,7 @@ receive(
 		if (NULL == peer) {
 			DPRINTF(2, ("receive: AM_MANYCAST drop: duplicate\n"));
 			sys_declined++;
-			return;			/* ignore duplicate  */
+			return;			/* ignore duplicate */
 		}
 
 		/*
@@ -1526,10 +1529,10 @@ receive(
 		 * is fixed at this value.
 		 */
 		peer = newpeer(&rbufp->recv_srcadr, NULL, match_ep,
-		    r4a.ippeerlimit, MODE_CLIENT, hisversion,
-		    pkt->ppoll, pkt->ppoll,
-		    FLAG_BC_VOL | FLAG_IBURST | FLAG_PREEMPT, MDF_BCLNT,
-		    0, skeyid, sys_ident);
+			       r4a.ippeerlimit, MODE_CLIENT, hisversion,
+			       pkt->ppoll, pkt->ppoll,
+			       FLAG_BC_VOL | FLAG_IBURST | FLAG_PREEMPT, MDF_BCLNT,
+			       0, skeyid, sys_ident);
 		if (NULL == peer) {
 			DPRINTF(2, ("receive: AM_NEWBCL drop: empty newpeer() failed\n"));
 			sys_restricted++;
@@ -1545,9 +1548,10 @@ receive(
 
 	/*
 	 * This is the first packet received from a potential ephemeral
-	 * symmetric active peer.  If NOEPEER is enabled, drop it.  If
-	 * the packet meets our authenticty requirements and is the
-	 * first he sent, mobilize a passive association.
+	 * symmetric active peer.  First, deal with broken Windows clients.
+	 * Then, if NOEPEER is enabled, drop it.  If the packet meets our
+	 * authenticty requirements and is the first he sent, mobilize
+	 * a passive association.
 	 * Otherwise, kiss the frog.
 	 *
 	 * There are cases here where we do not call record_raw_stats().
@@ -1566,13 +1570,6 @@ receive(
 			return;
 		}
 #endif /* AUTOKEY */
-
-		if (restrict_mask & RES_NOEPEER) {
-			DPRINTF(2, ("receive: AM_NEWPASS drop: NOEPEER\n"));
-			sys_declined++;
-			return;
-		}
-
 		if (!AUTH(sys_authenticate | (restrict_mask &
 			  (RES_NOPEER | RES_DONTTRUST)), is_authentic)
 		   ) {
@@ -1589,12 +1586,20 @@ receive(
 				    restrict_mask);
 				return;			/* hooray */
 			}
+			/* HMS: Why is this next set of lines a feature? */
 			if (is_authentic == AUTH_ERROR) {
-				fast_xmit(rbufp, MODE_ACTIVE, 0,
+				fast_xmit(rbufp, MODE_PASSIVE, 0,
 				    restrict_mask);
 				sys_restricted++;
 				return;
 			}
+
+			if (restrict_mask & RES_NOEPEER) {
+				DPRINTF(2, ("receive: AM_NEWPASS drop: NOEPEER\n"));
+				sys_declined++;
+				return;
+			}
+
 			/* [Bug 2941]
 			 * If we got here, the packet isn't part of an
 			 * existing association, either isn't correctly
@@ -1612,6 +1617,12 @@ receive(
 				    current_time, stoa(&rbufp->recv_srcadr),
 				    hismode, hm_str, am_str, skeyid,
 				    (authlen + has_mac), is_authentic));
+			sys_declined++;
+			return;
+		}
+
+		if (restrict_mask & RES_NOEPEER) {
+			DPRINTF(2, ("receive: AM_NEWPASS drop: NOEPEER\n"));
 			sys_declined++;
 			return;
 		}
@@ -1693,8 +1704,8 @@ receive(
 			}
 
 			/* This is error-worthy */
-			if (pkt->ppoll < peer->minpoll ||
-			    pkt->ppoll > peer->maxpoll  ) {
+			if (   pkt->ppoll < peer->minpoll
+			    || pkt->ppoll > peer->maxpoll) {
 				msyslog(LOG_INFO, "receive: broadcast poll of %u from %s is out-of-range (%d to %d)!",
 					pkt->ppoll, stoa(&rbufp->recv_srcadr),
 					peer->minpoll, peer->maxpoll);
@@ -1742,7 +1753,7 @@ receive(
 			 * network is trustable, so we take our accepted
 			 * broadcast packets as we receive them.  But
 			 * some folks might want to take additional poll
-			 * delays before believing a backward step. 
+			 * delays before believing a backward step.
 			 */
 			if (sys_bcpollbstep) {
 				/* pkt->ppoll or peer->ppoll ? */
@@ -1758,8 +1769,8 @@ receive(
 				tdiff = p_xmt;
 				L_SUB(&tdiff, &peer->bxmt);
 			}
-			if (tdiff.l_i < 0 &&
-			    (current_time - peer->timereceived) < deadband)
+			if (   tdiff.l_i < 0
+			    && (current_time - peer->timereceived) < deadband)
 			{
 				msyslog(LOG_INFO, "receive: broadcast packet from %s contains non-monotonic timestamp: %#010x.%08x -> %#010x.%08x",
 					stoa(&rbufp->recv_srcadr),
@@ -2610,7 +2621,7 @@ process_packet(
 		 * between the unicast timestamp and the broadcast
 		 * timestamp. This works for both basic and interleaved
 		 * modes.
-		 * [Bug 3031] Don't keep this peer when the delay 
+		 * [Bug 3031] Don't keep this peer when the delay
 		 * calculation gives reason to suspect clock steps.
 		 * This is assumed for delays > 50ms.
 		 */
@@ -4013,7 +4024,7 @@ peer_xmit(
 		DPRINTF(1, ("peer_xmit: at %ld %s->%s mode %d len %zu xmt %#010x.%08x\n",
 			    current_time,
 			    peer->dstadr ? stoa(&peer->dstadr->sin) : "-",
-		            stoa(&peer->srcadr), peer->hmode, sendlen,
+			    stoa(&peer->srcadr), peer->hmode, sendlen,
 			    xmt_tx.l_ui, xmt_tx.l_uf));
 		return;
 	}
@@ -4356,7 +4367,7 @@ leap_smear_add_offs(
 	return;
 }
 
-#endif  /* LEAP_SMEAR */
+#endif /* LEAP_SMEAR */
 
 
 /*

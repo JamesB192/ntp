@@ -1,6 +1,7 @@
 ---
 
 * [Sec 3012] noepeer tweaks.  <stenn@ntp.org>
+* [Bug 3521] Fix a logic bug in the INVALIDNAK checks.  <stenn@ntp.org>
 * [Bug 3506] Service Control Manager interacts poorly with NTPD <perlinger@ntp.org>
   - changed interaction with SCM to signal pending startup
 * [Bug 3486] Buffer overflow in ntpq/ntpq.c:tstflags() <perlinger@ntp.org>

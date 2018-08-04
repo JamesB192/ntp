@@ -16,6 +16,7 @@ ntpq and ntpdc.  It also provides 26 other bugfixes, and 4 other improvements:
 * [Sec 3012] 
 
 * Bug Fixes:
+ [Bug 3521] Fix a logic bug in the INVALIDNAK checks.  <stenn@ntp.org>
  [Bug 3486] Buffer overflow in ntpq/ntpq.c:tstflags() <perlinger@ntp.org>
  - applied patch by Gerry Garvey
  [Bug 3485] Undefined sockaddr used in error messages in ntp_config.c <perlinger@ntp.org>
