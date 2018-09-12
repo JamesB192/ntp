@@ -665,8 +665,7 @@ getuser:
  * Map group name/number to group ID
 */
 static int
-map_group(
-	)
+map_group(void)
 {
 	char *endp;
 
@@ -691,9 +690,10 @@ getgroup:
 /*
  * Change (effective) user and group IDs, also initialize the supplementary group access list
  */
+extern int set_user_group_ids(void);
+
 int
-set_user_group_ids(
-	)
+set_user_group_ids(void)
 {
 	/* If the the user was already mapped, no need to map it again */
 	if ((NULL != user) && (0 == sw_uid)) {
