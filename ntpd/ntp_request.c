@@ -2536,6 +2536,11 @@ get_clock_info(
 		DTOLFP(clock_stat.fudgetime2, &ltmp);
 		HTONL_FP(&ltmp, &ic->fudgetime2);
 		ic->fudgeval1 = htonl((u_int32)clock_stat.fudgeval1);
+		/* [Bug3527] ist still there: ic->fudgeval2 is effectively
+		 * host order here, since clockstat.fudgeval2 is already
+		 * in network byte order! Needs fixing the whole chain,
+		 * possibly in NTP protocol v5...
+		 */
 		ic->fudgeval2 = htonl(clock_stat.fudgeval2);
 
 		free_varlist(clock_stat.kv_list);
