@@ -1,4 +1,9 @@
 ---
+* [Bug 3529] Build failures on Mac OS X 10.13 (High Sierra) <perlinger@ntp.org>
+  - patch by Daniel J. Luke; this does not fix a potential linker
+    regression issue on MacOS.
+
+---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
