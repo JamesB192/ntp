@@ -2713,6 +2713,10 @@ again:
 			       lfptoa(&ts, 6));
 		(void) fprintf(fp, "stratum:              %ld\n",
 			       (u_long)ntohl(cl->fudgeval1));
+		/* [Bug3527] ist still there: fudgeval2 is effectively
+		 * host order here. Needs fixing the whole chain,
+		 * possibly in NTP protocol v5...
+		 */
 		(void) fprintf(fp, "reference ID:         %s\n",
 			       refid_string(ntohl(cl->fudgeval2), 0));
 		(void) fprintf(fp, "fudge flags:          0x%x\n",
