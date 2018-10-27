@@ -1,4 +1,8 @@
 ---
+* [Bug 3540] Cannot set minsane to 0 anymore <perlinger@ntp.org>
+  - applied patch by Andre Charbonneau
+
+---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
