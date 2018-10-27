@@ -1,4 +1,8 @@
 ---
+* [Bug 3538] Build fails for no-MMU targets <perlinger@ntp.org>
+  - applied patch by Baruch Siach
+
+---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
