@@ -594,7 +594,9 @@ fork_blocking_child(
 	init_logging("ntp_intres", 0, FALSE);
 	setup_logfile(NULL);
 
+#if defined(HAVE_DROPROOT)
 	(void) set_user_group_ids();
+#endif
 
 	/*
 	 * And now back to the portable code
