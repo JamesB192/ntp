@@ -1,4 +1,8 @@
 ---
+* [Bug 3541] patch to fix STA_NANO struct timex units <perlinger@ntp.org>
+  - applied patch by Maciej Szmigiero
+
+---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
