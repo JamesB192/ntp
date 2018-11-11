@@ -1486,7 +1486,8 @@ crypto_verify(
 		return (XEVNT_LEN);
 
 	i = (vallen + 3) / 4;
-	siglen = ntohl(ep->pkt[i++]);
+	siglen = ntohl(ep->pkt[i]);
+	++i;
 	if (   siglen > MAX_VALLEN
 	    || len - VALUE_LEN < ((vallen + 3) / 4) * 4
 	    || len - VALUE_LEN - ((vallen + 3) / 4) * 4
