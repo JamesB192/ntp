@@ -1,4 +1,8 @@
 ---
+* [Bug 3548] Signature not verified on windows system <perlinger@ntp.org>
+  - finding by Chen Jiabin, plus another one by me
+
+---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
