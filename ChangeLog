@@ -31,6 +31,7 @@
   - applied patch by Gerry Garvey
 * [Bug 3471] Check for openssl/[ch]mac.h.  HStenn.
   - add #define ENABLE_CMAC support in configure.  HStenn.
+  - added missing check, reported by Reinhard Max <perlinger@ntp.org>
 * [Bug 3470] ntpd4.2.8p11 fails to compile without OpenSSL <perlinger@ntp.org>
 * [Bug 3469] Incomplete string compare [...] in is_refclk_addr <perlinger@ntp.org>
   - patch by Stephen Friedl
