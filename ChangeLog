@@ -1,4 +1,8 @@
 ---
+* [Bug 3556] ntp_loopfilter.c snprintf compilation warnings <perlinger@ntp.org>
+  - provide better function for incremental string formatting
+
+---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3505] CVE-2018-12327 - Arbitrary Code Execution Vulnerability
