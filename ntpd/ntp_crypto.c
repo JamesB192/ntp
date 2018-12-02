@@ -353,8 +353,8 @@ make_keylist(
 	 * included in the hash is zero if broadcast mode, the peer
 	 * cookie if client mode or the host cookie if symmetric modes.
 	 */
-	mpoll = 1 << min(peer->ppoll, peer->hpoll);
-	lifetime = min(1U << sys_automax, NTP_MAXSESSION * mpoll);
+	mpoll = 1U << min(peer->ppoll, peer->hpoll);
+	lifetime = min((1UL << sys_automax), NTP_MAXSESSION * mpoll);
 	if (peer->hmode == MODE_BROADCAST)
 		cookie = 0;
 	else
