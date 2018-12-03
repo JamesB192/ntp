@@ -1,6 +1,8 @@
 ---
 (4.2.8p13)
 
+* [Bug 3548] Signature not verified on windows system <perlinger@ntp.org>
+  - finding by Chen Jiabin, plus another one by me
 * [Bug 3541] patch to fix STA_NANO struct timex units <perlinger@ntp.org>
   - applied patch by Maciej Szmigiero
 * [Bug 3540] Cannot set minsane to 0 anymore <perlinger@ntp.org>
