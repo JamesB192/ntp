@@ -2198,8 +2198,8 @@ config_tos(
 
 		case T_Minsane:
 			val = tos->value.d;
-			if ((int)tos->value.d < 1)
-				tos->value.d = 1;
+			if ((int)tos->value.d < 0)
+				tos->value.d = 0;
 			l_minsane = (int)tos->value.d;
 			break;
 		}
