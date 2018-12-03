@@ -1,6 +1,10 @@
 ---
+(4.2.8p13)
+
 * [Bug 3526] Incorrect poll interval in packet <perlinger@ntp.org>
   - applied patch by Gerry Garvey
+* [Bug 3471] Check for openssl/[ch]mac.h.  <perlinger@ntp.org>
+  - added missing check, reported by Reinhard Max <perlinger@ntp.org>
 
 ---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
