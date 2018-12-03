@@ -1,6 +1,9 @@
 ---
 (4.2.8p13)
 
+* [Bug 3535] libparse won't handle GPS week rollover <perlinger@ntp.org>
+  - refactored handling of GPS era based on 'tos basedate' for
+    parse (TSIP) and JUPITER clocks
 * [Bug 3529] Build failures on Mac OS X 10.13 (High Sierra) <perlinger@ntp.org>
   - patch by Daniel J. Luke; this does not fix a potential linker
     regression issue on MacOS.
