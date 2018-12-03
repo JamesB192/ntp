@@ -1,6 +1,8 @@
 ---
 (4.2.8p13)
 
+* [Bug 3538] Build fails for no-MMU targets <perlinger@ntp.org>
+  - applied patch by Baruch Siach
 * [Bug 3535] libparse won't handle GPS week rollover <perlinger@ntp.org>
   - refactored handling of GPS era based on 'tos basedate' for
     parse (TSIP) and JUPITER clocks

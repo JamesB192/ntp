@@ -534,6 +534,7 @@ set_process_priority(void)
  * Detach from terminal (much like daemon())
  * Nothe that this function calls exit()
  */
+# ifdef HAVE_WORKING_FORK
 static void
 detach_from_terminal(
 	int pipe_fds[2],
@@ -617,6 +618,7 @@ detach_from_terminal(
 
 	return;
 }
+# endif /* HAVE_WORKING_FORK */
 
 #ifdef HAVE_DROPROOT
 /*
