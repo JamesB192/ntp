@@ -2920,7 +2920,7 @@ kerninfo(
 	size_t itemsize;
 	int res;
 	unsigned status;
-	double tscale = 1e-6;
+	double tscale_usec = 1e-6, tscale_unano = 1e-6;
 
 again:
 	res = doquery(impl_ver, REQ_GET_KERNEL, 0, 0, 0, (char *)NULL,
@@ -2945,16 +2945,16 @@ again:
 	 */
 #ifdef STA_NANO
 	if (status & STA_NANO)
-		tscale = 1e-9;
+		tscale_unano = 1e-9;
 #endif
 	(void)fprintf(fp, "pll offset:           %g s\n",
-	    (int32)ntohl(ik->offset) * tscale);
+	    (int32)ntohl(ik->offset) * tscale_unano);
 	(void)fprintf(fp, "pll frequency:        %s ppm\n",
 	    fptoa((s_fp)ntohl(ik->freq), 3));
 	(void)fprintf(fp, "maximum error:        %g s\n",
-	    (u_long)ntohl(ik->maxerror) * tscale);
+	    (u_long)ntohl(ik->maxerror) * tscale_usec);
 	(void)fprintf(fp, "estimated error:      %g s\n",
-	    (u_long)ntohl(ik->esterror) * tscale);
+	    (u_long)ntohl(ik->esterror) * tscale_usec);
 	(void)fprintf(fp, "status:               %04x ", status);
 #ifdef STA_PLL
 	if (status & STA_PLL) (void)fprintf(fp, " pll");
@@ -3008,7 +3008,7 @@ again:
 	(void)fprintf(fp, "pll time constant:    %ld\n",
 	    (u_long)ntohl(ik->constant));
 	(void)fprintf(fp, "precision:            %g s\n",
-	    (u_long)ntohl(ik->precision) * tscale);
+	    (u_long)ntohl(ik->precision) * tscale_usec);
 	(void)fprintf(fp, "frequency tolerance:  %s ppm\n",
 	    fptoa((s_fp)ntohl(ik->tolerance), 0));
 
@@ -3027,7 +3027,7 @@ again:
 	(void)fprintf(fp, "pps stability:        %s ppm\n",
 	    fptoa((s_fp)ntohl(ik->stabil), 3));
 	(void)fprintf(fp, "pps jitter:           %g s\n",
-	    (u_long)ntohl(ik->jitter) * tscale);
+	    (u_long)ntohl(ik->jitter) * tscale_unano);
 	(void)fprintf(fp, "calibration interval: %d s\n",
 		      1 << ntohs(ik->shift));
 	(void)fprintf(fp, "calibration cycles:   %ld\n",
