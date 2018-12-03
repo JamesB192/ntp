@@ -2065,8 +2065,12 @@ config_auth(
 
 #ifdef AUTOKEY
 	/* crypto revoke command */
-	if (ptree->auth.revoke)
-		sys_revoke = 1UL << ptree->auth.revoke;
+	if (ptree->auth.revoke > 2 && ptree->auth.revoke < 32)
+		sys_revoke = (u_char)ptree->auth.revoke;
+	else if (ptree->auth.revoke)
+		msyslog(LOG_ERR,
+			"'revoke' value %d ignored",
+			ptree->auth.revoke);
 #endif	/* AUTOKEY */
 }
 #endif	/* !SIM */
@@ -3817,7 +3821,12 @@ config_vars(
 
 		case T_Automax:
 #ifdef AUTOKEY
-			sys_automax = curr_var->value.i;
+			if (curr_var->value.i > 2 && curr_var->value.i < 32)
+				sys_automax = (u_char)curr_var->value.i;
+			else
+				msyslog(LOG_ERR,
+					"'automax' value %d ignored",
+					curr_var->value.i);
 #endif
 			break;
 
