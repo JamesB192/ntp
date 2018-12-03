@@ -1,6 +1,8 @@
 ---
 (4.2.8p13)
 
+* [Bug 3540] Cannot set minsane to 0 anymore <perlinger@ntp.org>
+  - applied patch by Andre Charbonneau
 * [Bug 3539] work_fork build fails when droproot is not supported <perlinger@ntp.org>
   - applied patch by Baruch Siach
 * [Bug 3538] Build fails for no-MMU targets <perlinger@ntp.org>
