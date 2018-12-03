@@ -2112,6 +2112,10 @@ config_tos_clock(
 			break;
 		}
 	}
+
+	if (basedate_get_day() <= NTP_TO_UNIX_DAYS)
+		basedate_set_day(basedate_eval_buildstamp() - 11);
+	    
 	return ret;
 }
 
