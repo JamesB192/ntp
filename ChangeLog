@@ -1,6 +1,9 @@
 ---
 (4.2.8p13)
 
+* [Bug 3529] Build failures on Mac OS X 10.13 (High Sierra) <perlinger@ntp.org>
+  - patch by Daniel J. Luke; this does not fix a potential linker
+    regression issue on MacOS.
 * [Bug 3526] Incorrect poll interval in packet <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3471] Check for openssl/[ch]mac.h.  <perlinger@ntp.org>
