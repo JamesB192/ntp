@@ -31,10 +31,12 @@ extern void setUp(void);
 extern void tearDown(void);
 extern void test_NullBuf1(void);
 extern void test_NullBuf2(void);
+extern void test_EndBeyond(void);
 extern void test_SmallBuf(void);
 extern void test_MatchBuf(void);
 extern void test_BigBuf(void);
 extern void test_SimpleArgs(void);
+extern void test_Increment1(void);
 
 
 //=======Suite Setup=====
@@ -63,10 +65,12 @@ int main(int argc, char *argv[])
   UnityBegin("sbprintf.c");
   RUN_TEST(test_NullBuf1, 7);
   RUN_TEST(test_NullBuf2, 14);
-  RUN_TEST(test_SmallBuf, 23);
-  RUN_TEST(test_MatchBuf, 34);
-  RUN_TEST(test_BigBuf, 45);
-  RUN_TEST(test_SimpleArgs, 56);
+  RUN_TEST(test_EndBeyond, 23);
+  RUN_TEST(test_SmallBuf, 33);
+  RUN_TEST(test_MatchBuf, 44);
+  RUN_TEST(test_BigBuf, 55);
+  RUN_TEST(test_SimpleArgs, 66);
+  RUN_TEST(test_Increment1, 78);
 
   return (UnityEnd());
 }
