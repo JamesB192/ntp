@@ -26,6 +26,7 @@
  *   changed. (Bytes in the buffer might be smashed, but the buffer
  *   position does not change, and the NUL marker stays in place at the
  *   current buffer position.)
+ * - If '(*ppbuf - pend) <= 0' (or ppbuf is NULL), fail with EINVAL.
  */
 int
 xvsbprintf(
@@ -37,18 +38,15 @@ xvsbprintf(
 {
 	char *pbuf = (ppbuf) ? *ppbuf : NULL;
 	int   rc   = -1;
-	if (pbuf) {
-		size_t ilen = (size_t)(pend - pbuf);
-		if (ilen) {
-			*pbuf = '\0';
-			rc    = vsnprintf(pbuf, ilen, pfmt, va);
-			if (rc > 0) {
-				if ((size_t)rc >= ilen)
-					rc = 0;
-				pbuf += rc;
-			}
-			*pbuf = '\0'; /* fear of bad vsnprintf */
-		}		
+	if (pbuf && (pend - pbuf > 0)) {
+		size_t blen = (size_t)(pend - pbuf);
+		rc = vsnprintf(pbuf, blen, pfmt, va);
+		if (rc > 0) {
+		    if ((size_t)rc >= blen)
+			rc = 0;
+		    pbuf += rc;
+		}
+		*pbuf = '\0'; /* fear of bad vsnprintf */
 		*ppbuf = pbuf;
 	} else {
 		errno = EINVAL;
@@ -56,7 +54,7 @@ xvsbprintf(
 	return rc;
 }
 
-/* variadic wrapper around the buufer string formatter */
+/* variadic wrapper around the buffer string formatter */
 int
 xsbprintf(
 	char       **ppbuf,	/* pointer to buffer pointer (I/O) */
