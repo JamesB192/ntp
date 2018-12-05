@@ -20,6 +20,16 @@ void test_NullBuf2(void)
 	TEST_ASSERT_EQUAL_PTR(bp, NULL);
 }
 
+extern void test_EndBeyond(void);
+void test_EndBeyond(void)
+{
+	char ba[2];
+	char *bp = ba + 1;
+	char *ep = ba;
+	int rc = xsbprintf(&bp, ep, "blah");
+        TEST_ASSERT(rc == -1 && errno == EINVAL);
+}
+
 extern void test_SmallBuf(void);
 void test_SmallBuf(void)
 {
@@ -63,5 +73,23 @@ void test_SimpleArgs(void)
         TEST_ASSERT(rc == 4 && strlen(ba) == 4);
 	TEST_ASSERT_EQUAL_PTR(bp, ba + 4);
 	TEST_ASSERT_FALSE(strcmp(ba, "1234"));
+}
+
+extern void test_Increment1(void);
+void test_Increment1(void)
+{
+	char  ba[10];
+	char *bp = ba;
+	char *ep = ba + sizeof(ba);
+	int   rc;
+
+	rc = xsbprintf(&bp, ep, "%d%d%d%d", 1, 2, 3, 4);
+        TEST_ASSERT(rc == 4 && strlen(ba) == 4);
+	TEST_ASSERT_EQUAL_PTR(bp, ba + 4);
+
+	rc = xsbprintf(&bp, ep, "%s", "frob");
+        TEST_ASSERT(rc == 4 && strlen(ba) == 8);
+	TEST_ASSERT_EQUAL_PTR(bp, ba + 8);
+	TEST_ASSERT_FALSE(strcmp(ba, "1234frob"));
 }
 
