@@ -1749,6 +1749,7 @@ case "$ntp_ok" in
  yes)
     ntp_refclock=yes
     AC_DEFINE([CLOCK_BANC], [1], [Datum/Bancomm bc635/VME interface?])
+    AC_SEARCH_LIBS([bcStartPci], [bcsdk], , , [])
     ;;
 esac
 AC_MSG_RESULT([$ntp_ok])
