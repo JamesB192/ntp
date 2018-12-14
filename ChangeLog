@@ -1,6 +1,8 @@
 ---
 (4.2.8p13)
 
+* [Bug 3560] Fix build when HAVE_DROPROOT is not defined <perlinger@ntp.org>
+  - applied patch by Ian Lepore
 * [Bug 3558] Crash and integer size bug <perlinger@ntp.org>
   - isolate and fix linux/windows specific code issue
 * [Bug 3556] ntp_loopfilter.c snprintf compilation warnings <perlinger@ntp.org>
