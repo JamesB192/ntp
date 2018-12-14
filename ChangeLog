@@ -1,6 +1,8 @@
 ---
 (4.2.8p13)
 
+* [Bug 3558] Crash and integer size bug <perlinger@ntp.org>
+  - isolate and fix linux/windows specific code issue
 * [Bug 3556] ntp_loopfilter.c snprintf compilation warnings <perlinger@ntp.org>
   - provide better function for incremental string formatting
 * [Bug 3555] Tidy up print alignment of debug output from ntpdate <perlinger@ntp.org>
@@ -27,6 +29,8 @@
   - applied patch by Gerry Garvey
 * [Bug 3471] Check for openssl/[ch]mac.h.  <perlinger@ntp.org>
   - added missing check, reported by Reinhard Max <perlinger@ntp.org>
+* [Bug 1674] runtime crashes and sync problems affecting both x86 and x86_64
+  - this is a variant of [bug 3558] and should be fixed with it
 
 ---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
