@@ -2713,12 +2713,17 @@ again:
 			       lfptoa(&ts, 6));
 		(void) fprintf(fp, "stratum:              %ld\n",
 			       (u_long)ntohl(cl->fudgeval1));
-		/* [Bug3527] ist still there: fudgeval2 is effectively
-		 * host order here. Needs fixing the whole chain,
-		 * possibly in NTP protocol v5...
+		/* [Bug3527] Backward Incompatible: cl->fudgeval2 is
+		 * a string, instantiated via memcpy() so there is no
+		 * endian issue to correct.
 		 */
+#ifdef DISABLE_BUG3527_FIX
 		(void) fprintf(fp, "reference ID:         %s\n",
 			       refid_string(ntohl(cl->fudgeval2), 0));
+#else
+		(void) fprintf(fp, "reference ID:         %s\n",
+			       refid_string(cl->fudgeval2, 0));
+#endif
 		(void) fprintf(fp, "fudge flags:          0x%x\n",
 			       cl->flags);
 
