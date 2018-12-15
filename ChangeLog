@@ -1,7 +1,7 @@
 ---
-* [Bug 3527] fudgeval2 anomaly in mode7 clock info packet <perlinger@ntp.org>
-  - Found by Gerry Garvey. Can't be fixed without causing serious interop
-    issues. Left a comment to fix this in protocol version 5.
+* [Bug 3527 - Backward Incompatible] mode7 clockinfo fudgeval2 anomaly
+  packet <perlinger@ntp.org>, reported by GGarvey.
+  - --enable-bug3527-fix support by HStenn
 
 ---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>

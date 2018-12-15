@@ -4194,6 +4194,24 @@ case "$ans" in
 esac
 
 
+AC_MSG_CHECKING([if we want correct mode7 fudgetime2 behavior])
+AC_ARG_ENABLE(
+    [bug3527-fix],
+    [AS_HELP_STRING(
+	[--enable-bug3527-fix],
+	[+ provide correct mode7 fudgetime2 behavior]
+    )],
+    [ans=$enableval],
+    [ans=yes]
+)
+AC_MSG_RESULT([$ans])
+case "$ans" in
+ no)
+    AC_DEFINE([DISABLE_BUG3527_FIX], [1],
+	[use old autokey session key behavior?])
+esac
+
+
 AC_MSG_CHECKING([if we should use the IRIG sawtooth filter])
 
 case "$host" in
