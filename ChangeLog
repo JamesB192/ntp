@@ -29,12 +29,16 @@
 * [Bug 3529] Build failures on Mac OS X 10.13 (High Sierra) <perlinger@ntp.org>
   - patch by Daniel J. Luke; this does not fix a potential linker
     regression issue on MacOS.
+* [Bug 3527 - Backward Incompatible] mode7 clockinfo fudgeval2 packet
+  anomaly <perlinger@ntp.org>, reported by GGarvey.
+  - --enable-bug3527-fix support by HStenn
 * [Bug 3526] Incorrect poll interval in packet <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3471] Check for openssl/[ch]mac.h.  <perlinger@ntp.org>
   - added missing check, reported by Reinhard Max <perlinger@ntp.org>
 * [Bug 1674] runtime crashes and sync problems affecting both x86 and x86_64
   - this is a variant of [bug 3558] and should be fixed with it
+>>>>>>>
 
 ---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
