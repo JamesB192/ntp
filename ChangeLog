@@ -11,6 +11,8 @@
   - applied patch by Gerry Garvey
 * [Bug 3554] config revoke stores incorrect value <perlinger@ntp.org>
   - original finding by Gerry Garvey, additional cleanup needed
+* [Bug 3549] Spurious initgroups() error message <perlinger@ntp.org>
+  - patch by Christous Zoulas
 * [Bug 3548] Signature not verified on windows system <perlinger@ntp.org>
   - finding by Chen Jiabin, plus another one by me
 * [Bug 3541] patch to fix STA_NANO struct timex units <perlinger@ntp.org>
