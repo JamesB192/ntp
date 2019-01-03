@@ -106,6 +106,7 @@ libntp_a_SRCS =						\
 	syssignal.c					\
 	timetoa.c					\
 	timevalops.c					\
+	timexsup.c					\
 	uglydate.c					\
 	vint64ops.c					\
 	work_fork.c					\
