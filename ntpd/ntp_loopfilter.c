@@ -15,6 +15,7 @@
 #include "ntp_io.h"
 #include "ntp_unixtime.h"
 #include "ntp_stdlib.h"
+#include "timexsup.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -761,30 +762,21 @@ local_clock(
 		if (ext_enable) {
 			ntv.modes = MOD_STATUS;
 		} else {
-#ifdef STA_NANO
-			ntv.modes = MOD_BITS | MOD_NANO;
-#else /* STA_NANO */
 			ntv.modes = MOD_BITS;
-#endif /* STA_NANO */
-			if (clock_offset < 0)
-				dtemp = -.5;
-			else
-				dtemp = .5;
+			ntv.offset = var_long_from_dbl(
+			    clock_offset, &ntv.modes);
 #ifdef STA_NANO
-			ntv.offset = (int32)(clock_offset * 1e9 +
-			    dtemp);
 			ntv.constant = sys_poll;
 #else /* STA_NANO */
-			ntv.offset = (int32)(clock_offset * 1e6 +
-			    dtemp);
 			ntv.constant = sys_poll - 4;
 #endif /* STA_NANO */
 			if (ntv.constant < 0)
 				ntv.constant = 0;
 
-			ntv.esterror = (u_int32)(clock_jitter * 1e6);
-			ntv.maxerror = (u_int32)((sys_rootdelay / 2 +
-			    sys_rootdisp) * 1e6);
+			ntv.esterror = usec_long_from_dbl(
+				clock_jitter);
+			ntv.maxerror = usec_long_from_dbl(
+				sys_rootdelay / 2 + sys_rootdisp);
 			ntv.status = STA_PLL;
 
 			/*
@@ -823,22 +815,15 @@ local_clock(
 			ntp_adjtime_error_handler(__func__, &ntv, ntp_adj_ret, errno, hardpps_enable, 0, __LINE__ - 1);
 		}
 		pll_status = ntv.status;
-#ifdef STA_NANO
-		clock_offset = ntv.offset / 1e9;
-#else /* STA_NANO */
-		clock_offset = ntv.offset / 1e6;
-#endif /* STA_NANO */
+		clock_offset = dbl_from_var_long(ntv.offset, ntv.status);
 		clock_frequency = FREQTOD(ntv.freq);
 
 		/*
 		 * If the kernel PPS is lit, monitor its performance.
 		 */
 		if (ntv.status & STA_PPSTIME) {
-#ifdef STA_NANO
-			clock_jitter = ntv.jitter / 1e9;
-#else /* STA_NANO */
-			clock_jitter = ntv.jitter / 1e6;
-#endif /* STA_NANO */
+			clock_jitter = dbl_from_var_long(
+				ntv.jitter, ntv.status);
 		}
 
 #if defined(STA_NANO) && NTP_API == 4
