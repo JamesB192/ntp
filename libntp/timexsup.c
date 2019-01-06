@@ -75,7 +75,7 @@ var_long_from_dbl(
 
 long
 usec_long_from_dbl(
-	double		dval
+	double	dval
 	)
 {
 	return clamp_rounded(dval * 1e+6);
