@@ -1,4 +1,7 @@
 ---
+* [Sec 3565] null pointer crash by remote attack <perlinger@ntp.org>
+
+---
 (4.2.8p13)
 
 * [Bug 3560] Fix build when HAVE_DROPROOT is not defined <perlinger@ntp.org>
