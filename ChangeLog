@@ -38,7 +38,6 @@
   - added missing check, reported by Reinhard Max <perlinger@ntp.org>
 * [Bug 1674] runtime crashes and sync problems affecting both x86 and x86_64
   - this is a variant of [bug 3558] and should be fixed with it
->>>>>>>
 
 ---
 (4.2.8p12) 2018/08/14 Released by Harlan Stenn <stenn@ntp.org>
