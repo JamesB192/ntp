@@ -1,6 +1,8 @@
 ---
 (4.2.8p13)
 
+* [Bug 3569] cleanup MOD_NANO/STA_NANO handling for 'ntpadjtimex()' <perlinger@ntp.org>
+  - sidekick: service port resolution in 'ntpdate'
 * [Bug 3560] Fix build when HAVE_DROPROOT is not defined <perlinger@ntp.org>
   - applied patch by Ian Lepore
 * [Bug 3558] Crash and integer size bug <perlinger@ntp.org>
