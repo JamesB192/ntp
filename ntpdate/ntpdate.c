@@ -1367,6 +1367,10 @@ addserver(
 #endif
 
 	error = getaddrinfo(serv, service, &hints, &addrResult);
+	if (error == EAI_SERVICE) {
+		strlcpy(service, "123", sizeof(service));
+		error = getaddrinfo(serv, service, &hints, &addrResult);
+	}
 	if (error != 0) {
 		/* Conduct more refined error analysis */
 		if (error == EAI_FAIL || error == EAI_AGAIN){
@@ -1703,7 +1707,12 @@ init_io(void)
 	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_DGRAM;
 
-	if (getaddrinfo(NULL, service, &hints, &res) != 0) {
+	rc = getaddrinfo(NULL, service, &hints, &res);
+	if (rc == EAI_SERVICE) {
+		strlcpy(service, "123", sizeof(service));
+		rc = getaddrinfo(NULL, service, &hints, &res);
+	}
+	if (rc != 0) {
 		msyslog(LOG_ERR, "getaddrinfo() failed: %m");
 		exit(1);
 		/*NOTREACHED*/
