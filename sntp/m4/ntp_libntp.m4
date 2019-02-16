@@ -960,6 +960,11 @@ case "$ntp_cv_hdr_def_sigio" in
 	ans=no
 	;;
     esac
+    case "$ans" in
+     no)
+	ans="Possible for $host but disabled because of reported problems"
+	;;
+    esac
     ;;
 esac
 case "$ans" in
