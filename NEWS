@@ -5,7 +5,9 @@ Focus: Security, Bug fixes, enhancements.
 
 Severity: MEDIUM
 
-This release fixes a ...
+This release fixes a bug that allows an attacker with access to an
+explicitly trusted source to send a crafted malicious mode 6 (ntpq)
+packet that can trigger a NULL pointer dereference, crashing ntpd.
 It also provides 17 other bugfixes and 1 other improvement:
 
 * [Bug 3560] Fix build when HAVE_DROPROOT is not defined <perlinger@ntp.org>
@@ -45,7 +47,7 @@ It also provides 17 other bugfixes and 1 other improvement:
   - added missing check, reported by Reinhard Max <perlinger@ntp.org>
 * [Bug 1674] runtime crashes and sync problems affecting both x86 and x86_64
   - this is a variant of [bug 3558] and should be fixed with it
-* Implement --disable-signalled-io
+* Implement 'configure --disable-signalled-io'
 
 --
 NTP 4.2.8p12 (Harlan Stenn <stenn@ntp.org>, 2018/14/09)
