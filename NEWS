@@ -10,6 +10,9 @@ explicitly trusted source to send a crafted malicious mode 6 (ntpq)
 packet that can trigger a NULL pointer dereference, crashing ntpd.
 It also provides 17 other bugfixes and 1 other improvement:
 
+* [Sec 3565] Crafted null dereference attack in authenticated
+	     mode 6 packet <perlinger@ntp.org>
+  - reported by Magnus Stubman
 * [Bug 3560] Fix build when HAVE_DROPROOT is not defined <perlinger@ntp.org>
   - applied patch by Ian Lepore
 * [Bug 3558] Crash and integer size bug <perlinger@ntp.org>
