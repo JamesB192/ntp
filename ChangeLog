@@ -1,3 +1,5 @@
+(4.3.94) 2019/04/07 Released by Harlan Stenn <stenn@ntp.org>
+* Tweak scripts/build/addChangeLogTag <stenn@ntp.org>
 * Pick up tweaks to autogen-5.18.5 <stenn@ntp.org>
 From ntp-4.2.8p9:
 ---
