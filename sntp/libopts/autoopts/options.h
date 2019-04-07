@@ -109,15 +109,15 @@
  * @{
  */
 /// autoopts structure version
-#define OPTIONS_STRUCT_VERSION      167936
+#define OPTIONS_STRUCT_VERSION      167937
 /// autoopts structure version string
-#define OPTIONS_VERSION_STRING      "41:0:16"
+#define OPTIONS_VERSION_STRING      "41:1:16"
 /// minimum version the autoopts library supports
 #define OPTIONS_MINIMUM_VERSION     102400
 /// minimum version the autoopts library supports as a string
 #define OPTIONS_MIN_VER_STRING      "25:0:0"
 /// the display version of the autoopts library, as a string
-#define OPTIONS_DOTTED_VERSION      "41.0"
+#define OPTIONS_DOTTED_VERSION      "41.1"
 /// convert a version/release number pair to an integer value
 #define OPTIONS_VER_TO_NUM(_v, _r)  (((_v) * 4096) + (_r))
 /// @}

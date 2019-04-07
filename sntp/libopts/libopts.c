@@ -3,7 +3,7 @@
 #define  LOCAL static
 #include "ao-strs.h"
 static char const ao_ver_string[] =
-    "41:0:16\n";
+    "41:1:16\n";
 #include "autoopts/options.h"
 #include "autoopts/usage-txt.h"
 #include "genshell.h"

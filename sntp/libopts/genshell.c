@@ -6,7 +6,7 @@
  *  From the definitions    genshell.def
  *  and the template file   options
  *
- * Generated from AutoOpts 41:0:16 templates.
+ * Generated from AutoOpts 41:1:16 templates.
  *
  *  AutoOpts is a copyrighted work.  This source file is not encumbered
  *  by AutoOpts licensing, but is provided under the licensing terms chosen

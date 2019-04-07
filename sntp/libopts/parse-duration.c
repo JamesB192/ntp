@@ -60,20 +60,14 @@ typedef enum {
 static unsigned long
 str_const_to_ul (cch_t * str, cch_t ** ppz, int base)
 {
-  char * pz;
-  int rv = strtoul (str, &pz, base);
-  *ppz = pz;
-  return rv;
+  return strtoul (str, (char **)ppz, base);
 }
 
 /* Wrapper around strtol that does not require a cast.  */
 static long
 str_const_to_l (cch_t * str, cch_t ** ppz, int base)
 {
-  char * pz;
-  int rv = strtol (str, &pz, base);
-  *ppz = pz;
-  return rv;
+  return strtol (str, (char **)ppz, base);
 }
 
 /* Returns BASE + VAL * SCALE, interpreting BASE = BAD_TIME
