@@ -182,16 +182,15 @@ built-sources-only: $(BUILT_SOURCES)
 
 ## HMS: The next bit is still suboptimal.  We'll get an error if this is
 ## a bk repo and srcdir or scm-rev is unwritable.
+## There may well be other issues, especially around bootstrap.
 
 check-scm-rev: $(srcdir)/scm-rev
 	@: do-nothing
 
 $(srcdir)/scm-rev:
-	-test -r $(srcdir)/../SCCS/s.ChangeSet &&		\
-	    (bk version) >/dev/null 2>&1 &&			\
-	    cd $(srcdir)/.. &&					\
-	    x=`bk -R prs -hr+ -nd:I: ChangeSet` &&		\
-	    y=`cat sntp/scm-rev 2>/dev/null` || true &&		\
+	-cd $(srcdir)/.. &&					\
+	    x=`bk -R prs -hr+ -nd:I: ChangeSet || true` &&	\
+	    y=`cat sntp/scm-rev 2>/dev/null || true` &&		\
 	    case "$$x" in ''|$$y) ;; *) echo $$x > sntp/scm-rev ;; esac
 
 $(srcdir)/m4/version.m4: $(srcdir)/../packageinfo.sh
