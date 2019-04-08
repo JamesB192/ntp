@@ -1,4 +1,8 @@
 ---
+* [Bug 3580] Possible bug ntpq-subs (NULL dereference in dogetassoc) <perlinger@ntp.org>
+  - Reported by Paulo Neves
+
+---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3565] Crafted null dereference attack in authenticated
