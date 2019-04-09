@@ -33,8 +33,6 @@
 # include "ntp_syscall.h"
 #endif
 
-#include "libssl_compat.h"
-
 /*
  * Structure to hold request procedure information
  */
@@ -1653,8 +1651,10 @@ ctl_putuint(
 }
 
 /*
- * ctl_putcal - write a decoded calendar data into the response
+ * ctl_putcal - write a decoded calendar data into the response.
+ * only used with AUTOKEY currently, so compiled conditional
  */
+#ifdef AUTOKEY
 static void
 ctl_putcal(
 	const char *tag,
@@ -1678,6 +1678,7 @@ ctl_putcal(
 
 	return;
 }
+#endif
 
 /*
  * ctl_putfs - write a decoded filestamp into the response
@@ -1838,7 +1839,7 @@ ctl_putrefid(
 	char *	oplim;
 	char *	iptr;
 	char *	iplim;
-	char *	past_eq;
+	char *	past_eq = NULL;
 
 	optr = output;
 	oplim = output + sizeof(output);

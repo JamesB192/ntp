@@ -1,4 +1,16 @@
 * Clean up sntp/Makefile.am rule for scm-rev.  <stenn@ntp.org>
+
+From ntp-4.2.8p9-win:
+---
+(4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
+
+* [Bug 3144] NTP does not build without openSSL. <perlinger@ntp.org>
+  - added missed changeset for automatic openssl lib detection
+  - fixed some minor warning issues
+* [Bug 3095]  More compatibility with openssl 1.1. <perlinger@ntp.org>
+* configure.ac cleanup.  stenn@ntp.org
+* openssl configure cleanup.  stenn@ntp.org
+
 (4.3.94) 2019/04/07 Released by Harlan Stenn <stenn@ntp.org>
 * Tweak scripts/build/addChangeLogTag <stenn@ntp.org>
 * Pick up tweaks to autogen-5.18.5 <stenn@ntp.org>
