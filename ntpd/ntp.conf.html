@@ -61,7 +61,7 @@ Next: <a href="#ntp_002econf-Description" accesskey="n" rel="next">ntp.conf Desc
 <p>This document describes the configuration file for the NTP Project&rsquo;s
 <code>ntpd</code> program.
 </p>
-<p>This document applies to version 4.3.94 of <code>ntp.conf</code>.
+<p>This document applies to version 4.3.95 of <code>ntp.conf</code>.
 </p>
 <a name="SEC_Overview"></a>
 <h2 class="shortcontents-heading">Short Table of Contents</h2>
@@ -2175,8 +2175,26 @@ At the same time, the manycast
 scheme starts all over from the beginning and
 the expanding ring shrinks to the minimum and increments
 from there while collecting all servers in scope.
-</p><a name="Manycast-Options"></a>
-<h4 class="subsubsection">1.1.5.3 Manycast Options</h4>
+</p><a name="Broadcast-Options"></a>
+<h4 class="subsubsection">1.1.5.3 Broadcast Options</h4>
+<dl compact="compact">
+<dt><code>tos</code> <code>[<code>bcpollbstep</code> <kbd>gate</kbd>]</code></dt>
+<dd><p>This command provides a way to delay,
+by the specified number of broadcast poll intervals,
+believing backward time steps from a broadcast server.
+Broadcast time networks are expected to be trusted.
+In the event a broadcast server&rsquo;s time is stepped backwards,
+there is clear benefit to having the clients notice this change
+as soon as possible.
+Attacks such as replay attacks can happen, however,
+and even though there are a number of protections built in to
+broadcast mode, attempts to perform  a replay attack are possible.
+This value defaults to 0, but can be changed
+to any number of poll intervals between 0 and 4.
+</p></dd>
+</dl>
+<a name="Manycast-Options"></a>
+<h4 class="subsubsection">1.1.5.4 Manycast Options</h4>
 <dl compact="compact">
 <dt><code>tos</code> <code>[<code>ceiling</code> <kbd>ceiling</kbd> | <code>cohort</code> <code>{</code> <code>0</code> | <code>1</code> <code>}</code> | <code>floor</code> <kbd>floor</kbd> | <code>minclock</code> <kbd>minclock</kbd> | <code>minsane</code> <kbd>minsane</kbd>]</code></dt>
 <dd><p>This command affects the clock selection and clustering
