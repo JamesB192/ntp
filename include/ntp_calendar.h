@@ -19,6 +19,8 @@ struct calendar {
 	uint8_t  second;	/* second of minute */
 	uint8_t  weekday;	/* 0..7, 0=Sunday */
 };
+typedef struct calendar TCivilDate;
+typedef struct calendar const TcCivilDate;
 
 /* ISO week calendar date */
 struct isodate {
@@ -29,6 +31,8 @@ struct isodate {
 	uint8_t	 minute;	/* minute of hour */
 	uint8_t	 second;	/* second of minute */
 };
+typedef struct isodate TIsoDate;
+typedef struct isodate const TcIsoDate;
 
 /* general split representation */
 typedef struct {
@@ -109,6 +113,7 @@ extern systime_func_ptr ntpcal_set_timefunc(systime_func_ptr);
 extern	const char * const months[12];
 extern	const char * const daynames[7];
 
+extern	char *	 ntpcal_iso8601std(char*, size_t, struct calendar const*);
 extern	void	 caljulian	(uint32_t, struct calendar *);
 extern	uint32_t caltontp	(const struct calendar *);
 
@@ -152,11 +157,25 @@ extern ntpcal_split
 ntpcal_daysplit(const vint64 *);
 
 /*
+ * Split a time stamp in seconds into elapsed weeks and elapsed seconds
+ * since start of week.
+ */
+extern ntpcal_split
+ntpcal_weeksplit(const vint64 *);
+
+/*
  * Merge a number of days and a number of seconds into seconds,
  * expressed in 64 bits to avoid overflow.
  */
 extern vint64
 ntpcal_dayjoin(int32_t /* days */, int32_t /* seconds */);
+
+/*
+ * Merge a number of weeks and a number of seconds into seconds,
+ * expressed in 64 bits to avoid overflow.
+ */
+extern vint64
+ntpcal_weekjoin(int32_t /* weeks */, int32_t /* seconds */);
 
 /* Get the number of leap years since epoch for the number of elapsed
  * full years
@@ -431,7 +450,7 @@ basedate_expand_gpsweek(unsigned short weekno);
 /*
  * Start day of the GPS epoch. This is the Rata Die of 1980-01-06
  */
-#define DAY_GPS_STARTS 722819
+#define DAY_GPS_STARTS 722820
 
 /*
  * Difference between UN*X and NTP epoch (25567).
