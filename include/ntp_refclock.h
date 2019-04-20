@@ -14,11 +14,6 @@
 #include "recvbuff.h"
 
 
-#define SAMPLE(x)	pp->coderecv = (pp->coderecv + 1) % MAXSTAGE; \
-			pp->filter[pp->coderecv] = (x); \
-			if (pp->coderecv == pp->codeproc) \
-				pp->codeproc = (pp->codeproc + 1) % MAXSTAGE;
-
 /*
  * Macros to determine the clock type and unit numbers from a
  * 127.127.t.u address
@@ -133,12 +128,11 @@ extern	HANDLE	WaitableIoEventHandle;
  * Structure interface between the reference clock support
  * ntp_refclock.c and the driver utility routines
  */
-#define MAXSTAGE	60	/* max median filter stages  */
+#define MAXSTAGE	64	/* max median filter stages  */
 #define NSTAGE		5	/* default median filter stages */
 #define BMAX		128	/* max timecode length */
 #define GMT		0	/* I hope nobody sees this */
 #define MAXDIAL		60	/* max length of modem dial strings */
-
 
 struct refclockproc {
 	void *	unitptr;	/* pointer to unit structure */
@@ -162,8 +156,8 @@ struct refclockproc {
 	int	second;		/* second of minute */
 	long	nsec;		/* nanosecond of second */
 	u_long	yearstart;	/* beginning of year */
-	int	coderecv;	/* put pointer */
-	int	codeproc;	/* get pointer */
+	u_int	coderecv;	/* put pointer */
+	u_int	codeproc;	/* get pointer */
 	l_fp	lastref;	/* reference timestamp */
 	l_fp	lastrec;	/* receive timestamp */
 	double	offset;		/* mean offset */
@@ -229,12 +223,29 @@ extern 	int	refclock_process(struct refclockproc *);
 extern 	int	refclock_process_f(struct refclockproc *, double);
 extern 	void	refclock_process_offset(struct refclockproc *, l_fp,
 					l_fp, double);
+extern	int	refclock_samples_avail(struct refclockproc const *);
+extern	int	refclock_samples_expire(struct refclockproc *, int);
 extern	void	refclock_report	(struct peer *, int);
 extern	int	refclock_gtlin	(struct recvbuf *, char *, int, l_fp *);
 extern	int	refclock_gtraw	(struct recvbuf *, char *, int, l_fp *);
 extern	int	indicate_refclock_packet(struct refclockio *,
 					 struct recvbuf *);
 extern	void	process_refclock_packet(struct recvbuf *);
+
+/* save string as la_code, size==(size_t)-1 ==> ASCIIZ string */ 
+extern	void	refclock_save_lcode(
+			struct refclockproc *, char const *, size_t);
+/* format data into la_code */
+extern	void	refclock_format_lcode(
+			struct refclockproc *, char const *, ...);
+extern	void	refclock_vformat_lcode(
+			struct refclockproc *, char const *, va_list);
+				       
+struct refclock_atom;
+extern int	refclock_ppsaugment(
+    const struct refclock_atom*, l_fp *rcvtime ,
+    double rcvfudge, double ppsfudge);
+
 #endif /* REFCLOCK */
 
 #endif /* NTP_REFCLOCK_H */
