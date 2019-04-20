@@ -13,7 +13,7 @@
   <body>
     <h3>Generic NMEA GPS Receiver</h3>
 <p>Last update:
-  <!-- #BeginDate format:En2m -->31-Mar-2014  03:55<!-- #EndDate -->
+  <!-- #BeginDate format:En2m -->16-Mar-2019  20:19<!-- #EndDate -->
   UTC</p>
     <hr>
     <h4>Synopsis</h4>
@@ -80,6 +80,9 @@
       </tr><tr>
 	<td class="ttf">$GPZDG,GPSTIME,DD,MM,YYYY,AA.BB,V*CS&lt;cr&gt;&lt;lf&gt;</td>
 	<td>Accord</td>
+      </tr><tr>
+	<td class="ttf">$PGRMF,WEEK,WSEC,DATE,UTC,LEAP,LAT,LAT_REF,LON,LON_REF,MODE,TYPE,SPD,HDG,PDOP,TDOP*CS&lt;cr&gt;&lt;lf&gt;</td>
+	<td>Garmin</td>
       </tr>
     </tbody></table></p>
 
@@ -162,6 +165,15 @@
       </tr><tr>
 	<td class="ttf">YYYY</td>
 	<td>Year</td>
+      </tr><tr>
+	<td class="ttf">WEEK</td>
+	<td>GPS week (0-1023)</td>
+      </tr><tr>
+	<td class="ttf">WSEC</td>
+	<td>Seconds since start of week (0-604799)</td>
+      </tr><tr>
+	<td class="ttf">LEAP</td>
+	<td>GPS leap seconds, that is, seconds ahead of UTC</td>
       </tr><tr>
 	<td class="ttf">AA.BB</td>
 	<td>Denotes the signal strength (should be &lt; 05.00)</td>
@@ -269,6 +281,15 @@
         <td align="center">0x10000</td>
         <td>Append extra statistics to the clockstats line.
         Details below.</td>
+       </tr><tr>
+        <td align="center">17</td>
+        <td align="center">131072</td>
+        <td align="center">0x20000</td>
+        <td>"Silent PPS" mode. Use the PPS channel (if enabled with
+          fudge flag 1) to get precise receive time stamps.
+          Do <em>not</em> set the PPS flag in the clock status, so the
+          clock is not considered as PPS peer.
+	</td>
       </tr>
     </tbody></table> 
 
