@@ -131,24 +131,24 @@ struct instance {
 /*
  * Function prototypes
  */
-static	void	jupiter_canmsg	(struct instance *, u_int);
+static	void	jupiter_canmsg	(struct instance * const, u_int);
 static	u_short	jupiter_cksum	(u_short *, u_int);
-static	int	jupiter_config	(struct instance *);
+static	int	jupiter_config	(struct instance * const);
 static	void	jupiter_debug	(struct peer *, const char *,
 				 const char *, ...) NTP_PRINTF(3, 4);
-static	const char *	jupiter_parse_t	(struct instance *, u_short *, l_fp);
-static	const char *	jupiter_parse_gpos(struct instance *, u_short *);
-static	void	jupiter_platform	(struct instance *, u_int);
+static	const char *	jupiter_parse_t	(struct instance * const, u_short *, l_fp);
+static	const char *	jupiter_parse_gpos(struct instance * const, u_short *);
+static	void	jupiter_platform(struct instance * const, u_int);
 static	void	jupiter_poll	(int, struct peer *);
 static	void	jupiter_control	(int, const struct refclockstat *,
 				 struct refclockstat *, struct peer *);
-static	int	jupiter_ppsapi	(struct instance *);
-static	int	jupiter_pps	(struct instance *);
-static	int	jupiter_recv	(struct instance *);
-static	void	jupiter_receive (struct recvbuf *rbufp);
-static	void	jupiter_reqmsg	(struct instance *, u_int, u_int);
-static	void	jupiter_reqonemsg(struct instance *, u_int);
-static	char *	jupiter_send	(struct instance *, struct jheader *);
+static	int	jupiter_ppsapi	(struct instance * const);
+static	int	jupiter_pps	(struct instance * const);
+static	int	jupiter_recv	(struct instance * const);
+static	void	jupiter_receive (struct recvbuf * const rbufp);
+static	void	jupiter_reqmsg	(struct instance * const, u_int, u_int);
+static	void	jupiter_reqonemsg(struct instance * const, u_int);
+static	char *	jupiter_send	(struct instance * const, struct jheader *);
 static	void	jupiter_shutdown(int, struct peer *);
 static	int	jupiter_start	(int, struct peer *);
 static	void	jupiter_ticker	(int, struct peer *);
