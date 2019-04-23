@@ -1,4 +1,7 @@
 ---
+* [Bug 3582] gpsdjson refclock fudgetime1 adjustment is doubled <perlinger@ntp.org>
+
+---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3565] Crafted null dereference attack in authenticated
