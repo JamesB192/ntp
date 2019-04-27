@@ -1,4 +1,8 @@
 ---
+* [Bug 3583] synchronization error <perlinger@ntp.org>
+  - set clock to base date if system time is before that limit
+
+---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3565] Crafted null dereference attack in authenticated
