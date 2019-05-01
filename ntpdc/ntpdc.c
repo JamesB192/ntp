@@ -1382,18 +1382,14 @@ getarg(
 	arg_v *argp
 	)
 {
-	int isneg;
-	char *cp, *np;
-	static const char *digits = "0123456789";
-
 	ZERO(*argp);
 	argp->string = str;
 	argp->type   = code & ~OPT;
 
 	switch (argp->type) {
-	    case NTP_STR:
+	case NTP_STR:
 		break;
-	    case NTP_ADD:
+	case NTP_ADD:
 		if (!strcmp("-6", str)) {
 			ai_fam_templ = AF_INET6;
 			return -1;
@@ -1405,37 +1401,21 @@ getarg(
 			return 0;
 		}
 		break;
-	    case NTP_INT:
-	    case NTP_UINT:
-		isneg = 0;
-		np = str;
-		if (*np == '-') {
-			np++;
-			isneg = 1;
-		}
-
-		argp->uval = 0;
-		do {
-			cp = strchr(digits, *np);
-			if (cp == NULL) {
-				(void) fprintf(stderr,
-					       "***Illegal integer value %s\n", str);
-				return 0;
-			}
-			argp->uval *= 10;
-			argp->uval += (u_long)(cp - digits);
-		} while (*(++np) != '\0');
-
-		if (isneg) {
-			if ((code & ~OPT) == NTP_UINT) {
-				(void) fprintf(stderr,
-					       "***Value %s should be unsigned\n", str);
-				return 0;
-			}
-			argp->ival = -argp->ival;
+	case NTP_UINT:
+		if (!atouint(str, &argp->uval)) {
+			fprintf(stderr, "***Illegal unsigned value %s\n",
+				str);
+			return 0;
 		}
 		break;
-	    case IP_VERSION:
+	case NTP_INT:
+		if (!atoint(str, &argp->ival)) {
+			fprintf(stderr, "***Illegal integer value %s\n",
+				str);
+			return 0;
+		}
+		break;
+	case IP_VERSION:
 		if (!strcmp("-6", str))
 			argp->ival = 6 ;
 		else if (!strcmp("-4", str))
@@ -1668,7 +1648,7 @@ my_delay(
 	} else {
 		if (pcmd->argval[0].ival < 0) {
 			isneg = 1;
-			val = (u_long)(-pcmd->argval[0].ival);
+			val = ~(u_long)(pcmd->argval[0].ival) + 1UL;
 		} else {
 			isneg = 0;
 			val = (u_long)pcmd->argval[0].ival;
