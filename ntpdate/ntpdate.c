@@ -339,7 +339,11 @@ ntpdatemain (
 	if (!ipv6_works)
 		ai_fam_templ = AF_INET;
 
-	errflg = 0;
+#ifdef HAVE_NETINFO
+	errflg = 0;		/* servers can come from netinfo */
+#else
+	errflg = (argc < 2);	/* need at least server on cmdline */
+#endif
 	progname = argv[0];
 	syslogit = 0;
 
