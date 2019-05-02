@@ -181,6 +181,10 @@ int mdnsreg = FALSE;
 int mdnstries = 5;
 #endif  /* HAVE_DNSREGISTRATION */
 
+#ifdef HAVE_LINUX_CAPABILITIES
+int have_caps;		/* runtime check whether capabilities work */
+#endif /* HAVE_LINUX_CAPABILITIES */
+
 #ifdef HAVE_DROPROOT
 int droproot;
 int root_dropped;
@@ -783,7 +787,6 @@ ntpdmain(
 # if defined(HAVE_WORKING_FORK)
 	long		wait_sync = 0;
 	int		pipe_fds[2];
-	int		rc;
 	int		exit_code;
 # endif	/* HAVE_WORKING_FORK*/
 # ifdef SCO5_CLOCK
@@ -1123,12 +1126,33 @@ ntpdmain(
 	report_event(EVNT_SYSRESTART, NULL, NULL);
 	initializing = FALSE;
 
-# ifdef HAVE_DROPROOT
-	if (droproot) {
+# ifdef HAVE_LINUX_CAPABILITIES
+	{
+		/*  Check that setting capabilities actually works; we might be
+		 *  run on a kernel with disabled capabilities. We must not
+		 *  drop privileges in this case.
+		 */
+		cap_t caps;
+		caps = cap_from_text("cap_sys_time,cap_setuid,cap_setgid,cap_sys_chroot,cap_net_bind_service=pe");
+		if ( ! caps) {
+			msyslog( LOG_ERR, "cap_from_text() failed: %m" );
+			exit(-1);
+		}
+		have_caps = (cap_set_proc(caps) == 0);
+		cap_free(caps);	/* caps not NULL here! */
+	}
+# endif /* HAVE_LINUX_CAPABILITIES */
 
-#ifdef NEED_EARLY_FORK
+# ifdef HAVE_DROPROOT
+#  ifdef HAVE_LINUX_CAPABILITIES
+	if (droproot && have_caps) {
+#  else
+	if (droproot) {
+#  endif /*HAVE_LINUX_CAPABILITIES*/
+
+#  ifdef NEED_EARLY_FORK
 		fork_nonchroot_worker();
-#endif
+#  endif
 
 		/* Drop super-user privileges and chroot now if the OS supports this */
 
