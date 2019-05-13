@@ -43,6 +43,7 @@ void	test_IsoCalWeeksToYearStart(void);
 void	test_IsoCalWeeksToYearEnd(void);
 void	test_DaySecToDate(void);
 void	test_GpsRollOver(void);
+void	test_GpsRemapFunny(void);
 
 void	test_GpsNtpFixpoints(void);
 void	test_NtpToNtp(void);
@@ -215,6 +216,28 @@ IsEqualDateIso(
 	}
 }
 
+static int/*BOOL*/
+strToCal(
+	struct calendar * jd,
+	const char * str
+	)
+{
+	unsigned short y,m,d, H,M,S;
+	
+	if (6 == sscanf(str, "%hu-%2hu-%2huT%2hu:%2hu:%2hu",
+			&y, &m, &d, &H, &M, &S)) {
+		memset(jd, 0, sizeof(*jd));
+		jd->year     = y;
+		jd->month    = (uint8_t)m;
+		jd->monthday = (uint8_t)d;
+		jd->hour     = (uint8_t)H;
+		jd->minute   = (uint8_t)M;
+		jd->second   = (uint8_t)S;
+		
+		return TRUE;
+	}
+	return FALSE;
+}
 
 /*
  * ---------------------------------------------------------------------
@@ -821,49 +844,65 @@ test_GpsRollOver(void)
 	 */
 	basedate_set_day(2047 * 7 + NTP_TO_GPS_DAYS);
 
-	jd.year     = 19;
-	jd.month    = 4;
-	jd.monthday = 3;
-	jd.hour     = 12;
-	jd.minute   = 0;
-	jd.second   = 0;
-
+	strToCal(&jd, "19-04-03T12:00:00");
 	gps = gpscal_from_calendar(&jd, fpz);
 	TEST_ASSERT_EQUAL_MESSAGE(week0, gps.weeks, "(week test 1))");
 	TEST_ASSERT_EQUAL_MESSAGE(wsec1, gps.wsecs, "(secs test 1)");
 
-	jd.year     = 19;
-	jd.month    = 4;
-	jd.monthday = 6;
-	jd.hour     = 23;
-	jd.minute   = 59;
-	jd.second   = 59;
-
+	strToCal(&jd, "19-04-06T23:59:59");
 	gps = gpscal_from_calendar(&jd, fpz);
 	TEST_ASSERT_EQUAL_MESSAGE(week0, gps.weeks, "(week test 2)");
 	TEST_ASSERT_EQUAL_MESSAGE(wsec2, gps.wsecs, "(secs test 2)");
 
-	jd.year     = 19;
-	jd.month    = 4;
-	jd.monthday = 7;
-	jd.hour     = 0;
-	jd.minute   = 0;
-	jd.second   = 0;
-
+	strToCal(&jd, "19-04-07T00:00:00");
 	gps = gpscal_from_calendar(&jd, fpz);
 	TEST_ASSERT_EQUAL_MESSAGE(week1, gps.weeks, "(week test 3)");
 	TEST_ASSERT_EQUAL_MESSAGE(  0 , gps.wsecs, "(secs test 3)");
 	
-	jd.year     = 19;
-	jd.month    = 4;
-	jd.monthday = 10;
-	jd.hour     = 12;
-	jd.minute   = 0;
-	jd.second   = 0;
-
+	strToCal(&jd, "19-04-10T12:00:00");
 	gps = gpscal_from_calendar(&jd, fpz);
 	TEST_ASSERT_EQUAL_MESSAGE(week1, gps.weeks, "(week test 4)");
 	TEST_ASSERT_EQUAL_MESSAGE(wsec1, gps.wsecs, "(secs test 4)");
+}
+
+void
+test_GpsRemapFunny(void)
+{
+	TCivilDate di, dc, de;
+	TGpsDatum  gd;
+
+	l_fp       fpz;
+
+	ZERO(fpz);
+	basedate_set_day(2048 * 7 + NTP_TO_GPS_DAYS);
+
+	/* expand 2digit year to 2080, then fold back into 3rd GPS era: */
+	strToCal(&di, "80-01-01T00:00:00");
+	strToCal(&de, "2021-02-15T00:00:00");
+	gd = gpscal_from_calendar(&di, fpz);
+	gpscal_to_calendar(&dc, &gd);
+	TEST_ASSERT_TRUE(IsEqualCal(&de, &dc));
+
+	/* expand 2digit year to 2080, then fold back into 3rd GPS era: */
+	strToCal(&di, "80-01-05T00:00:00");
+	strToCal(&de, "2021-02-19T00:00:00");
+	gd = gpscal_from_calendar(&di, fpz);
+	gpscal_to_calendar(&dc, &gd);
+	TEST_ASSERT_TRUE(IsEqualCal(&de, &dc));
+
+	/* remap days before epoch into 3rd era: */
+	strToCal(&di, "1980-01-05T00:00:00");
+	strToCal(&de, "2038-11-20T00:00:00");
+	gd = gpscal_from_calendar(&di, fpz);
+	gpscal_to_calendar(&dc, &gd);
+	TEST_ASSERT_TRUE(IsEqualCal(&de, &dc));
+
+	/* remap GPS epoch: */
+	strToCal(&di, "1980-01-06T00:00:00");
+	strToCal(&de, "2019-04-07T00:00:00");
+	gd = gpscal_from_calendar(&di, fpz);
+	gpscal_to_calendar(&dc, &gd);
+	TEST_ASSERT_TRUE(IsEqualCal(&de, &dc));
 }
 
 void

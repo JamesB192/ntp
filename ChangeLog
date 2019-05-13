@@ -1,4 +1,5 @@
 ---
+* [Bug 3590] Update refclock_oncore.c to the new GPS date API <perlinger@ntp.org>
 * [Bug 3577] Update refclock_zyfer.c to the new GPS date API <perlinger@ntp.org>
   - also updates for refclock_nmea.c and refclock_jupiter.c
 * [Bug 3576] New GPS date function API <perlinger@ntp.org>
