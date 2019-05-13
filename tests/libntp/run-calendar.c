@@ -51,6 +51,7 @@ extern void test_IsoCalWeeksToYearStart(void);
 extern void test_IsoCalWeeksToYearEnd(void);
 extern void test_DaySecToDate(void);
 extern void test_GpsRollOver(void);
+extern void test_GpsRemapFunny(void);
 extern void test_GpsNtpFixpoints(void);
 extern void test_NtpToNtp(void);
 extern void test_NtpToTime(void);
@@ -98,9 +99,10 @@ int main(int argc, char *argv[])
   RUN_TEST(test_IsoCalWeeksToYearEnd, 43);
   RUN_TEST(test_DaySecToDate, 44);
   RUN_TEST(test_GpsRollOver, 45);
-  RUN_TEST(test_GpsNtpFixpoints, 47);
-  RUN_TEST(test_NtpToNtp, 48);
-  RUN_TEST(test_NtpToTime, 49);
+  RUN_TEST(test_GpsRemapFunny, 46);
+  RUN_TEST(test_GpsNtpFixpoints, 48);
+  RUN_TEST(test_NtpToNtp, 49);
+  RUN_TEST(test_NtpToTime, 50);
 
   return (UnityEnd());
 }

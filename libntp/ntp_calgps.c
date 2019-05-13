@@ -164,7 +164,7 @@ _gpsntp_fix_gps_era(
 	     - GPSNTP_DSHIFT;
 	days = out.days;
 
-	sign = (uint32_t) -(days < base);
+	sign = (uint32_t)-(days < base);
 	days = sign ^ (days - base);
 	days %= clen;
 	days = base + (sign & clen) + (sign ^ days);
@@ -282,6 +282,7 @@ gpsntp_to_calendar(
 	TcNtpDatum * nd
 	)
 {
+	memset(cd, 0, sizeof(*cd));
 	ntpcal_rd_to_date(
 		cd,
 		nd->days + DAY_NTP_STARTS + ntpcal_daysec_to_date(
@@ -407,13 +408,33 @@ again:	if (cal.month && cal.monthday) {	/* use y/m/d civil date */
 		     + (int32_t)cal.yearday
 		     - 1; /* both RDN and yearday start with '1'. */
 	}
-	if (days < DAY_GPS_STARTS) {
+
+	/* Rebase to days after the GPS epoch. 'days' is positive here,
+	 * but it might be less than the GPS epoch start. Depending on
+	 * the input, we have to do different things to get the desired
+	 * result. (Since we want to remap the era anyway, we only have
+	 * to retain congruential identities....)
+	 */
+
+	if (days >= DAY_GPS_STARTS) {
+		/* simply shift to days since GPS epoch */
+		days -= DAY_GPS_STARTS;
+	} else if (jd->year < 100) {
+		/* Two-digit year on input: add another century and
+		 * retry.  This can happen only if the century expansion
+		 * yielded a date between 1980-01-01 and 1980-01-05,
+		 * both inclusive. We have at most one retry here.
+		 */
 		cal.year += 100;
 		goto again;
+	} else {
+		/* add the complement of DAY_GPS_STARTS (this is, use a
+		 * congruential identity here)
+		 */
+		days += (7 * 1024) - DAY_GPS_STARTS % (7 * 1024);
 	}
 
-	/* get GPS time since start of GPS */
-	days -= DAY_GPS_STARTS;
+	/* Splitting to weeks is simple now: */
 	week  = days / 7;
 	days -= week * 7;
 
@@ -436,7 +457,10 @@ gpscal_to_calendar(
 	TcGpsDatum * wd
 	)
 {
-	TNtpDatum nd = gpsntp_from_gpscal(wd);
+	TNtpDatum nd;
+
+	memset(cd, 0, sizeof(*cd));
+	nd = gpsntp_from_gpscal(wd);
 	gpsntp_to_calendar(cd, &nd);
 }
 
