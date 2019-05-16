@@ -779,7 +779,6 @@ ntpdmain(
 # if defined(HAVE_WORKING_FORK)
 	long		wait_sync = 0;
 	int		pipe_fds[2];
-	int		rc;
 	int		exit_code;
 # endif	/* HAVE_WORKING_FORK*/
 # ifdef SCO5_CLOCK
@@ -973,7 +972,7 @@ ntpdmain(
 
 # ifdef HAVE_WORKING_FORK
 		detach_from_terminal(pipe_fds, wait_sync, logfilename);
-# endif		/* HAVE_WORKING_FORK */
+# endif	/* HAVE_WORKING_FORK */
 	}
 
 # ifdef SCO5_CLOCK
@@ -1364,24 +1363,20 @@ int scmp_sc[] = {
 	ntservice_isup();
 #endif
 
-# ifdef HAVE_IO_COMPLETION_PORT
+# ifndef HAVE_IO_COMPLETION_PORT
+	BLOCK_IO_AND_ALARM();
+	was_alarmed = FALSE;
+# endif
 
 	for (;;) {
 #if !defined(SIM) && defined(SIGDIE1)
 		if (signalled)
 			finish_safe(signo);
 #endif
+# ifdef HAVE_IO_COMPLETION_PORT
 		GetReceivedBuffers();
+
 # else /* normal I/O */
-
-	BLOCK_IO_AND_ALARM();
-	was_alarmed = FALSE;
-
-	for (;;) {
-#if !defined(SIM) && defined(SIGDIE1)
-		if (signalled)
-			finish_safe(signo);
-#endif		
 		if (alarm_flag) {	/* alarmed? */
 			was_alarmed = TRUE;
 			alarm_flag = FALSE;
