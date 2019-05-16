@@ -2,6 +2,8 @@
 * [Bug 3517] Reducing build noise <perlinger@ntp.org>
 * [Bug 3516] Require tooling from this decade <perlinger@ntp.org>
   - patch by Philipp Prindeville
+* [Bug 3515] Refactor ntpdmain() dispatcher loop and group common code <perlinger@ntp.org>
+  - patch by Philipp Prindeville
 * [Bug 3511] Get rid of AC_LANG_SOURCE() warnings <perlinger@ntp.org>
   - patch by Philipp Prindeville
 * [Bug 3510] Flatten out the #ifdef nesting in ntpdmain() <perlinger@ntp.org>
