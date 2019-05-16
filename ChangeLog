@@ -1,4 +1,8 @@
 ---
+* [Bug 3511] Get rid of AC_LANG_SOURCE() warnings <perlinger@ntp.org>
+  - patch by Philipp Prindeville
+
+---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3565] Crafted null dereference attack in authenticated
