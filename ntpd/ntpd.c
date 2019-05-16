@@ -391,11 +391,9 @@ main(
 
 	return ntpsim(argc, argv);
 }
-#else	/* !SIM follows */
-#ifdef NO_MAIN_ALLOWED
+#elif defined(NO_MAIN_ALLOWED)
 CALL(ntpd,"ntpd",ntpdmain);
-#else	/* !NO_MAIN_ALLOWED follows */
-#ifndef SYS_WINNT
+#elif !defined(SYS_WINNT)
 int
 main(
 	int argc,
@@ -405,8 +403,6 @@ main(
 	return ntpdmain(argc, argv);
 }
 #endif /* !SYS_WINNT */
-#endif /* !NO_MAIN_ALLOWED */
-#endif /* !SIM */
 
 #ifdef _AIX
 /*
