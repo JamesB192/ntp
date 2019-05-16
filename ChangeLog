@@ -4,6 +4,8 @@
   - patch by Philipp Prindeville
 * [Bug 3511] Get rid of AC_LANG_SOURCE() warnings <perlinger@ntp.org>
   - patch by Philipp Prindeville
+* [Bug 3510] Flatten out the #ifdef nesting in ntpdmain() <perlinger@ntp.org>
+  - partial application of patch by Philipp Prindeville
 
 ---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
