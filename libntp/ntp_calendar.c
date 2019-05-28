@@ -1136,6 +1136,13 @@ ntpcal_time_to_date(
  */
 
 #if !defined(HAVE_INT64)
+/* multiplication helper. Seconds in days and weeks are multiples of 128,
+ * and without that factor fit well into 16 bit. So a multiplication
+ * of 32bit by 16bit and some shifting can be used on pure 32bit machines
+ * with compilers that do not support 64bit integers.
+ *
+ * Calculate ( hi * mul * 128 ) + lo
+ */
 static vint64
 _dwjoin(
 	uint16_t	mul,
@@ -1144,14 +1151,13 @@ _dwjoin(
 	)
 {
 	vint64 		res;
-	uint32_t	p1, p2;
-	int		sf;
+	uint32_t	p1, p2, sf;
 
-	p1 = (uint32_t)hi;
-	sf = (hi < 0);
-	p1 = (p1 + sf) ^ sf;	/* absolute value if 'hi' */
+	/* get sign flag and absolute value of 'hi' in p1 */
+	sf = (uint32_t)-(hi < 0);
+	p1 = ((uint32_t)hi + sf) ^ sf;
 
-	/* assemble major units */
+	/* assemble major units: res <- |hi| * mul */
 	res.D_s.lo = (p1 & 0xFFFF) * mul;
 	res.D_s.hi = 0;
 	p1 = (p1 >> 16) * mul;
@@ -1159,17 +1165,18 @@ _dwjoin(
 	p1 = p1 << 16;
 	M_ADD(res.D_s.hi, res.D_s.lo, p2, p1);
 
-	/* mul by 128, using shift */
+	/* mul by 128, using shift: res <-- res << 7 */
 	res.D_s.hi = (res.D_s.hi << 7) | (res.D_s.lo >> 25);
 	res.D_s.lo = (res.D_s.lo << 7);
 
-	/* fix sign */
-	if (sf)
-		M_NEG(res.D_s.hi, res.D_s.lo);
+	/* fix up sign: res <-- (res + [sf|sf]) ^ [sf|sf] */
+	M_ADD(res.D_s.hi, res.D_s.lo, sf, sf);	
+	res.D_s.lo ^= sf;
+	res.D_s.hi ^= sf;
 
-	/* properly add seconds */
+	/* properly add seconds: res <-- res + [sx(lo)|lo] */
+	p2 = (uint32_t)-(lo < 0);
 	p1 = (uint32_t)lo;
-	p2 = UINT32_C(0) - (lo < 0);
 	M_ADD(res.D_s.hi, res.D_s.lo, p2, p1);
 	return res;
 }

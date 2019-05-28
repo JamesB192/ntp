@@ -486,6 +486,48 @@ basedate_expand_gpsweek(unsigned short weekno);
  */
 #define	GREGORIAN_CYCLE_WEEKS (GREGORIAN_CYCLE_DAYS / 7)
 
-#define	is_leapyear(y)	(!((y) % 4) && !(!((y) % 100) && (y) % 400))
+/*
+ * Is a Greogorian calendar year a leap year? The obvious solution is to
+ * test the expression
+ *
+ * (y % 4 == 0) && ((y % 100 != 0) || (y % 400 == 0))
+ *
+ * This needs (in theory) 2 true divisions -- most compilers check the
+ * (mod 4) condition by doing a bit test. Some compilers have been
+ * even observed to partially fuse the (mod 100) and (mod 400) test,
+ * but there is an alternative formula that gives the compiler even
+ * better chances:
+ *
+ * (y % 4 == 0) && ((y % 16 == 0) || (y % 25 != 0))
+ *
+ * The order of checks is chosen so that the shorcut evaluation can fix
+ * the result as soon as possible. And the compiler has to do only one
+ * true division here -- the (mod 4) and (mod 16) can be done with
+ * direct bit tests. *If* the compiler chooses to do so.
+ *
+ * The deduction is as follows: rewrite the standard formula as
+ *  (y % 4 == 0) && ((y % 4*25 != 0) || (y % 16*25 == 0))
+ *
+ * then split the congruences:
+ *  (y % 4 == 0) && ((y % 4 != 0 || y % 25 != 0) || (y % 16 == 0 && y % 25 == 0))
+ *
+ * eliminate the 1st inner term, as it is provably false:
+ *  (y % 4 == 0) && (y % 25 != 0 || (y % 16 == 0 && y % 25 == 0))
+ *
+ * Use the distributive laws on the second major group:
+ *  (y % 4 == 0) && ((y % 25 != 0 || y % 16 == 0) && (y % 25 != 0 || y % 25 == 0))
+ *
+ * Eliminate the constant term, reorder, and voila: 
+ */
 
+static inline int
+is_leapyear(int32_t y) {
+	return !(y % 4) && (!(y % 16) || (y % 25));
+}
+/* The (mod 4) test eliminates 3/4 (or 12/16) of all values.
+ * The (mod 16) test eliminates another 1/16 of all values.
+ * 3/16 of all values reach the final division.
+ * Assuming that the true division is the most costly operation, this
+ * sequence should give most bang for the buck.
+ */
 #endif

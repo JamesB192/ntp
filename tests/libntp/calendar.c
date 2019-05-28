@@ -33,6 +33,7 @@ void	test_SplitYearDays2(void);
 void	test_RataDie1(void);
 void	test_LeapYears1(void);
 void	test_LeapYears2(void);
+void	test_LeapYears3(void);
 void	test_RoundTripDate(void);
 void	test_RoundTripYearStart(void);
 void	test_RoundTripMonthStart(void);
@@ -440,6 +441,21 @@ test_LeapYears2(void)
 	}
 
 	return;
+}
+
+/* check the 'is_leapyear()' implementation for 4400 years */
+void
+test_LeapYears3(void)
+{
+	int32_t year;
+	int     l1, l2;
+	
+	for (year = -399; year < 4000; ++year) {
+		l1 = (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0));
+		l2 = is_leapyear(year);
+		snprintf(mbuf, sizeof(mbuf), "y=%d", year);
+		TEST_ASSERT_EQUAL_MESSAGE(l1, l2, mbuf);
+	}
 }
 
 /* Full roundtrip from 1601-01-01 to 2400-12-31
