@@ -1,4 +1,8 @@
 ---
+* [Bug 3533] ntpdc peer_info ipv6 issues <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
+
+---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3565] Crafted null dereference attack in authenticated
