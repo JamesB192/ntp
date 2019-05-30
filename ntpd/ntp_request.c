@@ -841,7 +841,7 @@ peer_info (
 		pp = findexistingpeer(&addr, NULL, NULL, -1, 0, NULL);
 		if (NULL == pp)
 			continue;
-		if (IS_IPV6(srcadr)) {
+		if (IS_IPV6(&pp->srcadr)) {
 			if (pp->dstadr)
 				ip->dstadr6 =
 				    (MDF_BCAST == pp->cast_flags)
