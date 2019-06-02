@@ -568,7 +568,7 @@ extern char *group;		/* group to switch to */
 extern const char *chrootdir;	/* directory to chroot() to */
 #endif
 #ifdef HAVE_WORKING_FORK
-extern	int	waitsync_fd_to_close;	/* -w/--wait-sync */
+extern	int	daemon_pipe[2];	/* startup monitoring */
 #endif
 
 /* ntservice.c */
