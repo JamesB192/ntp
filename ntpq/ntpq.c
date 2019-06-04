@@ -122,10 +122,12 @@ u_char pktversion = NTP_OLDVERSION + 1;
 #define	NA	2	/* network address */
 #define	LP	3	/* leap (print in binary) */
 #define	RF	4	/* refid (sometimes string, sometimes not) */
-#define	AR	5	/* array of times */
+#define	AU	5	/* array of unsigned times */
 #define FX	6	/* test flags */
 #define TS	7	/* l_fp timestamp in hex */
 #define	OC	8	/* integer, print in octal */
+#define	AS	9	/* array of signed times */
+#define	SN	10	/* signed number: must display +/- sign */
 #define	EOV	255	/* end of table */
 
 /*
@@ -146,10 +148,12 @@ const var_format cookedvars[] = {
 	{ "srcadr",		HA },
 	{ "peeradr",		HA },	/* compat with others */
 	{ "dstadr",		NA },
-	{ "filtdelay",		AR },
-	{ "filtoffset",		AR },
-	{ "filtdisp",		AR },
-	{ "filterror",		AR },	/* compat with others */
+	{ "filtdelay",		AU },
+	{ "filtoffset",		AS },
+	{ "filtdisp",		AU },
+	{ "filterror",		AU },	/* compat with others */
+	{ "offset",		SN },
+	{ "frequency",		SN }
 };
 
 
@@ -225,7 +229,7 @@ static	void	rawprint	(int, size_t, const char *, int, int, FILE *);
 static	void	startoutput	(void);
 static	void	output		(FILE *, const char *, const char *);
 static	void	endoutput	(FILE *);
-static	void	outputarr	(FILE *, char *, int, l_fp *);
+static	void	outputarr	(FILE *, char *, int, l_fp *, int);
 static	int	assoccmp	(const void *, const void *);
 	u_short	varfmt		(const char *);
 	void	ntpq_custom_opt_handler(tOptions *, tOptDesc *);
@@ -3493,7 +3497,8 @@ outputarr(
 	FILE *fp,
 	char *name,
 	int narr,
-	l_fp *lfp
+	l_fp *lfp,
+	int issigned
 	)
 {
 	char *bp;
@@ -3512,7 +3517,7 @@ outputarr(
 	for (i = narr; i > 0; i--) {
 		if (i != (size_t)narr)
 			*bp++ = ' ';
-		cp = lfptoms(lfp, 2);
+		cp = (issigned ? lfptoms(lfp, 2) : ulfptoms(lfp, 2));
 		len = strlen(cp);
 		if (len > 7) {
 			cp[7] = '\0';
@@ -3693,11 +3698,12 @@ cookedprint(
 			}
 			break;
 
-		case AR:
+		case AU:
+		case AS:
 			if (!value || !decodearr(value, &narr, lfparr, 8))
 				output_raw = '?';
 			else
-				outputarr(fp, name, narr, lfparr);
+				outputarr(fp, name, narr, lfparr, (fmt==AS));
 			break;
 
 		case FX:
@@ -3705,6 +3711,17 @@ cookedprint(
 				output_raw = '?';
 			else
 				output(fp, name, tstflags(uval));
+			break;
+
+		case SN:
+			if (!value)
+				output_raw = '?';
+			else if (isdigit(*value)) {	/* number without sign */
+				bv[0] = '+';
+				atoascii (value, MAXVALLEN, bv+1, sizeof(bv)-1);
+				output(fp, name, bv);
+			} else
+				output_raw = '*';		/* output as-is */
 			break;
 
 		default:
