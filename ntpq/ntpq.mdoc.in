@@ -1,9 +1,9 @@
-.Dd April 8 2019
+.Dd June 6 2019
 .Dt NTPQ @NTPQ_MS@ User Commands
 .Os
 .\"  EDIT THIS FILE WITH CAUTION  (ntpq-opts.mdoc)
 .\"
-.\"  It has been AutoGen-ed  April  8, 2019 at 10:11:18 PM by AutoGen 5.18.5
+.\"  It has been AutoGen-ed  June  6, 2019 at 02:17:45 AM by AutoGen 5.18.5
 .\"  From the definitions    ntpq-opts.def
 .\"  and the template file   agmdoc-cmd.tpl
 .Sh NAME
