@@ -1,6 +1,5 @@
 (4.3.95) 2019/04/08 Released by Harlan Stenn <stenn@ntp.org>
 * Clean up sntp/Makefile.am rule for scm-rev.  <stenn@ntp.org>
-
 From ntp-4.2.8p9-win:
 ---
 (4.2.8p9-win) 2017/02/01 Released by Harlan Stenn <stenn@ntp.org>
