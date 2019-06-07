@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntp-keygen.texi)
 #
-# It has been AutoGen-ed  June  6, 2019 at 11:19:28 PM by AutoGen 5.18.5
+# It has been AutoGen-ed  June  7, 2019 at 12:45:58 AM by AutoGen 5.18.5
 # From the definitions    ntp-keygen-opts.def
 # and the template file   agtexi-cmd.tpl
 @end ignore
@@ -948,7 +948,7 @@ Following the header the keys are entered one per line in the format
 @end example
 where
 @kbd{keyno}
-is a positive integer in the range 1-65534;
+is a positive integer in the range 1-65535;
 @kbd{type}
 is the key type for the message digest algorithm, which in the absence of the
 OpenSSL library must be
@@ -1056,7 +1056,7 @@ with a status code of 0.
 
 @exampleindent 0
 @example
-ntp-keygen (ntp) - Create a NTP host key - Ver. 4.3.97
+ntp-keygen (ntp) - Create a NTP host key - Ver. 4.3.98
 Usage:  ntp-keygen [ -<flag> [<val>] | --<name>[@{=| @}<val>] ]...
   Flg Arg Option-Name    Description
    -b Num imbits         identity modulus bits

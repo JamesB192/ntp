@@ -61,7 +61,7 @@ Next: <a href="#ntp_002ekeys-Description" accesskey="n" rel="next">ntp.keys Desc
 <p>This document describes the symmetric key file for the NTP Project&rsquo;s
 <code>ntpd</code> program.
 </p>
-<p>This document applies to version 4.3.97 of <code>ntp.keys</code>.
+<p>This document applies to version 4.3.98 of <code>ntp.keys</code>.
 </p>
 <a name="SEC_Overview"></a>
 <h2 class="shortcontents-heading">Short Table of Contents</h2>
@@ -142,16 +142,24 @@ Key entries use a fixed format of the form
 is a positive integer (between 1 and 65534),
 <kbd>type</kbd>
 is the message digest algorithm,
-and
 <kbd>key</kbd>
 is the key itself, and
 <kbd>opt_IP_list</kbd>
 is an optional comma-separated list of IPs
+where the
+<kbd>keyno</kbd>
+should be trusted.
 that are allowed to serve time.
+Each IP in
+<kbd>opt_IP_list</kbd>
+may contain an optional
+<code>/subnetbits</code>
+specification which identifies the number of bits for
+the desired subnet of trust.
 If
 <kbd>opt_IP_list</kbd>
 is empty,
-any properly-authenticated server message will be
+any properly-authenticated message will be
 accepted.
 </p>
 <p>The
