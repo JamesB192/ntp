@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpq-opts.c)
  *
- *  It has been AutoGen-ed  June  6, 2019 at 02:56:20 AM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  June  6, 2019 at 05:30:55 PM by AutoGen 5.18.5
  *  From the definitions    ntpq-opts.def
  *  and the template file   options
  *
@@ -18,7 +18,7 @@
  * The ntpq program is copyrighted and licensed
  * under the following terms:
  *
- *  Copyright (C) 1992-2016 The University of Delaware and Network Time Foundation, all rights reserved.
+ *  Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.
  *  This is free software. It is licensed for use, modification and
  *  redistribution under the terms of the NTP License, copies of which
  *  can be seen at:
@@ -69,8 +69,8 @@ extern FILE * option_usage_fp;
  *  static const strings for ntpq options
  */
 static char const ntpq_opt_strs[1979] =
-/*     0 */ "ntpq 4.3.97\n"
-            "Copyright (C) 1992-2016 The University of Delaware and Network Time Foundation, all rights reserved.\n"
+/*     0 */ "ntpq 4.3.96\n"
+            "Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
             "redistribution under the terms of the NTP License, copies of which\n"
             "can be seen at:\n"
@@ -132,13 +132,13 @@ static char const ntpq_opt_strs[1979] =
 /*  1774 */ "no-load-opts\0"
 /*  1787 */ "no\0"
 /*  1790 */ "NTPQ\0"
-/*  1795 */ "ntpq - standard NTP query program - Ver. 4.3.97\n"
+/*  1795 */ "ntpq - standard NTP query program - Ver. 4.3.96\n"
             "Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]... [ host ...]\n\0"
 /*  1913 */ "$HOME\0"
 /*  1919 */ ".\0"
 /*  1921 */ ".ntprc\0"
 /*  1928 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  1962 */ "ntpq 4.3.97\0"
+/*  1962 */ "ntpq 4.3.96\0"
 /*  1974 */ "hash";
 
 /**
@@ -841,8 +841,8 @@ static void bogus_function(void) {
      translate option names.
    */
   /* referenced via ntpqOptions.pzCopyright */
-  puts(_("ntpq 4.3.97\n\
-Copyright (C) 1992-2016 The University of Delaware and Network Time Foundation, all rights reserved.\n\
+  puts(_("ntpq 4.3.96\n\
+Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.\n\
 This is free software. It is licensed for use, modification and\n\
 redistribution under the terms of the NTP License, copies of which\n\
 can be seen at:\n"));
@@ -910,11 +910,11 @@ implied warranty.\n"));
   puts(_("load options from a config file"));
 
   /* referenced via ntpqOptions.pzUsageTitle */
-  puts(_("ntpq - standard NTP query program - Ver. 4.3.97\n\
+  puts(_("ntpq - standard NTP query program - Ver. 4.3.96\n\
 Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]... [ host ...]\n"));
 
   /* referenced via ntpqOptions.pzFullVersion */
-  puts(_("ntpq 4.3.97"));
+  puts(_("ntpq 4.3.96"));
 
   /* referenced via ntpqOptions.pzFullUsage */
   puts(_("<<<NOT-FOUND>>>"));

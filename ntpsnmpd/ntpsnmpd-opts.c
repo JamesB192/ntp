@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpsnmpd-opts.c)
  *
- *  It has been AutoGen-ed  June  6, 2019 at 02:56:29 AM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  June  6, 2019 at 05:30:59 PM by AutoGen 5.18.5
  *  From the definitions    ntpsnmpd-opts.def
  *  and the template file   options
  *
@@ -18,7 +18,7 @@
  * The ntpsnmpd program is copyrighted and licensed
  * under the following terms:
  *
- *  Copyright (C) 1992-2016 The University of Delaware and Network Time Foundation, all rights reserved.
+ *  Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.
  *  This is free software. It is licensed for use, modification and
  *  redistribution under the terms of the NTP License, copies of which
  *  can be seen at:
@@ -61,8 +61,8 @@ extern FILE * option_usage_fp;
  *  static const strings for ntpsnmpd options
  */
 static char const ntpsnmpd_opt_strs[1607] =
-/*     0 */ "ntpsnmpd 4.3.97\n"
-            "Copyright (C) 1992-2016 The University of Delaware and Network Time Foundation, all rights reserved.\n"
+/*     0 */ "ntpsnmpd 4.3.96\n"
+            "Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
             "redistribution under the terms of the NTP License, copies of which\n"
             "can be seen at:\n"
@@ -101,14 +101,14 @@ static char const ntpsnmpd_opt_strs[1607] =
 /*  1413 */ "no-load-opts\0"
 /*  1426 */ "no\0"
 /*  1429 */ "NTPSNMPD\0"
-/*  1438 */ "ntpsnmpd - NTP SNMP MIB agent - Ver. 4.3.97\n"
+/*  1438 */ "ntpsnmpd - NTP SNMP MIB agent - Ver. 4.3.96\n"
             "Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]...\n\0"
 /*  1540 */ "$HOME\0"
 /*  1546 */ ".\0"
 /*  1548 */ ".ntprc\0"
 /*  1555 */ "http://bugs.ntp.org, bugs@ntp.org\0"
 /*  1589 */ "\n\0"
-/*  1591 */ "ntpsnmpd 4.3.97";
+/*  1591 */ "ntpsnmpd 4.3.96";
 
 /**
  *  nofork option description:
@@ -554,8 +554,8 @@ static void bogus_function(void) {
      translate option names.
    */
   /* referenced via ntpsnmpdOptions.pzCopyright */
-  puts(_("ntpsnmpd 4.3.97\n\
-Copyright (C) 1992-2016 The University of Delaware and Network Time Foundation, all rights reserved.\n\
+  puts(_("ntpsnmpd 4.3.96\n\
+Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.\n\
 This is free software. It is licensed for use, modification and\n\
 redistribution under the terms of the NTP License, copies of which\n\
 can be seen at:\n"));
@@ -599,14 +599,14 @@ implied warranty.\n"));
   puts(_("load options from a config file"));
 
   /* referenced via ntpsnmpdOptions.pzUsageTitle */
-  puts(_("ntpsnmpd - NTP SNMP MIB agent - Ver. 4.3.97\n\
+  puts(_("ntpsnmpd - NTP SNMP MIB agent - Ver. 4.3.96\n\
 Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]...\n"));
 
   /* referenced via ntpsnmpdOptions.pzExplain */
   puts(_("\n"));
 
   /* referenced via ntpsnmpdOptions.pzFullVersion */
-  puts(_("ntpsnmpd 4.3.97"));
+  puts(_("ntpsnmpd 4.3.96"));
 
   /* referenced via ntpsnmpdOptions.pzFullUsage */
   puts(_("<<<NOT-FOUND>>>"));

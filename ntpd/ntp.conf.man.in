@@ -10,11 +10,11 @@
 .ds B-Font B
 .ds I-Font I
 .ds R-Font R
-.TH ntp.conf 5 "06 Jun 2019" "4.3.97" "File Formats"
+.TH ntp.conf 5 "06 Jun 2019" "4.3.96" "File Formats"
 .\"
 .\" EDIT THIS FILE WITH CAUTION (in-mem file)
 .\"
-.\" It has been AutoGen-ed June 6, 2019 at 02:56:08 AM by AutoGen 5.18.5
+.\" It has been AutoGen-ed June 6, 2019 at 07:24:58 PM by AutoGen 5.18.5
 .\" From the definitions ntp.conf.def
 .\" and the template file agman-cmd.tpl
 .SH NAME
@@ -3182,7 +3182,7 @@ RFC5905
 .SH "AUTHORS"
 The University of Delaware and Network Time Foundation
 .SH "COPYRIGHT"
-Copyright (C) 1992-2016 The University of Delaware and Network Time Foundation all rights reserved.
+Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation all rights reserved.
 This program is released under the terms of the NTP license, <http://ntp.org/license>.
 .SH BUGS
 The syntax checking is not picky; some combinations of
