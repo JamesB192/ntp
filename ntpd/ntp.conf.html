@@ -61,7 +61,7 @@ Next: <a href="#ntp_002econf-Description" accesskey="n" rel="next">ntp.conf Desc
 <p>This document describes the configuration file for the NTP Project&rsquo;s
 <code>ntpd</code> program.
 </p>
-<p>This document applies to version 4.3.98 of <code>ntp.conf</code>.
+<p>This document applies to version 4.3.99 of <code>ntp.conf</code>.
 </p>
 <a name="SEC_Overview"></a>
 <h2 class="shortcontents-heading">Short Table of Contents</h2>
@@ -415,7 +415,7 @@ option.
 <dd><p>All packets sent to and received from the server or peer are to
 include authentication fields encrypted using the specified
 <kbd>key</kbd>
-identifier with values from 1 to 65534, inclusive.
+identifier with values from 1 to 65535, inclusive.
 The
 default is to include no encryption field.
 </p></dd>
@@ -696,7 +696,7 @@ and reports at the NTP project page linked from
 </p><a name="Symmetric_002dKey-Cryptography"></a>
 <h4 class="subsubsection">1.1.2.1 Symmetric-Key Cryptography</h4>
 <p>The original RFC-1305 specification allows any one of possibly
-65,534 keys, each distinguished by a 32-bit key identifier, to
+65,535 keys, each distinguished by a 32-bit key identifier, to
 authenticate an association.
 The servers and clients involved must
 agree on the key and key identifier to
@@ -986,7 +986,7 @@ The
 <kbd>key</kbd>
 argument is
 the key identifier for a trusted key, where the value can be in the
-range 1 to 65,534, inclusive.
+range 1 to 65,535, inclusive.
 </p></dd>
 <dt><code>crypto</code> <code>[<code>cert</code> <kbd>file</kbd>]</code> <code>[<code>leap</code> <kbd>file</kbd>]</code> <code>[<code>randfile</code> <kbd>file</kbd>]</code> <code>[<code>host</code> <kbd>file</kbd>]</code> <code>[<code>sign</code> <kbd>file</kbd>]</code> <code>[<code>gq</code> <kbd>file</kbd>]</code> <code>[<code>gqpar</code> <kbd>file</kbd>]</code> <code>[<code>iffpar</code> <kbd>file</kbd>]</code> <code>[<code>mvpar</code> <kbd>file</kbd>]</code> <code>[<code>pw</code> <kbd>password</kbd>]</code></dt>
 <dd><p>This command requires the OpenSSL library.
@@ -1092,7 +1092,7 @@ The
 <kbd>key</kbd>
 argument is a key identifier
 for the trusted key, where the value can be in the range 1 to
-65,534, inclusive.
+65,535, inclusive.
 </p></dd>
 <dt><code>revoke</code> <kbd>logsec</kbd></dt>
 <dd><p>Specifies the interval between re-randomization of certain
@@ -1121,7 +1121,7 @@ servers.
 The
 <kbd>key</kbd>
 arguments are 32-bit unsigned
-integers with values from 1 to 65,534.
+integers with values from 1 to 65,535.
 </p></dd>
 </dl>
 <a name="Error-Codes"></a>
