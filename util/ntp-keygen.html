@@ -95,7 +95,7 @@ All other files are in PEM-encoded
 printable ASCII format so they can be embedded as MIME attachments in
 mail to other sites.
 </p>
-<p>This document applies to version 4.3.96 of <code>ntp-keygen</code>.
+<p>This document applies to version 4.3.97 of <code>ntp-keygen</code>.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Description" accesskey="1">Description</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -1234,7 +1234,7 @@ used to select the program, defaulting to <samp>more</samp>.  Both will exit
 with a status code of 0.
 </p>
 <div class="example">
-<pre class="example">ntp-keygen (ntp) - Create a NTP host key - Ver. 4.3.97
+<pre class="example">ntp-keygen (ntp) - Create a NTP host key - Ver. 4.2.8p11
 Usage:  ntp-keygen [ -&lt;flag&gt; [&lt;val&gt;] | --&lt;name&gt;[{=| }&lt;val&gt;] ]...
   Flg Arg Option-Name    Description
    -b Num imbits         identity modulus bits
@@ -1252,15 +1252,15 @@ Usage:  ntp-keygen [ -&lt;flag&gt; [&lt;val&gt;] | --&lt;name&gt;[{=| }&lt;val&g
    -I no  iffkey         generate IFF parameters
    -i Str ident          set Autokey group name
    -l Num lifetime       set certificate lifetime
-   -M no  md5key         generate MD5 keys
-   -m Num modulus        modulus
+   -m Num modulus        prime modulus
                                 - it must be in the range:
                                   256 to 2048
+   -M no  md5key         generate symmetric keys
    -P no  pvt-cert       generate PC private certificate
    -p Str password       local private password
    -q Str export-passwd  export IFF or GQ group keys with password
-   -S Str sign-key       generate sign key (RSA or DSA)
    -s Str subject-name   set host and optionally group name
+   -S Str sign-key       generate sign key (RSA or DSA)
    -T no  trusted-cert   trusted certificate (TC scheme)
    -V Num mv-params      generate &lt;num&gt; MV parameters
    -v Num mv-keys        update &lt;num&gt; MV keys

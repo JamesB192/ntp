@@ -73,7 +73,7 @@ monitor the operational status
 and determine the performance of
 <code>ntpd</code>, the NTP daemon.
 </p>
-<p>This document applies to version 4.3.96 of <code>ntpq</code>.
+<p>This document applies to version 4.3.97 of <code>ntpq</code>.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#ntpq-Description" accesskey="1">ntpq Description</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -1189,12 +1189,12 @@ used to select the program, defaulting to <samp>more</samp>.  Both will exit
 with a status code of 0.
 </p>
 <div class="example">
-<pre class="example">ntpq - standard NTP query program - Ver. 4.3.97
+<pre class="example">ntpq - standard NTP query program - Ver. 4.2.8p11
 Usage:  ntpq [ -&lt;flag&gt; [&lt;val&gt;] | --&lt;name&gt;[{=| }&lt;val&gt;] ]... [ host ...]
   Flg Arg Option-Name    Description
-   -4 no  ipv4           Force IPv4 DNS name resolution
+   -4 no  ipv4           Force IPv4 name resolution
                                 - prohibits the option 'ipv6'
-   -6 no  ipv6           Force IPv6 DNS name resolution
+   -6 no  ipv6           Force IPv6 name resolution
                                 - prohibits the option 'ipv4'
    -c Str command        run a command and exit
                                 - may appear multiple times
@@ -1611,7 +1611,7 @@ This must correspond to a key ID configured in <code>ntp.conf</code> for this pu
 with default <code>MD5</code>.
 If the OpenSSL library is installed,
 digest can be be any message digest algorithm supported by the library.
-The current selections are: <code>MD2</code>, <code>MD4</code>, <code>MD5</code>, <code>MDC2</code>, <code>RIPEMD160</code>, <code>SHA</code> and <code>SHA1</code>.
+The current selections are: <code>AES128CMAC</code>, <code>MD2</code>, <code>MD4</code>, <code>MD5</code>, <code>MDC2</code>, <code>RIPEMD160</code>, <code>SHA</code> and <code>SHA1</code>.
 </p>
 </dd>
 <dt><code><a name="ntpversion"></a><code>ntpversion 1 | 2 | 3 | 4</code></code></dt>
