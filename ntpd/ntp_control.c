@@ -2965,14 +2965,9 @@ ctl_putclock(
 		break;
 
 	case CC_FUDGEVAL2:
-		if (mustput || (pcs->haveflags & CLK_HAVEVAL2)) {
-			if (pcs->fudgeval1 > 1)
-				ctl_putadr(clock_var[id].text,
-					   pcs->fudgeval2, NULL);
-			else
-				ctl_putrefid(clock_var[id].text,
-					     pcs->fudgeval2);
-		}
+		/* RefID of clocks are always text even if stratum is fudged */
+		if (mustput || (pcs->haveflags & CLK_HAVEVAL2))
+			ctl_putrefid(clock_var[id].text, pcs->fudgeval2);
 		break;
 
 	case CC_FLAGS:
@@ -3483,7 +3478,7 @@ write_variables(
 				return;
 			}
 		}
-		
+
 		if (ext_var) {
 			octets = strlen(v->text) + strlen(valuep) + 2;
 			vareqv = emalloc(octets);
