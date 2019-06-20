@@ -30,6 +30,8 @@ void	test_DaySplitMerge(void);
 void	test_WeekSplitMerge(void);
 void	test_SplitYearDays1(void);
 void	test_SplitYearDays2(void);
+void	test_SplitEraDays(void);
+void	test_SplitEraWeeks(void);
 void	test_RataDie1(void);
 void	test_LeapYears1(void);
 void	test_LeapYears2(void);
@@ -391,6 +393,32 @@ test_SplitYearDays2(void)
 		}
 
 	return;
+}
+
+void
+test_SplitEraDays(void)
+{
+	int32_t		ed, rd;
+	ntpcal_split	sd;
+	for (ed = -10000; ed < 1000000; ++ed) {
+		sd = ntpcal_split_eradays(ed, NULL);
+		rd = ntpcal_days_in_years(sd.hi) + sd.lo;
+		TEST_ASSERT_EQUAL(ed, rd);
+		TEST_ASSERT_TRUE(0 <= sd.lo && sd.lo <= 365);
+	}
+}
+
+void
+test_SplitEraWeeks(void)
+{
+	int32_t		ew, rw;
+	ntpcal_split	sw;
+	for (ew = -10000; ew < 1000000; ++ew) {
+		sw = isocal_split_eraweeks(ew);
+		rw = isocal_weeks_in_years(sw.hi) + sw.lo;
+		TEST_ASSERT_EQUAL(ew, rw);
+		TEST_ASSERT_TRUE(0 <= sw.lo && sw.lo <= 52);
+	}
 }
 
 void
