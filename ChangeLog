@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3094] ntpd trying to listen for broadcasts on a completely ipv6 network
+  <perlinger@ntp.org>
 * [Bug 2420] ntpd doesn't run and exits with retval 0 when invalid user
              is specified with -u <perlinger@ntp.org>
   - monitor daemon child startup & propagate exit codes
