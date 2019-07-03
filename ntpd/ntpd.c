@@ -418,11 +418,9 @@ main(
 
 	return ntpsim(argc, argv);
 }
-#else	/* !SIM follows */
-#ifdef NO_MAIN_ALLOWED
+#elif defined(NO_MAIN_ALLOWED)
 CALL(ntpd,"ntpd",ntpdmain);
-#else	/* !NO_MAIN_ALLOWED follows */
-#ifndef SYS_WINNT
+#elif !defined(SYS_WINNT)
 int
 main(
 	int argc,
@@ -432,8 +430,6 @@ main(
 	return ntpdmain(argc, argv);
 }
 #endif /* !SYS_WINNT */
-#endif /* !NO_MAIN_ALLOWED */
-#endif /* !SIM */
 
 #ifdef _AIX
 /*
@@ -1426,24 +1422,20 @@ int scmp_sc[] = {
 	}
 #endif /* HAVE_WORKING_FORK */
 
-# ifdef HAVE_IO_COMPLETION_PORT
+# ifndef HAVE_IO_COMPLETION_PORT
+	BLOCK_IO_AND_ALARM();
+	was_alarmed = FALSE;
+# endif
 
 	for (;;) {
 #if !defined(SIM) && defined(SIGDIE1)
 		if (signalled)
 			finish_safe(signo);
 #endif
+# ifdef HAVE_IO_COMPLETION_PORT
 		GetReceivedBuffers();
+
 # else /* normal I/O */
-
-	BLOCK_IO_AND_ALARM();
-	was_alarmed = FALSE;
-
-	for (;;) {
-#if !defined(SIM) && defined(SIGDIE1)
-		if (signalled)
-			finish_safe(signo);
-#endif		
 		if (alarm_flag) {	/* alarmed? */
 			was_alarmed = TRUE;
 			alarm_flag = FALSE;

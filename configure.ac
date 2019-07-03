@@ -1,7 +1,7 @@
 dnl NTP top-level configure.ac				-*- Autoconf -*-
 dnl
 m4_include([sntp/m4/version.m4])
-AC_PREREQ([2.61])
+AC_PREREQ([2.68])
 AC_INIT(
     [ntp],
     [VERSION_NUMBER],
@@ -42,13 +42,10 @@ ntp_configure_cache_version=20120806
 
 NTP_CACHEVERSION([main], [$ntp_configure_cache_version])
 
-AM_INIT_AUTOMAKE([1.10 foreign -Wall -Wno-gnu])
+AM_INIT_AUTOMAKE([1.15 foreign -Wall -Wno-gnu])
 
-dnl AM_SILENT_RULES req. automake 1.11.  [yes] defaults V=0
-m4_ifdef(
-    [AM_SILENT_RULES],
-    [AM_SILENT_RULES([yes])]
-)
+AM_SILENT_RULES([yes])
+
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 dnl the 'build' machine is where we run configure and compile
