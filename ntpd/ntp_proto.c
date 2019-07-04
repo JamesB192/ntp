@@ -2883,9 +2883,10 @@ clock_update(
 			 * first clock sync, send them home satisfied.
 			 */
 #ifdef HAVE_WORKING_FORK
-			if (waitsync_fd_to_close != -1) {
-				close(waitsync_fd_to_close);
-				waitsync_fd_to_close = -1;
+			if (daemon_pipe[1] != -1) {
+				write(daemon_pipe[1], "S\n", 2);
+				close(daemon_pipe[1]);
+				daemon_pipe[1] = -1;
 				DPRINTF(1, ("notified parent --wait-sync is done\n"));
 			}
 #endif /* HAVE_WORKING_FORK */

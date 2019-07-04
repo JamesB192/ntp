@@ -3443,11 +3443,11 @@ write_variables(
 	 * Look through the variables. Dump out at the first sign of
 	 * trouble.
 	 */
-	while ((v = ctl_getitem(sys_var, &valuep)) != 0) {
+	while ((v = ctl_getitem(sys_var, &valuep)) != NULL) {
 		ext_var = 0;
 		if (v->flags & EOV) {
-			if ((v = ctl_getitem(ext_sys_var, &valuep)) !=
-			    0) {
+			v = ctl_getitem(ext_sys_var, &valuep);
+			if (v != NULL) {
 				if (v->flags & EOV) {
 					ctl_error(CERR_UNKNOWNVAR);
 					return;
@@ -3461,16 +3461,24 @@ write_variables(
 			ctl_error(CERR_PERMISSION);
 			return;
 		}
-		if (!ext_var && (*valuep == '\0' || !atoint(valuep,
-							    &val))) {
+		/* [bug 3565] writing makes sense only if we *have* a
+		 * value in the packet!
+		 */
+		if (valuep == NULL) {
 			ctl_error(CERR_BADFMT);
 			return;
 		}
-		if (!ext_var && (val & ~LEAP_NOTINSYNC) != 0) {
-			ctl_error(CERR_BADVALUE);
-			return;
+		if (!ext_var) {
+			if ( !(*valuep && atoint(valuep, &val))) {
+				ctl_error(CERR_BADFMT);
+				return;
+			}
+			if ((val & ~LEAP_NOTINSYNC) != 0) {
+				ctl_error(CERR_BADVALUE);
+				return;
+			}
 		}
-
+		
 		if (ext_var) {
 			octets = strlen(v->text) + strlen(valuep) + 2;
 			vareqv = emalloc(octets);
