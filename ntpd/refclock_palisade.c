@@ -52,6 +52,8 @@
  *
  *
  *
+ * 21/04/18: Added support for Resolution devices.
+ *
  * 31/03/06: Added support for Thunderbolt GPS Disciplined Clock.
  *	     Contact: Fernando Pablo Hauscarriaga
  * 	     E-mail: fernandoph@iar.unlp.edu.ar
@@ -114,6 +116,7 @@ static int decode_date(struct refclockproc *pp, const char *cp);
 #define CLK_THUNDERBOLT	2	/* Trimble Thunderbolt GPS Receiver */
 #define CLK_ACUTIME     3	/* Trimble Acutime Gold */
 #define CLK_ACUTIMEB    4	/* Trimble Actutime Gold Port B */
+#define CLK_RESOLUTION  5	/* Trimble Resolution Receivers */
 
 int praecis_msg;
 static void praecis_parse(struct recvbuf *rbufp, struct peer *peer);
@@ -255,6 +258,37 @@ init_acutime (
 }
 
 /*
+ * init_resolution - Prepares Resolution receiver to be used with NTP
+ */
+static void
+init_resolution (
+	int fd
+	)
+{
+	struct packettx tx;
+	
+	tx.size = 0;
+	tx.data = (u_char *) emalloc(100);
+
+	/* set UTC time */
+	sendsupercmd (&tx, 0x8E, 0xA2);
+	sendbyte     (&tx, 0x3);
+	sendetx      (&tx, fd);
+
+	/* squelch PPS output unless locked to at least one satellite */
+	sendsupercmd (&tx, 0x8E, 0x4E);
+	sendbyte     (&tx, 0x3);
+	sendetx      (&tx, fd);
+	
+	/* activate packets 0x8F-AB and 0x8F-AC */
+	sendsupercmd (&tx, 0x8E, 0xA5);
+	sendint      (&tx, 0x5);
+	sendetx      (&tx, fd);
+
+	free(tx.data);
+}
+
+/*
  * palisade_start - open the devices and initialize data for processing
  */
 static int
@@ -321,6 +355,11 @@ palisade_start (
 		msyslog(LOG_NOTICE, "Palisade(%d) Acutime Gold mode enabled"
 			,unit);
 		break;
+	    case CLK_RESOLUTION:
+		msyslog(LOG_NOTICE, "Palisade(%d) Resolution mode enabled"
+			,unit);
+		tio.c_cflag = (CS8|CLOCAL|CREAD|PARENB|PARODD);
+		break;
 	    default:
 		msyslog(LOG_NOTICE, "Palisade(%d) mode unknown",unit);
 		break;
@@ -371,6 +410,8 @@ palisade_start (
 		init_thunderbolt(fd);
 	if (up->type == CLK_ACUTIME)
 		init_acutime(fd);
+	if (up->type == CLK_RESOLUTION)
+		init_resolution(fd);
 
 	return 1;
 }
@@ -496,7 +537,10 @@ TSIP_decode (
 	 * proper format, declare bad format and exit.
 	 */
 
-	if ((up->type != CLK_THUNDERBOLT) & (up->type != CLK_ACUTIME)){
+	if ((up->type != CLK_THUNDERBOLT) &&
+	    (up->type != CLK_ACUTIME    ) &&
+	    (up->type != CLK_RESOLUTION)   )
+	{
 		if ((up->rpt_buf[0] == (char) 0x41) ||
 		    (up->rpt_buf[0] == (char) 0x46) ||
 		    (up->rpt_buf[0] == (char) 0x54) ||

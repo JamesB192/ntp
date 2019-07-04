@@ -382,9 +382,16 @@ again:
 		if ((pcmd->nargs == 0) ||
 		    ((pcmd->argval->ival == 6) && (plist->v6_flag != 0)) ||
 		    ((pcmd->argval->ival == 4) && (plist->v6_flag == 0)))
-			(void) fprintf(fp, "%-9s %s\n",
-				modetoa(plist->hmode),
-				nntohost(&paddr));
+		{
+			const char *strhost = nntohost(&paddr);
+			const char *straddr = stoa(&paddr);
+			(void) fprintf(fp, "%-12s %s",
+				modetoa(plist->hmode), strhost);
+			if (strcmp(strhost,straddr))
+				(void) fprintf(fp, " (%s)\n", straddr);
+			else
+				(void) fprintf(fp, "\n");
+		}
 		plist++;
 		items--;
 	}
