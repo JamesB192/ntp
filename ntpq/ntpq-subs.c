@@ -1887,11 +1887,11 @@ doprintpeers(
 				       when(&ts, &rec, &reftime)),
 			prettyinterval(pollbuf, sizeof(pollbuf), 
 				       (int)poll_sec),
-			reach, lfptoms(&estdelay, 3),
+			reach, ulfptoms(&estdelay, 3),
 			lfptoms(&estoffset, 3),
 			(have_jitter)
-			    ? lfptoms(&estjitter, 3)
-			    : lfptoms(&estdisp, 3));
+			    ? ulfptoms(&estjitter, 3)
+			    : ulfptoms(&estdisp, 3));
 		return (1);
 	}
 	else
