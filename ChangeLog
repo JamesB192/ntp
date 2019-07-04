@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3583] synchronization error <perlinger@ntp.org>
+  - set clock to base date if system time is before that limit
 * [Bug 3582] gpsdjson refclock fudgetime1 adjustment is doubled <perlinger@ntp.org>
 * [Bug 3580] Possible bug ntpq-subs (NULL dereference in dogetassoc) <perlinger@ntp.org>
   - Reported by Paulo Neves
