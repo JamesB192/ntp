@@ -28,6 +28,8 @@
 #include "ntp_leapsec.h"
 #include "ntp_md5.h"	/* provides OpenSSL digest API */
 #include "lib_strbuf.h"
+#include "timexsup.h"
+
 #include <rc_cmdlength.h>
 #ifdef KERNEL_PLL
 # include "ntp_syscall.h"
@@ -1910,15 +1912,6 @@ ctl_putsys(
 	static struct timex ntx;
 	static u_long ntp_adjtime_time;
 
-	static const double to_ms_usec =
-		1.0e-3; /* usec to msec */
-	static const double to_ms_nusec =
-# ifdef STA_NANO
-		1.0e-6; /* nsec to msec */
-# else
-		to_ms_usec;
-# endif
-
 	/*
 	 * CS_K_* variables depend on up-to-date output of ntp_adjtime()
 	 */
@@ -2321,7 +2314,8 @@ ctl_putsys(
 	case CS_K_OFFSET:
 		CTL_IF_KERNLOOP(
 			ctl_putdblf,
-			(sys_var[varid].text, 0, -1, to_ms_nusec * ntx.offset)
+			(sys_var[varid].text, 0, -1,
+			 1000 * dbl_from_var_long(ntx.offset, ntx.status))
 		);
 		break;
 
@@ -2336,7 +2330,7 @@ ctl_putsys(
 		CTL_IF_KERNLOOP(
 			ctl_putdblf,
 			(sys_var[varid].text, 0, 6,
-			 to_ms_usec * ntx.maxerror)
+			 1000 * dbl_from_usec_long(ntx.maxerror))
 		);
 		break;
 
@@ -2344,7 +2338,7 @@ ctl_putsys(
 		CTL_IF_KERNLOOP(
 			ctl_putdblf,
 			(sys_var[varid].text, 0, 6,
-			 to_ms_usec * ntx.esterror)
+			 1000 * dbl_from_usec_long(ntx.esterror))
 		);
 		break;
 
@@ -2368,7 +2362,7 @@ ctl_putsys(
 		CTL_IF_KERNLOOP(
 			ctl_putdblf,
 			(sys_var[varid].text, 0, 6,
-			    to_ms_usec * ntx.precision)
+			 1000 * dbl_from_var_long(ntx.precision, ntx.status))
 		);
 		break;
 
@@ -2396,7 +2390,8 @@ ctl_putsys(
 	case CS_K_PPS_JITTER:
 		CTL_IF_KERNPPS(
 			ctl_putdbl,
-			(sys_var[varid].text, to_ms_nusec * ntx.jitter)
+			(sys_var[varid].text,
+			 1000 * dbl_from_var_long(ntx.jitter, ntx.status))
 		);
 		break;
 

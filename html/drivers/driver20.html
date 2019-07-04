@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html><head>
     <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"><title>Generic NMEA GPS Receiver</title>
-    <!-- Changed by: Harlan &, 31-Mar-2014 -->
+    <!-- Changed by: Pearly &, 04-Feb-2019 -->
     <link href="scripts/style.css" type="text/css" rel="stylesheet">
     <style type="text/css">
       table.dlstable { font-size:85%; }
@@ -13,7 +13,7 @@
   <body>
     <h3>Generic NMEA GPS Receiver</h3>
 <p>Last update:
-  <!-- #BeginDate format:En2m -->31-Mar-2014  03:55<!-- #EndDate -->
+  <!-- #BeginDate format:En2m -->04-Feb-2019  07:30<!-- #EndDate -->
   UTC</p>
     <hr>
     <h4>Synopsis</h4>
@@ -41,6 +41,9 @@
       second insertion in UTC.&nbsp; To avoid problems mixing UTC and GPS
       timescales, the driver disables processing of UTC sentences
       once <tt>$GPZDG</tt> is received.
+      <br>
+      <strong>Caveat:</strong> Please see <a href="#talkerids">Talker
+      IDs</a> when using non-GPS or multi-system receivers.
     </p>
     <p>
       The driver expects the receiver to be set up to transmit at least one
@@ -80,7 +83,11 @@
       </tr><tr>
 	<td class="ttf">$GPZDG,GPSTIME,DD,MM,YYYY,AA.BB,V*CS&lt;cr&gt;&lt;lf&gt;</td>
 	<td>Accord</td>
-      </tr>
+      </tr><tr>
+      </tr><tr>
+	<td class="ttf">$PGRMF,GWEEK,WTIME,DATE,UTC,LEAPS,LAT,LAT_REF,LON,LON_REF,TYPE,MODE,SPD,HDOP,TDOP*CS&lt;cr&gt;&lt;lf&gt;</td>
+	<td>Garmin</td>
+      </tr>	
     </tbody></table></p>
 
     <p><table class="dlstable" border="1">
@@ -91,59 +98,17 @@
       </tr>
       
       <tr>
-	<td class="ttf">UTC</td>
-	<td>Time of day on UTC timescale. Hours, minutes and seconds [fraction (opt.)]. (hhmmss[.fff])</td>
-      </tr><tr>
-	<td class="ttf">POS_STAT</td>
-	<td>Position status. (A = Data valid, V = Data invalid)</td>
-      </tr><tr>
-	<td class="ttf">LAT</td>
-	<td>Latitude (llll.ll)</td>
-      </tr><tr>
-	<td class="ttf">LAT_REF</td>
-	<td>Latitude direction. (N = North, S = South)</td>
-      </tr><tr>
-	<td class="ttf">LON</td>
-	<td>Longitude (yyyyy.yy)</td>
-      </tr><tr>
-	<td class="ttf">LON_REF</td>
-	<td>Longitude direction (E = East, W = West)</td>
-      </tr><tr>
-	<td class="ttf">SPD</td>
-	<td>Speed over ground. (knots) (x.x)</td>
-      </tr><tr>
-	<td class="ttf">HDG</td>
-	<td>Heading/track made good (degrees True) (x.x)</td>
-      </tr><tr>
-	<td class="ttf">DATE</td>
-	<td>Date (ddmmyy)</td>
-      </tr><tr>
-	<td class="ttf">MAG_VAR</td>
-	<td>Magnetic variation (degrees) (x.x)</td>
-      </tr><tr>
-	<td class="ttf">MAG_REF</td>
-	<td>Magnetic variation (E = East, W = West)</td>
-      </tr><tr>
-	<td class="ttf">FIX_MODE</td>
-	<td>Position Fix Mode (0 = Invalid, &gt;0 = Valid)</td>
-      </tr><tr>
-	<td class="ttf">SAT_USED</td>
-	<td>Number of Satellites used in solution</td>
-      </tr><tr>
-	<td class="ttf">HDOP</td>
-	<td>Horizontal Dilution of Precision</td>
-      </tr><tr>
 	<td class="ttf">ALT</td>
 	<td>Antenna Altitude</td>
       </tr><tr>
 	<td class="ttf">ALT_UNIT</td>
 	<td>Altitude Units (Metres/Feet)</td>
       </tr><tr>
-	<td class="ttf">GEO</td>
-	<td>Geoid/Elipsoid separation</td>
+	<td class="ttf">DATE</td>
+	<td>Date (ddmmyy)</td>
       </tr><tr>
-	<td class="ttf">G_UNIT</td>
-	<td>Geoid units (M/F)</td>
+	<td class="ttf">DD</td>
+	<td>Day of the month (1-31)</td>
       </tr><tr>
 	<td class="ttf">D_AGE</td>
 	<td>Age of last DGPS Fix</td>
@@ -151,14 +116,65 @@
 	<td class="ttf">D_REF</td>
 	<td>Reference ID of DGPS station</td>
       </tr><tr>
-	<td class="ttf">GPSTIME</td>
-	<td>Time of day on GPS timescale. Hours, minutes and seconds [fraction (opt.)]. (hhmmss[.f])</td>
+	<td class="ttf">FIX_MODE</td>
+	<td>Position Fix Mode (0 = Invalid, &gt;0 = Valid)</td>
       </tr><tr>
-	<td class="ttf">DD</td>
-	<td>Day of the month (1-31)</td>
+	<td class="ttf">GEO</td>
+	<td>Geoid/Elipsoid separation</td>
+      </tr><tr>
+	<td class="ttf">GPSTIME</td>
+	<td>Time of day on GPS timescale. Hours, minutes and seconds [fraction (opt.)] (hhmmss[.f])</td>
+      </tr><tr>
+	<td class="ttf">GWEEK</td>
+	<td>Week number in the GPS time scale, modulo 1024 (0..1023)</td>
+      </tr><tr>
+	<td class="ttf">G_UNIT</td>
+	<td>Geoid units (M/F)</td>
+      </tr><tr>
+	<td class="ttf">HDG</td>
+	<td>Heading/track made good (degrees True) (x.x)</td>
+      </tr><tr>
+	<td class="ttf">HDOP</td>
+	<td>Horizontal Dilution of Precision</td>
+      </tr><tr>
+	<td class="ttf">LAT</td>
+	<td>Latitude (llll.ll)</td>
+      </tr><tr>
+	<td class="ttf">LAT_REF</td>
+	<td>Latitude direction (N = North, S = South)</td>
+      </tr><tr>
+	<td class="ttf">LEAPS</td>
+	<td>Leap seconds or difference between GPS time scale and UTC</td>
+      </tr><tr>
+	<td class="ttf">LON</td>
+	<td>Longitude (yyyyy.yy)</td>
+      </tr><tr>
+	<td class="ttf">LON_REF</td>
+	<td>Longitude direction (E = East, W = West)</td>
+      </tr><tr>
+	<td class="ttf">MAG_REF</td>
+	<td>Magnetic variation (E = East, W = West)</td>
+      </tr><tr>
+	<td class="ttf">MAG_VAR</td>
+	<td>Magnetic variation (degrees) (x.x)</td>
       </tr><tr>
 	<td class="ttf">MM</td>
 	<td>Month of the year (1-12)</td>
+      </tr><tr>
+	<td class="ttf">POS_STAT</td>
+	<td>Position status. (A = Data valid, V = Data invalid)</td>
+      </tr><tr>
+	<td class="ttf">SAT_USED</td>
+	<td>Number of Satellites used in solution</td>
+      </tr><tr>
+	<td class="ttf">SPD</td>
+	<td>Speed over ground. (knots) (x.x)</td>
+      </tr><tr>
+	<td class="ttf">UTC</td>
+	<td>Time of day on UTC timescale. Hours, minutes and seconds [fraction (opt.)] (hhmmss[.fff])</td>
+      </tr><tr>
+	<td class="ttf">WTIME</td>
+	<td>GPS week time, seconds since start of GPS week (0..604799)</td>
       </tr><tr>
 	<td class="ttf">YYYY</td>
 	<td>Year</td>
@@ -181,6 +197,36 @@
     </tbody></table></p>
 
 
+    <h4><a name="talkerids"/>NMEA Talker IDs</h4>
+    
+    <p>
+      GNSS receivers use a distinct talker ID for the GNSS they
+      process. Receivers capable of tracking different systems at the same time
+      can emit <tt>$GPRMC</tt> (GPS), <tt>$GLRMC</tt> (GLONASS),
+      <tt>$GARMC</tt> (Galileo), <tt>$GNRMC</tt> (generic/combined) and others
+      all in one data stream.
+    </p><p>
+      The driver supports this to a certain degree by ignoring the
+      talker ID on the standard sentences RMC, GLL, GGA, ZDA and ZDG. (It
+      possibly should not do that on the latter, but for now, that's the way
+      it is.) So whenever <tt>$GPRMC</tt> is mentioned in this document,
+      substitute any possible talker ID your receiver might emit -- it will
+      still match.
+    </p><p>
+      This approach has a drawback. It is easy to use for single-system
+      receivers, but it cannot separate the data streams for multi-system
+      receiver modules. It is therefore undefined which GNSS actually
+      provides the data, and this can lead to strange behavior. This is
+      especially true if the different GNSS provide very different signal
+      quality to the receiver; the driver is not able to cherry-pick the best
+      source and might actually end up in using the worst available.  It is
+      therefore recommended to set up such a receiver to either use just a
+      single GNSS (which would defeat its purpose) or to emit only the
+      combined data, which usually has the <tt>GN</tt> talker ID defined by
+      the NMEA standard.
+    <p>
+
+    
     <h4>The 'mode' byte</h4>
     
     <p>
@@ -202,7 +248,7 @@
 	<td align="center">0</td>
 	<td align="center">1</td>
 	<td align="center">1</td>
-	<td>process <tt>$GPMRC</tt></td>
+	<td>process <tt>$GPRMC</tt></td>
       </tr><tr>
 	<td align="center">1</td>
 	<td align="center">2</td>

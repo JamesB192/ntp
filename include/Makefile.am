@@ -76,6 +76,7 @@ noinst_HEADERS =	\
 	timespecops.h	\
 	timetoa.h	\
 	timevalops.h	\
+	timexsup.h	\
 	trimble.h	\
 	vint64ops.h	\
 	$(NULL)
