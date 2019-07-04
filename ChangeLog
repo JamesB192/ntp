@@ -1,5 +1,8 @@
 ---
 
+* [Bug 3531] make check: test-decodenetnum fails <perlinger@ntp.org>
+  - try to harden 'decodenetnum()' against 'getaddrinfo()' errors
+  - fix wrong cond-compile tests in unit tests
 * [Bug 3517] Reducing build noise <perlinger@ntp.org>
 * [Bug 3516] Require tooling from this decade <perlinger@ntp.org>
   - patch by Philipp Prindeville
