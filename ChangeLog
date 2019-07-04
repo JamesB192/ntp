@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3585] Unity tests mix buffered and unbuffered output <perlinger@ntp.org>
+  - stdout+stderr are set to line buffered during test setup now
 * [Bug 3583] synchronization error <perlinger@ntp.org>
   - set clock to base date if system time is before that limit
 * [Bug 3582] gpsdjson refclock fudgetime1 adjustment is doubled <perlinger@ntp.org>
