@@ -1,5 +1,6 @@
 ---
 
+* [Bug 3570] NMEA driver docs: talker ID not mentioned, typo <perlinger@ntp.org>
 * [Bug 3569] cleanup MOD_NANO/STA_NANO handling for 'ntpadjtimex()' <perlinger@ntp.org>
   - sidekick: service port resolution in 'ntpdate'
 * [Bug 3550] Reproducible build: Respect SOURCE_DATE_EPOCH <perlinger@ntp.org>
