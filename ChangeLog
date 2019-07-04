@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3533] ntpdc peer_info ipv6 issues <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
 * [Bug 3531] make check: test-decodenetnum fails <perlinger@ntp.org>
   - try to harden 'decodenetnum()' against 'getaddrinfo()' errors
   - fix wrong cond-compile tests in unit tests
