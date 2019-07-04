@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3580] Possible bug ntpq-subs (NULL dereference in dogetassoc) <perlinger@ntp.org>
+  - Reported by Paulo Neves
 * [Bug 3573] nptdate: missleading error message <perlinger@ntp.org>
 * [Bug 3570] NMEA driver docs: talker ID not mentioned, typo <perlinger@ntp.org>
 * [Bug 3569] cleanup MOD_NANO/STA_NANO handling for 'ntpadjtimex()' <perlinger@ntp.org>
