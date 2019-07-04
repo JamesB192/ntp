@@ -176,8 +176,8 @@ static	l_fp delay_time;				/* delay time */
 static	char currenthost[LENHOSTNAME];			/* current host name */
 int showhostnames = 1;					/* show host names by default */
 
-static	int ai_fam_templ;				/* address family */
-static	int ai_fam_default;				/* default address family */
+static	int ai_fam_templ = AF_UNSPEC;		/* address family */
+static	int ai_fam_default = AF_UNSPEC;	/* default address family */
 static	SOCKET sockfd;					/* fd socket is opened on */
 static	int havehost = 0;				/* set to 1 when host open */
 int s_port = 0;
@@ -312,11 +312,11 @@ ntpdcmain(
 	}
 
 	if (HAVE_OPT(IPV4))
-		ai_fam_templ = AF_INET;
+		ai_fam_default = AF_INET;
 	else if (HAVE_OPT(IPV6))
-		ai_fam_templ = AF_INET6;
-	else
-		ai_fam_templ = ai_fam_default;
+		ai_fam_default = AF_INET6;
+
+	ai_fam_templ = ai_fam_default;
 
 	if (HAVE_OPT(COMMAND)) {
 		int		cmdct = STACKCT_OPT( COMMAND );
@@ -1401,7 +1401,7 @@ getarg(
 			ai_fam_templ = AF_INET;
 			return -1;
 		}
-		if (!getnetnum(str, &(argp->netnum), (char *)0, 0)) {
+		if (!getnetnum(str, &(argp->netnum), (char *)0, ai_fam_templ)) {
 			return 0;
 		}
 		break;
@@ -1467,6 +1467,7 @@ getnetnum(
 	struct addrinfo hints, *ai = NULL;
 
 	ZERO(hints);
+	hints.ai_family = af;
 	hints.ai_flags = AI_CANONNAME;
 #ifdef AI_ADDRCONFIG
 	hints.ai_flags |= AI_ADDRCONFIG;
