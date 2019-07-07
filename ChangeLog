@@ -1,3 +1,6 @@
+* [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
+  - plus some more work on warnings for unchecked results
+
 From ntp-4.2.8p14:
 ---
 
