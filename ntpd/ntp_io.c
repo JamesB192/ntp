@@ -3134,7 +3134,8 @@ sendpkt(
 	int	rc;
 	u_char	cttl;
 	l_fp	fp_zero = { { 0 }, 0 };
-
+	l_fp	org, rec, xmt;
+	
 	ismcast = IS_MCAST(dest);
 	if (!ismcast)
 		src = ep;
@@ -3219,11 +3220,14 @@ sendpkt(
 	} while (ismcast && src != NULL);
 
 	/* HMS: pkt->rootdisp is usually random here */
+	NTOHL_FP(&pkt->org, &org);
+	NTOHL_FP(&pkt->rec, &rec);
+	NTOHL_FP(&pkt->xmt, &xmt);
 	record_raw_stats(src ? &src->sin : NULL, dest,
-			&pkt->org, &pkt->rec, &pkt->xmt, &fp_zero,
-			PKT_MODE(pkt->li_vn_mode),
-			PKT_VERSION(pkt->li_vn_mode),
+			&org, &rec, &xmt, &fp_zero,
 			PKT_LEAP(pkt->li_vn_mode),
+			PKT_VERSION(pkt->li_vn_mode),
+			PKT_MODE(pkt->li_vn_mode),
 			pkt->stratum,
 			pkt->ppoll, pkt->precision,
 			pkt->rootdelay, pkt->rootdisp, pkt->refid,
