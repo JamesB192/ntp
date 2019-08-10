@@ -1,4 +1,8 @@
 ---
+* [Bug 3599] Build fails on linux-m68k due to alignment issues <perlinger@ntp.org>
+  - added padding as suggested by John Paul Adrian Glaubitz 
+
+---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3565] Crafted null dereference attack in authenticated
