@@ -2,10 +2,14 @@
 
 #include "ntp_stdlib.h" /* test fail without this include, for some reason */
 #include "ntp_calendar.h"
+#include "ntp_calgps.h"
 #include "ntp_unixtime.h"
+#include "ntp_fp.h"
 #include "unity.h"
 
 #include <string.h>
+
+static char mbuf[128];
 
 static int leapdays(int year);
 
@@ -21,12 +25,17 @@ char *	DateFromIsoToString(const struct isodate *iso);
 int	IsEqualDateCal(const struct calendar *expected, const struct calendar *actual);
 int	IsEqualDateIso(const struct isodate *expected, const struct isodate *actual);
 
+void	test_Constants(void);
 void	test_DaySplitMerge(void);
+void	test_WeekSplitMerge(void);
 void	test_SplitYearDays1(void);
 void	test_SplitYearDays2(void);
+void	test_SplitEraDays(void);
+void	test_SplitEraWeeks(void);
 void	test_RataDie1(void);
 void	test_LeapYears1(void);
 void	test_LeapYears2(void);
+void	test_LeapYears3(void);
 void	test_RoundTripDate(void);
 void	test_RoundTripYearStart(void);
 void	test_RoundTripMonthStart(void);
@@ -36,7 +45,10 @@ void	test_IsoCalYearsToWeeks(void);
 void	test_IsoCalWeeksToYearStart(void);
 void	test_IsoCalWeeksToYearEnd(void);
 void	test_DaySecToDate(void);
+void	test_GpsRollOver(void);
+void	test_GpsRemapFunny(void);
 
+void	test_GpsNtpFixpoints(void);
 void	test_NtpToNtp(void);
 void	test_NtpToTime(void);
 
@@ -207,6 +219,28 @@ IsEqualDateIso(
 	}
 }
 
+static int/*BOOL*/
+strToCal(
+	struct calendar * jd,
+	const char * str
+	)
+{
+	unsigned short y,m,d, H,M,S;
+	
+	if (6 == sscanf(str, "%hu-%2hu-%2huT%2hu:%2hu:%2hu",
+			&y, &m, &d, &H, &M, &S)) {
+		memset(jd, 0, sizeof(*jd));
+		jd->year     = y;
+		jd->month    = (uint8_t)m;
+		jd->monthday = (uint8_t)d;
+		jd->hour     = (uint8_t)H;
+		jd->minute   = (uint8_t)M;
+		jd->second   = (uint8_t)S;
+		
+		return TRUE;
+	}
+	return FALSE;
+}
 
 /*
  * ---------------------------------------------------------------------
@@ -230,6 +264,25 @@ static const u_short real_month_days[2][14] = {
 	{ 31, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31 }
 };
 
+void
+test_Constants(void)
+{
+	int32_t		rdn;
+	struct calendar	jdn;
+
+	jdn.year     = 1900;
+	jdn.month    = 1;
+	jdn.monthday = 1;
+	rdn = ntpcal_date_to_rd(&jdn);
+	TEST_ASSERT_EQUAL_MESSAGE(DAY_NTP_STARTS, rdn, "(NTP EPOCH)");
+	
+	jdn.year     = 1980;
+	jdn.month    = 1;
+	jdn.monthday = 6;
+	rdn = ntpcal_date_to_rd(&jdn);
+	TEST_ASSERT_EQUAL_MESSAGE(DAY_GPS_STARTS, rdn, "(GPS EPOCH)");	
+}
+
 /* test the day/sec join & split ops, making sure that 32bit
  * intermediate results would definitely overflow and the hi DWORD of
  * the 'vint64' is definitely needed.
@@ -241,10 +294,10 @@ test_DaySplitMerge(void)
 
 	for (day = -1000000; day <= 1000000; day += 100) {
 		for (sec = -100000; sec <= 186400; sec += 10000) {
-			vint64		 merge;
-			ntpcal_split split;
-			int32		 eday;
-			int32		 esec;
+			vint64		merge;
+			ntpcal_split	split;
+			int32		eday;
+			int32		esec;
 
 			merge = ntpcal_dayjoin(day, sec);
 			split = ntpcal_daysplit(&merge);
@@ -261,6 +314,40 @@ test_DaySplitMerge(void)
 			}
 
 			TEST_ASSERT_EQUAL(eday, split.hi);
+			TEST_ASSERT_EQUAL(esec, split.lo);
+		}
+	}
+
+	return;
+}
+
+void
+test_WeekSplitMerge(void)
+{
+	int32 wno,sec;
+
+	for (wno = -1000000; wno <= 1000000; wno += 100) {
+		for (sec = -100000; sec <= 2*SECSPERWEEK; sec += 10000) {
+			vint64		merge;
+			ntpcal_split	split;
+			int32		ewno;
+			int32		esec;
+
+			merge = ntpcal_weekjoin(wno, sec);
+			split = ntpcal_weeksplit(&merge);
+			ewno  = wno;
+			esec  = sec;
+
+			while (esec >= SECSPERWEEK) {
+				ewno += 1;
+				esec -= SECSPERWEEK;
+			}
+			while (esec < 0) {
+				ewno -= 1;
+				esec += SECSPERWEEK;
+			}
+
+			TEST_ASSERT_EQUAL(ewno, split.hi);
 			TEST_ASSERT_EQUAL(esec, split.lo);
 		}
 	}
@@ -306,6 +393,32 @@ test_SplitYearDays2(void)
 		}
 
 	return;
+}
+
+void
+test_SplitEraDays(void)
+{
+	int32_t		ed, rd;
+	ntpcal_split	sd;
+	for (ed = -10000; ed < 1000000; ++ed) {
+		sd = ntpcal_split_eradays(ed, NULL);
+		rd = ntpcal_days_in_years(sd.hi) + sd.lo;
+		TEST_ASSERT_EQUAL(ed, rd);
+		TEST_ASSERT_TRUE(0 <= sd.lo && sd.lo <= 365);
+	}
+}
+
+void
+test_SplitEraWeeks(void)
+{
+	int32_t		ew, rw;
+	ntpcal_split	sw;
+	for (ew = -10000; ew < 1000000; ++ew) {
+		sw = isocal_split_eraweeks(ew);
+		rw = isocal_weeks_in_years(sw.hi) + sw.lo;
+		TEST_ASSERT_EQUAL(ew, rw);
+		TEST_ASSERT_TRUE(0 <= sw.lo && sw.lo <= 52);
+	}
 }
 
 void
@@ -356,6 +469,21 @@ test_LeapYears2(void)
 	}
 
 	return;
+}
+
+/* check the 'is_leapyear()' implementation for 4400 years */
+void
+test_LeapYears3(void)
+{
+	int32_t year;
+	int     l1, l2;
+	
+	for (year = -399; year < 4000; ++year) {
+		l1 = (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0));
+		l2 = is_leapyear(year);
+		snprintf(mbuf, sizeof(mbuf), "y=%d", year);
+		TEST_ASSERT_EQUAL_MESSAGE(l1, l2, mbuf);
+	}
 }
 
 /* Full roundtrip from 1601-01-01 to 2400-12-31
@@ -734,4 +862,124 @@ test_NtpToTime(void)
 		pivot += 0x20000000;
 	}
 #   endif
+}
+
+/* --------------------------------------------------------------------
+ * GPS rollover
+ * --------------------------------------------------------------------
+ */
+void
+test_GpsRollOver(void)
+{
+	/* we test on wednesday, noon, and on the border */
+	static const int32_t wsec1 = 3*SECSPERDAY + SECSPERDAY/2;
+	static const int32_t wsec2 = 7 * SECSPERDAY - 1;
+	static const int32_t week0 = GPSNTP_WSHIFT + 2047;
+	static const int32_t week1 = GPSNTP_WSHIFT + 2048;
+	TCivilDate jd;
+	TGpsDatum  gps;
+	l_fp       fpz;
+
+	ZERO(fpz);
+	
+	/* test on 2nd rollover, April 2019
+	 * we set the base date properly one week *before the rollover, to
+	 * check if the expansion merrily hops over the warp.
+	 */
+	basedate_set_day(2047 * 7 + NTP_TO_GPS_DAYS);
+
+	strToCal(&jd, "19-04-03T12:00:00");
+	gps = gpscal_from_calendar(&jd, fpz);
+	TEST_ASSERT_EQUAL_MESSAGE(week0, gps.weeks, "(week test 1))");
+	TEST_ASSERT_EQUAL_MESSAGE(wsec1, gps.wsecs, "(secs test 1)");
+
+	strToCal(&jd, "19-04-06T23:59:59");
+	gps = gpscal_from_calendar(&jd, fpz);
+	TEST_ASSERT_EQUAL_MESSAGE(week0, gps.weeks, "(week test 2)");
+	TEST_ASSERT_EQUAL_MESSAGE(wsec2, gps.wsecs, "(secs test 2)");
+
+	strToCal(&jd, "19-04-07T00:00:00");
+	gps = gpscal_from_calendar(&jd, fpz);
+	TEST_ASSERT_EQUAL_MESSAGE(week1, gps.weeks, "(week test 3)");
+	TEST_ASSERT_EQUAL_MESSAGE(  0 , gps.wsecs, "(secs test 3)");
+	
+	strToCal(&jd, "19-04-10T12:00:00");
+	gps = gpscal_from_calendar(&jd, fpz);
+	TEST_ASSERT_EQUAL_MESSAGE(week1, gps.weeks, "(week test 4)");
+	TEST_ASSERT_EQUAL_MESSAGE(wsec1, gps.wsecs, "(secs test 4)");
+}
+
+void
+test_GpsRemapFunny(void)
+{
+	TCivilDate di, dc, de;
+	TGpsDatum  gd;
+
+	l_fp       fpz;
+
+	ZERO(fpz);
+	basedate_set_day(2048 * 7 + NTP_TO_GPS_DAYS);
+
+	/* expand 2digit year to 2080, then fold back into 3rd GPS era: */
+	strToCal(&di, "80-01-01T00:00:00");
+	strToCal(&de, "2021-02-15T00:00:00");
+	gd = gpscal_from_calendar(&di, fpz);
+	gpscal_to_calendar(&dc, &gd);
+	TEST_ASSERT_TRUE(IsEqualCal(&de, &dc));
+
+	/* expand 2digit year to 2080, then fold back into 3rd GPS era: */
+	strToCal(&di, "80-01-05T00:00:00");
+	strToCal(&de, "2021-02-19T00:00:00");
+	gd = gpscal_from_calendar(&di, fpz);
+	gpscal_to_calendar(&dc, &gd);
+	TEST_ASSERT_TRUE(IsEqualCal(&de, &dc));
+
+	/* remap days before epoch into 3rd era: */
+	strToCal(&di, "1980-01-05T00:00:00");
+	strToCal(&de, "2038-11-20T00:00:00");
+	gd = gpscal_from_calendar(&di, fpz);
+	gpscal_to_calendar(&dc, &gd);
+	TEST_ASSERT_TRUE(IsEqualCal(&de, &dc));
+
+	/* remap GPS epoch: */
+	strToCal(&di, "1980-01-06T00:00:00");
+	strToCal(&de, "2019-04-07T00:00:00");
+	gd = gpscal_from_calendar(&di, fpz);
+	gpscal_to_calendar(&dc, &gd);
+	TEST_ASSERT_TRUE(IsEqualCal(&de, &dc));
+}
+
+void
+test_GpsNtpFixpoints(void)
+{
+	basedate_set_day(NTP_TO_GPS_DAYS);
+	TGpsDatum e1gps;
+	TNtpDatum e1ntp, r1ntp;
+	l_fp      lfpe , lfpr;
+
+	lfpe.l_ui = 0;
+	lfpe.l_uf = UINT32_C(0x80000000);
+	
+	ZERO(e1gps);
+	e1gps.weeks = 0;
+	e1gps.wsecs = SECSPERDAY;
+	e1gps.frac  = UINT32_C(0x80000000);
+
+	ZERO(e1ntp);
+	e1ntp.frac  = UINT32_C(0x80000000);
+
+	r1ntp = gpsntp_from_gpscal(&e1gps);
+	TEST_ASSERT_EQUAL_MESSAGE(e1ntp.days, r1ntp.days, "gps -> ntp / days");
+	TEST_ASSERT_EQUAL_MESSAGE(e1ntp.secs, r1ntp.secs, "gps -> ntp / secs");
+	TEST_ASSERT_EQUAL_MESSAGE(e1ntp.frac, r1ntp.frac, "gps -> ntp / frac");
+
+	lfpr = ntpfp_from_gpsdatum(&e1gps);
+	snprintf(mbuf, sizeof(mbuf), "gps -> l_fp: %s <=> %s",
+		 lfptoa(&lfpe, 9), lfptoa(&lfpr, 9));
+	TEST_ASSERT_TRUE_MESSAGE(L_ISEQU(&lfpe, &lfpr), mbuf);
+
+	lfpr = ntpfp_from_ntpdatum(&e1ntp);
+	snprintf(mbuf, sizeof(mbuf), "ntp -> l_fp: %s <=> %s",
+		 lfptoa(&lfpe, 9), lfptoa(&lfpr, 9));
+	TEST_ASSERT_TRUE_MESSAGE(L_ISEQU(&lfpe, &lfpr), mbuf);
 }

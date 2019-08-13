@@ -154,8 +154,6 @@ dump_restrict(
 void
 dump_restricts(void)
 {
-	int		defaultv4_done = 0;
-	int		defaultv6_done = 0;
 	restrict_u *	res;
 	restrict_u *	next;
 

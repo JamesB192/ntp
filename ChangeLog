@@ -1,5 +1,5 @@
 ---
-
+* [Bug 3590] Update refclock_oncore.c to the new GPS date API <perlinger@ntp.org>
 * [Bug 3585] Unity tests mix buffered and unbuffered output <perlinger@ntp.org>
   - stdout+stderr are set to line buffered during test setup now
 * [Bug 3583] synchronization error <perlinger@ntp.org>
@@ -7,6 +7,9 @@
 * [Bug 3582] gpsdjson refclock fudgetime1 adjustment is doubled <perlinger@ntp.org>
 * [Bug 3580] Possible bug ntpq-subs (NULL dereference in dogetassoc) <perlinger@ntp.org>
   - Reported by Paulo Neves
+* [Bug 3577] Update refclock_zyfer.c to the new GPS date API <perlinger@ntp.org>
+  - also updates for refclock_nmea.c and refclock_jupiter.c
+* [Bug 3576] New GPS date function API <perlinger@ntp.org>
 * [Bug 3573] nptdate: missleading error message <perlinger@ntp.org>
 * [Bug 3570] NMEA driver docs: talker ID not mentioned, typo <perlinger@ntp.org>
 * [Bug 3569] cleanup MOD_NANO/STA_NANO handling for 'ntpadjtimex()' <perlinger@ntp.org>
