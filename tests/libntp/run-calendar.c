@@ -25,18 +25,25 @@
 #include "config.h"
 #include "ntp_stdlib.h"
 #include "ntp_calendar.h"
+#include "ntp_calgps.h"
 #include "ntp_unixtime.h"
+#include "ntp_fp.h"
 #include <string.h>
 
 //=======External Functions This Runner Calls=====
 extern void setUp(void);
 extern void tearDown(void);
+extern void test_Constants(void);
 extern void test_DaySplitMerge(void);
+extern void test_WeekSplitMerge(void);
 extern void test_SplitYearDays1(void);
 extern void test_SplitYearDays2(void);
+extern void test_SplitEraDays(void);
+extern void test_SplitEraWeeks(void);
 extern void test_RataDie1(void);
 extern void test_LeapYears1(void);
 extern void test_LeapYears2(void);
+extern void test_LeapYears3(void);
 extern void test_RoundTripDate(void);
 extern void test_RoundTripYearStart(void);
 extern void test_RoundTripMonthStart(void);
@@ -46,6 +53,9 @@ extern void test_IsoCalYearsToWeeks(void);
 extern void test_IsoCalWeeksToYearStart(void);
 extern void test_IsoCalWeeksToYearEnd(void);
 extern void test_DaySecToDate(void);
+extern void test_GpsRollOver(void);
+extern void test_GpsRemapFunny(void);
+extern void test_GpsNtpFixpoints(void);
 extern void test_NtpToNtp(void);
 extern void test_NtpToTime(void);
 
@@ -76,23 +86,31 @@ int main(int argc, char *argv[])
   progname = argv[0];
   suite_setup();
   UnityBegin("calendar.c");
-  RUN_TEST(test_DaySplitMerge, 24);
-  RUN_TEST(test_SplitYearDays1, 25);
-  RUN_TEST(test_SplitYearDays2, 26);
-  RUN_TEST(test_RataDie1, 27);
-  RUN_TEST(test_LeapYears1, 28);
-  RUN_TEST(test_LeapYears2, 29);
-  RUN_TEST(test_RoundTripDate, 30);
-  RUN_TEST(test_RoundTripYearStart, 31);
-  RUN_TEST(test_RoundTripMonthStart, 32);
-  RUN_TEST(test_RoundTripWeekStart, 33);
-  RUN_TEST(test_RoundTripDayStart, 34);
-  RUN_TEST(test_IsoCalYearsToWeeks, 35);
-  RUN_TEST(test_IsoCalWeeksToYearStart, 36);
-  RUN_TEST(test_IsoCalWeeksToYearEnd, 37);
-  RUN_TEST(test_DaySecToDate, 38);
-  RUN_TEST(test_NtpToNtp, 40);
-  RUN_TEST(test_NtpToTime, 41);
+  RUN_TEST(test_Constants, 28);
+  RUN_TEST(test_DaySplitMerge, 29);
+  RUN_TEST(test_WeekSplitMerge, 30);
+  RUN_TEST(test_SplitYearDays1, 31);
+  RUN_TEST(test_SplitYearDays2, 32);
+  RUN_TEST(test_SplitEraDays, 33);
+  RUN_TEST(test_SplitEraWeeks, 34);
+  RUN_TEST(test_RataDie1, 35);
+  RUN_TEST(test_LeapYears1, 36);
+  RUN_TEST(test_LeapYears2, 37);
+  RUN_TEST(test_LeapYears3, 38);
+  RUN_TEST(test_RoundTripDate, 39);
+  RUN_TEST(test_RoundTripYearStart, 40);
+  RUN_TEST(test_RoundTripMonthStart, 41);
+  RUN_TEST(test_RoundTripWeekStart, 42);
+  RUN_TEST(test_RoundTripDayStart, 43);
+  RUN_TEST(test_IsoCalYearsToWeeks, 44);
+  RUN_TEST(test_IsoCalWeeksToYearStart, 45);
+  RUN_TEST(test_IsoCalWeeksToYearEnd, 46);
+  RUN_TEST(test_DaySecToDate, 47);
+  RUN_TEST(test_GpsRollOver, 48);
+  RUN_TEST(test_GpsRemapFunny, 49);
+  RUN_TEST(test_GpsNtpFixpoints, 51);
+  RUN_TEST(test_NtpToNtp, 52);
+  RUN_TEST(test_NtpToTime, 53);
 
   return (UnityEnd());
 }
