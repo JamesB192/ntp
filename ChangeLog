@@ -1,5 +1,8 @@
 ---
 
+* [Bug 3604] Wrong param byte order passing into record_raw_stats() in
+	ntp_io.c <perlinger@ntp.org>
+  - fixed byte and paramter order as suggested by wei6410@sina.com 
 * [Bug 3599] Build fails on linux-m68k due to alignment issues <perlinger@ntp.org>
   - added padding as suggested by John Paul Adrian Glaubitz 
 * [Bug 3590] Update refclock_oncore.c to the new GPS date API <perlinger@ntp.org>
@@ -50,10 +53,6 @@
 * [Bug 1433] runtime check whether the kernel really supports capabilities
   - (modified) patch by Kurt Roeckx <perlinger@ntp.org>
 
----
-* [Bug 3604] Wrong param byte order passing into record_raw_stats() in
-	ntp_io.c <perlinger@ntp.org>
-  - fixed byte and paramter order as suggested by wei6410@sina.com 
 ---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
 
