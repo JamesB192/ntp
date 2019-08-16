@@ -275,6 +275,7 @@ offsetof(mask) = 4
 offsetof(ippeerlimit) = 8
 offsetof(flags) = 10
 offsetof(mflags) = 12
+offsetof(unused1) = 14
 offsetof(v6_flag) = 16
 offsetof(addr6) = 20
 offsetof(mask6) = 36
