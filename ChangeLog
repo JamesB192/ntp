@@ -32,6 +32,8 @@
   - applied patch by Gerry Garvey & fixed unit tests <perlinger@ntp.org>
 * [Bug 3490] Patch to support Trimble Resolution Receivers <perlinger@ntp.org>
   - applied (modified) patch by Richard Steedman
+* [Bug 3473] RefID of refclocks should always be text format <perlinger@ntp.org>
+  - applied patch by Gerry Garvey (with minor formatting changes)
 * [Bug 3132] Building 4.2.8p8 with disabled local libopts fails <perlinger@ntp.org>
   - applied patch by Miroslav Lichvar
 * [Bug 3094] ntpd trying to listen for broadcasts on a completely ipv6 network
