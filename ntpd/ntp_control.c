@@ -1189,15 +1189,21 @@ process_control(
 	pkt = (struct ntp_control *)&rbufp->recv_pkt;
 
 	/*
-	 * If the length is less than required for the header, or
-	 * it is a response or a fragment, ignore this.
+	 * If the length is less than required for the header,
+	 * ignore it.
 	 */
-	if (rbufp->recv_length < (int)CTL_HEADER_LEN
-	    || (CTL_RESPONSE | CTL_MORE | CTL_ERROR) & pkt->r_m_e_op
+	if (rbufp->recv_length < (int)CTL_HEADER_LEN) {
+		DPRINTF(1, ("Short control packet\n"));
+		numctltooshort++;
+		return;
+	}
+
+	/*
+	 * If this packet is a response or a fragment, ignore it.
+	 */
+	if (   (CTL_RESPONSE | CTL_MORE | CTL_ERROR) & pkt->r_m_e_op
 	    || pkt->offset != 0) {
 		DPRINTF(1, ("invalid format in control packet\n"));
-		if (rbufp->recv_length < (int)CTL_HEADER_LEN)
-			numctltooshort++;
 		if (CTL_RESPONSE & pkt->r_m_e_op)
 			numctlinputresp++;
 		if (CTL_MORE & pkt->r_m_e_op)
@@ -1208,6 +1214,7 @@ process_control(
 			numctlbadoffset++;
 		return;
 	}
+
 	res_version = PKT_VERSION(pkt->li_vn_mode);
 	if (res_version > NTP_VERSION || res_version < NTP_OLDVERSION) {
 		DPRINTF(1, ("unknown version %d in control packet\n",
