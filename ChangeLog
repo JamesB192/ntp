@@ -1,6 +1,6 @@
 ---
 
-* [Bug 3610] process_control() should bail earlier on short packets. stenn@
+* [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
 * [Bug 3608] libparse fails to compile on S11.4SRU13 and later <perlinger@ntp.org>
   - removed ffs() and fls() prototypes as per Brian Utterback
