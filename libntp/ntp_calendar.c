@@ -649,7 +649,7 @@ ntpcal_daysplit(
 		Q = ~(uint32_t)(~ts->Q_s / SECSPERDAY);
 	else
 		Q =  (uint32_t)( ts->Q_s / SECSPERDAY);
-	R = ts->D_s.lo - Q * SECSPERWEEK;
+	R = ts->D_s.lo - Q * SECSPERDAY;
 
 #   else
 	
