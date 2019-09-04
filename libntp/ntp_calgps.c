@@ -263,13 +263,14 @@ gpsntp_from_daytime1(
  * that one into the NTP time scale.
  */
 TNtpDatum
-gpsntp_from_calendar(
+gpsntp_from_calendar_ex(
 	TcCivilDate *	jd,
-	l_fp		fofs
+	l_fp		fofs,
+	int/*BOOL*/	warp
 	)
 {
 	TGpsDatum	gps;
-	gps = gpscal_from_calendar(jd, fofs);
+	gps = gpscal_from_calendar_ex(jd, fofs, warp);
 	return gpsntp_from_gpscal(&gps);
 }
 
@@ -368,7 +369,8 @@ gpscal_fix_gps_era(
 
 /* -----------------------------------------------------------------
  * Given a calendar date, zap it into a GPS time format and the do a
- * proper era mapping in the GPS time scale, based on the GPS base date.
+ * proper era mapping in the GPS time scale, based on the GPS base date,
+ * if so requested.
  *
  * This function also augments the century if just a 2-digit year
  * (0..99) is provided on input.
@@ -382,11 +384,16 @@ gpscal_fix_gps_era(
  * with a configurable base date *inside* ntpd.
  */
 TGpsDatum
-gpscal_from_calendar(
+gpscal_from_calendar_ex(
 	TcCivilDate *	jd,
-	l_fp		fofs
+	l_fp		fofs,
+	int/*BOOL*/	warp
 	)
 {
+	/*  (-DAY_GPS_STARTS) (mod 7*1024) -- complement of cycle shift */
+	static const uint32_t s_compl_shift =
+	    (7 * 1024) - DAY_GPS_STARTS % (7 * 1024);
+	
 	TGpsDatum	gps;
 	TCivilDate	cal;
 	int32_t		days, week;
@@ -401,9 +408,9 @@ gpscal_from_calendar(
 		cal.year += 1900;
 
 	/* get RDN from date, possibly adjusting the century */
-again:	if (cal.month && cal.monthday) {	/* use y/m/d civil date */
+again:	if (cal.month && cal.monthday) {	/* use Y/M/D civil date */
 		days = ntpcal_date_to_rd(&cal);
-	} else {				/* using y/doy date */
+	} else {				/* using Y/DoY date */
 		days = ntpcal_year_to_ystart(cal.year)
 		     + (int32_t)cal.yearday
 		     - 1; /* both RDN and yearday start with '1'. */
@@ -428,10 +435,16 @@ again:	if (cal.month && cal.monthday) {	/* use y/m/d civil date */
 		cal.year += 100;
 		goto again;
 	} else {
-		/* add the complement of DAY_GPS_STARTS (this is, use a
-		 * congruential identity here)
+		/* A very bad date before the GPS epoch. There's not
+		 * much we can do, except to add the complement of
+		 * DAY_GPS_STARTS % (7 * 1024) here, that is, use a
+		 * congruential identity: Add the complement instead of
+		 * subtracting the value gives a value with the same
+		 * modulus. But of course, now we MUST to go through a
+		 * cycle fix... because the date was obviously wrong!
 		 */
-		days += (7 * 1024) - DAY_GPS_STARTS % (7 * 1024);
+		warp  = TRUE;
+		days += s_compl_shift;
 	}
 
 	/* Splitting to weeks is simple now: */
@@ -445,7 +458,7 @@ again:	if (cal.month && cal.monthday) {	/* use y/m/d civil date */
 	gps.wsecs = days * SECSPERDAY + ntpcal_date_to_daysec(&cal);
 	gps.frac  = 0;
 	gpscal_add_offset(&gps, fofs);
-	return _gpscal_fix_gps_era(&gps);
+	return warp ? _gpscal_fix_gps_era(&gps) : gps;
 }
 
 /* -----------------------------------------------------------------
@@ -492,7 +505,7 @@ gpscal_from_gpsweek(
 }
 
 /* -----------------------------------------------------------------
- * internal work hores for time-of-week expansion
+ * internal work horse for time-of-week expansion
  */
 static TGpsDatum
 _gpscal_from_weektime(

@@ -65,7 +65,12 @@ extern void
 gpscal_add_offset(TGpsDatum *datum, l_fp offset);
 
 extern TGpsDatum
-gpscal_from_calendar(TcCivilDate*, l_fp fofs);
+gpscal_from_calendar_ex(TcCivilDate*, l_fp fofs, int/*BOOL*/ warp);
+
+static inline TGpsDatum
+gpscal_from_calendar(TcCivilDate *pCiv, l_fp fofs) {
+    return gpscal_from_calendar_ex(pCiv, fofs, TRUE);
+}
 
 extern TGpsDatum 	/* see source for semantic of the 'fofs' value! */
 gpscal_from_gpsweek(uint16_t w, int32_t s, l_fp fofs);
@@ -98,7 +103,12 @@ extern void
 gpsntp_add_offset(TNtpDatum *datum, l_fp offset);
 
 extern TNtpDatum
-gpsntp_from_calendar(TcCivilDate*, l_fp fofs);
+gpsntp_from_calendar_ex(TcCivilDate*, l_fp fofs, int/*BOOL*/ warp);
+
+static inline TNtpDatum
+gpsntp_from_calendar(TcCivilDate * pCiv, l_fp fofs) {
+    return gpsntp_from_calendar_ex(pCiv, fofs, TRUE);
+}
 
 extern TNtpDatum
 gpsntp_from_daytime1(TcCivilDate *dt, l_fp fofs, l_fp pivot);
