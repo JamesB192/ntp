@@ -89,10 +89,10 @@
 #define NMEA_BAUDRATE_MASK	0x00000070U
 #define NMEA_BAUDRATE_SHIFT	4
 
-#define NMEA_DELAYMEAS_MASK	0x80
+#define NMEA_DELAYMEAS_MASK	0x00000080U
 #define NMEA_EXTLOG_MASK	0x00010000U
 #define NMEA_QUIETPPS_MASK	0x00020000U
-#define NMEA_DATETRUST_MASK	0x02000000U
+#define NMEA_DATETRUST_MASK	0x00040000U
 
 #define NMEA_PROTO_IDLEN	5	/* tag name must be at least 5 chars */
 #define NMEA_PROTO_MINLEN	6	/* min chars in sentence, excluding CS */
@@ -855,7 +855,8 @@ nmea_receive(
 
 	/* now convert and possibly extend/expand the time stamp. */
 	if (rc_date == 1) {		/* (truncated) date available	*/
-		dntp = gpsntp_from_calendar(&date, tofs);
+		dntp = gpsntp_from_calendar_ex(
+			&date, tofs, !(peer->ttl & NMEA_DATETRUST_MASK));
 		up->last_gpsdate = dntp;
 	} else if (rc_date == -2) {	/* full GPS week time		*/
 		dntp = gpsntp_from_gpscal(&wgps);
@@ -1448,7 +1449,7 @@ static int _parse_date3(UCC *cp, UCC **ep, TCivilDate *into)
 	    && _parse_sep(cp, &cp)
 	    && _parse_u16(cp, &cp, &m) && (m - 1 < 12)
 	    && _parse_sep(cp, &cp)
-	    && _parse_u16(cp, &cp, &y)
+	    && _parse_u16(cp, &cp, &y) && (y > 1980)
 	    && _parse_eof(cp, ep);
 	if (rc) {
 		into->monthday = (uint8_t )d;

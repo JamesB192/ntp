@@ -13,7 +13,7 @@
   <body>
     <h3>Generic NMEA GPS Receiver</h3>
 <p>Last update:
-  <!-- #BeginDate format:En2m -->04-Feb-2019  07:30<!-- #EndDate -->
+  <!-- #BeginDate format:En2m -->4-Sep-2019  21:23<!-- #EndDate -->
   UTC</p>
     <hr>
     <h4>Synopsis</h4>
@@ -333,6 +333,15 @@
           Do <em>not</em> set the PPS flag in the clock status, so the
           clock is not considered as PPS peer.
 	</td>
+       </tr><tr>
+        <td align="center">18</td>
+        <td align="center">262144</td>
+        <td align="center">0x40000</td>
+        <td>Trust the date delivered via NMEA. Do this only if
+          you <em>really</em> trust the receiver!
+          See <a href="#datetrust">below</a>. <strong>Caveat:</strong>
+          This (hitherto undocumented) bit has moved!
+	</td>
       </tr>
     </tbody></table> 
 
@@ -355,7 +364,7 @@
       </li></ul>
       The driver uses 4800 bits per second by default, but faster bitrates can
       be selected using bits 4 to 6 of the mode field.
-    <p></p>
+    </p>
 
     <p>
       <strong>Caveat:</strong> Using higher line speeds does not necessarily
@@ -370,6 +379,29 @@
       linespeed of 4800 bps or 9600 bps.
     </p>
 
+    <h4><a name="datetrust"/>About distrusting NMEA date stamps</h4>
+    <p>
+      Trusting the calendar dates delivered via NMEA is a risky thing, and by
+      default these dates are handled with a huge dose of skepticism.  Many
+      receivers deliver a correct calendar date for a period of just 1024 weeks,
+      with a starting point baked somewhere into their firmware.  Beyond that,
+      they warp back to the begin of their era and simply provide wrong date
+      information.  To battle this widely observed effect, the date delivered is
+      by default reduced to GPS time again and then (re-)mapped according to the
+      base date, either the implicit value or the value set via "tos basedate".
+      If the receiver can <em>really</em> be trusted to deliver the right date
+      (which is not impossible, just more expensive for the manufacturer), then
+      mode bit 18 can be used to bypass the era mapping.  Setting this bit is
+      not needed under most circumstances, and setting it with an unreliable
+      receiver can have severe effects. Handle with care.
+    </p><p>
+      <strong>Note:</strong> This functionality was available for some time as
+      undocumented feature, with a different bit value.  It was moved in the
+      process of becoming officially acknowledged to avoid excessive scattering
+      of the mode bit mask.
+    </p>
+    
+    
     <h4>Monitor Data</h4>
 
     <p>The last GPS sentence that is accepted or rejected is written to the
