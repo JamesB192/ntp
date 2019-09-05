@@ -170,6 +170,7 @@
 %token	<Integer>	T_Mindepth
 %token	<Integer>	T_Mindist
 %token	<Integer>	T_Minimum
+%token	<Integer>	T_Minjitter
 %token	<Integer>	T_Minpoll
 %token	<Integer>	T_Minsane
 %token	<Integer>	T_Mode
@@ -1024,6 +1025,7 @@ fudge_factor
 fudge_factor_dbl_keyword
 	:	T_Time1
 	|	T_Time2
+	|	T_Minjitter
 	;
 
 fudge_factor_bool_keyword
