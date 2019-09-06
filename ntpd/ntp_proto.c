@@ -1386,7 +1386,10 @@ receive(
 		peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr,
 			       r4a.ippeerlimit, MODE_CLIENT, hisversion,
 			       peer2->minpoll, peer2->maxpoll,
-			       FLAG_PREEMPT | (FLAG_IBURST & peer2->flags),
+			       (  FLAG_PREEMPT
+			        | (FLAG_IBURST & peer2->flags)
+			        | (FLAG_NOSELECT & peer2->flags)
+			       ),
 			       MDF_UCAST | MDF_UCLNT, 0, skeyid, sys_ident);
 		if (NULL == peer) {
 			DPRINTF(2, ("receive: AM_MANYCAST drop: duplicate\n"));
