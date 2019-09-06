@@ -79,6 +79,11 @@ nak_error_codes {
 #define	POOL_SOLICIT_WINDOW	8
 
 /*
+ * flag bits propagated from pool to individual peers
+ */
+#define POOL_FLAG_PMASK		(FLAG_IBURST | FLAG_NOSELECT)
+
+/*
  * peer_select groups statistics for a peer used by clock_select() and
  * clock_cluster().
  */
@@ -1386,11 +1391,8 @@ receive(
 		peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr,
 			       r4a.ippeerlimit, MODE_CLIENT, hisversion,
 			       peer2->minpoll, peer2->maxpoll,
-			       (  FLAG_PREEMPT
-			        | (FLAG_IBURST & peer2->flags)
-			        | (FLAG_NOSELECT & peer2->flags)
-			       ),
-			       MDF_UCAST | MDF_UCLNT, 0, skeyid, sys_ident);
+			       (FLAG_PREEMPT | (POOL_FLAG_PMASK & peer2->flags)),
+			       (MDF_UCAST | MDF_UCLNT), 0, skeyid, sys_ident);
 		if (NULL == peer) {
 			DPRINTF(2, ("receive: AM_MANYCAST drop: duplicate\n"));
 			sys_declined++;
