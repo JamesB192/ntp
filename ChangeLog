@@ -2,6 +2,8 @@
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
+* [Bug 3613] Propagate noselect to mobilized pool servers <stenn@ntp.org>
+  - Reported by Martin Burnicki
 * [Bug 3611] NMEA time interpreted incorrectly <perlinger@ntp.org>
   - officially document new "trust date" mode bit for NMEA driver
   - restore the (previously undocumented) "trust date" feature lost with [bug 3577] 
@@ -67,7 +69,6 @@
 * [Sec 3565] Crafted null dereference attack in authenticated
 	     mode 6 packet <perlinger@ntp.org>
   - reported by Magnus Stubman
-* [Bug 3613] Propagate noselect to mobilized pool servers <stenn@ntp.org>
 * [Bug 3560] Fix build when HAVE_DROPROOT is not defined <perlinger@ntp.org>
   - applied patch by Ian Lepore
 * [Bug 3558] Crash and integer size bug <perlinger@ntp.org>
