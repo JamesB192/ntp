@@ -142,6 +142,7 @@ struct refclockproc {
 	u_char	currentstatus;	/* clock status */
 	u_char	lastevent;	/* last exception event */
 	u_char	type;		/* clock type */
+	u_char	inpoll;		/* waiting for 'refclock_receive()' */
 	const char *clockdesc;	/* clock description */
 	u_long	nextaction;	/* local activity timeout */
 	void	(*action)(struct peer *); /* timeout callback */
