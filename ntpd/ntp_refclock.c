@@ -67,9 +67,10 @@ int	cal_enable;		/* enable refclock calibrate */
 /*
  * Forward declarations
  */
-static int refclock_cmpl_fp (const void *, const void *);
-static int refclock_sample (struct refclockproc *);
-static int refclock_ioctl(int, u_int);
+static int  refclock_cmpl_fp (const void *, const void *);
+static int  refclock_sample (struct refclockproc *);
+static int  refclock_ioctl(int, u_int);
+static void refclock_checkburst(struct peer *, struct refclockproc *);
 
 /* circular buffer functions
  *
@@ -100,6 +101,16 @@ static double clk_pop_sample(
 	return pp->filter[pp->codeproc];
 }
 
+static inline u_int clk_cnt_sample(
+	struct refclockproc * const	pp
+	)
+{
+	u_int retv = pp->coderecv - pp->codeproc;
+	if (retv > MAXSTAGE)
+		retv += MAXSTAGE;
+	return retv;
+}
+
 #else
 
 static inline void clk_add_sample(
@@ -121,6 +132,13 @@ static inline double clk_pop_sample(
 		return 0; /* Maybe a NaN would be better? */
 	pp->codeproc = (pp->codeproc + 1) & (MAXSTAGE - 1);
 	return pp->filter[pp->codeproc];
+}
+
+static inline u_int clk_cnt_sample(
+	struct refclockproc * const	pp
+	)
+{
+	return (pp->coderecv - pp->codeproc) & (MAXSTAGE - 1);
 }
 
 #endif
@@ -382,6 +400,7 @@ refclock_transmit(
 	} else {
 		peer->burst--;
 	}
+	peer->procptr->inpoll = TRUE;
 	if (refclock_conf[clktype]->clock_poll != noentry)
 		(refclock_conf[clktype]->clock_poll)(unit, peer);
 	poll_update(peer, peer->hpoll);
@@ -490,6 +509,7 @@ refclock_process_offset(
 	L_SUB(&lftemp, &lastrec);
 	LFPTOD(&lftemp, doffset);
 	clk_add_sample(pp, doffset + fudge);
+	refclock_checkburst(pp->io.srcclock, pp);
 }
 
 
@@ -501,7 +521,7 @@ refclock_process_offset(
  * seconds and milliseconds/microseconds to internal timestamp format,
  * then constructs a new entry in the median filter circular buffer.
  * Return success (1) if the data are correct and consistent with the
- * converntional calendar.
+ * conventional calendar.
  *
  * Important for PPS users: Normally, the pp->lastrec is set to the
  * system time when the on-time character is received and the pp->year,
@@ -522,7 +542,7 @@ refclock_process_f(
 	 * seconds and milliseconds/microseconds of the timecode. Use
 	 * clocktime() for the aggregate seconds and the msec/usec for
 	 * the fraction, when present. Note that this code relies on the
-	 * filesystem time for the years and does not use the years of
+	 * file system time for the years and does not use the years of
 	 * the timecode.
 	 */
 	if (!clocktime(pp->day, pp->hour, pp->minute, pp->second, GMT,
@@ -642,6 +662,7 @@ refclock_receive(
 	 * filter.
 	 */
 	pp = peer->procptr;
+	pp->inpoll = FALSE;
 	peer->leap = pp->leap;
 	if (peer->leap == LEAP_NOTINSYNC)
 		return;
@@ -652,7 +673,7 @@ refclock_receive(
 		report_event(PEVNT_REACH, peer, NULL);
 		peer->timereachable = current_time;
 	}
-	peer->reach |= 1;
+	peer->reach = (peer->reach << (peer->reach & 1)) | 1;
 	peer->reftime = pp->lastref;
 	peer->aorg = pp->lastrec;
 	peer->rootdisp = pp->disp;
@@ -1478,6 +1499,7 @@ refclock_pps(
 	pp->lastrec.l_ui = (u_int32)ap->ts.tv_sec + JAN_1970;
 	pp->lastrec.l_uf = (u_int32)(dtemp * FRAC);
 	clk_add_sample(pp, dcorr);
+	refclock_checkburst(peer, pp);
 	
 #ifdef DEBUG
 	if (debug > 1)
@@ -1621,6 +1643,55 @@ refclock_ppsaugment(
 #   endif
 }
 
+/*
+ * -------------------------------------------------------------------
+ * check if it makes sense to schedule an 'early' poll to get the clock
+ * up fast after start or longer signal dropout.
+ */
+static void
+refclock_checkburst(
+	struct peer *         peer,
+	struct refclockproc * pp
+	)
+{
+	uint32_t	limit;	/* when we should poll */
+	u_int		needs;	/* needed number of samples */
+
+	/* Paranoia: stop here if peer and clockproc don't match up.
+	 * And when a poll is actually pending, we don't have to do
+	 * anything, either. Likewise if the reach mask is full, of
+	 * course, and if the filter has stabilized.
+	 */
+	if (pp->inpoll || (peer->procptr != pp) ||
+	    ((peer->reach == 0xFF) && (peer->disp <= MAXDISTANCE)))
+		return;
+
+	/* If the next poll is soon enough, bail out, too: */
+	limit = current_time + 1;
+	if (peer->nextdate <= limit)
+		return;
+
+	/* Derive the number of samples needed from the popcount of the
+	 * reach mask.  With less samples available, we break away.
+	 */
+	needs  = peer->reach;
+	needs -= (needs >> 1) & 0x55; 
+	needs  = (needs & 0x33) + ((needs >> 2) & 0x33);
+	needs  = (needs + (needs >> 4)) & 0x0F;
+	if (needs > 6)
+		needs = 6;
+	else if (needs < 3)
+		needs = 3;
+	if (clk_cnt_sample(pp) < needs)
+		return;
+
+	/* Get serious. Reduce the poll to minimum and schedule early.
+	 * (Changing the peer poll is probably in vain, as it will be
+	 * re-adjusted, but maybe some time the hint will work...) 
+	 */
+	peer->hpoll = peer->minpoll;
+	peer->nextdate = limit;
+}
 
 /*
  * -------------------------------------------------------------------
