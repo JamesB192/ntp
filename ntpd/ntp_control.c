@@ -329,7 +329,8 @@ static const struct ctl_proc control_codes[] = {
 #define	CC_FLAGS	11
 #define	CC_DEVICE	12
 #define	CC_VARLIST	13
-#define	CC_MAXCODE	CC_VARLIST
+#define	CC_FUDGEMINJIT	14
+#define	CC_MAXCODE	CC_FUDGEMINJIT
 
 /*
  * System variable values. The array can be indexed by the variable
@@ -627,7 +628,8 @@ static const struct ctl_var clock_var[] = {
 	{ CC_FLAGS,	RO, "flags" },		/* 11 */
 	{ CC_DEVICE,	RO, "device" },		/* 12 */
 	{ CC_VARLIST,	RO, "clock_var_list" },	/* 13 */
-	{ 0,		EOV, ""  }		/* 14 */
+	{ CC_FUDGEMINJIT, RO, "minjitter" },	/* 14 */
+	{ 0,		EOV, ""  }		/* 15 */
 };
 
 
@@ -642,6 +644,7 @@ static const u_char def_clock_var[] = {
 	CC_NOREPLY,
 	CC_BADFORMAT,
 	CC_BADDATA,
+	CC_FUDGEMINJIT,
 	CC_FUDGETIME1,
 	CC_FUDGETIME2,
 	CC_FUDGEVAL1,
@@ -3042,6 +3045,16 @@ ctl_putclock(
 		*s = '\0';
 		ctl_putdata(buf, (unsigned)(s - buf), 0);
 		break;
+		
+	case CC_FUDGEMINJIT:
+		if (mustput || (pcs->haveflags & CLK_HAVEMINJIT))
+			ctl_putdbl(clock_var[id].text,
+				   pcs->fudgeminjitter * 1e3);
+		break;
+
+	default:
+		break;
+
 	}
 }
 #endif

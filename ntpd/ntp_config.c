@@ -3644,6 +3644,13 @@ config_fudge(
 
 		/* Parse all the options to the fudge command */
 		ZERO(clock_stat);
+		/* some things are not necessarily cleared by ZERO...*/
+		clock_stat.fudgeminjitter = 0.0;
+		clock_stat.fudgetime1     = 0.0;
+		clock_stat.fudgetime2     = 0.0;
+		clock_stat.p_lastcode     = NULL;
+		clock_stat.clockdesc      = NULL;
+		clock_stat.kv_list        = NULL;
 		curr_opt = HEAD_PFIFO(curr_fudge->options);
 		for (; curr_opt != NULL; curr_opt = curr_opt->link) {
 			switch (curr_opt->attr) {
@@ -3665,10 +3672,9 @@ config_fudge(
 
 			case T_Refid:
 				clock_stat.haveflags |= CLK_HAVEVAL2;
-				clock_stat.fudgeval2 = 0;
-				memcpy(&clock_stat.fudgeval2,
-				       curr_opt->value.s,
-				       min(strlen(curr_opt->value.s), 4));
+				/* strncpy() does exactly what we want here: */
+				strncpy((char*)&clock_stat.fudgeval2,
+					curr_opt->value.s, 4);
 				break;
 
 			case T_Flag1:
@@ -3701,6 +3707,11 @@ config_fudge(
 					clock_stat.flags |= CLK_FLAG4;
 				else
 					clock_stat.flags &= ~CLK_FLAG4;
+				break;
+
+			case T_Minjitter:
+				clock_stat.haveflags |= CLK_HAVEMINJIT;
+				clock_stat.fudgeminjitter = curr_opt->value.d;
 				break;
 
 			default:
