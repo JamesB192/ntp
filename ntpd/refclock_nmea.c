@@ -816,24 +816,25 @@ nmea_receive(
 		return;
 	}
 
+	/* check clock sanity; [bug 2143] */
+	if (pp->leap == LEAP_NOTINSYNC) { /* no good status? */
+		checkres = CEVNT_PROP;
+		up->tally.rejected++;
+	}
 	/* Check sanity of time-of-day. */
-	if (rc_time == 0) {	/* no time or conversion error? */
+	else if (rc_time == 0) {	/* no time or conversion error? */
 		checkres = CEVNT_BADTIME;
 		up->tally.malformed++;
 	}
 	/* Check sanity of date. */
-	else if (rc_date == 0) {/* no date or conversion error? */
+	else if (rc_date == 0) {	/* no date or conversion error? */
 		checkres = CEVNT_BADDATE;
 		up->tally.malformed++;
 	}
-	/* check clock sanity; [bug 2143] */
-	else if (pp->leap == LEAP_NOTINSYNC) { /* no good status? */
-		checkres = CEVNT_BADREPLY;
-		up->tally.rejected++;
-	}
-	else
+	else {
 		checkres = -1;
-
+	}
+	
 	if (checkres != -1) {
 		refclock_save_lcode(pp, rd_lastcode, rd_lencode);
 		refclock_report(peer, checkres);
@@ -985,12 +986,15 @@ nmea_poll(
 	 */
 	if (pp->coderecv == pp->codeproc) {
 		peer->flags &= ~FLAG_PPS;
-		refclock_report(peer, CEVNT_TIMEOUT);
+		if (pp->currentstatus < CEVNT_TIMEOUT)
+		    refclock_report(peer, CEVNT_TIMEOUT);
 		memset(&up->last_gpsdate, 0, sizeof(up->last_gpsdate));
 	} else {
 		pp->polls++;
 		pp->lastref = pp->lastrec;
 		refclock_receive(peer);
+		if (pp->currentstatus > CEVNT_NOMINAL)
+		    refclock_report(peer, CEVNT_NOMINAL);
 	}
 
 	/*
