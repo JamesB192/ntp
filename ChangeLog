@@ -2,6 +2,7 @@
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
+* [Bug 3615] accelerate refclock startup <perlinger@ntp.org>
 * [Bug 3613] Propagate noselect to mobilized pool servers <stenn@ntp.org>
   - Reported by Martin Burnicki
 * [Bug 3611] NMEA time interpreted incorrectly <perlinger@ntp.org>
