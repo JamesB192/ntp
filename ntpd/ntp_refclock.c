@@ -604,6 +604,20 @@ refclock_sample(
 	}
 	pp->offset /= m;
 	pp->jitter = max(SQRT(pp->jitter / m), LOGTOD(sys_precision));
+
+	/*
+	 * If the source has a jitter that cannot be estimated, because
+	 * it is not statistic jitter, the source will be detected as
+	 * falseticker sooner or later.  Enforcing a minimal jitter value
+	 * avoids a too low estimation while still detecting higher jitter.
+	 *
+	 * Note that this changes the refclock samples and ends up in the
+	 * clock dispersion, not the clock jitter, despite being called
+	 * jitter.  To see the modified values, check the NTP clock variable
+	 * "filtdisp", not "jitter".
+	 */
+	pp->jitter = max(pp->jitter, pp->fudgeminjitter);
+
 #ifdef DEBUG
 	if (debug)
 		printf(
@@ -1190,6 +1204,8 @@ refclock_control(
 			pp->sloppyclockflag &= ~CLK_FLAG4;
 			pp->sloppyclockflag |= in->flags & CLK_FLAG4;
 		}
+		if (in->haveflags & CLK_HAVEMINJIT)
+			pp->fudgeminjitter = in->fudgeminjitter;
 	}
 
 	/*
@@ -1214,6 +1230,9 @@ refclock_control(
 			out->haveflags |= CLK_HAVEFLAG3;
 		if (CLK_FLAG4 & out->flags)
 			out->haveflags |= CLK_HAVEFLAG4;
+		out->fudgeminjitter = pp->fudgeminjitter;
+		if (0.0 != out->fudgeminjitter)
+			out->haveflags |= CLK_HAVEMINJIT;
 
 		out->timereset = current_time - pp->timestarted;
 		out->polls = pp->polls;

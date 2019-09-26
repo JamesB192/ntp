@@ -7,6 +7,8 @@
 * [Bug 3611] NMEA time interpreted incorrectly <perlinger@ntp.org>
   - officially document new "trust date" mode bit for NMEA driver
   - restore the (previously undocumented) "trust date" feature lost with [bug 3577] 
+* [Bug 3609] Fixing wrong falseticker in case of non-statistic jitter <perlinger@ntp.org>
+  - mostly based on a patch by Michael Haardt, implementing 'fudge minjitter'
 * [Bug 3608] libparse fails to compile on S11.4SRU13 and later <perlinger@ntp.org>
   - removed ffs() and fls() prototypes as per Brian Utterback
 * [Bug 3604] Wrong param byte order passing into record_raw_stats() in

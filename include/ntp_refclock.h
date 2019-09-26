@@ -49,6 +49,7 @@ extern struct clktype clktypes[];
 #define	CLK_HAVEFLAG2	0x20
 #define	CLK_HAVEFLAG3	0x40
 #define	CLK_HAVEFLAG4	0x80
+#define	CLK_HAVEMINJIT	0x100
 
 /*
  * Constant for disabling event reporting in
@@ -63,7 +64,7 @@ extern struct clktype clktypes[];
 struct refclockstat {
 	u_char	type;		/* clock type */
 	u_char	flags;		/* clock flags */
-	u_char	haveflags;	/* bit array of valid flags */
+	u_short	haveflags;	/* bit array of valid flags */
 	u_short	lencode;	/* length of last timecode */
 	const char *p_lastcode;	/* last timecode received */
 	u_int32	polls;		/* transmit polls */
@@ -72,6 +73,7 @@ struct refclockstat {
 	u_int32	baddata;	/* invalid data timecode received */
 	u_int32	timereset;	/* driver resets */
 	const char *clockdesc;	/* ASCII description */
+	double	fudgeminjitter;	/* configure fudge minjitter */
 	double	fudgetime1;	/* configure fudge time1 */
 	double	fudgetime2;	/* configure fudge time2 */
 	int32	fudgeval1;	/* configure fudge value1 */
@@ -170,6 +172,7 @@ struct refclockproc {
 	 */
 	double	fudgetime1;	/* fudge time1 */
 	double	fudgetime2;	/* fudge time2 */
+	double	fudgeminjitter;	/* manually set lower bound for jitter */
 	u_char	stratum;	/* server stratum */
 	u_int32	refid;		/* reference identifier */
 	u_char	sloppyclockflag; /* fudge flags */
