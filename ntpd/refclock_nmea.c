@@ -250,6 +250,10 @@ typedef struct {
 		tally;
 	/* per sentence checksum seen flag */
 	u_char		cksum_type[NMEA_ARRAY_SIZE];
+
+	/* line assembly buffer (NMEAD support) */
+	u_short	lb_len;
+	char	lb_buf[BMAX];	/* assembly buffer */
 } nmea_unit;
 
 /*
@@ -269,6 +273,7 @@ static	int	nmea_start	(int, struct peer *);
 static	void	nmea_shutdown	(int, struct peer *);
 static	void	nmea_receive	(struct recvbuf *);
 static	void	nmea_poll	(int, struct peer *);
+static	void	nmea_procrec	(struct peer *, l_fp);
 #ifdef HAVE_PPSAPI
 static	double	tabsdiffd	(l_fp, l_fp);
 static	void	nmea_control	(int, const struct refclockstat *,
@@ -402,7 +407,7 @@ nmea_start(
 	up->ppsapi_fd = -1;
 #   endif /* HAVE_PPSAPI */
 	ZERO(up->tally);
-
+	
 	/* Initialize miscellaneous variables */
 	peer->precision = PRECISION;
 	pp->clockdesc = DESCRIPTION;
@@ -427,7 +432,6 @@ nmea_start(
 	/* succeed if this clock can be added */
 	return io_addclock(&pp->io) != 0;
 }
-
 
 /*
  * -------------------------------------------------------------------
@@ -585,15 +589,20 @@ nmea_timer(
 #   endif /* NMEA_WRITE_SUPPORT */
 
 	/* receive timeout occurred? */
-	if (up->rcvtout)
+	if (up->rcvtout) {
 		--up->rcvtout;
-	else if (pp->codeproc != pp->coderecv)
+	} else if (pp->codeproc != pp->coderecv) {
+		/* expire one (the oldest) sample, if any */
 		refclock_samples_expire(pp, 1);
+		/* reset message assembly buffer */
+		up->lb_buf[0] = '\0';
+		up->lb_len    = 0;
+	}
 }
 
 /*
  * -------------------------------------------------------------------
- * nmea_receive - receive data from the serial interface
+ * nmea_procrec - receive data from the serial interface
  *
  * This is the workhorse for NMEA data evaluation:
  *
@@ -606,23 +615,23 @@ nmea_timer(
  *   burst
  * + it eventually replaces the receive time with the PPS edge time.
  * + it feeds the data to the internal processing stages.
+ *
+ * This function assumes a non-empty line in the unit line buffer.
  * -------------------------------------------------------------------
  */
 static void
-nmea_receive(
-	struct recvbuf * rbufp
+nmea_procrec(
+	struct peer * const	peer,
+	l_fp 	  		rd_timestamp
 	)
 {
 	/* declare & init control structure pointers */
-	struct peer	    * const peer = rbufp->recv_peer;
 	struct refclockproc * const pp = peer->procptr;
 	nmea_unit	    * const up = (nmea_unit*)pp->unitptr;
 
 	/* Use these variables to hold data until we decide its worth keeping */
 	nmea_data rdata;
-	char 	  rd_lastcode[BMAX];
-	l_fp 	  rd_timestamp, rd_reftime;
-	int	  rd_lencode;
+	l_fp 	  rd_reftime;
 
 	/* working stuff */
 	TCivilDate	date;	/* to keep & convert the time stamp */
@@ -651,14 +660,12 @@ nmea_receive(
 	 * and this gives us one spurious empty read per record which we
 	 * better ignore silently.
 	 */
-	rd_lencode = refclock_gtlin(rbufp, rd_lastcode,
-				    sizeof(rd_lastcode), &rd_timestamp);
-	checkres = field_init(&rdata, rd_lastcode, rd_lencode);
+	checkres = field_init(&rdata, up->lb_buf, up->lb_len);
 	switch (checkres) {
 
 	case CHECK_INVALID:
 		DPRINTF(1, ("%s invalid data: '%s'\n",
-			refnumtoa(&peer->srcadr), rd_lastcode));
+			refnumtoa(&peer->srcadr), up->lb_buf));
 		refclock_report(peer, CEVNT_BADREPLY);
 		return;
 
@@ -667,8 +674,8 @@ nmea_receive(
 
 	default:
 		DPRINTF(1, ("%s gpsread: %d '%s'\n",
-			refnumtoa(&peer->srcadr), rd_lencode,
-			rd_lastcode));
+			refnumtoa(&peer->srcadr), up->lb_len,
+			up->lb_buf));
 		break;
 	}
 	up->tally.total++;
@@ -701,8 +708,8 @@ nmea_receive(
 	if (peer->ttl & NMEA_DELAYMEAS_MASK) {
 		mprintf_clock_stats(&peer->srcadr, "delay %0.6f %.*s",
 			 ldexp(rd_timestamp.l_uf, -32),
-			 (int)(strchr(rd_lastcode, ',') - rd_lastcode),
-			 rd_lastcode);
+			 (int)(strchr(up->lb_buf, ',') - up->lb_buf),
+			 up->lb_buf);
 	}
 
 	/* See if I want to process this message type */
@@ -733,7 +740,7 @@ nmea_receive(
 		up->cksum_type[sentence] = (u_char)checkres;
 	} else {
 		DPRINTF(1, ("%s checksum missing: '%s'\n",
-			refnumtoa(&peer->srcadr), rd_lastcode));
+			refnumtoa(&peer->srcadr), up->lb_buf));
 		refclock_report(peer, CEVNT_BADREPLY);
 		up->tally.malformed++;
 		return;
@@ -750,7 +757,7 @@ nmea_receive(
 	}
 
 	DPRINTF(1, ("%s processing %d bytes, timecode '%s'\n",
-		refnumtoa(&peer->srcadr), rd_lencode, rd_lastcode));
+		refnumtoa(&peer->srcadr), up->lb_len, up->lb_buf));
 
 	/*
 	 * Grab fields depending on clock string type and possibly wipe
@@ -834,9 +841,9 @@ nmea_receive(
 	else {
 		checkres = -1;
 	}
-	
+
 	if (checkres != -1) {
-		refclock_save_lcode(pp, rd_lastcode, rd_lencode);
+		refclock_save_lcode(pp, up->lb_buf, up->lb_len);
 		refclock_report(peer, checkres);
 		return;
 	}
@@ -905,13 +912,11 @@ nmea_receive(
 	up->last_reftime = rd_reftime;
 
 	DPRINTF(1, ("%s using '%s'\n",
-		    refnumtoa(&peer->srcadr), rd_lastcode));
-	//DPRINTF(1, ("  -> recv '%s' at '%s'\n\n",
-	//	    prettydate(&rd_reftime), prettydate(&rd_timestamp)));
+		    refnumtoa(&peer->srcadr), up->lb_buf));
 
 	/* Data will be accepted. Update stats & log data. */
 	up->tally.accepted++;
-	refclock_save_lcode(pp, rd_lastcode, rd_lencode);
+	refclock_save_lcode(pp, up->lb_buf, up->lb_len);
 	pp->lastrec = rd_timestamp;
 
 	/* If we have PPS augmented receive time, we *must* have a
@@ -942,6 +947,82 @@ nmea_receive(
 	up->rcvtout = 2;
 }
 
+/*
+ * -------------------------------------------------------------------
+ * nmea_receive - receive data from the serial interface
+ *
+ * With serial IO only, a single call to 'refclock_gtlin()' to get the
+ * string would suffice to get the NMEA data. When using NMEAD, this
+ * does unfortunately no longer hold, since TCP is stream oriented and
+ * not line oriented, and there's no one to do the line-splitting work
+ * of the TTY driver in line/cooked mode.
+ *
+ * So we have to do this manually here, and we have to live with the
+ * fact that there could be more than one sentence in a receive buffer.
+ * Likewise, there can be partial messages on either end. (Strictly
+ * speaking, a receive buffer could also contain just a single fragment,
+ * though that's unlikely.)
+ *
+ * We deal with that by scanning the input buffer, copying bytes from
+ * the receive buffer to the assembly buffer as we go and calling the
+ * record processor every time we hit a CR/LF, provided the resulting
+ * line is not empty. Any leftovers are kept for the next round.
+ *
+ * Note: When used with a serial data stream, there's no change to the
+ * previous line-oriented input: One line is copied to the buffer and
+ * processed per call. Only with NMEAD the behavior changes, and the
+ * timing is badly affected unless a PPS channel is also associated with
+ * the clock instance. TCP leaves us nothing to improve on here.
+ * -------------------------------------------------------------------
+ */ 
+static void
+nmea_receive(
+	struct recvbuf * rbufp
+	)
+{
+	/* declare & init control structure pointers */
+	struct peer	    * const peer = rbufp->recv_peer;
+	struct refclockproc * const pp = peer->procptr;
+	nmea_unit	    * const up = (nmea_unit*)pp->unitptr;
+
+	const char *sp, *se;
+	char	   *dp, *de;
+
+	/* paranoia check: */
+	if (up->lb_len >= sizeof(up->lb_buf))
+		up->lb_len = 0;
+	
+	/* pick up last assembly position; leave room for NUL */
+	dp = up->lb_buf + up->lb_len;
+	de = up->lb_buf + sizeof(up->lb_buf) - 1;
+	/* set up input range */
+	sp = (const char *)rbufp->recv_buffer;
+	se = sp + rbufp->recv_length;
+
+	/* walk over the input data, dropping parity bits and control
+	 * chars as we go, and calling the record processor for each
+	 * complete non-empty line.
+	 */
+	while (sp != se) {
+		char ch = (*sp++ & 0x7f);
+		if (dp == up->lb_buf) {
+			if (ch == '$')
+				*dp++ = ch;
+		} else if (dp > de) {
+			dp = up->lb_buf;
+		} else if (ch == '\n' || ch == '\r') {
+			*dp = '\0';
+			up->lb_len = (int)(dp - up->lb_buf);
+			dp = up->lb_buf;				
+			nmea_procrec(peer, rbufp->recv_time);
+		} else if (ch >= 0x20 && ch < 0x7f) {
+			*dp++ = ch;
+		}
+	}
+	/* update state to keep for next round */
+	*dp = '\0';
+	up->lb_len = (int)(dp - up->lb_buf);
+}
 
 /*
  * -------------------------------------------------------------------
@@ -1017,7 +1098,6 @@ nmea_poll(
 	}
 	ZERO(up->tally);
 }
-
 
 #if NMEA_WRITE_SUPPORT
 /*
@@ -1682,6 +1762,8 @@ nmead_open(
 			close(sh);
 	}
 	freeaddrinfo(ai_list);
+	if (fd != -1)
+		make_socket_nonblocking(fd);
 #   else
 	fd = -1;
 #   endif
