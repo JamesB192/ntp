@@ -18,6 +18,7 @@
 * [Bug 3601] Tests fail to link on platforms with ntp_cv_gc_sections_runs=no <perlinger@ntp.org>
 * [Bug 3599] Build fails on linux-m68k due to alignment issues <perlinger@ntp.org>
   - added padding as suggested by John Paul Adrian Glaubitz 
+* [Bug 3593] ntpd discards silently nmea messages after the 5th string <perlinger@ntp.org>
 * [Bug 3590] Update refclock_oncore.c to the new GPS date API <perlinger@ntp.org>
 * [Bug 3585] Unity tests mix buffered and unbuffered output <perlinger@ntp.org>
   - stdout+stderr are set to line buffered during test setup now
