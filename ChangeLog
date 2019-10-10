@@ -2,6 +2,8 @@
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
+* [Bug 3620] memory leak in ntpq sysinfo <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
 * [Bug 3619] Honour drefid setting in cooked mode and sysinfo <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3615] accelerate refclock startup <perlinger@ntp.org>
