@@ -3675,11 +3675,18 @@ cookedprint(
 						refid_buf[i] = (isprint(str[i]) ? str[i] : '?');
 					refid_buf[i] = 0; /* Null terminator */
 					output(fp, name, refid_buf);
-				} else if (ISREFCLOCKADR(&hval))
-					output(fp, name,
-					       refnumtoa(&hval));
-				else
-					output(fp, name, stoa(&hval));
+				} else if (ISREFCLOCKADR(&hval)) {
+					output(fp, name, refnumtoa(&hval));
+				} else {
+					if (drefid == REFID_IPV4) {
+						output(fp, name, stoa(&hval));
+					} else {
+						char refid_buf[12];
+						snprintf (refid_buf, sizeof(refid_buf), 
+							  "0x%08x", ntohl(addr2refid(&hval)));
+						output(fp, name, refid_buf);
+					}
+				}
 			} else if (strlen(value) <= 4) {
 				output(fp, name, value);
 			} else {
