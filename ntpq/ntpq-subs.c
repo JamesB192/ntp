@@ -3874,12 +3874,16 @@ collect_display_vdc(
 			atouint(pvdc->v.str, &ul);
 			xprintf(fp, "%s  %s\n", pvdc->display,
 				modetoa((int)ul));
+			free(pvdc->v.str);
+			pvdc->v.str = NULL;
 			break;
 
 		case NTP_2BIT:
 			atouint(pvdc->v.str, &ul);
 			xprintf(fp, "%s  %s\n", pvdc->display,
 				leapbits[ul & 0x3]);
+			free(pvdc->v.str);
+			pvdc->v.str = NULL;
 			break;
 
 		case NTP_REFID:
