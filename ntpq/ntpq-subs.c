@@ -3746,6 +3746,7 @@ collect_display_vdc(
 	int match;
 	u_long ul;
 	int vtype;
+	sockaddr_u sau;
 
 	ZERO(vl);
 	for (pvdc = table; pvdc->tag != NULL; pvdc++) {
@@ -3806,6 +3807,7 @@ collect_display_vdc(
 				}
 			}
 			/* fallthru */
+		case NTP_REFID:	/* fallthru */
 		case NTP_MODE:	/* fallthru */
 		case NTP_2BIT:
 			pvdc->v.str = estrdup(val);
@@ -3872,12 +3874,31 @@ collect_display_vdc(
 			atouint(pvdc->v.str, &ul);
 			xprintf(fp, "%s  %s\n", pvdc->display,
 				modetoa((int)ul));
+			free(pvdc->v.str);
+			pvdc->v.str = NULL;
 			break;
 
 		case NTP_2BIT:
 			atouint(pvdc->v.str, &ul);
 			xprintf(fp, "%s  %s\n", pvdc->display,
 				leapbits[ul & 0x3]);
+			free(pvdc->v.str);
+			pvdc->v.str = NULL;
+			break;
+
+		case NTP_REFID:
+			if (!decodenetnum(pvdc->v.str, &sau)) {
+				fprintf(fp, "%s  %s\n", pvdc->display,    /* Text fmt */
+					pvdc->v.str);
+			} else if (drefid == REFID_IPV4) {
+				fprintf(fp, "%s  %s\n", pvdc->display,    /* IPv4 fmt */
+					stoa(&sau));
+			} else {
+				fprintf (fp, "%s  0x%08x\n", pvdc->display,	   /* Hex / hash */
+					 ntohl(addr2refid(&sau)));
+			}
+			free(pvdc->v.str);
+			pvdc->v.str = NULL;
 			break;
 
 		default:
@@ -3939,7 +3960,7 @@ sysinfo(
 	VDC_INIT("precision",		"log2 precision:   ", NTP_STR),
 	VDC_INIT("rootdelay",		"root delay:       ", NTP_STR),
 	VDC_INIT("rootdisp",		"root dispersion:  ", NTP_STR),
-	VDC_INIT("refid",		"reference ID:     ", NTP_STR),
+	VDC_INIT("refid",		"reference ID:     ", NTP_REFID),
 	VDC_INIT("reftime",		"reference time:   ", NTP_LFP),
 	VDC_INIT("sys_jitter",		"system jitter:    ", NTP_STR),
 	VDC_INIT("clk_jitter",		"clock jitter:     ", NTP_STR),
