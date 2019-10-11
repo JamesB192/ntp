@@ -2,9 +2,15 @@
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
+* [Bug 3620] memory leak in ntpq sysinfo <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
+* [Bug 3619] Honour drefid setting in cooked mode and sysinfo <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
 * [Bug 3615] accelerate refclock startup <perlinger@ntp.org>
 * [Bug 3613] Propagate noselect to mobilized pool servers <stenn@ntp.org>
   - Reported by Martin Burnicki
+* [Bug 3612] Use-of-uninitialized-value in receive function <perlinger@ntp.org>
+  - Reported by Philippe Antoine
 * [Bug 3611] NMEA time interpreted incorrectly <perlinger@ntp.org>
   - officially document new "trust date" mode bit for NMEA driver
   - restore the (previously undocumented) "trust date" feature lost with [bug 3577] 
@@ -19,6 +25,7 @@
 * [Bug 3599] Build fails on linux-m68k due to alignment issues <perlinger@ntp.org>
   - added padding as suggested by John Paul Adrian Glaubitz 
 * [Bug 3594] ntpd discards messages coming through nmead <perlinger@ntp.org>
+* [Bug 3593] ntpd discards silently nmea messages after the 5th string <perlinger@ntp.org>
 * [Bug 3590] Update refclock_oncore.c to the new GPS date API <perlinger@ntp.org>
 * [Bug 3585] Unity tests mix buffered and unbuffered output <perlinger@ntp.org>
   - stdout+stderr are set to line buffered during test setup now
