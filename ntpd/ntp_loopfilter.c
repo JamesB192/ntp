@@ -168,6 +168,9 @@ u_char	sys_poll;		/* time constant/poll (log2 s) */
 int	tc_counter;		/* jiggle counter */
 double	last_offset;		/* last offset (s) */
 
+u_int	tc_twinlo;		/* TC step down not before this time */
+u_int	tc_twinhi;		/* TC step up not before this time */ 
+
 /*
  * Huff-n'-puff filter variables
  */
@@ -873,34 +876,52 @@ local_clock(
 	 * increased, otherwise it is decreased. A bit of hysteresis
 	 * helps calm the dance. Works best using burst mode. Don't
 	 * fiddle with the poll during the startup clamp period.
+	 * [Bug 3615] also observe time gates to avoid eager stepping
 	 */
 	if (freq_cnt > 0) {
 		tc_counter = 0;
+		tc_twinlo  = current_time; 
+		tc_twinhi  = current_time; 
 	} else if (fabs(clock_offset) < CLOCK_PGATE * clock_jitter) {
 		tc_counter += sys_poll;
 		if (tc_counter > CLOCK_LIMIT) {
 			tc_counter = CLOCK_LIMIT;
-			if (sys_poll < peer->maxpoll) {
-				tc_counter = 0;
-				sys_poll++;
-			}
+			if (sys_poll < peer->maxpoll)
+				sys_poll += (current_time >= tc_twinhi);
 		}
 	} else {
 		tc_counter -= sys_poll << 1;
 		if (tc_counter < -CLOCK_LIMIT) {
 			tc_counter = -CLOCK_LIMIT;
-			if (sys_poll > peer->minpoll) {
-				tc_counter = 0;
-				sys_poll--;
-			}
+			if (sys_poll > peer->minpoll)
+				sys_poll -= (current_time >= tc_twinlo);
 		}
 	}
 
 	/*
 	 * If the time constant has changed, update the poll variables.
+	 *
+	 * [bug 3615] also set new time gates
+	 * The time limit for stepping down will be half the TC interval
+	 * or 60 secs from now, whatever is bigger, and the step up time
+	 * limit will be half the TC interval after the step down limit.
+	 *
+	 * The 'sys_poll' value affects the servo loop gain, and
+	 * overshooting sys_poll slows it down unnecessarily.  Stepping
+	 * down too fast also has bad effects.
+	 *
+	 * The 'tc_counter' dance itself is something that *should*
+	 * happen *once* every (1 << sys_poll) seconds, I think, but
+	 * that's not how it works right now, and adding time guards
+	 * seems the least intrusive way to handle this.
 	 */
-	if (osys_poll != sys_poll)
+	if (osys_poll != sys_poll) {
+		u_int deadband = 1u << (sys_poll - 1);
+		tc_counter = 0;
+		tc_twinlo  = current_time + max(deadband, 60);
+		tc_twinhi  = tc_twinlo + deadband;
 		poll_update(peer, sys_poll);
+	}
 
 	/*
 	 * Yibbidy, yibbbidy, yibbidy; that'h all folks.
