@@ -199,6 +199,7 @@ struct key_tok ntp_keywords[] = {
 { "stratum",		T_Stratum,		FOLLBY_TOKEN },
 { "time1",		T_Time1,		FOLLBY_TOKEN },
 { "time2",		T_Time2,		FOLLBY_TOKEN },
+{ "minjitter",		T_Minjitter,		FOLLBY_TOKEN },
 /* system_option */
 { "auth",		T_Auth,			FOLLBY_TOKEN },
 { "bclient",		T_Bclient,		FOLLBY_TOKEN },
