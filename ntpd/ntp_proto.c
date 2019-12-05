@@ -2483,6 +2483,7 @@ process_packet(
 		peer->seldisptoolarge++;
 		DPRINTF(1, ("packet: flash header %04x\n",
 			    peer->flash));
+		/* See bug 3592. */
 		poll_update(peer, peer->hpoll);	/* ppoll updated? */
 		return;
 	}
@@ -2527,6 +2528,10 @@ process_packet(
 		if (peer->burst > 0)
 			peer->nextdate = current_time;
 	}
+	/*
+	 * While looking at bug 3592, Pearly wonders if the
+	 * poll_update() below should be inside the "if" block above
+	 */
 	poll_update(peer, peer->hpoll);
 
 	/**/
