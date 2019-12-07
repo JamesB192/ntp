@@ -700,7 +700,7 @@ receive(
 		sys_badlength++;
 		return;				/* bogus length */
 	}
-
+	
 	hisleap = PKT_LEAP(pkt->li_vn_mode);
 	hisstratum = PKT_TO_STRATUM(pkt->stratum);
 	INSIST(0 != hisstratum); /* paranoia check PKT_TO_STRATUM result */
@@ -2401,9 +2401,17 @@ receive(
 	/*
 	 * The dance is complete and the flash bits have been lit. Toss
 	 * the packet over the fence for processing, which may light up
-	 * more flashers.
+	 * more flashers. Leave if the packet is not good.
 	 */
 	process_packet(peer, pkt, rbufp->recv_length);
+	if (peer->flash & PKT_TEST_MASK)
+		return;
+
+	/* [bug 3592] Update poll. Ideally this should not happen in a
+	 * receive branch, but too much is going on here... at least we
+	 * do it only if the packet was good!
+	 */	
+	poll_update(peer, peer->hpoll);
 
 	/*
 	 * In interleaved mode update the state variables. Also adjust the
@@ -2483,8 +2491,6 @@ process_packet(
 		peer->seldisptoolarge++;
 		DPRINTF(1, ("packet: flash header %04x\n",
 			    peer->flash));
-		/* See bug 3592. */
-		poll_update(peer, peer->hpoll);	/* ppoll updated? */
 		return;
 	}
 
@@ -2528,11 +2534,6 @@ process_packet(
 		if (peer->burst > 0)
 			peer->nextdate = current_time;
 	}
-	/*
-	 * While looking at bug 3592, Pearly wonders if the
-	 * poll_update() below should be inside the "if" block above
-	 */
-	poll_update(peer, peer->hpoll);
 
 	/**/
 
