@@ -25,8 +25,8 @@
  * We simply pre-calculate the offsets and cycle shifts for the real GPS
  * calendar, which starts at 1980-01-06, to simplyfy some expressions.
  *
- * This has fringe benefit that sould not be overlooked: Since week zero
- * is around 1900, and we should never have to deal with dates befor
+ * This has a fringe benefit that should not be overlooked: Since week zero
+ * is around 1900, and we should never have to deal with dates before
  * 1970 or 1980, a week number of zero can be easily used to indicate
  * an invalid week time stamp.
  */

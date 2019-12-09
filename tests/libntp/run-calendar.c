@@ -58,6 +58,15 @@ extern void test_GpsRemapFunny(void);
 extern void test_GpsNtpFixpoints(void);
 extern void test_NtpToNtp(void);
 extern void test_NtpToTime(void);
+extern void test_CalUMod7(void);
+extern void test_CalIMod7(void);
+extern void test_RellezCentury1_1(void);
+extern void test_RellezCentury3_1(void);
+extern void test_RellezYearZero(void);
+extern void test_RellezEra(void);
+extern void test_zellerDirect(void);
+extern void test_ZellerDirectBad(void);
+extern void test_zellerModInv(void);
 
 
 //=======Suite Setup=====
@@ -111,6 +120,15 @@ int main(int argc, char *argv[])
   RUN_TEST(test_GpsNtpFixpoints, 51);
   RUN_TEST(test_NtpToNtp, 52);
   RUN_TEST(test_NtpToTime, 53);
+  RUN_TEST(test_CalUMod7, 55);
+  RUN_TEST(test_CalIMod7, 56);
+  RUN_TEST(test_RellezCentury1_1, 57);
+  RUN_TEST(test_RellezCentury3_1, 58);
+  RUN_TEST(test_RellezYearZero, 59);
+  RUN_TEST(test_RellezEra, 1059);
+  RUN_TEST(test_zellerDirect, 1144);
+  RUN_TEST(test_ZellerDirectBad, 1192);
+  RUN_TEST(test_zellerModInv, 1207);
 
   return (UnityEnd());
 }
