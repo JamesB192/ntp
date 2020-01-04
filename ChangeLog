@@ -1,9 +1,9 @@
 ---
 
-* [Sec 3592] DoS attack on client ntpd <perlinger@ntp.org>
-  - Reported by Miroslav Lichvar
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
+* [Sec 3592] DoS attack on client ntpd <perlinger@ntp.org>
+  - Reported by Miroslav Lichvar
 * [Bug 3634] Typo in discipline.html, reported by Jason Harrison.  stenn@
 * [Bug 3620] memory leak in ntpq sysinfo <perlinger@ntp.org>
   - applied patch by Gerry Garvey
