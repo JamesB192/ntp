@@ -2,6 +2,7 @@
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
+* [Bug 3634] Typo in discipline.html, reported by Jason Harrison.  stenn@
 * [Bug 3627] SIGSEGV on FreeBSD-12 with stack limit and stack gap <perlinger@ntp.org>
   - integrated patch by Cy Schubert
 * [Bug 3620] memory leak in ntpq sysinfo <perlinger@ntp.org>
