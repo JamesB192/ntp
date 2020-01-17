@@ -168,7 +168,7 @@ _gpsntp_fix_gps_era(
 	days = sign ^ (days - base);
 	days %= clen;
 	days = base + (sign & clen) + (sign ^ days);
-	
+
 	out.days = days;
 	return out;
 }
@@ -188,7 +188,8 @@ static TNtpDatum
 _gpsntp_from_daytime(
 	TcCivilDate *	jd,
 	l_fp		fofs,
-	TcNtpDatum *	pivot
+	TcNtpDatum *	pivot,
+	int		warp
 	)
 {
 	static const int32_t shift = SECSPERDAY / 2;
@@ -211,7 +212,7 @@ _gpsntp_from_daytime(
 		retv.days += (retv.secs < lim ||
 			      (retv.secs == lim && retv.frac < pivot->frac));
 	}
-	return _gpsntp_fix_gps_era(&retv);
+	return warp ? _gpsntp_fix_gps_era(&retv) : retv;
 }
 
 /* -----------------------------------------------------------------
@@ -221,15 +222,16 @@ _gpsntp_from_daytime(
  * stamp is less or equal to 12 hours absolute.
  */
 TNtpDatum
-gpsntp_from_daytime2(
+gpsntp_from_daytime2_ex(
 	TcCivilDate *	jd,
 	l_fp		fofs,
-	TcNtpDatum *	pivot
+	TcNtpDatum *	pivot,
+	int/*BOOL*/	warp
 	)
 {
 	TNtpDatum	dpiv = *pivot;
 	_norm_ntp_datum(&dpiv);
-	return _gpsntp_from_daytime(jd, fofs, &dpiv);
+	return _gpsntp_from_daytime(jd, fofs, &dpiv, warp);
 }
 
 /* -----------------------------------------------------------------
@@ -240,10 +242,11 @@ gpsntp_from_daytime2(
  * NTP time stamp.
  */
 TNtpDatum
-gpsntp_from_daytime1(
+gpsntp_from_daytime1_ex(
 	TcCivilDate *	jd,
 	l_fp		fofs,
-	l_fp		pivot
+	l_fp		pivot,
+	int/*BOOL*/	warp
 	)
 {
 	vint64		pvi64;
@@ -255,7 +258,7 @@ gpsntp_from_daytime1(
 	dpiv.days = split.hi;
 	dpiv.secs = split.lo;
 	dpiv.frac = pivot.l_uf;
-	return _gpsntp_from_daytime(jd, fofs, &dpiv);
+	return _gpsntp_from_daytime(jd, fofs, &dpiv, warp);
 }
 
 /* -----------------------------------------------------------------
@@ -271,7 +274,7 @@ gpsntp_from_calendar_ex(
 {
 	TGpsDatum	gps;
 	gps = gpscal_from_calendar_ex(jd, fofs, warp);
-	return gpsntp_from_gpscal(&gps);
+	return gpsntp_from_gpscal_ex(&gps, FALSE);
 }
 
 /* -----------------------------------------------------------------
@@ -294,15 +297,23 @@ gpsntp_to_calendar(
  * get day/tod representation from week/tow datum
  */
 TNtpDatum
-gpsntp_from_gpscal(
-	TcGpsDatum *	gd
+gpsntp_from_gpscal_ex(
+	TcGpsDatum *	gd,
+    	int/*BOOL*/	warp
 	)
 {
 	TNtpDatum	retv;
 	vint64		ts64;
 	ntpcal_split	split;
-	
-	ts64  = ntpcal_weekjoin(gd->weeks, gd->wsecs);
+	TGpsDatum	date = *gd;
+
+	if (warp) {
+		uint32_t base = basedate_get_gpsweek() + GPSNTP_WSHIFT;
+		_norm_gps_datum(&date);
+		date.weeks = ((date.weeks - base) & 1023u) + base;
+	}
+
+	ts64  = ntpcal_weekjoin(date.weeks, date.wsecs);
 	ts64  = subv64u32(&ts64, (GPSNTP_DSHIFT * SECSPERDAY));
 	split = ntpcal_daysplit(&ts64);
 
@@ -349,7 +360,7 @@ _gpscal_fix_gps_era(
 	 */
 	uint32_t	base, week;
 	TGpsDatum	out = *in;
-	
+
 	week = out.weeks;
 	base = basedate_get_gpsweek() + GPSNTP_WSHIFT;
 	week = base + ((week - base) & (GPSWEEKS - 1));
@@ -393,7 +404,7 @@ gpscal_from_calendar_ex(
 	/*  (-DAY_GPS_STARTS) (mod 7*1024) -- complement of cycle shift */
 	static const uint32_t s_compl_shift =
 	    (7 * 1024) - DAY_GPS_STARTS % (7 * 1024);
-	
+
 	TGpsDatum	gps;
 	TCivilDate	cal;
 	int32_t		days, week;
@@ -473,7 +484,7 @@ gpscal_to_calendar(
 	TNtpDatum nd;
 
 	memset(cd, 0, sizeof(*cd));
-	nd = gpsntp_from_gpscal(wd);
+	nd = gpsntp_from_gpscal_ex(wd, FALSE);
 	gpsntp_to_calendar(cd, &nd);
 }
 
@@ -547,7 +558,7 @@ gpscal_from_weektime2(
 	TcGpsDatum *	pivot
 	)
 {
-	TGpsDatum wpiv = * pivot;       
+	TGpsDatum wpiv = * pivot;
 	_norm_gps_datum(&wpiv);
 	return _gpscal_from_weektime(wsecs, fofs, &wpiv);
 }
@@ -555,7 +566,7 @@ gpscal_from_weektime2(
 /* -----------------------------------------------------------------
  * epand a time-of-week around an pivot given as LFP, which in turn
  * is expanded around the current system time and then converted
- * into a week datum. 
+ * into a week datum.
  */
 TGpsDatum
 gpscal_from_weektime1(
@@ -592,7 +603,7 @@ gpscal_from_gpsntp(
 	TGpsDatum	retv;
 	vint64		ts64;
 	ntpcal_split	split;
-	
+
 	ts64  = ntpcal_dayjoin(gd->days, gd->secs);
 	ts64  = addv64u32(&ts64, (GPSNTP_DSHIFT * SECSPERDAY));
 	split = ntpcal_weeksplit(&ts64);

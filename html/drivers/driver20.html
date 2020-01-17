@@ -13,7 +13,7 @@
   <body>
     <h3>Generic NMEA GPS Receiver</h3>
 <p>Last update:
-  <!-- #BeginDate format:En2m -->4-Sep-2019  21:23<!-- #EndDate -->
+  <!-- #BeginDate format:En2m -->13-Jan-2020  07:12<!-- #EndDate -->
   UTC</p>
     <hr>
     <h4>Synopsis</h4>
@@ -85,8 +85,11 @@
 	<td>Accord</td>
       </tr><tr>
       </tr><tr>
-	<td class="ttf">$PGRMF,GWEEK,WTIME,DATE,UTC,LEAPS,LAT,LAT_REF,LON,LON_REF,TYPE,MODE,SPD,HDOP,TDOP*CS&lt;cr&gt;&lt;lf&gt;</td>
+	<td class="ttf">$PGRMF,gpsWk,gpsTow,DATE,UTC,LEAPS,LAT,LAT_REF,LON,LON_REF,TYPE,MODE,SPD,HDOP,TDOP*CS&lt;cr&gt;&lt;lf&gt;</td>
 	<td>Garmin</td>
+      </tr><tr>
+	  <td class="ttf">$PUBX,04,UTC,DATE,utcTow,utcWk,LEAPS,clkBias,clkDrift,tpGran,*CS&lt;cr&gt;&lt;lf&gt;</td>
+	  <td>UBLOX</td>
       </tr>	
     </tbody></table></p>
 
@@ -125,8 +128,11 @@
 	<td class="ttf">GPSTIME</td>
 	<td>Time of day on GPS timescale. Hours, minutes and seconds [fraction (opt.)] (hhmmss[.f])</td>
       </tr><tr>
-	<td class="ttf">GWEEK</td>
-	<td>Week number in the GPS time scale, modulo 1024 (0..1023)</td>
+	<td class="ttf">gpsTow</td>
+	<td>GPS week time, seconds since start of GPS week (0..604799)</td>
+      </tr><tr>
+	<td class="ttf">gpsWk</td>
+	<td>Week number in the GPS time scale (may exceed 1024)</td>
       </tr><tr>
 	<td class="ttf">G_UNIT</td>
 	<td>Geoid units (M/F)</td>
@@ -172,9 +178,6 @@
       </tr><tr>
 	<td class="ttf">UTC</td>
 	<td>Time of day on UTC timescale. Hours, minutes and seconds [fraction (opt.)] (hhmmss[.fff])</td>
-      </tr><tr>
-	<td class="ttf">WTIME</td>
-	<td>GPS week time, seconds since start of GPS week (0..604799)</td>
       </tr><tr>
 	<td class="ttf">YYYY</td>
 	<td>Year</td>
@@ -314,9 +317,14 @@
         <td align="center">0x100</td>
 	<td>process <tt>$PGRMF</tt></td>
       </tr><tr>
-        <td align="center">9-15</td>
+        <td align="center">9</td>
+        <td align="center">512</td>
+        <td align="center">0x200</td>
+	<td>process <tt>$PUBX,04</tt></td>
+      </tr><tr>
+        <td align="center">10-15</td>
         <td align="center"></td>
-        <td align="center">0xFE00</td>
+        <td align="center">0xFC00</td>
 	<td>reserved - leave 0</td>
       </tr><tr>
         <td align="center">16</td>

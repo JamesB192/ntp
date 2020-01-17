@@ -107,17 +107,32 @@ gpsntp_from_calendar_ex(TcCivilDate*, l_fp fofs, int/*BOOL*/ warp);
 
 static inline TNtpDatum
 gpsntp_from_calendar(TcCivilDate * pCiv, l_fp fofs) {
-    return gpsntp_from_calendar_ex(pCiv, fofs, TRUE);
+	return gpsntp_from_calendar_ex(pCiv, fofs, TRUE);
 }
 
 extern TNtpDatum
-gpsntp_from_daytime1(TcCivilDate *dt, l_fp fofs, l_fp pivot);
+gpsntp_from_daytime1_ex(TcCivilDate *dt, l_fp fofs, l_fp pivot, int/*BOOL*/ warp);
+
+static inline TNtpDatum
+gpsntp_from_daytime1(TcCivilDate *dt, l_fp fofs, l_fp pivot) {
+	return gpsntp_from_daytime1_ex(dt, fofs, pivot, TRUE);
+}
 
 extern TNtpDatum
-gpsntp_from_daytime2(TcCivilDate *dt, l_fp fofs, TcNtpDatum *pivot);
+gpsntp_from_daytime2_ex(TcCivilDate *dt, l_fp fofs, TcNtpDatum *pivot, int/*BOOL*/ warp);
+
+static inline TNtpDatum
+gpsntp_from_daytime2(TcCivilDate *dt, l_fp fofs, TcNtpDatum *pivot) {
+	return gpsntp_from_daytime2_ex(dt, fofs, pivot, TRUE);
+}
 
 extern TNtpDatum
-gpsntp_from_gpscal(TcGpsDatum*);
+gpsntp_from_gpscal_ex(TcGpsDatum*, int/*BOOL*/ warp);
+
+static inline TNtpDatum
+gpsntp_from_gpscal(TcGpsDatum *wd) {
+	return gpsntp_from_gpscal_ex(wd, FALSE);
+}
 
 extern void
 gpsntp_to_calendar(TCivilDate*, TcNtpDatum*);
