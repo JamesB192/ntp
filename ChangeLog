@@ -2,6 +2,7 @@
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
+* [Bug 3636] NMEA: combine time/date from multiple sentences <perlinger@ntp.org>
 * [Bug 3628] raw DCF decoding - improve robustness with Zeller's congruence
   - implement Zeller's congruence in libparse and libntp <perlinger@ntp.org>
 * [Bug 3620] memory leak in ntpq sysinfo <perlinger@ntp.org>
