@@ -500,6 +500,13 @@ dump_all_config_trees(
 {
 	config_tree *	cfg_ptr;
 	int		return_value;
+	time_t		now = time(NULL)
+	struct tm	tm = *localtime(&now);
+
+	fprintf(df, "#NTF:D %04d%02d%02d@%02d:%02d:%02d\n",
+		tm.tm.tm_year+1900, tm.tm_mon+1, tm.tm_day,
+		tm.tm_hour, tm.tm_min, tm.tm_sec);
+	fprintf(df, "#NTF:V %s\n", Version);
 
 	return_value = 0;
 	for (cfg_ptr = cfg_tree_history;
