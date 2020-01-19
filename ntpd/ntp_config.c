@@ -591,6 +591,11 @@ dump_config_tree(
 				atrv = atrv->link;
 				fprintf(df, " %s\n",
 					normal_dtoa(atrv->value.d));
+			} else if (T_Leapfile == atrv->attr) {
+				fputs((atrv->flag
+				       ? " checkhash\n"
+				       : " ignorehash\n"),
+				      df);
 			} else {
 				fprintf(df, "\n");
 			}
@@ -2307,7 +2312,7 @@ config_monitor(
 
 	/* Set the statistics directory */
 	if (ptree->stats_dir)
-		stats_config(STATS_STATSDIR, ptree->stats_dir);
+	    stats_config(STATS_STATSDIR, ptree->stats_dir, 0);
 
 	/* NOTE:
 	 * Calling filegen_get is brain dead. Doing a string
@@ -3768,7 +3773,7 @@ config_vars(
 				stats_drift_file = 0;
 				msyslog(LOG_INFO, "config: driftfile disabled");
 			} else
-				stats_config(STATS_FREQ_FILE, curr_var->value.s);
+			    stats_config(STATS_FREQ_FILE, curr_var->value.s, 0);
 			break;
 
 		case T_Dscp:
@@ -3786,7 +3791,7 @@ config_vars(
 			break;
 
 		case T_Leapfile:
-			stats_config(STATS_LEAP_FILE, curr_var->value.s);
+		    stats_config(STATS_LEAP_FILE, curr_var->value.s, curr_var->flag);
 			break;
 
 #ifdef LEAP_SMEAR
@@ -3797,7 +3802,7 @@ config_vars(
 #endif
 
 		case T_Pidfile:
-			stats_config(STATS_PID_FILE, curr_var->value.s);
+		    stats_config(STATS_PID_FILE, curr_var->value.s, 0);
 			break;
 
 		case T_Logfile:
