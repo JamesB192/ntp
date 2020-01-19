@@ -530,4 +530,12 @@ is_leapyear(int32_t y) {
  * Assuming that the true division is the most costly operation, this
  * sequence should give most bang for the buck.
  */
+
+/* misc */
+extern int      u32mod7(uint32_t x);
+extern int      i32mod7(int32_t x);
+extern uint32_t i32fmod(int32_t x, uint32_t d);
+
+extern int32_t ntpcal_expand_century(uint32_t y, uint32_t m, uint32_t d, uint32_t wd);
+
 #endif
