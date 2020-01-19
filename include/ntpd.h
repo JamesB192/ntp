@@ -282,7 +282,7 @@ extern	u_char	sys_automax;	/* session key timeout */
 /* ntp_util.c */
 extern	void	init_util	(void);
 extern	void	write_stats	(void);
-extern	void	stats_config	(int, const char *);
+extern	void	stats_config	(int, const char *, int optflag);
 extern	void	record_peer_stats (sockaddr_u *, int, double, double, double, double);
 extern	void	record_proto_stats (char *);
 extern	void	record_loop_stats (double, double, double, double, int);
