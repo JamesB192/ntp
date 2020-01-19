@@ -414,7 +414,8 @@ $(srcdir)/invoke-ntpd.texi: $(srcdir)/ntpd-opts.def $(srcdir)/ntpdbase-opts.def 
 $(PROGRAMS): $(LDADD)
 
 compsave.conf: ntpd complete.conf
-	./ntpd --configfile complete.conf --saveconfigquit $@
+	./ntpd --configfile complete.conf --saveconfigquit $@+
+	grep -v '^#' $@+ > $@
 
 check-saveconfig: complete.conf compsave.conf
 	-diff -u complete.conf compsave.conf
