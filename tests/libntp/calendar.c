@@ -52,6 +52,13 @@ void	test_GpsNtpFixpoints(void);
 void	test_NtpToNtp(void);
 void	test_NtpToTime(void);
 
+void	test_CalUMod7(void);
+void	test_CalIMod7(void);
+void	test_RellezCentury1_1(void);
+void	test_RellezCentury3_1(void);
+void	test_RellezYearZero(void);
+
+
 void
 setUp(void)
 {
@@ -983,3 +990,231 @@ test_GpsNtpFixpoints(void)
 		 lfptoa(&lfpe, 9), lfptoa(&lfpr, 9));
 	TEST_ASSERT_TRUE_MESSAGE(L_ISEQU(&lfpe, &lfpr), mbuf);
 }
+
+void
+test_CalUMod7(void)
+{
+	TEST_ASSERT_EQUAL(0, u32mod7(0));
+	TEST_ASSERT_EQUAL(1, u32mod7(INT32_MAX));
+	TEST_ASSERT_EQUAL(2, u32mod7(UINT32_C(1)+INT32_MAX));
+	TEST_ASSERT_EQUAL(3, u32mod7(UINT32_MAX));
+}
+
+void
+test_CalIMod7(void)
+{
+	TEST_ASSERT_EQUAL(5, i32mod7(INT32_MIN));
+	TEST_ASSERT_EQUAL(6, i32mod7(-1));
+	TEST_ASSERT_EQUAL(0, i32mod7(0));
+	TEST_ASSERT_EQUAL(1, i32mod7(INT32_MAX));
+}
+
+/* Century expansion tests. Reverse application of Zeller's congruence,
+ * sort of... hence the name "Rellez", Zeller backwards. Just in case
+ * you didn't notice ;)
+ */
+
+void
+test_RellezCentury1_1()
+{
+	/* 1st day of a century */
+	TEST_ASSERT_EQUAL(1901, ntpcal_expand_century( 1, 1, 1, CAL_TUESDAY  ));
+	TEST_ASSERT_EQUAL(2001, ntpcal_expand_century( 1, 1, 1, CAL_MONDAY   ));
+	TEST_ASSERT_EQUAL(2101, ntpcal_expand_century( 1, 1, 1, CAL_SATURDAY ));
+	TEST_ASSERT_EQUAL(2201, ntpcal_expand_century( 1, 1, 1, CAL_THURSDAY ));
+	/* bad/impossible cases: */
+	TEST_ASSERT_EQUAL(   0, ntpcal_expand_century( 1, 1, 1, CAL_WEDNESDAY));
+	TEST_ASSERT_EQUAL(   0, ntpcal_expand_century( 1, 1, 1, CAL_FRIDAY   ));
+	TEST_ASSERT_EQUAL(   0, ntpcal_expand_century( 1, 1, 1, CAL_SUNDAY   ));
+}
+
+void
+test_RellezCentury3_1()
+{
+	/* 1st day in March of a century (the tricky point) */
+	TEST_ASSERT_EQUAL(1901, ntpcal_expand_century( 1, 3, 1, CAL_FRIDAY   ));
+	TEST_ASSERT_EQUAL(2001, ntpcal_expand_century( 1, 3, 1, CAL_THURSDAY ));
+	TEST_ASSERT_EQUAL(2101, ntpcal_expand_century( 1, 3, 1, CAL_TUESDAY  ));
+	TEST_ASSERT_EQUAL(2201, ntpcal_expand_century( 1, 3, 1, CAL_SUNDAY   ));
+	/* bad/impossible cases: */
+	TEST_ASSERT_EQUAL(   0, ntpcal_expand_century( 1, 3, 1, CAL_MONDAY   ));
+	TEST_ASSERT_EQUAL(   0, ntpcal_expand_century( 1, 3, 1, CAL_WEDNESDAY));
+	TEST_ASSERT_EQUAL(   0, ntpcal_expand_century( 1, 3, 1, CAL_SATURDAY ));
+}
+
+void
+test_RellezYearZero()
+{
+	/* the infamous year zero */
+	TEST_ASSERT_EQUAL(1900, ntpcal_expand_century( 0, 1, 1, CAL_MONDAY   ));
+	TEST_ASSERT_EQUAL(2000, ntpcal_expand_century( 0, 1, 1, CAL_SATURDAY ));
+	TEST_ASSERT_EQUAL(2100, ntpcal_expand_century( 0, 1, 1, CAL_FRIDAY   ));
+	TEST_ASSERT_EQUAL(2200, ntpcal_expand_century( 0, 1, 1, CAL_WEDNESDAY));
+	/* bad/impossible cases: */
+	TEST_ASSERT_EQUAL(   0, ntpcal_expand_century( 0, 1, 1, CAL_TUESDAY  ));
+	TEST_ASSERT_EQUAL(   0, ntpcal_expand_century( 0, 1, 1, CAL_THURSDAY ));
+	TEST_ASSERT_EQUAL(   0, ntpcal_expand_century( 0, 1, 1, CAL_SUNDAY   ));
+}
+
+void test_RellezEra(void);
+void test_RellezEra(void)
+{
+	static const unsigned int mt[13] = { 0, 31,28,31,30,31,30,31,31,30,31,30,31 };
+	unsigned int yi, yo, m, d, wd;
+
+	/* last day before our era -- fold forward */
+	yi = 1899;
+	m  = 12;
+	d  = 31;
+	wd = ntpcal_edate_to_eradays(yi-1, m-1, d-1) % 7 + 1;
+	yo = ntpcal_expand_century((yi%100), m, d, wd);
+	snprintf(mbuf, sizeof(mbuf), "failed, di=%04u-%02u-%02u, wd=%u",
+		 yi, m, d, wd);
+	TEST_ASSERT_EQUAL_MESSAGE(2299, yo, mbuf);
+
+	/* 1st day after our era -- fold back */
+	yi = 2300;
+	m  = 1;
+	d  = 1;
+	wd = ntpcal_edate_to_eradays(yi-1, m-1, d-1) % 7 + 1;
+	yo = ntpcal_expand_century((yi%100), m, d, wd);
+	snprintf(mbuf, sizeof(mbuf), "failed, di=%04u-%02u-%02u, wd=%u",
+		 yi, m, d, wd);
+	TEST_ASSERT_EQUAL_MESSAGE(1900, yo, mbuf);
+
+	/* test every month in our 400y era */
+	for (yi = 1900; yi < 2300; ++yi) {
+		for (m = 1; m < 12; ++m) {
+			/* test first day of month */
+			d = 1;
+			wd = ntpcal_edate_to_eradays(yi-1, m-1, d-1) % 7 + 1;
+			yo = ntpcal_expand_century((yi%100), m, d, wd);
+			snprintf(mbuf, sizeof(mbuf), "failed, di=%04u-%02u-%02u, wd=%u",
+				 yi, m, d, wd);
+			TEST_ASSERT_EQUAL_MESSAGE(yi, yo, mbuf);
+
+			/* test last day of month */
+			d = mt[m] + (m == 2 && is_leapyear(yi));
+			wd = ntpcal_edate_to_eradays(yi-1, m-1, d-1) % 7 + 1;
+			yo = ntpcal_expand_century((yi%100), m, d, wd);
+			snprintf(mbuf, sizeof(mbuf), "failed, di=%04u-%02u-%02u, wd=%u",
+				 yi, m, d, wd);
+			TEST_ASSERT_EQUAL_MESSAGE(yi, yo, mbuf);
+		}
+	}
+}
+
+/* This is nearly a verbatim copy of the in-situ implementation of
+ * Zeller's congruence in libparse/clk_rawdcf.c, so the algorithm
+ * can be tested.
+ */
+static int
+zeller_expand(
+        unsigned int  y,
+        unsigned int  m,
+        unsigned int  d,
+	unsigned int  wd
+	)
+{
+	unsigned int  c;
+
+        if ((y >= 100u) || (--m >= 12u) || (--d >= 31u) || (--wd >= 7u))
+		return 0;
+
+	if ((m += 10u) >= 12u)
+		m -= 12u;
+	else if (--y >= 100u)
+		y += 100u;
+	d += y + (y >> 2) + 2u;
+	d += (m * 83u + 16u) >> 5;
+
+	c = (((252u + wd - d) * 0x6db6db6eU) >> 29) & 7u;
+	if (c > 3u)
+		return 0;
+	
+	if ((m > 9u) && (++y >= 100u)) {
+		y -= 100u;
+		c = (c + 1) & 3u;
+	}
+	y += (c * 100u);
+	y += (y < 370u) ? 2000 : 1600;
+	return (int)y;
+}
+
+void test_zellerDirect(void);
+void test_zellerDirect(void)
+{
+	static const unsigned int mt[13] = { 0, 31,28,31,30,31,30,31,31,30,31,30,31 };
+	unsigned int yi, yo, m, d, wd;
+
+	/* last day before our era -- fold forward */
+	yi = 1969;
+	m  = 12;
+	d  = 31;
+	wd = ntpcal_edate_to_eradays(yi-1, m-1, d-1) % 7 + 1;
+	yo = zeller_expand((yi%100), m, d, wd);
+	snprintf(mbuf, sizeof(mbuf), "failed, di=%04u-%02u-%02u, wd=%u",
+		 yi, m, d, wd);
+	TEST_ASSERT_EQUAL_MESSAGE(2369, yo, mbuf);
+
+	/* 1st day after our era -- fold back */
+	yi = 2370;
+	m  = 1;
+	d  = 1;
+	wd = ntpcal_edate_to_eradays(yi-1, m-1, d-1) % 7 + 1;
+	yo = zeller_expand((yi%100), m, d, wd);
+	snprintf(mbuf, sizeof(mbuf), "failed, di=%04u-%02u-%02u, wd=%u",
+		 yi, m, d, wd);
+	TEST_ASSERT_EQUAL_MESSAGE(1970, yo, mbuf);
+
+	/* test every month in our 400y era */
+	for (yi = 1970; yi < 2370; ++yi) {
+		for (m = 1; m < 12; ++m) {
+			/* test first day of month */
+			d = 1;
+			wd = ntpcal_edate_to_eradays(yi-1, m-1, d-1) % 7 + 1;
+			yo = zeller_expand((yi%100), m, d, wd);
+			snprintf(mbuf, sizeof(mbuf), "failed, di=%04u-%02u-%02u, wd=%u",
+				 yi, m, d, wd);
+			TEST_ASSERT_EQUAL_MESSAGE(yi, yo, mbuf);
+
+			/* test last day of month */
+			d = mt[m] + (m == 2 && is_leapyear(yi));
+			wd = ntpcal_edate_to_eradays(yi-1, m-1, d-1) % 7 + 1;
+			yo = zeller_expand((yi%100), m, d, wd);
+			snprintf(mbuf, sizeof(mbuf), "failed, di=%04u-%02u-%02u, wd=%u",
+				 yi, m, d, wd);
+			TEST_ASSERT_EQUAL_MESSAGE(yi, yo, mbuf);
+		}
+	}
+}
+
+void test_ZellerDirectBad(void);
+void test_ZellerDirectBad(void)
+{
+	unsigned int y, n, wd;
+	for (y = 2001; y < 2101; ++y) {
+		wd = ntpcal_edate_to_eradays(y-1, 0, 0) % 7 + 1;
+		/* move 4 centuries ahead */
+		wd = (wd + 5) % 7 + 1;
+		for (n = 0; n < 3; ++n) {
+			TEST_ASSERT_EQUAL(0, zeller_expand((y%100), 1, 1, wd));
+			wd = (wd + 4) % 7 + 1;
+		}
+	}
+}
+		
+void test_zellerModInv(void);
+void test_zellerModInv(void)
+{
+	unsigned int i, r1, r2;
+
+	for (i = 0; i < 2048; ++i) {
+		r1 = (3 * i) % 7;
+		r2 = ((i * 0x6db6db6eU) >> 29) & 7u;
+		snprintf(mbuf, sizeof(mbuf), "i=%u", i);
+		TEST_ASSERT_EQUAL_MESSAGE(r1, r2, mbuf);
+	}
+}
+
+

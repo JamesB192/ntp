@@ -25,8 +25,8 @@
  * We simply pre-calculate the offsets and cycle shifts for the real GPS
  * calendar, which starts at 1980-01-06, to simplyfy some expressions.
  *
- * This has fringe benefit that sould not be overlooked: Since week zero
- * is around 1900, and we should never have to deal with dates befor
+ * This has a fringe benefit that should not be overlooked: Since week zero
+ * is around 1900, and we should never have to deal with dates before
  * 1970 or 1980, a week number of zero can be easily used to indicate
  * an invalid week time stamp.
  */
@@ -107,17 +107,32 @@ gpsntp_from_calendar_ex(TcCivilDate*, l_fp fofs, int/*BOOL*/ warp);
 
 static inline TNtpDatum
 gpsntp_from_calendar(TcCivilDate * pCiv, l_fp fofs) {
-    return gpsntp_from_calendar_ex(pCiv, fofs, TRUE);
+	return gpsntp_from_calendar_ex(pCiv, fofs, TRUE);
 }
 
 extern TNtpDatum
-gpsntp_from_daytime1(TcCivilDate *dt, l_fp fofs, l_fp pivot);
+gpsntp_from_daytime1_ex(TcCivilDate *dt, l_fp fofs, l_fp pivot, int/*BOOL*/ warp);
+
+static inline TNtpDatum
+gpsntp_from_daytime1(TcCivilDate *dt, l_fp fofs, l_fp pivot) {
+	return gpsntp_from_daytime1_ex(dt, fofs, pivot, TRUE);
+}
 
 extern TNtpDatum
-gpsntp_from_daytime2(TcCivilDate *dt, l_fp fofs, TcNtpDatum *pivot);
+gpsntp_from_daytime2_ex(TcCivilDate *dt, l_fp fofs, TcNtpDatum *pivot, int/*BOOL*/ warp);
+
+static inline TNtpDatum
+gpsntp_from_daytime2(TcCivilDate *dt, l_fp fofs, TcNtpDatum *pivot) {
+	return gpsntp_from_daytime2_ex(dt, fofs, pivot, TRUE);
+}
 
 extern TNtpDatum
-gpsntp_from_gpscal(TcGpsDatum*);
+gpsntp_from_gpscal_ex(TcGpsDatum*, int/*BOOL*/ warp);
+
+static inline TNtpDatum
+gpsntp_from_gpscal(TcGpsDatum *wd) {
+	return gpsntp_from_gpscal_ex(wd, FALSE);
+}
 
 extern void
 gpsntp_to_calendar(TCivilDate*, TcNtpDatum*);

@@ -94,7 +94,7 @@
 #define NMEA_QUIETPPS_MASK	0x00020000U
 #define NMEA_DATETRUST_MASK	0x00040000U
 
-#define NMEA_PROTO_IDLEN	5	/* tag name must be at least 5 chars */
+#define NMEA_PROTO_IDLEN	4	/* tag name must be at least 4 chars */
 #define NMEA_PROTO_MINLEN	6	/* min chars in sentence, excluding CS */
 #define NMEA_PROTO_MAXLEN	80	/* max chars in sentence, excluding CS */
 #define NMEA_PROTO_FIELDS	32	/* not official; limit on fields per record */
@@ -152,6 +152,8 @@
 #define	SPEED232	B4800	/* uart speed (4800 bps) */
 #define	PRECISION	(-9)	/* precision assumed (about 2 ms) */
 #define	PPS_PRECISION	(-20)	/* precision assumed (about 1 us) */
+#define	DATE_HOLD	16	/* seconds to hold on provided GPS date */
+#define	DATE_HLIM	4	/* when do we take ANY date format */
 #define	REFID		"GPS\0"	/* reference id */
 #define	DESCRIPTION	"NMEA GPS Clock" /* who we are */
 #ifndef O_NOCTTY
@@ -182,7 +184,8 @@
  */
 #define NMEA_GPZDG	4
 #define NMEA_PGRMF	5
-#define NMEA_ARRAY_SIZE (NMEA_PGRMF + 1)
+#define NMEA_PUBX04	6
+#define NMEA_ARRAY_SIZE (NMEA_PUBX04 + 1)
 
 /*
  * Sentence selection mode bits
@@ -192,6 +195,7 @@
 #define USE_GPGLL		0x00000004u
 #define USE_GPZDA		0x00000008u
 #define USE_PGRMF		0x00000100u
+#define USE_PUBX04		0x00000200u
 
 /* mapping from sentence index to controlling mode bit */
 static const u_int32 sentence_mode[NMEA_ARRAY_SIZE] =
@@ -201,13 +205,23 @@ static const u_int32 sentence_mode[NMEA_ARRAY_SIZE] =
 	USE_GPGLL,
 	USE_GPZDA,
 	USE_GPZDA,
-	USE_PGRMF
+	USE_PGRMF,
+	USE_PUBX04
 };
 
 /* date formats we support */
 enum date_fmt {
 	DATE_1_DDMMYY,	/* use 1 field	with 2-digit year */
 	DATE_3_DDMMYYYY	/* use 3 fields with 4-digit year */
+};
+
+/* date type */
+enum date_type {
+	DTYP_NONE,
+	DTYP_Y2D,	/* 2-digit year */
+	DTYP_W10B,	/* 10-bit week in GPS epoch */
+	DTYP_Y4D,	/* 4-digit (full) year */
+	DTYP_WEXT	/* extended week in GPS epoch */
 };
 
 /* results for 'field_init()'
@@ -237,6 +251,8 @@ typedef struct {
 	u_char  	gps_time;	/* use GPS time, not UTC */
 	l_fp		last_reftime;	/* last processed reference stamp */
 	TNtpDatum	last_gpsdate;	/* last processed split date/time */
+	u_short		hold_gpsdate;	/* validity ticker for above */
+	u_short		type_gpsdate;	/* date info type for above */
 	/* tally stats, reset each poll cycle */
 	struct
 	{
@@ -407,7 +423,7 @@ nmea_start(
 	up->ppsapi_fd = -1;
 #   endif /* HAVE_PPSAPI */
 	ZERO(up->tally);
-	
+
 	/* Initialize miscellaneous variables */
 	peer->precision = PRECISION;
 	pp->clockdesc = DESCRIPTION;
@@ -598,6 +614,9 @@ nmea_timer(
 		up->lb_buf[0] = '\0';
 		up->lb_len    = 0;
 	}
+
+	if (up->hold_gpsdate && (--up->hold_gpsdate < DATE_HLIM))
+		up->type_gpsdate = DTYP_NONE;
 }
 
 /*
@@ -641,8 +660,10 @@ nmea_procrec(
 	/* results of sentence/date/time parsing */
 	u_char		sentence;	/* sentence tag */
 	int		checkres;
+	int		warp;		/* warp to GPS base date */
 	char *		cp;
 	int		rc_date, rc_time;
+	u_short		rc_dtyp;
 #   ifdef HAVE_PPSAPI
 	int		withpps = 0;
 #   endif /* HAVE_PPSAPI */
@@ -701,6 +722,8 @@ nmea_procrec(
 		sentence = NMEA_GPZDG;
 	else if (strncmp(cp,   "PGRMF,", 6) == 0)
 		sentence = NMEA_PGRMF;
+	else if (strncmp(cp,   "PUBX,04,", 8) == 0)
+		sentence = NMEA_PUBX04;
 	else
 		return;	/* not something we know about */
 
@@ -751,9 +774,18 @@ nmea_procrec(
 	 * Once have processed a $GPZDG, do not process any further UTC
 	 * sentences (all but $GPZDG currently).
 	 */
-	if (up->gps_time && NMEA_GPZDG != sentence) {
-		up->tally.filtered++;
-		return;
+	if (sentence == NMEA_GPZDG) {
+		if (!up->gps_time) {
+			msyslog(LOG_INFO,
+				"%s using GPS time as if it were UTC",
+				refnumtoa(&peer->srcadr));
+			up->gps_time = 1;
+		}
+	} else {
+		if (up->gps_time) {
+			up->tally.filtered++;
+			return;
+		}
 	}
 
 	DPRINTF(1, ("%s processing %d bytes, timecode '%s'\n",
@@ -764,14 +796,18 @@ nmea_procrec(
 	 * sensitive data from the last timecode.
 	 */
 	rc_date = -1;	/* assume we have to do day-time mapping */
-	switch (sentence) {
+	rc_dtyp = DTYP_NONE;
+       	switch (sentence) {
 
 	case NMEA_GPRMC:
 		/* Check quality byte, fetch data & time */
 		rc_time	 = parse_time(&date, &tofs, &rdata, 1);
 		pp->leap = parse_qual(&rdata, 2, 'A', 0);
-		rc_date	 = parse_date(&date, &rdata, 9, DATE_1_DDMMYY);
-		if (CLK_FLAG4 & pp->sloppyclockflag)
+		if (up->type_gpsdate <= DTYP_Y2D) {
+			rc_date	= parse_date(&date, &rdata, 9, DATE_1_DDMMYY);
+			rc_dtyp = DTYP_Y2D;
+		}
+ 		if (CLK_FLAG4 & pp->sloppyclockflag)
 			field_wipe(&rdata, 3, 4, 5, 6, -1);
 		break;
 
@@ -793,29 +829,45 @@ nmea_procrec(
 
 	case NMEA_GPZDA:
 		/* No quality.	Assume best, fetch time & full date */
-		pp->leap = LEAP_NOWARNING;
-		rc_time	 = parse_time(&date, &tofs, &rdata, 1);
-		rc_date	 = parse_date(&date, &rdata, 2, DATE_3_DDMMYYYY);
+		rc_time	= parse_time(&date, &tofs, &rdata, 1);
+		if (up->type_gpsdate <= DTYP_Y4D) {
+			rc_date	= parse_date(&date, &rdata, 2, DATE_3_DDMMYYYY);
+			rc_dtyp = DTYP_Y4D;
+		}
 		break;
 
 	case NMEA_GPZDG:
 		/* Check quality byte, fetch time & full date */
 		rc_time	 = parse_time(&date, &tofs, &rdata, 1);
-		rc_date	 = parse_date(&date, &rdata, 2, DATE_3_DDMMYYYY);
 		pp->leap = parse_qual(&rdata, 4, '0', 1);
 		--tofs.l_ui; /* GPZDG gives *following* second */
+		if (up->type_gpsdate <= DTYP_Y4D) {
+			rc_date	= parse_date(&date, &rdata, 2, DATE_3_DDMMYYYY);
+			rc_dtyp = DTYP_Y4D;
+		}
 		break;
 
 	case NMEA_PGRMF:
-		/* get date, time, qualifier and GPS weektime. We need
-		 * date and time-of-day for the century fix, so we read
-		 * them first.
-		 */
-		rc_time  = parse_gpsw(&wgps, &rdata, 1, 2, 5);
-		rc_date  = -2;
+		/* get time, qualifier and GPS weektime. */
+		rc_time = parse_time(&date, &tofs, &rdata, 4);
+		if (up->type_gpsdate <= DTYP_W10B) {
+			rc_date = parse_gpsw(&wgps, &rdata, 1, 2, 5);
+			rc_dtyp = DTYP_W10B;
+		}
 		pp->leap = parse_qual(&rdata, 11, '0', 1);
 		if (CLK_FLAG4 & pp->sloppyclockflag)
 			field_wipe(&rdata, 6, 8, -1);
+		break;
+
+	case NMEA_PUBX04:
+		/* PUBX,04 is peculiar. The UTC time-of-week is the *internal*
+		 * time base, which is not exactly on par with the fix time.
+		 */
+		rc_time = parse_time(&date, &tofs, &rdata, 2);
+		if (up->type_gpsdate <= DTYP_WEXT) {
+			rc_date = parse_gpsw(&wgps, &rdata, 5, 4, -1);
+			rc_dtyp = DTYP_WEXT;
+		}
 		break;
 
 	default:
@@ -861,19 +913,35 @@ nmea_procrec(
 		rd_timestamp = ntpfp_with_fudge(
 			rd_timestamp, pp->fudgetime2);
 
+	/* set the GPS base date, if possible */
+	warp = !(peer->ttl & NMEA_DATETRUST_MASK);
+	if (rc_dtyp != DTYP_NONE) {
+		DPRINTF(1, ("%s saving date, type=%hu\n",
+			    refnumtoa(&peer->srcadr), rc_dtyp));
+		switch (rc_dtyp) {
+		case DTYP_W10B:
+			up->last_gpsdate = gpsntp_from_gpscal_ex(
+				&wgps, (warp = TRUE));
+			break;
+		case DTYP_WEXT:
+			up->last_gpsdate = gpsntp_from_gpscal_ex(
+				&wgps, warp);
+			break;
+		default:
+			up->last_gpsdate = gpsntp_from_calendar_ex(
+				&date, tofs, warp);
+			break;
+		}
+		up->type_gpsdate = rc_dtyp;
+		up->hold_gpsdate = DATE_HOLD;
+	}
 	/* now convert and possibly extend/expand the time stamp. */
-	if (rc_date == 1) {		/* (truncated) date available	*/
-		dntp = gpsntp_from_calendar_ex(
-			&date, tofs, !(peer->ttl & NMEA_DATETRUST_MASK));
-		up->last_gpsdate = dntp;
-	} else if (rc_date == -2) {	/* full GPS week time		*/
-		dntp = gpsntp_from_gpscal(&wgps);
-		up->last_gpsdate = dntp;
-	} else if (up->last_gpsdate.days) { /* time of day, based	*/
-		dntp = gpsntp_from_daytime2(&date, tofs, &up->last_gpsdate);
-		up->last_gpsdate = dntp;
-	} else {			/* time of day, floating	*/
-		dntp = gpsntp_from_daytime1(&date, tofs, rd_timestamp);
+	if (up->hold_gpsdate) {	/* time of day, based */
+		dntp = gpsntp_from_daytime2_ex(
+			&date, tofs, &up->last_gpsdate, warp);
+	} else {		/* time of day, floating */
+		dntp = gpsntp_from_daytime1_ex(
+			&date, tofs, rd_timestamp, warp);
 	}
 
 	if (debug) {
@@ -889,13 +957,6 @@ nmea_procrec(
 			    refnumtoa(&peer->srcadr),
 			    ntpcal_iso8601std(NULL, 0, &date)));
 #	    endif /* !HAVE_PPSAPI */
-	}
-
-	/* Check if we must enter GPS time mode; log so if we do */
-	if (!up->gps_time && (sentence == NMEA_GPZDG)) {
-		msyslog(LOG_INFO, "%s using GPS time as if it were UTC",
-			refnumtoa(&peer->srcadr));
-		up->gps_time = 1;
 	}
 
 	/* Get the reference time stamp from the calendar buffer.
@@ -974,7 +1035,7 @@ nmea_procrec(
  * timing is badly affected unless a PPS channel is also associated with
  * the clock instance. TCP leaves us nothing to improve on here.
  * -------------------------------------------------------------------
- */ 
+ */
 static void
 nmea_receive(
 	struct recvbuf * rbufp
@@ -991,7 +1052,7 @@ nmea_receive(
 	/* paranoia check: */
 	if (up->lb_len >= sizeof(up->lb_buf))
 		up->lb_len = 0;
-	
+
 	/* pick up last assembly position; leave room for NUL */
 	dp = up->lb_buf + up->lb_len;
 	de = up->lb_buf + sizeof(up->lb_buf) - 1;
@@ -1013,7 +1074,7 @@ nmea_receive(
 		} else if (ch == '\n' || ch == '\r') {
 			*dp = '\0';
 			up->lb_len = (int)(dp - up->lb_buf);
-			dp = up->lb_buf;				
+			dp = up->lb_buf;
 			nmea_procrec(peer, rbufp->recv_time);
 		} else if (ch >= 0x20 && ch < 0x7f) {
 			*dp++ = ch;
@@ -1388,40 +1449,6 @@ static int _parse_sep(UCC *cp, UCC ** ep)
 	return rc;
 }
 
-/* /(\.[[:digit:]]*)?/ --> l_fp{0, f}
- * read fractional seconds, convert to l_fp
- *
- * Only the first 9 decimal digits are evaluated; any excess is parsed
- * away but silently ignored. (--> truncation to 1 nanosecond)
- */
-static int _parse_frac(UCC *cp, UCC ** ep, l_fp *into)
-{
-	unsigned int	ndig = 9;
-	struct timespec	ts;
-
-	ZERO(ts);
-	if (*cp == '.') {
-		while (ndig && isdigit(*++cp)) {
-			ts.tv_nsec *= 10;
-			ts.tv_nsec += (*cp - '0');
-			--ndig;
-		}
-		if (ndig && ts.tv_nsec) {
-			uint32_t mmul = 10;
-			do {
-				if (ndig & 1)
-					ts.tv_nsec *= mmul;
-				mmul *= mmul;
-			} while (0 != (ndig >>= 1));
-		}
-		while (isdigit(*cp))
-			++cp;
-	}
-	*ep   = cp;
-	*into = tspec_intv_to_lfp(ts);
-	return TRUE;
-}
-
 /* /[[:digit:]]{2}/ --> uint16_t */
 static int _parse_num2d(UCC *cp, UCC ** ep, uint16_t *into)
 {
@@ -1437,15 +1464,15 @@ static int _parse_num2d(UCC *cp, UCC ** ep, uint16_t *into)
 }
 
 /* /[[:digit:]]+/ --> uint16_t */
-static int _parse_u16(UCC *cp, UCC ** ep, uint16_t *into)
+static int _parse_u16(UCC *cp, UCC **ep, uint16_t *into, unsigned int ndig)
 {
 	uint16_t	num = 0;
 	int		rc  = FALSE;
-	if (isdigit(*cp)) {
+	if (isdigit(*cp) && ndig) {
 		rc = TRUE;
 		do
-			num = num * 10 + *cp++ - '0';
-		while (isdigit(*cp));
+			num = (num * 10) + (*cp - '0');
+		while (isdigit(*++cp) && --ndig);
 		*into = num;
 	}
 	*ep = cp;
@@ -1453,19 +1480,50 @@ static int _parse_u16(UCC *cp, UCC ** ep, uint16_t *into)
 }
 
 /* /[[:digit:]]+/ --> uint32_t */
-static int _parse_u32(UCC *cp, UCC ** ep, uint32_t *into)
+static int _parse_u32(UCC *cp, UCC **ep, uint32_t *into, unsigned int ndig)
 {
 	uint32_t	num = 0;
 	int		rc  = FALSE;
-	if (isdigit(*cp)) {
+	if (isdigit(*cp) && ndig) {
 		rc = TRUE;
 		do
-			num = num * 10 + *cp++ - '0';
-		while (isdigit(*cp));
+			num = (num * 10) + (*cp - '0');
+		while (isdigit(*++cp) && --ndig);
 		*into = num;
 	}
 	*ep = cp;
 	return rc;
+}
+
+/* /(\.[[:digit:]]*)?/ --> l_fp{0, f}
+ * read fractional seconds, convert to l_fp
+ *
+ * Only the first 9 decimal digits are evaluated; any excess is parsed
+ * away but silently ignored. (--> truncation to 1 nanosecond)
+ */
+static int _parse_frac(UCC *cp, UCC **ep, l_fp *into)
+{
+	static const uint32_t powtab[10] = {
+		        0,
+		100000000, 10000000, 1000000,
+		   100000,    10000,    1000,
+		      100,       10,       1
+	};
+
+	struct timespec	ts;
+	ZERO(ts);
+	if (*cp == '.') {
+		uint32_t fval = 0;
+		UCC *    sp   = cp + 1;
+		if (_parse_u32(sp, &cp, &fval, 9))
+			ts.tv_nsec = fval * powtab[(size_t)(cp - sp)];
+		while (isdigit(*cp))
+			++cp;
+	}
+
+	*ep   = cp;
+	*into = tspec_intv_to_lfp(ts);
+	return TRUE;
 }
 
 /* /[[:digit:]]{6}/ --> time-of-day
@@ -1529,11 +1587,11 @@ static int _parse_date3(UCC *cp, UCC **ep, TCivilDate *into)
 	int		rc;
 	UCC *		xp = cp;
 
-	rc =   _parse_u16(cp, &cp, &d) && (d - 1 < 31)
+	rc =   _parse_u16(cp, &cp, &d, 2) && (d - 1 < 31)
 	    && _parse_sep(cp, &cp)
-	    && _parse_u16(cp, &cp, &m) && (m - 1 < 12)
+	    && _parse_u16(cp, &cp, &m, 2) && (m - 1 < 12)
 	    && _parse_sep(cp, &cp)
-	    && _parse_u16(cp, &cp, &y) && (y > 1980)
+	    && _parse_u16(cp, &cp, &y, 4) && (y > 1980)
 	    && _parse_eof(cp, ep);
 	if (rc) {
 		into->monthday = (uint8_t )d;
@@ -1647,30 +1705,33 @@ parse_gpsw(
 	)
 {
 	uint32_t	secs;
-	uint16_t	week, leap;
+	uint16_t	week, leap = 0;
 	l_fp		fofs;
 	int		rc;
 
 	UCC *	dpw = (UCC*)field_parse(rd, weekidx);
 	UCC *	dps = (UCC*)field_parse(rd, timeidx);
-	UCC *	dpl = (UCC*)field_parse(rd, leapidx);
 
-	rc =   _parse_u16 (dpw, &dpw, &week)
-	    && _parse_eof (dpw, &dpw)		&& (week < 1024)
-	    && _parse_u32 (dps, &dps, &secs)
+	rc =   _parse_u16 (dpw, &dpw, &week, 5)
+	    && _parse_eof (dpw, &dpw)
+	    && _parse_u32 (dps, &dps, &secs, 9)
 	    && _parse_frac(dps, &dps, &fofs)
-	    && _parse_eof (dps, &dps)		&& (secs < 7*SECSPERDAY)
-	    && _parse_u16 (dpl, &dpl, &leap)
-	    && _parse_eof (dpl, &dpl);
-
+	    && _parse_eof (dps, &dps)
+	    && (secs < 7*SECSPERDAY);
+	if (rc && leapidx > 0) {
+		UCC *	dpl = (UCC*)field_parse(rd, leapidx);
+		rc =   _parse_u16 (dpl, &dpl, &leap, 5)
+		    && _parse_eof (dpl, &dpl);
+	}
 	if (rc) {
 		fofs.l_ui -= leap;
 		*wd = gpscal_from_gpsweek(week, secs, fofs);
 	} else {
-		DPRINTF(1, ("nmea: parse_weekdata: invalid weektime spec\n"));
+		DPRINTF(1, ("nmea: parse_gpsw: invalid weektime spec\n"));
 	}
 	return rc;
 }
+
 
 #ifdef HAVE_PPSAPI
 static double

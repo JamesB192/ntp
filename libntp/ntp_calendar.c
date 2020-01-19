@@ -285,7 +285,7 @@ ntpcal_get_build_date(
 	 * Note that MSVC declares DATE and TIME to be in the local time
 	 * zone, while neither the C standard nor the GCC docs make any
 	 * statement about this. As a result, we may be +/-12hrs off
-	 * UTC.  But for practical purposes, this should not be a
+	 * UTC.	 But for practical purposes, this should not be a
 	 * problem.
 	 *
 	 */
@@ -299,12 +299,12 @@ ntpcal_get_build_date(
 	char		  monstr[4];
 	const char *	  cp;
 	unsigned short	  hour, minute, second, day, year;
- 	/* Note: The above quantities are used for sscanf 'hu' format,
+	/* Note: The above quantities are used for sscanf 'hu' format,
 	 * so using 'uint16_t' is contra-indicated!
 	 */
 
 #   ifdef DEBUG
-	static int        ignore  = 0;
+	static int	  ignore  = 0;
 #   endif
 
 	ZERO(*jd);
@@ -389,6 +389,60 @@ ntpcal_get_build_date(
 
 /*
  *---------------------------------------------------------------------
+ * fast modulo 7 operations (floor/mathematical convention)
+ *---------------------------------------------------------------------
+ */
+int
+u32mod7(
+	uint32_t x
+	)
+{
+	/* This is a combination of tricks from "Hacker's Delight" with
+	 * some modifications, like a multiplication that rounds up to
+	 * drop the final adjustment stage.
+	 *
+	 * Do a partial reduction by digit sum to keep the value in the
+	 * range permitted for the mul/shift stage. There are several
+	 * possible and absolutely equivalent shift/mask combinations;
+	 * this one is ARM-friendly because of a mask that fits into 16
+	 * bit.
+	 */
+	x = (x >> 15) + (x & UINT32_C(0x7FFF));
+	/* Take reminder as (mod 8) by mul/shift. Since the multiplier
+	 * was calculated using ceil() instead of floor(), it skips the
+	 * value '7' properly.
+	 *    M <- ceil(ldexp(8/7, 29))
+	 */
+	return (int)((x * UINT32_C(0x24924925)) >> 29);
+}
+
+int
+i32mod7(
+	int32_t x
+	)
+{
+	/* We add (2**32 - 2**32 % 7), which is (2**32 - 4), to negative
+	 * numbers to map them into the postive range. Only the term '-4'
+	 * survives, obviously.
+	 */
+	uint32_t ux = (uint32_t)x;
+	return u32mod7((x < 0) ? (ux - 4u) : ux);
+}
+
+uint32_t
+i32fmod(
+	int32_t	 x,
+	uint32_t d
+	)
+{
+	uint32_t ux = (uint32_t)x;
+	uint32_t sf = UINT32_C(0) - (x < 0);
+	ux = (sf ^ ux ) % d;
+	return (d & sf) + (sf ^ ux);
+}
+
+/*
+ *---------------------------------------------------------------------
  * Do a periodic extension of 'value' around 'pivot' with a period of
  * 'cycle'.
  *
@@ -455,7 +509,7 @@ ntpcal_periodic_extend(
 	uint32_t	uv = (uint32_t)value;
 	uint32_t	up = (uint32_t)pivot;
 	uint32_t	uc, sf;
-	
+
 	if (cycle > 1)
 	{
 		uc = (uint32_t)cycle;
@@ -635,7 +689,7 @@ ntpcal_daysplit(
 	uint64_t sf64 = (uint64_t)-(ts->q_s < 0);
 	Q = (uint32_t)(sf64 ^ ((sf64 ^ ts->Q_s) / SECSPERDAY));
 	R = (uint32_t)(ts->Q_s - Q * SECSPERDAY);
-	
+
 #   elif defined(UINT64_MAX) && !defined(__arm__)
 
 	/* We rely on the compiler to do efficient 64bit divisions as
@@ -652,7 +706,7 @@ ntpcal_daysplit(
 	R = ts->D_s.lo - Q * SECSPERDAY;
 
 #   else
-	
+
 	/* We don't have 64bit regs. That hurts a bit.
 	 *
 	 * Here we use a mean trick to get away with just one explicit
@@ -694,13 +748,13 @@ ntpcal_daysplit(
 
 	R  = (ts->d_s.hi < 0) ? 239 : 0;/* sign bit value */
 	R += (al & 0xFFFF);
-	R += (al >> 16   ) * 61u;	/* 2**16 % 675 */
+	R += (al >> 16	 ) * 61u;	/* 2**16 % 675 */
 	R += (ah & 0xFFFF) * 346u;	/* 2**32 % 675 */
-	R += (ah >> 16   ) * 181u;	/* 2**48 % 675 */
+	R += (ah >> 16	 ) * 181u;	/* 2**48 % 675 */
 	R %= 675u;			/* final reduction */
 	Q  = (al - R) * 0x2D21C10Bu;	/* modinv(675, 2**32) */
 	R  = (R << 7) | (ts->d_s.lo & 0x07F);
-	
+
 #   endif
 
 	res.hi = uint32_2cpl_to_int32(Q);
@@ -754,9 +808,9 @@ ntpcal_weeksplit(
 
 	R  = (ts->d_s.hi < 0) ? 2264 : 0;/* sign bit value */
 	R += (al & 0xFFFF);
-	R += (al >> 16   ) * 4111u;	/* 2**16 % 4725 */
+	R += (al >> 16	 ) * 4111u;	/* 2**16 % 4725 */
 	R += (ah & 0xFFFF) * 3721u;	/* 2**32 % 4725 */
-	R += (ah >> 16   ) * 2206u;	/* 2**48 % 4725 */
+	R += (ah >> 16	 ) * 2206u;	/* 2**48 % 4725 */
 	R %= 4725u;			/* final reduction */
 	Q  = (al - R) * 0x98BBADDDu;	/* modinv(4725, 2**32) */
 	R  = (R << 7) | (ts->d_s.lo & 0x07F);
@@ -789,7 +843,7 @@ priv_timesplit(
 	uint32_t us, um, uh, ud, sf32;
 
 	sf32 = int32_sflag(ts);
-	
+
 	us = (uint32_t)ts;
 	um = (sf32 ^ us) / SECSPERMIN;
 	uh = um / MINSPERHR;
@@ -862,8 +916,8 @@ ntpcal_split_eradays(
 	 * multiplicative inverse of 146097 (mod 2^32) gives us the full
 	 * quotient.
 	 *
-	 * (-2^33) % 146097     --> 130717    : the sign bit value
-	 * ( 2^20) % 146097     --> 25897     : the upper digit value
+	 * (-2^33) % 146097	--> 130717    : the sign bit value
+	 * ( 2^20) % 146097	--> 25897     : the upper digit value
 	 * modinv(146097, 2^32) --> 660721233 : the inverse
 	 */
 	uint32_t ux = ((uint32_t)days << 2) | 3;
@@ -909,14 +963,14 @@ ntpcal_split_eradays(
 ntpcal_split
 ntpcal_split_yeardays(
 	int32_t eyd,
-	int     isleap
+	int	isleap
 	)
 {
 	/* Use the unshifted-year, February-with-30-days approach here.
 	 * Fractional interpolations are used in both directions, with
 	 * the smallest power-of-two divider to avoid any true division.
 	 */
-	ntpcal_split    res = {-1, -1};
+	ntpcal_split	res = {-1, -1};
 
 	/* convert 'isleap' to number of defective days */
 	isleap = 1 + !isleap;
@@ -947,16 +1001,8 @@ ntpcal_rd_to_date(
 	int	     leapy;
 	u_int	     ymask;
 
-	/* Get day-of-week first. Since rd is signed, the remainder can
-	 * be in the range [-6..+6], but the assignment to an unsigned
-	 * variable maps the negative values to positive values >=7.
-	 * This makes the sign correction look strange, but adding 7
-	 * causes the needed wrap-around into the desired value range of
-	 * zero to six, both inclusive.
-	 */
-	jd->weekday = rd % DAYSPERWEEK;
-	if (jd->weekday >= DAYSPERWEEK)	/* weekday is unsigned! */
-		jd->weekday += DAYSPERWEEK;
+	/* Get day-of-week first. It's simply the RD (mod 7)... */
+	jd->weekday = i32mod7(rd);
 
 	split = ntpcal_split_eradays(rd - 1, &leapy);
 	/* Get year and day-of-year, with overflow check. If any of the
@@ -993,9 +1039,7 @@ ntpcal_rd_to_tm(
 	int	     leapy;
 
 	/* get day-of-week first */
-	utm->tm_wday = rd % DAYSPERWEEK;
-	if (utm->tm_wday < 0)
-		utm->tm_wday += DAYSPERWEEK;
+	utm->tm_wday = i32mod7(rd);
 
 	/* get year and day-of-year */
 	split = ntpcal_split_eradays(rd - 1, &leapy);
@@ -1143,7 +1187,7 @@ _dwjoin(
 	int32_t		lo
 	)
 {
-	vint64 		res;
+	vint64		res;
 	uint32_t	p1, p2, sf;
 
 	/* get sign flag and absolute value of 'hi' in p1 */
@@ -1163,7 +1207,7 @@ _dwjoin(
 	res.D_s.lo = (res.D_s.lo << 7);
 
 	/* fix up sign: res <-- (res + [sf|sf]) ^ [sf|sf] */
-	M_ADD(res.D_s.hi, res.D_s.lo, sf, sf);	
+	M_ADD(res.D_s.hi, res.D_s.lo, sf, sf);
 	res.D_s.lo ^= sf;
 	res.D_s.hi ^= sf;
 
@@ -1320,9 +1364,9 @@ ntpcal_days_in_months(
 		sf32 = int32_sflag(res.lo);
 		mu   = (uint32_t)res.lo;
 		Q    = sf32 ^ ((sf32 ^ mu) / 12u);
-		
+
 		res.hi += uint32_2cpl_to_int32(Q);
-		res.lo  = mu - Q * 12u;
+		res.lo	= mu - Q * 12u;
 	}
 
 	/* Get cummulated days in year with unshift. Use the fractional
@@ -1540,7 +1584,7 @@ ntpcal_date_to_time(
 	const struct calendar *jd
 	)
 {
-	vint64  join;
+	vint64	join;
 	int32_t days, secs;
 
 	days = ntpcal_date_to_rd(jd) - DAY_UNIX_STARTS;
@@ -1561,7 +1605,7 @@ ntpcal_date_to_time(
 int
 ntpcal_ntp64_to_date(
 	struct calendar *jd,
-	const vint64    *ntp
+	const vint64	*ntp
 	)
 {
 	ntpcal_split ds;
@@ -1737,7 +1781,7 @@ isocal_weeks_in_years(
 	 */
 	static const uint16_t bctab[4] = { 157, 449, 597, 889 };
 
-	int32_t  cs, cw;
+	int32_t	 cs, cw;
 	uint32_t cc, ci, yu, sf32;
 
 	sf32 = int32_sflag(years);
@@ -1787,7 +1831,7 @@ isocal_split_eraweeks(
 	static const uint16_t bctab[4] = { 85, 130, 17, 62 };
 
 	ntpcal_split res;
-	int32_t  cc, ci;
+	int32_t	 cc, ci;
 	uint32_t sw, cy, Q;
 
 	/* Use two fast cycle-split divisions again. Herew e want to
@@ -1799,7 +1843,7 @@ isocal_split_eraweeks(
 	 * a 64bit target and exact division after calculating the
 	 * remainder first on a 32bit target. With the smaller divider,
 	 * that's even a bit neater.
-	 */	
+	 */
 #   if defined(HAVE_64BITREGS)
 
 	/* Full floor division with 64bit values. */
@@ -1813,8 +1857,8 @@ isocal_split_eraweeks(
 
 	/* Exact division after calculating the remainder via partial
 	 * reduction by digit sum.
-	 * (-2^33) % 20871     --> 5491      : the sign bit value
-	 * ( 2^20) % 20871     --> 5026      : the upper digit value
+	 * (-2^33) % 20871     --> 5491	     : the sign bit value
+	 * ( 2^20) % 20871     --> 5026	     : the upper digit value
 	 * modinv(20871, 2^32) --> 330081335 : the inverse
 	 */
 	uint32_t ux = ((uint32_t)weeks << 2) | 2;
@@ -1825,7 +1869,7 @@ isocal_split_eraweeks(
 	Q   = (ux  - sw) * 330081335u;		  /* exact div */
 
 #   endif
-	
+
 	ci  = Q & 3u;
 	cc  = uint32_2cpl_to_int32(Q);
 
@@ -1857,7 +1901,7 @@ isocal_ntp64_to_date(
 	)
 {
 	ntpcal_split ds;
-	int32_t      ts[3];
+	int32_t	     ts[3];
 	uint32_t     uw, ud, sf32;
 
 	/*
@@ -1878,7 +1922,7 @@ isocal_ntp64_to_date(
 	ud   = (uint32_t)ds.hi;
 	uw   = sf32 ^ ((sf32 ^ ud) / DAYSPERWEEK);
 	ud  -= uw * DAYSPERWEEK;
-	
+
 	ds.hi = uint32_2cpl_to_int32(uw);
 	ds.lo = ud;
 
@@ -2092,6 +2136,80 @@ basedate_expand_gpsweek(
  * misc. helpers
  * ====================================================================
  */
+
+/* --------------------------------------------------------------------
+ * reconstruct the centrury from a truncated date and a day-of-week
+ *
+ * Given a date with truncated year (2-digit, 0..99) and a day-of-week
+ * from 1(Mon) to 7(Sun), recover the full year between 1900AD and 2300AD.
+ */
+int32_t
+ntpcal_expand_century(
+	uint32_t y,
+	uint32_t m,
+	uint32_t d,
+	uint32_t wd)
+{
+	/* This algorithm is short but tricky... It's related to
+	 * Zeller's congruence, partially done backwards.
+	 *
+	 * A few facts to remember:
+	 *  1) The Gregorian calendar has a cycle of 400 years.
+	 *  2) The weekday of the 1st day of a century shifts by 5 days
+	 *     during a great cycle.
+	 *  3) For calendar math, a century starts with the 1st year,
+	 *     which is year 1, !not! zero.
+	 *
+	 * So we start with taking the weekday difference (mod 7)
+	 * between the truncated date (which is taken as an absolute
+	 * date in the 1st century in the proleptic calendar) and the
+	 * weekday given.
+	 *
+	 * When dividing this residual by 5, we obtain the number of
+	 * centuries to add to the base. But since the residual is (mod
+	 * 7), we have to make this an exact division by multiplication
+	 * with the modular inverse of 5 (mod 7), which is 3:
+	 *    3*5 === 1 (mod 7).
+	 *
+	 * If this yields a result of 4/5/6, the given date/day-of-week
+	 * combination is impossible, and we return zero as resulting
+	 * year to indicate failure.
+	 *
+	 * Then we remap the century to the range starting with year
+	 * 1900.
+	 */
+
+	uint32_t c;
+
+	/* check basic constraints */
+	if ((y >= 100u) || (--m >= 12u) || (--d >= 31u))
+		return 0;
+
+	if ((m += 10u) >= 12u)		/* shift base to prev. March,1st */
+		m -= 12u;
+	else if (--y >= 100u)
+		y += 100u;
+	d += y + (y >> 2) + 2u;		/* year share */
+	d += (m * 83u + 16u) >> 5;	/* month share */
+
+	/* get (wd - d), shifted to positive value, and multiply with
+	 * 3(mod 7). (Exact division, see to comment)
+	 * Note: 1) d <= 184 at this point.
+	 *	 2) 252 % 7 == 0, but 'wd' is off by one since we did
+	 *	    '--d' above, so we add just 251 here!
+	 */
+	c = u32mod7(3 * (251u + wd - d));
+	if (c > 3u)
+		return 0;
+
+	if ((m > 9u) && (++y >= 100u)) {/* undo base shift */
+		y -= 100u;
+		c = (c + 1) & 3u;
+	}
+	y += (c * 100u);		/* combine into 1st cycle */
+	y += (y < 300u) ? 2000 : 1600;	/* map to destination era */
+	return (int)y;
+}
 
 char *
 ntpcal_iso8601std(
