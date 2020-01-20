@@ -29,6 +29,7 @@
 #ifdef HAVE_SYS_WAIT_H
 # include <sys/wait.h>
 #endif
+#include <time.h>
 
 #include <isc/net.h>
 #include <isc/result.h>
@@ -500,6 +501,13 @@ dump_all_config_trees(
 {
 	config_tree *	cfg_ptr;
 	int		return_value;
+	time_t		now = time(NULL);
+	struct tm	tm = *localtime(&now);
+
+	fprintf(df, "#NTF:D %04d%02d%02d@%02d:%02d:%02d\n",
+		tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
+		tm.tm_hour, tm.tm_min, tm.tm_sec);
+	fprintf(df, "#NTF:V %s\n", Version);
 
 	return_value = 0;
 	for (cfg_ptr = cfg_tree_history;
@@ -591,6 +599,11 @@ dump_config_tree(
 				atrv = atrv->link;
 				fprintf(df, " %s\n",
 					normal_dtoa(atrv->value.d));
+			} else if (T_Leapfile == atrv->attr) {
+				fputs((atrv->flag
+				       ? " checkhash\n"
+				       : " ignorehash\n"),
+				      df);
 			} else {
 				fprintf(df, "\n");
 			}
@@ -2307,7 +2320,7 @@ config_monitor(
 
 	/* Set the statistics directory */
 	if (ptree->stats_dir)
-		stats_config(STATS_STATSDIR, ptree->stats_dir);
+	    stats_config(STATS_STATSDIR, ptree->stats_dir, 0);
 
 	/* NOTE:
 	 * Calling filegen_get is brain dead. Doing a string
@@ -3644,6 +3657,13 @@ config_fudge(
 
 		/* Parse all the options to the fudge command */
 		ZERO(clock_stat);
+		/* some things are not necessarily cleared by ZERO...*/
+		clock_stat.fudgeminjitter = 0.0;
+		clock_stat.fudgetime1     = 0.0;
+		clock_stat.fudgetime2     = 0.0;
+		clock_stat.p_lastcode     = NULL;
+		clock_stat.clockdesc      = NULL;
+		clock_stat.kv_list        = NULL;
 		curr_opt = HEAD_PFIFO(curr_fudge->options);
 		for (; curr_opt != NULL; curr_opt = curr_opt->link) {
 			switch (curr_opt->attr) {
@@ -3665,10 +3685,9 @@ config_fudge(
 
 			case T_Refid:
 				clock_stat.haveflags |= CLK_HAVEVAL2;
-				clock_stat.fudgeval2 = 0;
-				memcpy(&clock_stat.fudgeval2,
-				       curr_opt->value.s,
-				       min(strlen(curr_opt->value.s), 4));
+				/* strncpy() does exactly what we want here: */
+				strncpy((char*)&clock_stat.fudgeval2,
+					curr_opt->value.s, 4);
 				break;
 
 			case T_Flag1:
@@ -3701,6 +3720,11 @@ config_fudge(
 					clock_stat.flags |= CLK_FLAG4;
 				else
 					clock_stat.flags &= ~CLK_FLAG4;
+				break;
+
+			case T_Minjitter:
+				clock_stat.haveflags |= CLK_HAVEMINJIT;
+				clock_stat.fudgeminjitter = curr_opt->value.d;
 				break;
 
 			default:
@@ -3757,7 +3781,7 @@ config_vars(
 				stats_drift_file = 0;
 				msyslog(LOG_INFO, "config: driftfile disabled");
 			} else
-				stats_config(STATS_FREQ_FILE, curr_var->value.s);
+			    stats_config(STATS_FREQ_FILE, curr_var->value.s, 0);
 			break;
 
 		case T_Dscp:
@@ -3775,7 +3799,7 @@ config_vars(
 			break;
 
 		case T_Leapfile:
-			stats_config(STATS_LEAP_FILE, curr_var->value.s);
+		    stats_config(STATS_LEAP_FILE, curr_var->value.s, curr_var->flag);
 			break;
 
 #ifdef LEAP_SMEAR
@@ -3786,7 +3810,7 @@ config_vars(
 #endif
 
 		case T_Pidfile:
-			stats_config(STATS_PID_FILE, curr_var->value.s);
+		    stats_config(STATS_PID_FILE, curr_var->value.s, 0);
 			break;
 
 		case T_Logfile:

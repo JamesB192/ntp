@@ -68,6 +68,7 @@ struct attr_val_tag {
 	attr_val *	link;
 	int		attr;
 	int		type;	/* T_String, T_Integer, ... */
+	int		flag;	/* auxiliary flags */
 	union val {
 		int		i;
 		u_int		u;

@@ -672,6 +672,7 @@ struct conf_restrict {
 	short ippeerlimit;	/* ip peer limit */
 	u_short flags;		/* restrict flags */
 	u_short mflags;		/* match flags */
+	short unused1;		/* (unused) padding for v6_flag */
 	u_int v6_flag;		/* is this v6 or not */
 	struct in6_addr addr6; 	/* match address (v6) */
 	struct in6_addr mask6; 	/* match mask (v6) */

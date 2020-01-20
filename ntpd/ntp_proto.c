@@ -79,6 +79,11 @@ nak_error_codes {
 #define	POOL_SOLICIT_WINDOW	8
 
 /*
+ * flag bits propagated from pool to individual peers
+ */
+#define POOL_FLAG_PMASK		(FLAG_IBURST | FLAG_NOSELECT)
+
+/*
  * peer_select groups statistics for a peer used by clock_select() and
  * clock_cluster().
  */
@@ -640,31 +645,20 @@ receive(
 	 */
 	/*
 	 * Bogus port check is before anything, since it probably
-	 * reveals a clogging attack.
+	 * reveals a clogging attack. Likewise the mimimum packet size
+	 * of 2 bytes (for mode 6/7) must be checked first.
 	 */
 	sys_received++;
-	if (0 == SRCPORT(&rbufp->recv_srcadr)) {
+	if (0 == SRCPORT(&rbufp->recv_srcadr) || rbufp->recv_length < 2) {
 		sys_badlength++;
-		return;				/* bogus port */
+		return;				/* bogus port / length */
 	}
 	restrictions(&rbufp->recv_srcadr, &r4a);
 	restrict_mask = r4a.rflags;
 
 	pkt = &rbufp->recv_pkt;
 	hisversion = PKT_VERSION(pkt->li_vn_mode);
-	hisleap = PKT_LEAP(pkt->li_vn_mode);
 	hismode = (int)PKT_MODE(pkt->li_vn_mode);
-	hisstratum = PKT_TO_STRATUM(pkt->stratum);
-	DPRINTF(1, ("receive: at %ld %s<-%s ippeerlimit %d mode %d iflags %s restrict %s org %#010x.%08x xmt %#010x.%08x\n",
-		    current_time, stoa(&rbufp->dstadr->sin),
-		    stoa(&rbufp->recv_srcadr), r4a.ippeerlimit, hismode,
-		    build_iflags(rbufp->dstadr->flags),
-		    build_rflags(restrict_mask),
-		    ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
-		    ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf)));
-
-	/* See basic mode and broadcast checks, below */
-	INSIST(0 != hisstratum);
 
 	if (restrict_mask & RES_IGNORE) {
 		DPRINTF(2, ("receive: drop: RES_IGNORE\n"));
@@ -695,6 +689,30 @@ receive(
 		sys_restricted++;
 		return;				/* no time serve */
 	}
+
+
+	/* If we arrive here, we should have a standard NTP packet. We
+	 * check that the minimum size is available and fetch some more
+	 * items from the packet once we can be sure they are indeed
+	 * there.
+	 */
+	if (rbufp->recv_length < LEN_PKT_NOMAC) {
+		sys_badlength++;
+		return;				/* bogus length */
+	}
+
+	hisleap = PKT_LEAP(pkt->li_vn_mode);
+	hisstratum = PKT_TO_STRATUM(pkt->stratum);
+	INSIST(0 != hisstratum); /* paranoia check PKT_TO_STRATUM result */
+
+	DPRINTF(1, ("receive: at %ld %s<-%s ippeerlimit %d mode %d iflags %s "
+		    "restrict %s org %#010x.%08x xmt %#010x.%08x\n",
+		    current_time, stoa(&rbufp->dstadr->sin),
+		    stoa(&rbufp->recv_srcadr), r4a.ippeerlimit, hismode,
+		    build_iflags(rbufp->dstadr->flags),
+		    build_rflags(restrict_mask),
+		    ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
+		    ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf)));
 
 	/*
 	 * This is for testing. If restricted drop ten percent of
@@ -1386,8 +1404,8 @@ receive(
 		peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr,
 			       r4a.ippeerlimit, MODE_CLIENT, hisversion,
 			       peer2->minpoll, peer2->maxpoll,
-			       FLAG_PREEMPT | (FLAG_IBURST & peer2->flags),
-			       MDF_UCAST | MDF_UCLNT, 0, skeyid, sys_ident);
+			       (FLAG_PREEMPT | (POOL_FLAG_PMASK & peer2->flags)),
+			       (MDF_UCAST | MDF_UCLNT), 0, skeyid, sys_ident);
 		if (NULL == peer) {
 			DPRINTF(2, ("receive: AM_MANYCAST drop: duplicate\n"));
 			sys_declined++;

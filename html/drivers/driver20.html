@@ -13,7 +13,7 @@
   <body>
     <h3>Generic NMEA GPS Receiver</h3>
 <p>Last update:
-  <!-- #BeginDate format:En2m -->04-Feb-2019  07:30<!-- #EndDate -->
+  <!-- #BeginDate format:En2m -->13-Jan-2020  07:12<!-- #EndDate -->
   UTC</p>
     <hr>
     <h4>Synopsis</h4>
@@ -85,8 +85,11 @@
 	<td>Accord</td>
       </tr><tr>
       </tr><tr>
-	<td class="ttf">$PGRMF,GWEEK,WTIME,DATE,UTC,LEAPS,LAT,LAT_REF,LON,LON_REF,TYPE,MODE,SPD,HDOP,TDOP*CS&lt;cr&gt;&lt;lf&gt;</td>
+	<td class="ttf">$PGRMF,gpsWk,gpsTow,DATE,UTC,LEAPS,LAT,LAT_REF,LON,LON_REF,TYPE,MODE,SPD,HDOP,TDOP*CS&lt;cr&gt;&lt;lf&gt;</td>
 	<td>Garmin</td>
+      </tr><tr>
+	  <td class="ttf">$PUBX,04,UTC,DATE,utcTow,utcWk,LEAPS,clkBias,clkDrift,tpGran,*CS&lt;cr&gt;&lt;lf&gt;</td>
+	  <td>UBLOX</td>
       </tr>	
     </tbody></table></p>
 
@@ -125,8 +128,11 @@
 	<td class="ttf">GPSTIME</td>
 	<td>Time of day on GPS timescale. Hours, minutes and seconds [fraction (opt.)] (hhmmss[.f])</td>
       </tr><tr>
-	<td class="ttf">GWEEK</td>
-	<td>Week number in the GPS time scale, modulo 1024 (0..1023)</td>
+	<td class="ttf">gpsTow</td>
+	<td>GPS week time, seconds since start of GPS week (0..604799)</td>
+      </tr><tr>
+	<td class="ttf">gpsWk</td>
+	<td>Week number in the GPS time scale (may exceed 1024)</td>
       </tr><tr>
 	<td class="ttf">G_UNIT</td>
 	<td>Geoid units (M/F)</td>
@@ -173,11 +179,17 @@
 	<td class="ttf">UTC</td>
 	<td>Time of day on UTC timescale. Hours, minutes and seconds [fraction (opt.)] (hhmmss[.fff])</td>
       </tr><tr>
-	<td class="ttf">WTIME</td>
-	<td>GPS week time, seconds since start of GPS week (0..604799)</td>
-      </tr><tr>
 	<td class="ttf">YYYY</td>
 	<td>Year</td>
+      </tr><tr>
+	<td class="ttf">WEEK</td>
+	<td>GPS week (0-1023)</td>
+      </tr><tr>
+	<td class="ttf">WSEC</td>
+	<td>Seconds since start of week (0-604799)</td>
+      </tr><tr>
+	<td class="ttf">LEAP</td>
+	<td>GPS leap seconds, that is, seconds ahead of UTC</td>
       </tr><tr>
 	<td class="ttf">AA.BB</td>
 	<td>Denotes the signal strength (should be &lt; 05.00)</td>
@@ -305,9 +317,14 @@
         <td align="center">0x100</td>
 	<td>process <tt>$PGRMF</tt></td>
       </tr><tr>
-        <td align="center">9-15</td>
+        <td align="center">9</td>
+        <td align="center">512</td>
+        <td align="center">0x200</td>
+	<td>process <tt>$PUBX,04</tt></td>
+      </tr><tr>
+        <td align="center">10-15</td>
         <td align="center"></td>
-        <td align="center">0xFE00</td>
+        <td align="center">0xFC00</td>
 	<td>reserved - leave 0</td>
       </tr><tr>
         <td align="center">16</td>
@@ -315,6 +332,24 @@
         <td align="center">0x10000</td>
         <td>Append extra statistics to the clockstats line.
         Details below.</td>
+       </tr><tr>
+        <td align="center">17</td>
+        <td align="center">131072</td>
+        <td align="center">0x20000</td>
+        <td>"Silent PPS" mode. Use the PPS channel (if enabled with
+          fudge flag 1) to get precise receive time stamps.
+          Do <em>not</em> set the PPS flag in the clock status, so the
+          clock is not considered as PPS peer.
+	</td>
+       </tr><tr>
+        <td align="center">18</td>
+        <td align="center">262144</td>
+        <td align="center">0x40000</td>
+        <td>Trust the date delivered via NMEA. Do this only if
+          you <em>really</em> trust the receiver!
+          See <a href="#datetrust">below</a>. <strong>Caveat:</strong>
+          This (hitherto undocumented) bit has moved!
+	</td>
       </tr>
     </tbody></table> 
 
@@ -337,7 +372,7 @@
       </li></ul>
       The driver uses 4800 bits per second by default, but faster bitrates can
       be selected using bits 4 to 6 of the mode field.
-    <p></p>
+    </p>
 
     <p>
       <strong>Caveat:</strong> Using higher line speeds does not necessarily
@@ -352,6 +387,29 @@
       linespeed of 4800 bps or 9600 bps.
     </p>
 
+    <h4><a name="datetrust"/>About distrusting NMEA date stamps</h4>
+    <p>
+      Trusting the calendar dates delivered via NMEA is a risky thing, and by
+      default these dates are handled with a huge dose of skepticism.  Many
+      receivers deliver a correct calendar date for a period of just 1024 weeks,
+      with a starting point baked somewhere into their firmware.  Beyond that,
+      they warp back to the begin of their era and simply provide wrong date
+      information.  To battle this widely observed effect, the date delivered is
+      by default reduced to GPS time again and then (re-)mapped according to the
+      base date, either the implicit value or the value set via "tos basedate".
+      If the receiver can <em>really</em> be trusted to deliver the right date
+      (which is not impossible, just more expensive for the manufacturer), then
+      mode bit 18 can be used to bypass the era mapping.  Setting this bit is
+      not needed under most circumstances, and setting it with an unreliable
+      receiver can have severe effects. Handle with care.
+    </p><p>
+      <strong>Note:</strong> This functionality was available for some time as
+      undocumented feature, with a different bit value.  It was moved in the
+      process of becoming officially acknowledged to avoid excessive scattering
+      of the mode bit mask.
+    </p>
+    
+    
     <h4>Monitor Data</h4>
 
     <p>The last GPS sentence that is accepted or rejected is written to the

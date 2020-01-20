@@ -88,6 +88,7 @@
 %token	<Integer>	T_Burst
 %token	<Integer>	T_Calibrate
 %token	<Integer>	T_Ceiling
+%token	<Integer>	T_Checkhash
 %token	<Integer>	T_Clockstats
 %token	<Integer>	T_Cohort
 %token	<Integer>	T_ControlKey
@@ -125,6 +126,7 @@
 %token	<Integer>	T_Iburst
 %token	<Integer>	T_Ident
 %token	<Integer>	T_Ignore
+%token	<Integer>	T_Ignorehash
 %token	<Integer>	T_Incalloc
 %token	<Integer>	T_Incmem
 %token	<Integer>	T_Initalloc
@@ -170,6 +172,7 @@
 %token	<Integer>	T_Mindepth
 %token	<Integer>	T_Mindist
 %token	<Integer>	T_Minimum
+%token	<Integer>	T_Minjitter
 %token	<Integer>	T_Minpoll
 %token	<Integer>	T_Minsane
 %token	<Integer>	T_Mode
@@ -321,6 +324,7 @@
 %type	<Attr_val_fifo>	mru_option_list
 %type	<Integer>	nic_rule_class
 %type	<Double>	number
+%type	<Integer>	opt_hash_check
 %type	<Attr_val>	option
 %type	<Attr_val>	option_flag
 %type	<Integer>	option_flag_keyword
@@ -1024,6 +1028,7 @@ fudge_factor
 fudge_factor_dbl_keyword
 	:	T_Time1
 	|	T_Time2
+	|	T_Minjitter
 	;
 
 fudge_factor_bool_keyword
@@ -1232,6 +1237,14 @@ miscellaneous_command
 			}
 			YYFREE($2); /* avoid leak */
 		}
+	|	T_Leapfile T_String opt_hash_check
+		{
+			attr_val *av;
+
+			av = create_attr_sval($1, $2);
+			av->flag = $3;
+			APPEND_G_FIFO(cfgt.vars, av);			
+		}
 	|	T_End
 			{ lex_flush_stack(); }
 	|	T_Driftfile drift_parm
@@ -1272,9 +1285,17 @@ misc_cmd_int_keyword
 		}
 	;
 
+opt_hash_check
+	:	T_Ignorehash
+			{ $$ = FALSE; }
+	|	T_Checkhash
+			{ $$ = TRUE; }
+	|	/*EMPTY*/
+			{  $$ = TRUE; }
+	;
+
 misc_cmd_str_keyword
 	:	T_Ident
-	|	T_Leapfile
 	;
 
 misc_cmd_str_lcl_keyword

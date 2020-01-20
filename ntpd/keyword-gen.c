@@ -43,6 +43,7 @@ struct key_tok ntp_keywords[] = {
 { "broadcast",		T_Broadcast,		FOLLBY_STRING },
 { "broadcastclient",	T_Broadcastclient,	FOLLBY_TOKEN },
 { "broadcastdelay",	T_Broadcastdelay,	FOLLBY_TOKEN },
+{ "checkhash",		T_Checkhash,		FOLLBY_TOKEN },
 { "ctl",		T_Ctl,			FOLLBY_TOKEN },
 { "disable",		T_Disable,		FOLLBY_TOKEN },
 { "driftfile",		T_Driftfile,		FOLLBY_STRING },
@@ -51,6 +52,7 @@ struct key_tok ntp_keywords[] = {
 { "end",		T_End,			FOLLBY_TOKEN },
 { "filegen",		T_Filegen,		FOLLBY_TOKEN },
 { "fudge",		T_Fudge,		FOLLBY_STRING },
+{ "ignorehash",		T_Ignorehash,		FOLLBY_TOKEN },
 { "io",			T_Io,			FOLLBY_TOKEN },
 { "includefile",	T_Includefile,		FOLLBY_STRING },
 { "leapfile",		T_Leapfile,		FOLLBY_STRING },
@@ -199,6 +201,7 @@ struct key_tok ntp_keywords[] = {
 { "stratum",		T_Stratum,		FOLLBY_TOKEN },
 { "time1",		T_Time1,		FOLLBY_TOKEN },
 { "time2",		T_Time2,		FOLLBY_TOKEN },
+{ "minjitter",		T_Minjitter,		FOLLBY_TOKEN },
 /* system_option */
 { "auth",		T_Auth,			FOLLBY_TOKEN },
 { "bclient",		T_Bclient,		FOLLBY_TOKEN },
