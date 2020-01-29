@@ -58,6 +58,7 @@
 	attr_val *		Attr_val;
 	attr_val_fifo *		Attr_val_fifo;
 	int_fifo *		Int_fifo;
+	randpoll_node *		Randpoll_node;
 	string_fifo *		String_fifo;
 	address_node *		Address_node;
 	address_fifo *		Address_fifo;
@@ -106,6 +107,7 @@
 %token	<Integer>	T_Drop
 %token	<Integer>	T_Dscp
 %token	<Integer>	T_Ellipsis	/* "..." not "ellipsis" */
+%token	<Integer>	T_Else
 %token	<Integer>	T_Enable
 %token	<Integer>	T_End
 %token	<Integer>	T_Epeer
@@ -121,6 +123,7 @@
 %token	<Integer>	T_Floor
 %token	<Integer>	T_Freq
 %token	<Integer>	T_Fudge
+%token	<Integer>	T_Fuzz
 %token	<Integer>	T_Host
 %token	<Integer>	T_Huffpuff
 %token	<Integer>	T_Iburst
@@ -206,6 +209,7 @@
 %token	<Integer>	T_Phone
 %token	<Integer>	T_Pid
 %token	<Integer>	T_Pidfile
+%token	<Integer>	T_Poll
 %token	<Integer>	T_Pool
 %token	<Integer>	T_Port
 %token	<Integer>	T_Preempt
@@ -213,8 +217,11 @@
 %token	<Integer>	T_Protostats
 %token	<Integer>	T_Pw
 %token	<Integer>	T_Randfile
+%token	<Integer>	T_Randomizepoll
+%token	<Integer>	T_Randompoll
 %token	<Integer>	T_Rawstats
 %token	<Integer>	T_Refid
+%token	<Integer>	T_Reftime
 %token	<Integer>	T_Requestkey
 %token	<Integer>	T_Reset
 %token	<Integer>	T_Restrict
@@ -222,6 +229,7 @@
 %token	<Integer>	T_Rlimit
 %token	<Integer>	T_Saveconfigdir
 %token	<Integer>	T_Server
+%token	<Integer>	T_ServerFuzzReftime	/* Not a token */
 %token	<Integer>	T_Setvar
 %token	<Integer>	T_Source
 %token	<Integer>	T_Stacksize
@@ -280,7 +288,7 @@
 
 /*** NON-TERMINALS ***/
 %type	<Integer>	access_control_flag
-%type	<Int_fifo>	ac_flag_list
+%type	<Attr_val_fifo>	ac_flag_list
 %type	<Address_node>	address
 %type	<Integer>	address_fam
 %type	<Address_fifo>	address_list
@@ -334,6 +342,7 @@
 %type	<Attr_val>	option_str
 %type	<Integer>	option_str_keyword
 %type	<Integer>	reset_command
+%type	<Randpoll_node>	randompoll_spec
 %type	<Integer>	rlimit_option_keyword
 %type	<Attr_val>	rlimit_option
 %type	<Attr_val_fifo>	rlimit_option_list
@@ -900,8 +909,27 @@ ac_flag_list
 			{ $$ = NULL; }
 	|	ac_flag_list access_control_flag
 		{
+			attr_val *av;
+
 			$$ = $1;
-			APPEND_G_FIFO($$, create_int_node($2));
+			av = create_attr_ival($2, 1);
+			APPEND_G_FIFO($$, av);
+		}
+	|	ac_flag_list T_Server T_Fuzz T_Reftime
+		{
+			attr_val *av;
+
+			$$ = $1;
+			av = create_attr_ival(T_ServerFuzzReftime, 6);
+			APPEND_G_FIFO($$, av);
+		}
+	|	ac_flag_list T_Server T_Fuzz T_Reftime T_Poll T_Integer
+		{
+			attr_val *av;
+
+			$$ = $1;
+			av = create_attr_ival(T_ServerFuzzReftime, $5);
+			APPEND_G_FIFO($$, av);
 		}
 	;
 
@@ -922,6 +950,7 @@ access_control_flag
 	|	T_Notrap
 	|	T_Notrust
 	|	T_Ntpport
+	|	T_Randomizepoll
 	|	T_Version
 	;
 
@@ -1253,6 +1282,14 @@ miscellaneous_command
 			{ CONCAT_G_FIFOS(cfgt.logconfig, $2); }
 	|	T_Phone string_list
 			{ CONCAT_G_FIFOS(cfgt.phone, $2); }
+	|	T_Randompoll randompoll_list
+			{
+#if 1
+				yyerror("randompoll is unimplemented.");
+#else
+				// CONCAT_G_FIFOS(cfgt.randompoll, $2);
+#endif
+			}
 	|	T_Setvar variable_assign
 			{ APPEND_G_FIFO(cfgt.setvar, $2); }
 	|	T_Trap ip_address trap_option_list
@@ -1341,6 +1378,37 @@ drift_parm
 				APPEND_G_FIFO(cfgt.vars, av);
 			} else {
 				yyerror("driftfile remote configuration ignored");
+			}
+		}
+	;
+
+randompoll_list
+	:	/* empty: no randomization of any poll times */
+		// This is the default case with 0/0
+	|	T_Integer randompoll_spec
+		// { $$ = ...; } XXX
+	|	T_Else randompoll_spec
+		// { $$ = ...; } XXX
+	;
+
+randompoll_spec
+	:	'0' '/' T_Integer	
+		{
+			if (   $3 > (1 << (POLL - 1)) ) {
+				$$ = NULL;
+				yyerror("randompoll: randomization limit must be <= half the poll interval");
+	     	   	} else {
+				// $$ = create_random_poll_range(POLL, 0, $3); XXX
+			}
+		}
+	|	'-' T_Integer '/' T_Integer	
+		{
+			if (   $2 > (1 << (POLL - 1))
+			    || $4 > (1 << (POLL - 1)) ) {
+				$$ = NULL;
+				yyerror("randompoll: randomization limit must be <= half the poll interval");
+	     	   	} else {
+				// $$ = create_random_poll_range(POLL, -$2, $4); XXX
 			}
 		}
 	;

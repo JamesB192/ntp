@@ -106,12 +106,22 @@ struct string_node_tag {
 
 typedef DECL_FIFO_ANCHOR(string_node) string_fifo;
 
+typedef struct randpoll_node_tag randpoll_node;
+struct randpoll_node_tag {
+	randpoll_node *	link;
+	int		poll;
+	int		lower;
+	int		upper;
+};
+
+typedef DECL_FIFO_ANCHOR(randpoll_node) randpoll_fifo;
+
 typedef struct restrict_node_tag restrict_node;
 struct restrict_node_tag {
 	restrict_node *	link;
 	address_node *	addr;
 	address_node *	mask;
-	int_fifo *	flag_tok_fifo;
+	attr_val_fifo *	flag_tok_fifo;
 	int		line_no;
 	short		ippeerlimit;
 };
@@ -250,6 +260,8 @@ struct config_tree_tag {
 
 	sim_fifo *	sim_details;
 	int		mdnstries;
+
+	randpoll_fifo *	randompoll;
 };
 
 
@@ -306,10 +318,11 @@ void	  destroy_attr_val(attr_val *node);
 filegen_node *create_filegen_node(int filegen_token,
 				  attr_val_fifo *options);
 string_node *create_string_node(char *str);
+randpoll_node *create_randpoll_node(int poll, int lower, int upper);
 restrict_node *create_restrict_node(address_node *addr,
 				    address_node *mask,
 				    short ippeerlimit,
-				    int_fifo *flags, int line_no);
+				    attr_val_fifo *flags, int line_no);
 int_node *create_int_node(int val);
 addr_opts_node *create_addr_opts_node(address_node *addr,
 				      attr_val_fifo *options);

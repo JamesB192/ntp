@@ -539,7 +539,7 @@ dump_config_tree(
 	setvar_node *setv_node;
 	nic_rule_node *rule_node;
 	int_node *i_n;
-	int_node *flag_tok_fifo;
+	//attr_val *flag_tok_fifo;
 	int_node *counter_set;
 	string_node *str_node;
 
@@ -946,9 +946,10 @@ dump_config_tree(
 		if (NULL == rest_node->addr) {
 			s = "default";
 			/* Don't need to set is_default=1 here */
-			flag_tok_fifo = HEAD_PFIFO(rest_node->flag_tok_fifo);
-			for ( ; flag_tok_fifo != NULL; flag_tok_fifo = flag_tok_fifo->link) {
-				if (T_Source == flag_tok_fifo->i) {
+			atrv = HEAD_PFIFO(rest_node->flag_tok_fifo);
+			for ( ; atrv != NULL; atrv = atrv->link) {
+				if (   T_Integer == atrv->type
+				    && T_Source == atrv->attr) {
 					s = "source";
 					break;
 				}
@@ -980,10 +981,11 @@ dump_config_tree(
 			fprintf(df, " mask %s",
 				rest_node->mask->address);
 		fprintf(df, " ippeerlimit %d", rest_node->ippeerlimit);
-		flag_tok_fifo = HEAD_PFIFO(rest_node->flag_tok_fifo);
-		for ( ; flag_tok_fifo != NULL; flag_tok_fifo = flag_tok_fifo->link)
-			if (T_Source != flag_tok_fifo->i)
-				fprintf(df, " %s", keyword(flag_tok_fifo->i));
+		atrv = HEAD_PFIFO(rest_node->flag_tok_fifo);
+		for ( ; atrv != NULL; atrv = atrv->link)
+			if (   T_Integer == atrv->type
+			    && T_Source != atrv->attr) {
+				fprintf(df, " %s", keyword(atrv->attr));
 		fprintf(df, "\n");
 	}
 
@@ -1493,7 +1495,7 @@ create_restrict_node(
 	address_node *	addr,
 	address_node *	mask,
 	short		ippeerlimit,
-	int_fifo *	flag_tok_fifo,
+	attr_val_fifo *	flag_tok_fifo,
 	int		line_no
 	)
 {
@@ -1520,7 +1522,7 @@ destroy_restrict_node(
 	 */
 	destroy_address_node(my_node->addr);
 	destroy_address_node(my_node->mask);
-	destroy_int_fifo(my_node->flag_tok_fifo);
+	destroy_attr_val_fifo(my_node->flag_tok_fifo);
 	free(my_node);
 }
 
@@ -2485,7 +2487,7 @@ config_access(
 	static int		warned_signd;
 	attr_val *		my_opt;
 	restrict_node *		my_node;
-	int_node *		curr_tok_fifo;
+	attr_val_node *		curr_tok_fifo;
 	sockaddr_u		addr;
 	sockaddr_u		mask;
 	struct addrinfo		hints;
