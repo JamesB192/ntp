@@ -106,6 +106,7 @@ double	sys_rootdelay;		/* roundtrip delay to primary source */
 double	sys_rootdisp;		/* dispersion to primary source */
 u_int32 sys_refid;		/* reference id (network byte order) */
 l_fp	sys_reftime;		/* last update time */
+l_fp	prev_reftime;		/* previous sys_reftime */
 struct	peer *sys_peer;		/* current peer */
 
 #ifdef LEAP_SMEAR
@@ -2830,6 +2831,7 @@ clock_update(
 	else
 		sys_rootdisp = sys_mindisp;
 	sys_rootdelay = peer->delay + peer->rootdelay;
+	prev_reftime = sys_reftime;
 	sys_reftime = peer->dst;
 
 	DPRINTF(1, ("clock_update: at %lu sample %lu associd %d\n",
@@ -2875,6 +2877,7 @@ clock_update(
 		memcpy(&sys_refid, "STEP", 4);
 		sys_rootdelay = 0;
 		sys_rootdisp = 0;
+		/* Should we clear prev_reftime? */
 		L_CLR(&sys_reftime);
 		sys_jitter = LOGTOD(sys_precision);
 		leapsec_reset_frame();
@@ -3972,6 +3975,7 @@ peer_xmit(
 	xpkt.refid = sys_refid;
 	xpkt.rootdelay = HTONS_FP(DTOFP(sys_rootdelay));
 	xpkt.rootdisp =  HTONS_FP(DTOUFP(sys_rootdisp));
+	/* Use sys_reftime for peer exchanges */
 	HTONL_FP(&sys_reftime, &xpkt.reftime);
 	HTONL_FP(&peer->rec, &xpkt.org);
 	HTONL_FP(&peer->dst, &xpkt.rec);
@@ -4474,6 +4478,7 @@ fast_xmit(
 		xpkt.rootdisp = HTONS_FP(DTOUFP(sys_rootdisp));
 
 #ifdef LEAP_SMEAR
+		/* XXX: Do we want to be using sys_reftime here? */
 		this_ref_time = sys_reftime;
 		if (leap_smear.in_progress) {
 			leap_smear_add_offs(&this_ref_time, NULL);
@@ -4485,6 +4490,8 @@ fast_xmit(
 		}
 		HTONL_FP(&this_ref_time, &xpkt.reftime);
 #else
+		/* Bug 3596: Put a fuzzed sys_reftime in the response? */
+		// Check the restrict list to see...
 		HTONL_FP(&sys_reftime, &xpkt.reftime);
 #endif
 
@@ -4654,6 +4661,7 @@ pool_xmit(
 	xpkt.refid = sys_refid;
 	xpkt.rootdelay = HTONS_FP(DTOFP(sys_rootdelay));
 	xpkt.rootdisp = HTONS_FP(DTOUFP(sys_rootdisp));
+	/* Bug 3596: What are the pros/cons of using sys_reftime here? */
 	HTONL_FP(&sys_reftime, &xpkt.reftime);
 	get_systime(&xmt_tx);
 	pool->aorg = xmt_tx;
