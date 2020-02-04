@@ -84,6 +84,7 @@
 * [Bug 1433] runtime check whether the kernel really supports capabilities
   - (modified) patch by Kurt Roeckx <perlinger@ntp.org>
 * Clean up sntp/networking.c:sendpkt() error message.  <stenn@ntp.org>
+* Update the copyright year.
 
 ---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
