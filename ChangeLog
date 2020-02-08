@@ -85,6 +85,7 @@
   - (modified) patch by Kurt Roeckx <perlinger@ntp.org>
 * Clean up sntp/networking.c:sendpkt() error message.  <stenn@ntp.org>
 * Update the copyright year.
+* html/confopt.html: cleanup. <stenn@ntp.org>
 
 ---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
