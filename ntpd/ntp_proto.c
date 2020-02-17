@@ -2444,7 +2444,7 @@ receive(
 	 * receive branch, but too much is going on here... at least we
 	 * do it only if the packet was good!
 	 */	
-	poll_update(peer, peer->hpoll);
+	poll_update(peer, peer->hpoll, (peer->hmode == MODE_CLIENT));
 
 	/*
 	 * In interleaved mode update the state variables. Also adjust the
