@@ -58,7 +58,6 @@
 	attr_val *		Attr_val;
 	attr_val_fifo *		Attr_val_fifo;
 	int_fifo *		Int_fifo;
-	randpoll_node *		Randpoll_node;
 	string_fifo *		String_fifo;
 	address_node *		Address_node;
 	address_fifo *		Address_fifo;
@@ -107,7 +106,6 @@
 %token	<Integer>	T_Drop
 %token	<Integer>	T_Dscp
 %token	<Integer>	T_Ellipsis	/* "..." not "ellipsis" */
-%token	<Integer>	T_Else
 %token	<Integer>	T_Enable
 %token	<Integer>	T_End
 %token	<Integer>	T_Epeer
@@ -149,7 +147,6 @@
 %token	<Integer>	T_Keys
 %token	<Integer>	T_Keysdir
 %token	<Integer>	T_Kod
-%token	<Integer>	T_Mssntp
 %token	<Integer>	T_Leapfile
 %token	<Integer>	T_Leapsmearinterval
 %token	<Integer>	T_Limited
@@ -183,6 +180,7 @@
 %token	<Integer>	T_Monitor
 %token	<Integer>	T_Month
 %token	<Integer>	T_Mru
+%token	<Integer>	T_Mssntp
 %token	<Integer>	T_Multicastclient
 %token	<Integer>	T_Nic
 %token	<Integer>	T_Nolink
@@ -210,6 +208,7 @@
 %token	<Integer>	T_Pid
 %token	<Integer>	T_Pidfile
 %token	<Integer>	T_Poll
+%token	<Integer>	T_PollSkewList
 %token	<Integer>	T_Pool
 %token	<Integer>	T_Port
 %token	<Integer>	T_Preempt
@@ -217,11 +216,8 @@
 %token	<Integer>	T_Protostats
 %token	<Integer>	T_Pw
 %token	<Integer>	T_Randfile
-%token	<Integer>	T_Randomizepoll
-%token	<Integer>	T_Randompoll
 %token	<Integer>	T_Rawstats
 %token	<Integer>	T_Refid
-%token	<Integer>	T_Reftime
 %token	<Integer>	T_Requestkey
 %token	<Integer>	T_Reset
 %token	<Integer>	T_Restrict
@@ -229,7 +225,8 @@
 %token	<Integer>	T_Rlimit
 %token	<Integer>	T_Saveconfigdir
 %token	<Integer>	T_Server
-%token	<Integer>	T_ServerFuzzReftime	/* Not a token */
+%token	<Integer>	T_Serverresponse
+%token	<Integer>	T_ServerresponseFuzz	/* Not a token */
 %token	<Integer>	T_Setvar
 %token	<Integer>	T_Source
 %token	<Integer>	T_Stacksize
@@ -267,6 +264,7 @@
 %token	<Integer>	T_Week
 %token	<Integer>	T_Wildcard
 %token	<Integer>	T_Xleave
+%token	<Integer>	T_Xmtnonce
 %token	<Integer>	T_Year
 %token	<Integer>	T_Flag			/* Not a token */
 %token	<Integer>	T_EOC
@@ -341,8 +339,10 @@
 %type	<Integer>	option_int_keyword
 %type	<Attr_val>	option_str
 %type	<Integer>	option_str_keyword
+%type	<Attr_val_fifo>	pollskew_list
+%type	<Attr_val>	pollskew_cycle
+%type	<Attr_val>	pollskew_spec
 %type	<Integer>	reset_command
-%type	<Randpoll_node>	randompoll_spec
 %type	<Integer>	rlimit_option_keyword
 %type	<Attr_val>	rlimit_option
 %type	<Attr_val_fifo>	rlimit_option_list
@@ -495,6 +495,7 @@ option_flag_keyword
 	|	T_Prefer
 	|	T_True
 	|	T_Xleave
+	|	T_Xmtnonce
 	;
 
 option_int
@@ -876,7 +877,7 @@ access_control_command
 		{
 			restrict_node *	rn;
 
-			APPEND_G_FIFO($4, create_int_node($2));
+			APPEND_G_FIFO($4, create_attr_ival($2, 1));
 			rn = create_restrict_node(
 				NULL, NULL, $3, $4, lex_current()->curpos.nline);
 			APPEND_G_FIFO(cfgt.restrict_opts, rn);
@@ -915,20 +916,12 @@ ac_flag_list
 			av = create_attr_ival($2, 1);
 			APPEND_G_FIFO($$, av);
 		}
-	|	ac_flag_list T_Server T_Fuzz T_Reftime
+	|	ac_flag_list T_Serverresponse T_Fuzz
 		{
 			attr_val *av;
 
 			$$ = $1;
-			av = create_attr_ival(T_ServerFuzzReftime, 6);
-			APPEND_G_FIFO($$, av);
-		}
-	|	ac_flag_list T_Server T_Fuzz T_Reftime T_Poll T_Integer
-		{
-			attr_val *av;
-
-			$$ = $1;
-			av = create_attr_ival(T_ServerFuzzReftime, $5);
+			av = create_attr_ival(T_ServerresponseFuzz, 1);
 			APPEND_G_FIFO($$, av);
 		}
 	;
@@ -938,9 +931,9 @@ access_control_flag
 	|	T_Flake
 	|	T_Ignore
 	|	T_Kod
-	|	T_Mssntp
 	|	T_Limited
 	|	T_Lowpriotrap
+	|	T_Mssntp
 	|	T_Noepeer
 	|	T_Nomodify
 	|	T_Nomrulist
@@ -950,7 +943,6 @@ access_control_flag
 	|	T_Notrap
 	|	T_Notrust
 	|	T_Ntpport
-	|	T_Randomizepoll
 	|	T_Version
 	;
 
@@ -1272,7 +1264,7 @@ miscellaneous_command
 
 			av = create_attr_sval($1, $2);
 			av->flag = $3;
-			APPEND_G_FIFO(cfgt.vars, av);			
+			APPEND_G_FIFO(cfgt.vars, av);
 		}
 	|	T_End
 			{ lex_flush_stack(); }
@@ -1282,14 +1274,8 @@ miscellaneous_command
 			{ CONCAT_G_FIFOS(cfgt.logconfig, $2); }
 	|	T_Phone string_list
 			{ CONCAT_G_FIFOS(cfgt.phone, $2); }
-	|	T_Randompoll randompoll_list
-			{
-#if 1
-				yyerror("randompoll is unimplemented.");
-#else
-				// CONCAT_G_FIFOS(cfgt.randompoll, $2);
-#endif
-			}
+	|	T_PollSkewList pollskew_list
+			{ CONCAT_G_FIFOS(cfgt.pollskewlist, $2); }
 	|	T_Setvar variable_assign
 			{ APPEND_G_FIFO(cfgt.setvar, $2); }
 	|	T_Trap ip_address trap_option_list
@@ -1382,36 +1368,44 @@ drift_parm
 		}
 	;
 
-randompoll_list
-	:	/* empty: no randomization of any poll times */
-		// This is the default case with 0/0
-	|	T_Integer randompoll_spec
-		// { $$ = ...; } XXX
-	|	T_Else randompoll_spec
-		// { $$ = ...; } XXX
+pollskew_list
+	:	/* empty */
+			{ $$ = NULL; }
+	|	pollskew_list pollskew_spec
+			{ $$ = append_gen_fifo($1, $2); }
 	;
 
-randompoll_spec
-	:	'0' '/' T_Integer	
+pollskew_spec
+	:	pollskew_cycle T_Integer '|' T_Integer
 		{
-			if (   $3 > (1 << (POLL - 1)) ) {
-				$$ = NULL;
-				yyerror("randompoll: randomization limit must be <= half the poll interval");
-	     	   	} else {
-				// $$ = create_random_poll_range(POLL, 0, $3); XXX
+			if ($2 < 0 || $4 < 0) {
+				/* bad numbers */
+				yyerror("pollskewlist: skew values must be >=0");
+				destroy_attr_val($1);
+				$1 = NULL;
+			} else if ($1 == NULL) {
+				yyerror("pollskewlist: poll value must be 3-17, inclusive");
+			} else if ($1->attr <= 0) {
+				/* process default range */
+				$1->value.r.first = $2;
+				$1->value.r.last  = $4;
+			} else if ($2 < (1 << ($1->attr - 1)) && $4 < (1 << ($1->attr - 1))) {
+				$1->value.r.first = $2;
+				$1->value.r.last  = $4;
+			} else {
+				yyerror("pollskewlist: randomization limit must be <= half the poll interval");
+				destroy_attr_val($1);
+				$1 = NULL;
 			}
-		}
-	|	'-' T_Integer '/' T_Integer	
-		{
-			if (   $2 > (1 << (POLL - 1))
-			    || $4 > (1 << (POLL - 1)) ) {
-				$$ = NULL;
-				yyerror("randompoll: randomization limit must be <= half the poll interval");
-	     	   	} else {
-				// $$ = create_random_poll_range(POLL, -$2, $4); XXX
-			}
+			$$ = $1;
 		}
 	;
+
+pollskew_cycle
+	:	T_Integer { $$ = ($1 >= 3 && $1 <= 17) ? create_attr_rval($1, 0, 0) : NULL; }
+	|	T_Default { $$ = create_attr_rval(-1, 0, 0); }
+	;
+
 
 variable_assign
 	:	T_String '=' T_String t_default_or_zero
@@ -1585,7 +1579,7 @@ integer_list_range_elt
 
 integer_range
 	:	'(' T_Integer T_Ellipsis T_Integer ')'
-			{ $$ = create_attr_rangeval('-', $2, $4); }
+			{ $$ = create_attr_rval('-', $2, $4); }
 	;
 
 string_list

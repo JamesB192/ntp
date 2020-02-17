@@ -15,6 +15,7 @@
 #include "ntp_control.h"
 #include "ntp_string.h"
 #include "ntp_leapsec.h"
+#include "ntp_psl.h"
 #include "refidsmear.h"
 #include "lib_strbuf.h"
 
@@ -30,6 +31,13 @@
 #ifndef BDELAY_DEFAULT
 # define BDELAY_DEFAULT (-0.050)
 #endif
+
+#define SRVFUZ_SHIFT	6	/* 64 seconds */
+#define SRVRSP_FUZZ(x)					\
+	do {						\
+		x.l_uf &= 0;				\
+		x.l_ui &= ~((1 << SRVFUZ_SHIFT) - 1U);	\
+	} while(0)
 
 /*
  * This macro defines the authentication state. If x is 1 authentication
@@ -102,11 +110,16 @@ u_char	sys_leap;		/* system leap indicator, use set_sys_leap() to change this */
 u_char	xmt_leap;		/* leap indicator sent in client requests, set up by set_sys_leap() */
 u_char	sys_stratum;		/* system stratum */
 s_char	sys_precision;		/* local clock precision (log2 s) */
-double	sys_rootdelay;		/* roundtrip delay to primary source */
-double	sys_rootdisp;		/* dispersion to primary source */
+double	sys_rootdelay;		/* roundtrip delay to root (primary source) */
+double	sys_rootdisp;		/* dispersion to root (primary source) */
+double	prev_rootdisp;		/* previous root dispersion */
+double	p2_rootdisp;		/* previous previous root dispersion */
 u_int32 sys_refid;		/* reference id (network byte order) */
 l_fp	sys_reftime;		/* last update time */
 l_fp	prev_reftime;		/* previous sys_reftime */
+l_fp	p2_reftime;		/* previous previous sys_reftime */
+u_long	prev_time;		/* "current_time" when saved prev_time */
+u_long	p2_time;		/* previous prev_time */
 struct	peer *sys_peer;		/* current peer */
 
 #ifdef LEAP_SMEAR
@@ -343,11 +356,18 @@ valid_NAK(
 	/*
 	 * The ORIGIN must match, or this cannot be a valid NAK, either.
 	 */
+
+	if (FLAG_LOOPNONCE & peer->flags) {
+		myorg = &peer->nonce;
+	} else {
+		if (peer->flip > 0) {
+			myorg = &peer->borg;
+		} else {
+			myorg = &peer->aorg;
+		}
+	}
+
 	NTOHL_FP(&rpkt->org, &p_org);
-	if (peer->flip > 0)
-		myorg = &peer->borg;
-	else
-		myorg = &peer->aorg;
 
 	if (L_ISZERO(&p_org) ||
 	    L_ISZERO( myorg) ||
@@ -393,7 +413,7 @@ transmit(
 	 */
 	if (peer->cast_flags & (MDF_BCAST | MDF_MCAST)) {
 		peer->outdate = current_time;
-		poll_update(peer, hpoll);
+		poll_update(peer, hpoll, 0);
 		if (sys_leap != LEAP_NOTINSYNC)
 			peer_xmit(peer);
 		return;
@@ -414,7 +434,7 @@ transmit(
 	 */
 	if (peer->cast_flags & MDF_ACAST) {
 		peer->outdate = current_time;
-		poll_update(peer, hpoll);
+		poll_update(peer, hpoll, 0);
 		if (peer->unreach > sys_beacon) {
 			peer->unreach = 0;
 			peer->ttl = 0;
@@ -443,7 +463,7 @@ transmit(
 	 */
 	if (peer->cast_flags & MDF_POOL) {
 		peer->outdate = current_time;
-		poll_update(peer, hpoll);
+		poll_update(peer, hpoll, 0);
 		if (   (peer_associations <= 2 * sys_maxclock)
 		    && (   peer_associations < sys_maxclock
 			|| sys_survivors < sys_minclock))
@@ -555,7 +575,7 @@ transmit(
 	/*
 	 * Do not transmit if in broadcast client mode.
 	 */
-	poll_update(peer, hpoll);
+	poll_update(peer, hpoll, (peer->hmode == MODE_CLIENT));
 	if (peer->hmode != MODE_BCLIENT)
 		peer_xmit(peer);
 
@@ -907,12 +927,13 @@ receive(
 			}
 			return;			/* rate exceeded */
 		}
-		if (hismode == MODE_CLIENT)
+		if (hismode == MODE_CLIENT) {
 			fast_xmit(rbufp, MODE_SERVER, skeyid,
 			    restrict_mask);
-		else
+		} else {
 			fast_xmit(rbufp, MODE_ACTIVE, skeyid,
 			    restrict_mask);
+		}
 		return;				/* rate exceeded */
 	}
 	restrict_mask &= ~RES_KOD;
@@ -1269,9 +1290,11 @@ receive(
 
 			if (AUTH(restrict_mask & RES_DONTTRUST,
 			   is_authentic)) {
+				/* Bug 3596: Do we want to fuzz the reftime? */
 				fast_xmit(rbufp, MODE_SERVER, skeyid,
 				    restrict_mask);
 			} else if (is_authentic == AUTH_ERROR) {
+				/* Bug 3596: Do we want to fuzz the reftime? */
 				fast_xmit(rbufp, MODE_SERVER, 0,
 				    restrict_mask);
 				sys_badauth++;
@@ -1337,6 +1360,7 @@ receive(
 			    pkt->refid,
 			    rbufp->recv_length - MIN_V4_PKT_LEN, (u_char *)&pkt->exten);
 
+			/* Bug 3596: Do we want to fuzz the reftime? */
 			fast_xmit(rbufp, MODE_SERVER, skeyid,
 			    restrict_mask);
 		}
@@ -1877,7 +1901,9 @@ receive(
 	 * packet is a replay. This prevents the bad guys from replaying
 	 * the most recent packet, authenticated or not.
 	 */
-	} else if (L_ISEQU(&peer->xmt, &p_xmt)) {
+	} else if (   ((FLAG_LOOPNONCE & peer->flags) && L_ISEQU(&peer->nonce, &p_xmt))
+		   || (!(FLAG_LOOPNONCE & peer->flags) && L_ISEQU(&peer->xmt, &p_xmt))
+	) {
 		DPRINTF(2, ("receive: drop: Duplicate xmit\n"));
 		peer->flash |= TEST1;			/* duplicate */
 		peer->oldpkt++;
@@ -1977,6 +2003,10 @@ receive(
 	 * We have earlier asserted that hisstratum cannot be 0.
 	 * If hisstratum is STRATUM_UNSPEC, it means he's not sync'd.
 	 */
+
+	/* XXX: FLAG_LOOPNONCE */
+	DEBUG_INSIST(0 == (FLAG_LOOPNONCE & peer->flags));
+
 	} else if (peer->flip == 0) {
 		if (0) {
 		} else if (L_ISZERO(&p_org)) {
@@ -1986,6 +2016,7 @@ receive(
 			msyslog(LOG_INFO,
 				"receive: BUG 3361: Clearing peer->aorg ");
 			L_CLR(&peer->aorg);
+			/* Clear peer->nonce, too? */
 #endif
 			/**/
 			switch (hismode) {
@@ -2039,6 +2070,7 @@ receive(
 			}
 		} else {
 			L_CLR(&peer->aorg);
+			/* XXX: FLAG_LOOPNONCE */
 		}
 
 	/*
@@ -2212,7 +2244,7 @@ receive(
 			peer->minpoll = peer->ppoll;
 		peer->burst = peer->retry = 0;
 		peer->throttle = (NTP_SHIFT + 1) * (1 << peer->minpoll);
-		poll_update(peer, pkt->ppoll);
+		poll_update(peer, pkt->ppoll, 0);
 		return;				/* kiss-o'-death */
 	}
 	if (kissCode != NOKISS) {
@@ -2484,7 +2516,10 @@ process_packet(
 		peer->seldisptoolarge++;
 		DPRINTF(1, ("packet: flash header %04x\n",
 			    peer->flash));
-		poll_update(peer, peer->hpoll);	/* ppoll updated? */
+
+		/* ppoll updated? */
+		/* XXX: Fuzz the poll? */
+		poll_update(peer, peer->hpoll, (peer->hmode == MODE_CLIENT));
 		return;
 	}
 
@@ -2528,7 +2563,7 @@ process_packet(
 		if (peer->burst > 0)
 			peer->nextdate = current_time;
 	}
-	poll_update(peer, peer->hpoll);
+	poll_update(peer, peer->hpoll, (peer->hmode == MODE_CLIENT));
 
 	/**/
 
@@ -2795,7 +2830,7 @@ clock_update(
 		sys_poll = peer->minpoll;
 	if (sys_poll > peer->maxpoll)
 		sys_poll = peer->maxpoll;
-	poll_update(peer, sys_poll);
+	poll_update(peer, sys_poll, 0);
 	sys_stratum = min(peer->stratum + 1, STRATUM_UNSPEC);
 	if (   peer->stratum == STRATUM_REFCLOCK
 	    || peer->stratum == STRATUM_UNSPEC)
@@ -2826,12 +2861,21 @@ clock_update(
 		+ clock_phi * (current_time - peer->update)
 		+ fabs(sys_offset);
 
+	p2_rootdisp = prev_rootdisp;
+	prev_rootdisp = sys_rootdisp;
 	if (dtemp > sys_mindisp)
 		sys_rootdisp = dtemp;
 	else
 		sys_rootdisp = sys_mindisp;
+
 	sys_rootdelay = peer->delay + peer->rootdelay;
+
+	p2_reftime = prev_reftime;
+	p2_time = prev_time;
+
 	prev_reftime = sys_reftime;
+	prev_time = current_time + 64 + (rand() & 0x3f);	/* 64-127 s */
+
 	sys_reftime = peer->dst;
 
 	DPRINTF(1, ("clock_update: at %lu sample %lu associd %d\n",
@@ -2876,8 +2920,11 @@ clock_update(
 		sys_stratum = STRATUM_UNSPEC;
 		memcpy(&sys_refid, "STEP", 4);
 		sys_rootdelay = 0;
+		p2_rootdisp = 0;
+		prev_rootdisp = 0;
 		sys_rootdisp = 0;
-		/* Should we clear prev_reftime? */
+		L_CLR(&p2_reftime);	/* Should we clear p2_reftime? */
+		L_CLR(&prev_reftime);	/* Should we clear prev_reftime? */
 		L_CLR(&sys_reftime);
 		sys_jitter = LOGTOD(sys_precision);
 		leapsec_reset_frame();
@@ -2952,7 +2999,8 @@ clock_update(
 void
 poll_update(
 	struct peer *peer,	/* peer structure pointer */
-	u_char	mpoll
+	u_char	mpoll,
+	u_char  skewpoll
 	)
 {
 	u_long	next, utemp;
@@ -3044,6 +3092,29 @@ poll_update(
 			next = ((0x1000UL | (ntp_random() & 0x0ff)) <<
 			    hpoll) >> 12;
 		next += peer->outdate;
+		/* XXX: bug3596: Deal with poll skew list? */
+		if (skewpoll) {
+			psl_item psi;
+
+			if (0 == get_pollskew(hpoll, &psi)) {
+				int sub = psi.sub;
+				int qty = psi.qty;
+				int msk = psi.msk;
+				int val;
+
+				if (   0 != sub
+				    || 0 != qty) {
+				    	do {
+						val = ntp_random() & msk;
+					} while (val > qty);
+
+					next -= sub;
+					next += val;
+				}
+			} else {
+				/* get_pollskew() already logged this */
+			}
+		}
 		if (next > utemp)
 			peer->nextdate = next;
 		else
@@ -4400,7 +4471,7 @@ leap_smear_add_offs(
 static void
 fast_xmit(
 	struct recvbuf *rbufp,	/* receive packet pointer */
-	int	xmode,		/* receive mode */
+	int	xmode,		/* receive mode */  /* XXX: HMS: really? */
 	keyid_t	xkeyid,		/* transmit key ID */
 	int	flags		/* restrict mask */
 	)
@@ -4431,8 +4502,8 @@ fast_xmit(
 	/*
 	 * If this is a kiss-o'-death (KoD) packet, show leap
 	 * unsynchronized, stratum zero, reference ID the four-character
-	 * kiss code and system root delay. Note we don't reveal the
-	 * local time, so these packets can't be used for
+	 * kiss code and (???) system root delay. Note we don't reveal
+	 * the local time, so these packets can't be used for
 	 * synchronization.
 	 */
 	if (flags & RES_KOD) {
@@ -4454,18 +4525,23 @@ fast_xmit(
 	 * This is a normal packet. Use the system variables.
 	 */
 	} else {
+		double this_rootdisp;
+		l_fp this_ref_time;
+
 #ifdef LEAP_SMEAR
 		/*
 		 * Make copies of the variables which can be affected by smearing.
 		 */
-		l_fp this_ref_time;
 		l_fp this_recv_time;
 #endif
 
 		/*
-		 * If we are inside the leap smear interval we add the current smear offset to
-		 * the packet receive time, to the packet transmit time, and eventually to the
-		 * reftime to make sure the reftime isn't later than the transmit/receive times.
+		 * If we are inside the leap smear interval we add
+		 * the current smear offset to:
+		 * - the packet receive time,
+		 * - the packet transmit time,
+		 * - and eventually to the reftime to make sure the
+		 *   reftime isn't later than the transmit/receive times.
 		 */
 		xpkt.li_vn_mode = PKT_LI_VN_MODE(xmt_leap,
 		    PKT_VERSION(rpkt->li_vn_mode), xmode);
@@ -4475,28 +4551,77 @@ fast_xmit(
 		xpkt.precision = sys_precision;
 		xpkt.refid = sys_refid;
 		xpkt.rootdelay = HTONS_FP(DTOFP(sys_rootdelay));
-		xpkt.rootdisp = HTONS_FP(DTOUFP(sys_rootdisp));
+
+		/*
+		** Server Response Fuzzing
+		**
+		** Which values do we want to use for reftime and rootdisp?
+		*/
+
+		if (   MODE_SERVER == xmode
+		    && RES_SRVRSPFUZ & flags) {
+			if (current_time < p2_time) {
+				this_ref_time = p2_reftime;
+				this_rootdisp = p2_rootdisp;
+			} else if (current_time < prev_time) {
+				this_ref_time = prev_reftime;
+				this_rootdisp = prev_rootdisp;
+			} else {
+				this_ref_time = sys_reftime;
+				this_rootdisp = sys_rootdisp;
+			}
+
+			SRVRSP_FUZZ(this_ref_time);
+		} else {
+			this_ref_time = sys_reftime;
+			this_rootdisp = sys_rootdisp;
+		}
+
+		/*
+		** ROOT DISPERSION
+		*/
+
+		xpkt.rootdisp = HTONS_FP(DTOUFP(this_rootdisp));
+
+		/*
+		** REFTIME
+		*/
 
 #ifdef LEAP_SMEAR
-		/* XXX: Do we want to be using sys_reftime here? */
-		this_ref_time = sys_reftime;
 		if (leap_smear.in_progress) {
+			/* adjust the reftime by the same amount as the
+			 * leap smear, as we don't want to risk the
+			 * reftime being later than the transmit time.
+			 */
 			leap_smear_add_offs(&this_ref_time, NULL);
+		}
+#endif
+
+		HTONL_FP(&this_ref_time, &xpkt.reftime);
+
+		/*
+		** REFID
+		*/
+
+#ifdef LEAP_SMEAR
+		if (leap_smear.in_progress) {
 			xpkt.refid = convertLFPToRefID(leap_smear.offset);
 			DPRINTF(2, ("fast_xmit: leap_smear.in_progress: refid %8x, smear %s\n",
 				ntohl(xpkt.refid),
 				lfptoa(&leap_smear.offset, 8)
 				));
 		}
-		HTONL_FP(&this_ref_time, &xpkt.reftime);
-#else
-		/* Bug 3596: Put a fuzzed sys_reftime in the response? */
-		// Check the restrict list to see...
-		HTONL_FP(&sys_reftime, &xpkt.reftime);
 #endif
+
+		/*
+		** ORIGIN
+		*/
 
 		xpkt.org = rpkt->xmt;
 
+		/*
+		** RECEIVE
+		*/
 #ifdef LEAP_SMEAR
 		this_recv_time = rbufp->recv_time;
 		if (leap_smear.in_progress)
@@ -4505,6 +4630,10 @@ fast_xmit(
 #else
 		HTONL_FP(&rbufp->recv_time, &xpkt.rec);
 #endif
+
+		/*
+		** TRANSMIT
+		*/
 
 		get_systime(&xmt_tx);
 #ifdef LEAP_SMEAR
@@ -4606,10 +4735,11 @@ pool_xmit(
 	struct interface *	lcladr;
 	sockaddr_u *		rmtadr;
 	r4addr			r4a;
-	int			restrict_mask;
+	u_short			restrict_mask;
 	struct peer *		p;
 	l_fp			xmt_tx;
 
+	DEBUG_REQUIRE(pool);
 	if (NULL == pool->ai) {
 		if (pool->addrs != NULL) {
 			/* free() is used with copy_addrinfo_list() */
@@ -4663,9 +4793,26 @@ pool_xmit(
 	xpkt.rootdisp = HTONS_FP(DTOUFP(sys_rootdisp));
 	/* Bug 3596: What are the pros/cons of using sys_reftime here? */
 	HTONL_FP(&sys_reftime, &xpkt.reftime);
+
+	/* HMS: the following is better done after the ntp_random() calls */
 	get_systime(&xmt_tx);
 	pool->aorg = xmt_tx;
-	HTONL_FP(&xmt_tx, &xpkt.xmt);
+
+	if (FLAG_LOOPNONCE & pool->flags) {
+		l_fp nonce;
+
+		do {
+			nonce.l_ui = ntp_random();
+		} while (0 == nonce.l_ui);
+		do {
+			nonce.l_uf = ntp_random();
+		} while (0 == nonce.l_uf);
+		pool->nonce = nonce;
+		HTONL_FP(&nonce, &xpkt.xmt);
+	} else {
+		L_CLR(&pool->nonce);
+		HTONL_FP(&xmt_tx, &xpkt.xmt);
+	}
 	sendpkt(rmtadr, lcladr,
 		sys_ttl[(pool->ttl >= sys_ttlmax) ? sys_ttlmax : pool->ttl],
 		&xpkt, LEN_PKT_NOMAC);

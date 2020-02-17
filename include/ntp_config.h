@@ -6,6 +6,7 @@
 #endif /* HAVE_SYS_RESOURCE_H */
 
 #include "ntp_machine.h"
+#include "ntp_psl.h"
 #include "ntpsim.h"
 
 
@@ -70,11 +71,11 @@ struct attr_val_tag {
 	int		type;	/* T_String, T_Integer, ... */
 	int		flag;	/* auxiliary flags */
 	union val {
-		int		i;
-		u_int		u;
-		int_range	r;
-		double		d;
-		char *		s;
+		double		d;	/* T_Double */
+		int		i;	/* T_Integer */
+		int_range	r;	/* T_Intrange */
+		char *		s;	/* T_String */
+		u_int		u;	/* T_U_int */
 	} value;
 };
 
@@ -106,16 +107,6 @@ struct string_node_tag {
 
 typedef DECL_FIFO_ANCHOR(string_node) string_fifo;
 
-typedef struct randpoll_node_tag randpoll_node;
-struct randpoll_node_tag {
-	randpoll_node *	link;
-	int		poll;
-	int		lower;
-	int		upper;
-};
-
-typedef DECL_FIFO_ANCHOR(randpoll_node) randpoll_fifo;
-
 typedef struct restrict_node_tag restrict_node;
 struct restrict_node_tag {
 	restrict_node *	link;
@@ -124,6 +115,7 @@ struct restrict_node_tag {
 	attr_val_fifo *	flag_tok_fifo;
 	int		line_no;
 	short		ippeerlimit;
+	short		srvfuzrft;
 };
 
 typedef DECL_FIFO_ANCHOR(restrict_node) restrict_fifo;
@@ -257,11 +249,10 @@ struct config_tree_tag {
 	attr_val_fifo *	vars;
 	nic_rule_fifo *	nic_rules;
 	int_fifo *	reset_counters;
+	attr_val_fifo *	pollskewlist;
 
 	sim_fifo *	sim_details;
 	int		mdnstries;
-
-	randpoll_fifo *	randompoll;
 };
 
 
@@ -283,6 +274,23 @@ typedef struct settrap_parms_tag {
 	sockaddr_u	ifaddr;
 	int		ifaddr_nonnull;
 } settrap_parms;
+
+
+/*
+ * Poll Skew List
+ */
+
+psl_item psl[17-3+1];		/* values for polls 3-17 */
+				/* To simplify the runtime code we */
+				/* don't want to have to special-case */
+				/* dealing with a default */
+
+
+/*
+** Data Minimization Items
+*/
+
+/* Serverresponse fuzz reftime: stored in 'restrict' fifos */
 
 
 /* get text from T_ tokens */
@@ -311,14 +319,13 @@ address_node *create_address_node(char *addr, int type);
 void destroy_address_node(address_node *my_node);
 attr_val *create_attr_dval(int attr, double value);
 attr_val *create_attr_ival(int attr, int value);
-attr_val *create_attr_uval(int attr, u_int value);
-attr_val *create_attr_rangeval(int attr, int first, int last);
+attr_val *create_attr_rval(int attr, int first, int last);
 attr_val *create_attr_sval(int attr, const char *s);
+attr_val *create_attr_uval(int attr, u_int value);
 void	  destroy_attr_val(attr_val *node);
 filegen_node *create_filegen_node(int filegen_token,
 				  attr_val_fifo *options);
 string_node *create_string_node(char *str);
-randpoll_node *create_randpoll_node(int poll, int lower, int upper);
 restrict_node *create_restrict_node(address_node *addr,
 				    address_node *mask,
 				    short ippeerlimit,
