@@ -46,6 +46,7 @@ noinst_HEADERS =	\
 	ntp_md5.h	\
 	ntp_net.h	\
 	ntp_proto.h	\
+	ntp_psl.h	\
 	ntp_random.h	\
 	ntp_refclock.h	\
 	ntp_request.h	\
