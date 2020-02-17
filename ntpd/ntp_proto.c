@@ -721,7 +721,7 @@ receive(
 		sys_badlength++;
 		return;				/* bogus length */
 	}
-
+	
 	hisleap = PKT_LEAP(pkt->li_vn_mode);
 	hisstratum = PKT_TO_STRATUM(pkt->stratum);
 	INSIST(0 != hisstratum); /* paranoia check PKT_TO_STRATUM result */
@@ -2434,9 +2434,17 @@ receive(
 	/*
 	 * The dance is complete and the flash bits have been lit. Toss
 	 * the packet over the fence for processing, which may light up
-	 * more flashers.
+	 * more flashers. Leave if the packet is not good.
 	 */
 	process_packet(peer, pkt, rbufp->recv_length);
+	if (peer->flash & PKT_TEST_MASK)
+		return;
+
+	/* [bug 3592] Update poll. Ideally this should not happen in a
+	 * receive branch, but too much is going on here... at least we
+	 * do it only if the packet was good!
+	 */	
+	poll_update(peer, peer->hpoll);
 
 	/*
 	 * In interleaved mode update the state variables. Also adjust the
@@ -3003,7 +3011,7 @@ poll_update(
 	u_char  skewpoll
 	)
 {
-	u_long	next, utemp;
+	u_long	next, utemp, limit;
 	u_char	hpoll;
 
 	/*
@@ -3047,6 +3055,15 @@ poll_update(
 	 */
 	utemp = current_time + max(peer->throttle - (NTP_SHIFT - 1) *
 	    (1 << peer->minpoll), ntp_minpkt);
+
+ 	/*[Bug 3592] avoid unlimited postpone of next poll */
+	limit = (2u << hpoll);
+	if (limit > 64)
+		limit -= (limit >> 2);
+	limit += peer->outdate;
+	if (limit < current_time)
+		limit = current_time;
+
 	if (peer->burst > 0) {
 		if (peer->nextdate > current_time)
 			return;
@@ -3121,6 +3138,13 @@ poll_update(
 			peer->nextdate = utemp;
 		if (peer->throttle > (1 << peer->minpoll))
 			peer->nextdate += ntp_minpkt;
+	}
+
+ 	/*[Bug 3592] avoid unlimited postpone of next poll */
+	if (peer->nextdate > limit) {
+		DPRINTF(1, ("poll_update: clamp reached; limit %lu next %lu\n",
+			    limit, peer->nextdate));
+		peer->nextdate = limit;
 	}
 	DPRINTF(2, ("poll_update: at %lu %s poll %d burst %d retry %d head %d early %lu next %lu\n",
 		    current_time, ntoa(&peer->srcadr), peer->hpoll,
