@@ -110,9 +110,20 @@ DISTCLEANFILES =		\
 	$(NULL)
 
 CLEANFILES =			\
+	check-psl0		\
+	check-psl1		\
+	check-psl2		\
+	check-pslsaveconfig	\
 	check-saveconfig	\
 	compsave.conf		\
+	compsave.conf+		\
 	k-g-u-submake		\
+	psl0save.conf		\
+	psl0save.conf+		\
+	psl1save.conf		\
+	psl1save.conf+		\
+	psl2save.conf		\
+	psl2save.conf+		\
 	$(EXTRA_PROGRAMS)	\
 	$(NULL)
 
