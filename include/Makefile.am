@@ -25,6 +25,7 @@ noinst_HEADERS =	\
 	ntp.h		\
 	ntp_assert.h	\
 	ntp_calendar.h	\
+	ntp_calgps.h	\
 	ntp_cmdargs.h	\
 	ntp_config.h	\
 	ntp_control.h	\
