@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpsnmpd-opts.c)
  *
- *  It has been AutoGen-ed  February 20, 2019 at 09:57:03 AM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  April  5, 2019 at 01:12:38 AM by AutoGen 5.18.5
  *  From the definitions    ntpsnmpd-opts.def
  *  and the template file   options
  *
