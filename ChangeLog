@@ -91,6 +91,7 @@
 * Provide more detail on unrecognized config file parser tokens. <stenn@ntp.org>
 * Startup log improvements. <stenn@ntp.org>
 * Update the copyright year.
+* html/confopt.html: cleanup. <stenn@ntp.org>
 
 ---
 (4.2.8p13) 2019/03/07 Released by Harlan Stenn <stenn@ntp.org>
