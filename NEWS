@@ -10,8 +10,9 @@ instance that is explicitly configured to override the default and allow
 ntpdc (mode 7) connections to be made to a server to read some uninitialized
 memory; fixes the case where an unmonitored ntpd using an unauthenticated
 association to its servers may be susceptible to a forged packet DoS attack;
-and fixes an attack against a single unauthenticated unsynchronized
-symmetric peer.  It also fixes 46 other bugs and addresses 4 other issues.
+and fixes an attack against a client instance that uses a single
+unauthenticated time source.  It also fixes 46 other bugs and addresses
+4 other issues.
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
