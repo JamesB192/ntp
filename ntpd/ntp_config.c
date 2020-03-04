@@ -4204,8 +4204,6 @@ peerflag_bits(
 		case T_Xmtnonce:
 			if (   MODE_CLIENT == hmode ) {
 				peerflags |= FLAG_LOOPNONCE;
-			} else {
-DPRINTF(0, ("Xmtnonce: mode %d, srcaddr <%s>\n", hmode, pn->addr->address));
 			}
 			break;
 		}
