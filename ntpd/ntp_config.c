@@ -2965,7 +2965,7 @@ config_access(
 		}
 	}
 
-#if 1
+#if 0
 	int p;
 	msyslog(LOG_INFO, "Dumping PSL:");
 	for (p = 3; p <= 17; ++p) {
@@ -3019,6 +3019,7 @@ attrtopsl(int poll, attr_val *avp)
 
 	return;
 } 
+#endif	/* !SIM */
 
 
 int
@@ -3040,7 +3041,6 @@ get_pollskew(
 
 	/* NOTREACHED */
 }
-#endif	/* !SIM */
 
 
 #ifdef FREE_CFG_T
