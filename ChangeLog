@@ -1,4 +1,7 @@
 ---
+* [Bug 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
+
+---
 (4.2.8p14) 2020/03/03 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
