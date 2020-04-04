@@ -1681,8 +1681,9 @@ receive(
 		 * MODE_ACTIVE KoDs, which will time out eventually.
 		 */
 		if (   hisleap != LEAP_NOTINSYNC
-		    && (hisstratum < sys_floor || hisstratum >= sys_ceiling)) {
-			DPRINTF(2, ("receive: AM_NEWPASS drop: Autokey group mismatch\n"));
+		       && (hisstratum < sys_floor || hisstratum >= sys_ceiling)) {
+			DPRINTF(2, ("receive: AM_NEWPASS drop: Remote stratum (%d) out of range\n",
+					hisstratum));
 			sys_declined++;
 			return;			/* no help */
 		}
