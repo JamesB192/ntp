@@ -1,3 +1,5 @@
+* [Bug 3662] Fix build errors on Windows with VS2008.
+
 ---
 (4.2.8p14) 2020/03/03 Released by Harlan Stenn <stenn@ntp.org>
 
