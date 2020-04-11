@@ -13,6 +13,7 @@ Eventually, ntpd will run out of memory and abort.
 It also fixes 46 other bugs and addresses
 4 other issues.
 
+* [Bug 3657] Wrong "Autokey group mismatch" debug message <perlinger@ntp.org>
 * [Bug 3655] ntpdc memstats hash counts <perlinger@ntp.org>
   - fix by Gerry garvey
 * [Bug 3653] Refclock jitter RMS calculation <perlinger@ntp.org>
