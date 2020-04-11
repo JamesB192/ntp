@@ -12,6 +12,7 @@ Eventually, ntpd will run out of memory and abort.
 
 It also fixes 6 other bugs.
 
+* [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
 * [Bug 3662] Fix build errors on Windows with VS2008 <burnicki@ntp.org>
 * [Bug 3659] Move definition of psl[] from ntp_config.h to
   ntp_config.h <perlinger@ntp.org>
