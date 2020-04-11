@@ -3456,11 +3456,13 @@ clock_select(void)
 	double	d, e, f, g;
 	double	high, low;
 	double	speermet;
+	double	lastresort_dist = MAXDISPERSE;
 	double	orphmet = 2.0 * U_INT32_MAX; /* 2x is greater than */
 	struct endpoint endp;
 	struct peer *osys_peer;
 	struct peer *sys_prefer = NULL;	/* prefer peer */
 	struct peer *typesystem = NULL;
+	struct peer *typelastresort = NULL;
 	struct peer *typeorphan = NULL;
 #ifdef REFCLOCK
 	struct peer *typeacts = NULL;
@@ -3522,6 +3524,22 @@ clock_select(void)
 		 */
 		if (peer_unfit(peer)) {
 			continue;
+		}
+
+		/*
+		 * If we have never been synchronised, look for any peer 
+		 * which has ever been synchronised and pick the one which 
+		 * has the lowest root distance. This can be used as a last 
+		 * resort if all else fails. Once we get an initial sync 
+		 * with this peer, sys_reftime gets set and so this 
+		 * function becomes disabled.
+		 */
+		if (L_ISZERO(&sys_reftime)) {
+			d = root_distance(peer);
+			if (!L_ISZERO(&peer->reftime) && d < lastresort_dist) {
+				typelastresort = peer;
+				lastresort_dist = d;
+			}
 		}
 
 		/*
@@ -3756,6 +3774,9 @@ clock_select(void)
 #endif /* REFCLOCK */
 		if (typeorphan != NULL) {
 			peers[0].peer = typeorphan;
+			nlist = 1;
+		} else if (typelastresort != NULL) {
+			peers[0].peer = typelastresort;
 			nlist = 1;
 		}
 	}
