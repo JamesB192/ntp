@@ -11,8 +11,10 @@ authentication between ntpd from versions 4.2.8p11/4.3.97 and
 Eventually, ntpd will run out of memory and abort.
 
 It also fixes 46 other bugs and addresses
-4 other issues.
+5 other issues.
 
+* [Bug 3659] Move definition of psl[] from ntp_config.h to
+  ntp_config.h <perlinger@ntp.org>
 * [Bug 3657] Wrong "Autokey group mismatch" debug message <perlinger@ntp.org>
 * [Bug 3655] ntpdc memstats hash counts <perlinger@ntp.org>
   - fix by Gerry garvey
