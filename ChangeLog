@@ -1,6 +1,12 @@
 ---
+*4.2.8p15) 2020/04/xx Released by Harlan Stenn <stenn@ntp.or>
+
 * [Bug 3655] ntpdc memstats hash counts <perlinger@ntp.org>
   - fix by Gerry garvey
+* [Bug 3653] Refclock jitter RMS calculation <perlinger@ntp.org>
+  - thanks to Gerry Garvey
+* [Bug 3646] Avoid sync with unsync orphan <perlinger@ntp.org>
+  - patch by Gerry Garvey
 
 ---
 (4.2.8p14) 2020/03/03 Released by Harlan Stenn <stenn@ntp.org>
