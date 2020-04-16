@@ -1,3 +1,5 @@
+* [Bug 3664] Enable openSSL CMAC support on Windows.
+
 ---
 (4.2.8p14) 2020/03/03 Released by Harlan Stenn <stenn@ntp.org>
 
