@@ -259,6 +259,8 @@ typedef int socklen_t;
 #ifdef OPENSSL
 # define USE_OPENSSL_CRYPTO_RAND 1
 # define AUTOKEY
+# define HAVE_OPENSSL_CMAC_H
+# define ENABLE_CMAC
 #endif
 extern void arc4random_buf(void *buf, size_t nbytes);
 
