@@ -13,6 +13,8 @@
   - thanks to Gerry Garvey
 * [Bug 3646] Avoid sync with unsync orphan <perlinger@ntp.org>
   - patch by Gerry Garvey
+* [Bug 3639] refclock_jjy: TS-JJY0x can skip time sync depending on the STUS reply. <abe@ntp.org>
+  - applied patch by Takao Abe
 
 ---
 (4.2.8p14) 2020/03/03 Released by Harlan Stenn <stenn@ntp.org>
