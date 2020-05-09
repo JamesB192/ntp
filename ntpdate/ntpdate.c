@@ -1984,7 +1984,7 @@ input_handler(void)
 			continue;
 		}
 
-		rb = get_free_recv_buffer();
+		rb = get_free_recv_buffer(TRUE);
 
 		fromlen = sizeof(rb->recv_srcadr);
 		rb->recv_length = recvfrom(fdc, (char *)&rb->recv_pkt,
