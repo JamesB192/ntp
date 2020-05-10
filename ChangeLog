@@ -1,10 +1,8 @@
 ---
-* [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
-  - limit number of receive buffers, with an iron reserve for refclocks
-
----
 (4.2.8p15) 2020/04/xx Released by Harlan Stenn <stenn@ntp.or>
 
+* [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
+  - limit number of receive buffers, with an iron reserve for refclocks
 * [Bug 3664] Enable openSSL CMAC support on Windows <burnicki@ntp.org>
 * [Bug 3662] Fix build errors on Windows with VS2008 <burnicki@ntp.org>
 * [Bug 3659] Move definition of psl[] from ntp_config.h to
