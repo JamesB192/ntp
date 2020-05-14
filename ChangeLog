@@ -1,4 +1,9 @@
 ---
+
+* [Bug 3660] Manycast orphan mode startup discovery problem. <stenn@ntp.org>
+  - integrated patch from Charles Claggett
+
+---
 (4.2.8p14) 2020/03/03 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
