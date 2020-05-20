@@ -1,4 +1,8 @@
 ---
+* [Bug 3667] decodenetnum fails with numeric port <perlinger@ntp.org>
+  - rewrite 'decodenetnum()' in terms of inet_pton
+
+---
 (4.2.8p15) 2020/04/xx Released by Harlan Stenn <stenn@ntp.or>
 
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
