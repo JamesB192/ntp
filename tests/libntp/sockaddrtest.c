@@ -42,7 +42,8 @@ IsEqual(const sockaddr_u expected, const sockaddr_u actual) {
 		}
 	} else if (actual.sa.sa_family == AF_INET6) { //IPv6
 		if (expected.sa6.sin6_port == actual.sa6.sin6_port &&
-			memcmp(&expected.sa6.sin6_addr, &actual.sa6.sin6_addr,
+		    expected.sa6.sin6_scope_id == actual.sa6.sin6_scope_id &&
+		    memcmp(&expected.sa6.sin6_addr, &actual.sa6.sin6_addr,
 				   sizeof(in6)) == 0) {
 			return TRUE;
 		} else {
