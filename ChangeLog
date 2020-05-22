@@ -2,6 +2,8 @@
 (4.2.8p15) 2020/04/xx Released by Harlan Stenn <stenn@ntp.or>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
+* [Bug 3667] decodenetnum fails with numeric port <perlinger@ntp.org>
+  - rewrite 'decodenetnum()' in terms of inet_pton
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
   - limit number of receive buffers, with an iron reserve for refclocks
 * [Bug 3664] Enable openSSL CMAC support on Windows <burnicki@ntp.org>
