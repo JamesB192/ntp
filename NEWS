@@ -10,8 +10,10 @@ authentication between ntpd from versions 4.2.8p11/4.3.97 and
 4.2.8p14/4.3.100 will leak a small amount of memory for each packet.
 Eventually, ntpd will run out of memory and abort.
 
-It also fixes 10 other bugs.
+It also fixes 11 other bugs.
 
+* [Bug 3667] decodenetnum fails with numeric port <perlinger@ntp.org>
+  - rewrite 'decodenetnum()' in terms of inet_pton
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
   - limit number of receive buffers, with an iron reserve for refclocks
 * [Bug 3664] Enable openSSL CMAC support on Windows <burnicki@ntp.org>
