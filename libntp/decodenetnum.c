@@ -91,7 +91,7 @@ decodenetnum(
 	char		buf[64];	/* working copy of input */
 	char		*haddr=buf;
 	unsigned int	port=NTP_PORT, scope=0;
-	sa_family_t	afam=AF_UNSPEC;
+	unsigned short	afam=AF_UNSPEC;
 	
 	/* copy input to working buffer with length check */
 	if (strlcpy(buf, num, sizeof(buf)) >= sizeof(buf))
