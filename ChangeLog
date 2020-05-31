@@ -1,7 +1,4 @@
 ---
-* [Bug 3644] Unsynchronized server [...] selected as candidate <perlinger@ntp.org>
-
----
 (4.2.8p15) 2020/04/xx Released by Harlan Stenn <stenn@ntp.or>
 
 * [Bug 3667] decodenetnum fails with numeric port <perlinger@ntp.org>
@@ -21,6 +18,7 @@
   - thanks to Gerry Garvey
 * [Bug 3646] Avoid sync with unsync orphan <perlinger@ntp.org>
   - patch by Gerry Garvey
+* [Bug 3644] Unsynchronized server [...] selected as candidate <perlinger@ntp.org>
 * [Bug 3639] refclock_jjy: TS-JJY0x can skip time sync depending on the STUS reply. <abe@ntp.org>
   - applied patch by Takao Abe
 
