@@ -357,6 +357,8 @@ timer(void)
 	 * should eventually declare we're out of sync. Otherwise we
 	 * would persistently claim we're good, and we're everything but
 	 * that...
+	 *
+	 * XXX: do we want to log an event about this?
 	 */
 	if (sys_peer == NULL && current_time > orphwait) {
 		if (sys_orphan < STRATUM_UNSPEC) {
