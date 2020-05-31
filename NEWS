@@ -10,7 +10,7 @@ authentication between ntpd from versions 4.2.8p11/4.3.97 and
 4.2.8p14/4.3.100 will leak a small amount of memory for each packet.
 Eventually, ntpd will run out of memory and abort.
 
-It also fixes 11 other bugs.
+It also fixes 12 other bugs.
 
 * [Bug 3667] decodenetnum fails with numeric port <perlinger@ntp.org>
   - rewrite 'decodenetnum()' in terms of inet_pton
@@ -29,6 +29,7 @@ It also fixes 11 other bugs.
   - thanks to Gerry Garvey
 * [Bug 3646] Avoid sync with unsync orphan <perlinger@ntp.org>
   - patch by Gerry Garvey
+* [Bug 3644] Unsynchronized server [...] selected as candidate <perlinger@ntp.org>
 * [Bug 3639] refclock_jjy: TS-JJY0x can skip time sync depending on the STUS reply. <abe@ntp.org>
   - applied patch by Takao Abe
 
