@@ -3972,8 +3972,7 @@ clock_select(void)
 	 */
 	if (typesystem == NULL) {
 		if (osys_peer != NULL) {
-			if (sys_orphwait > 0)
-				orphwait = current_time + sys_orphwait;
+			orphwait = current_time + sys_orphwait;
 			report_event(EVNT_NOPEER, NULL, NULL);
 		}
 		sys_peer = NULL;
@@ -5367,7 +5366,7 @@ proto_config(
 
 	case PROTO_ORPHWAIT:	/* orphan wait (orphwait) */
 		orphwait -= sys_orphwait;
-		sys_orphwait = (int)dvalue;
+		sys_orphwait = (dvalue >= 1) ? (int)dvalue : NTP_ORPHWAIT;
 		orphwait += sys_orphwait;
 		break;
 

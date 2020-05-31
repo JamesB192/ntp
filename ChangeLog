@@ -1,4 +1,7 @@
 ---
+* [Bug 3644] Unsynchronized server [...] selected as candidate <perlinger@ntp.org>
+
+---
 (4.2.8p15) 2020/04/xx Released by Harlan Stenn <stenn@ntp.or>
 
 * [Bug 3667] decodenetnum fails with numeric port <perlinger@ntp.org>
