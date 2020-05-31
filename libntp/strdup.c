@@ -1,8 +1,8 @@
 #include <config.h>
 
 #include <ntp_assert.h>
-#include "ntp_malloc.h"
 #include <string.h>
+#include "ntp_malloc.h"
 #include "l_stdlib.h"
 
 #define STRDUP_EMPTY_UNIT
@@ -32,12 +32,12 @@ strdup(
 # undef STRDUP_EMPTY_UNIT
 void *memchr(const void *s, int c, size_t n)
 {
-	const unsignec char *p = s;
+	const unsigned char *p = s;
 	while (n && *p != c) {
 		--n;
 		++p;
 	}
-	return n ? p : NULL;
+	return n ? (char*)p : NULL;
 }
 #endif
 
