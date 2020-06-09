@@ -1,6 +1,9 @@
 ---
 (4.2.8p15) 2020/04/xx Released by Harlan Stenn <stenn@ntp.or>
 
+* [Bug 3670] Deleted statements come back <perlinger@ntp.org>
+  - fixed a bad merge that happened before 4.2.8-p14. Thanks to
+    Sylar Tao for noticing this!
 * [Bug 3667] decodenetnum fails with numeric port <perlinger@ntp.org>
   - rewrite 'decodenetnum()' in terms of inet_pton
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
