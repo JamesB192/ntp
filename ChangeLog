@@ -1,5 +1,5 @@
 ---
-(4.2.8p15) 2020/04/xx Released by Harlan Stenn <stenn@ntp.or>
+(4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.or>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
 * [Bug 3667] decodenetnum fails with numeric port <perlinger@ntp.org>
