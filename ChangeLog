@@ -2,6 +2,9 @@
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.or>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
+* [Bug 3670] Regression from bad merge of 3592 and 3596 <perlinger@ntp.org>
+  - fixed a bad merge that happened before 4.2.8-p14. Thanks to
+    Sylar Tao for noticing this!
 * [Bug 3667] decodenetnum fails with numeric port <perlinger@ntp.org>
   - rewrite 'decodenetnum()' in terms of inet_pton
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>

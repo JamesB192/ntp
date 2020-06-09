@@ -2487,10 +2487,6 @@ process_packet(
 	double	etemp, ftemp, td;
 #endif /* ASSYM */
 
-#if 0
-	sys_processed++;
-	peer->processed++;
-#endif
 	p_del = FPTOD(NTOHS_FP(pkt->rootdelay));
 	p_offset = 0;
 	p_disp = FPTOD(NTOHS_FP(pkt->rootdisp));
@@ -2502,10 +2498,6 @@ process_packet(
 	pleap = PKT_LEAP(pkt->li_vn_mode);
 	pversion = PKT_VERSION(pkt->li_vn_mode);
 	pstratum = PKT_TO_STRATUM(pkt->stratum);
-
-	/**/
-
-	/**/
 
 	/*
 	 * Verify the server is synchronized; that is, the leap bits,
@@ -2526,19 +2518,15 @@ process_packet(
 		peer->seldisptoolarge++;
 		DPRINTF(1, ("packet: flash header %04x\n",
 			    peer->flash));
-
-		/* ppoll updated? */
-		/* XXX: Fuzz the poll? */
-		poll_update(peer, peer->hpoll, (peer->hmode == MODE_CLIENT));
+		/* [Bug 3592] do *not* update poll on bad packets! */
 		return;
 	}
 
-	/**/
-
-#if 1
+	/*
+	 * update stats, now that we really handle this packet:
+	 */
 	sys_processed++;
 	peer->processed++;
-#endif
 
 	/*
 	 * Capture the header values in the client/peer association..
@@ -2573,9 +2561,6 @@ process_packet(
 		if (peer->burst > 0)
 			peer->nextdate = current_time;
 	}
-	poll_update(peer, peer->hpoll, (peer->hmode == MODE_CLIENT));
-
-	/**/
 
 	/*
 	 * If the peer was previously unreachable, raise a trap. In any
