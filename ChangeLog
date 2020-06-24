@@ -1,4 +1,8 @@
 ---
+* [Bug 3626] (SNTP) UTC offset calculation needs dst flag <perlinger@ntp.org>
+  - applied patch by Gerry Garvey
+
+---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
