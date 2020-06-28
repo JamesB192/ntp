@@ -583,7 +583,6 @@ refclock_sample(
 {
 	size_t	i, j, k, m, n;
 	double	off[MAXSTAGE];
-	double	offset;
 
 	/*
 	 * Copy the raw offsets and sort into ascending order. Don't do
@@ -601,12 +600,16 @@ refclock_sample(
 	/*
 	 * Reject the furthest from the median of the samples until
 	 * approximately 60 percent of the samples remain.
+	 *
+	 * [Bug 3672] The elimination is now based on the proper
+	 * definition of the median. The true median is not calculated
+	 * directly, though.
 	 */
 	i = 0; j = n;
 	m = n - (n * 4) / 10;
-	while ((j - i) > m) {
-		offset = off[(j + i) / 2];
-		if (off[j - 1] - offset < offset - off[i])
+	while ((k = j - i) > m) {
+		k = (k - 1) >> 1;
+		if ((off[j - 1] - off[j - k - 1]) < (off[i + k] - off[i]))
 			i++;	/* reject low end */
 		else
 			j--;	/* reject high end */
