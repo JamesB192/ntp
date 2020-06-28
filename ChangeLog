@@ -1,4 +1,7 @@
 ---
+* [Bug 3672] fix biased selection in median cut <perlinger@ntp.org>
+
+---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
