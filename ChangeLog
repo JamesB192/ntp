@@ -1,4 +1,9 @@
 ---
+* [Bug 3675] ntpq ccmds[] stores pointer to non-persistent storage
+* [Bug 3676] compiler warnings (CMAC, interrupt_buf, typo, fallthrough)
+  - applied patches by Gerry Garvey
+
+---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
