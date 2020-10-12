@@ -193,7 +193,7 @@ typedef unsigned long int json_uint;
 #define	REFID		"GPSD"	/* reference id */
 #define	DESCRIPTION	"GPSD JSON client clock" /* who we are */
 
-#define MAX_PDU_LEN	1600
+#define MAX_PDU_LEN	4096
 #define TICKOVER_LOW	10
 #define TICKOVER_HIGH	120
 #define LOGTHROTTLE	3600
@@ -672,7 +672,7 @@ gpsd_receive(
 	esrc = psrc + rbufp->recv_length;
 
 	pdst = up->buffer + up->buflen;
-	edst = pdst + sizeof(up->buffer) - 1; /* for trailing NUL */
+	edst = up->buffer + sizeof(up->buffer) - 1; /* for trailing NUL */
 
 	while (psrc != esrc) {
 		ch = *psrc++;

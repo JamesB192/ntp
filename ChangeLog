@@ -1,4 +1,9 @@
 ---
+* [Bug 3691] Buffer Overflow reading GPSD output
+  - original patch by matt<ntpbr@mattcorallo.com>
+  - increased max PDU size to 4k to avoid truncation
+
+---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
