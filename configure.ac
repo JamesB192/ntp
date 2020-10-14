@@ -900,6 +900,7 @@ case "$host" in
     ;;
 esac
 AC_CHECK_FUNCS([nice plock pututline pututxline readlink rtprio])
+NTP_FUNC_REALPATH
 case "$host" in
  *-*-aix[[4-9]]*)
     # XXX only verified thru AIX6.
