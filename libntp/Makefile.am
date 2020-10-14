@@ -87,6 +87,7 @@ libntp_a_SRCS =						\
 	ntp_libopts.c					\
 	ntp_lineedit.c					\
 	ntp_random.c					\
+	ntp_realpath.c					\
 	ntp_rfc2553.c					\
 	ntp_worker.c					\
 	numtoa.c					\
