@@ -3,7 +3,7 @@
 #include "ntp_types.h"
 
 
-//#include "log.h"
+#define LOG_PROGNAME_IS_EXTERN 1
 #include "log.c"
 
 void setUp(void);
