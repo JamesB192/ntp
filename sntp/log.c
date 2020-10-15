@@ -2,9 +2,7 @@
 
 #include "log.h"
 
-#ifndef LOG_PROGNAME_IS_EXTERN
-const char *progname;		/* for msyslog use too */
-#endif
+extern const char *progname;		/* for msyslog use too */
 
 static int counter = 0;
 
