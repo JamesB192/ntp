@@ -44,7 +44,37 @@
 #include "ntp_stdlib.h"
 
 /* ================================================================== */
-#if !defined(SYS_WINNT) && !defined(HAVE_FUNC_POSIX_REALPATH)
+#if defined(SYS_WINNT)
+/* ================================================================== */
+
+#include <stdlib.h>
+
+/* On Windows, we assume 2k for a file path is enough. */
+#define NTP_PATH_MAX	2048
+
+static char *
+realpath1(const char *path, char *resolved)
+{
+	/* Items in the device name space get passed back AS IS. Everything
+	 * else is fed through '_fullpath()', which is probably the closest
+	 * counterpart to what 'realpath()' is expected to do on Windows...
+	 */
+	char * retval = NULL;
+
+	if (!strncmp(path, "\\\\.\\", 4)) {
+		if (strlcpy(resolved, path, NTP_PATH_MAX) >= NTP_PATH_MAX)
+			errno = ENAMETOOLONG;
+		else
+			retval = resolved;
+	} else if ((retval = _fullpath(resolved, path, NTP_PATH_MAX)) == NULL) {
+		errno = ENAMETOOLONG;
+	}
+	return retval;
+}
+
+/* ================================================================== */
+#elif !defined(HAVE_FUNC_POSIX_REALPATH)
+/* ================================================================== */
 
 #include <sys/stat.h>
 #include <errno.h>
@@ -219,55 +249,31 @@ realpath1(const char *path, char *resolved)
 	return (resolved);
 }
 
+/* ================================================================== */
 #endif /* !defined(SYS_WINNT) && !defined(HAVE_POSIX_REALPATH) */
 /* ================================================================== */
 
 char *
 ntp_realpath(const char * path)
 {
-	char *res, *m;
+#   if defined(HAVE_FUNC_POSIX_REALPATH)
 
-#   if defined(SYS_WINNT)
-
-	(void)m;
-	if (path == NULL) {
-		errno = EINVAL;
-		return (NULL);
-	}
-	if (path[0] == '\0') {
-		errno = ENOENT;
-		return (NULL);
-	}
-
-	return strdup(path); /* this clearly needs some work! */
-
-#   elif defined(HAVE_FUNC_POSIX_REALPATH)
-
-	(void)m;
 	return realpath(path, NULL);
 
 #   else
 
-	if (path == NULL) {
+	char *res = NULL, *m = NULL;
+	if (path == NULL)
 		errno = EINVAL;
-		return (NULL);
-	}
-	if (path[0] == '\0') {
+	else if (path[0] == '\0')
 		errno = ENOENT;
-		return (NULL);
-	}
-
-	m = malloc(NTP_PATH_MAX);
-	if (m == NULL)
-		return (NULL);
-	
-	res = realpath1(path, m);
-	if (res != NULL)
-		res = realloc(res, strlen(res) + 1);
-	if (res == NULL)
+	else if ((m = malloc(NTP_PATH_MAX)) == NULL)
+		errno = ENOMEM;	/* MSVCRT malloc does not set this... */
+	else if ((res = realpath1(path, m)) == NULL)
 		free(m);
+	else
+		res = realloc(res, strlen(res) + 1);
+	return (res);
 
 #   endif
-
-	return (res);
 }
