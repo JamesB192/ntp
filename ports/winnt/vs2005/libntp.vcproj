@@ -417,6 +417,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\libntp\ntp_realpath.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\libntp\ntp_rfc2553.c"
 				>
 			</File>

@@ -61,8 +61,8 @@ void test_DevLinks(void) {
 #   ifdef SYS_WINNT
 	TEST_IGNORE_MESSAGE("not applicable to windows so far");
 #   else
-	char            nam[80];
-	char            abs[80];
+	char            nam[512];
+	char            abs[512];
 	struct dirent * ent;
 	DIR           * dfs = opendir("/dev");
 
