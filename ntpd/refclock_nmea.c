@@ -93,6 +93,7 @@
 #define NMEA_EXTLOG_MASK	0x00010000U
 #define NMEA_QUIETPPS_MASK	0x00020000U
 #define NMEA_DATETRUST_MASK	0x00040000U
+#define NMEA_IGNSTATUS_MASK	0x00080000U
 
 #define NMEA_PROTO_IDLEN	4	/* tag name must be at least 4 chars */
 #define NMEA_PROTO_MINLEN	6	/* min chars in sentence, excluding CS */
@@ -875,6 +876,11 @@ nmea_procrec(
 		return;
 	}
 
+	/* ignore receiver status? [bug 3694] */
+	if (peer->ttl & NMEA_IGNSTATUS_MASK) { /* assume always good? */
+		pp->leap = LEAP_NOWARNING;
+	}
+	
 	/* check clock sanity; [bug 2143] */
 	if (pp->leap == LEAP_NOTINSYNC) { /* no good status? */
 		checkres = CEVNT_PROP;
