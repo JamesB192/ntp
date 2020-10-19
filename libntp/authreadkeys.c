@@ -142,7 +142,7 @@ authreadkeys(
 	keyid_t	keyno;
 	int	keytype;
 	char	buf[512];		/* lots of room for line */
-	u_char	keystr[64];		/* Bug 2537 */
+	u_char	keystr[AUTHPWD_MAXSECLEN];
 	size_t	len;
 	u_int   nerr;
 	KeyDataT *list = NULL;

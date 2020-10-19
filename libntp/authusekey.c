@@ -21,13 +21,13 @@ authusekey(
 	)
 {
 	size_t	len;
-	u_char	buf[64];
-	
+	u_char	buf[AUTHPWD_MAXSECLEN];
+
 	len = authdecodepw(buf, sizeof(buf), (const char*)str,
 			   AUTHPWD_UNSPEC);
 	if (len < 1 || len > sizeof(buf))
 		return 0;
-	
+
 	MD5auth_setkey(keyno, keytype, buf, len, NULL);
 	memset(buf, 0, sizeof(buf));
 	return 1;

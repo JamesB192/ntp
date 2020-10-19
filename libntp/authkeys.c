@@ -119,7 +119,7 @@ keyacc_new_push(
 	)
 {
 	KeyAccT *	node = emalloc(sizeof(KeyAccT));
-	
+
 	memcpy(&node->addr, addr, sizeof(sockaddr_u));
 	node->subnetbits = subnetbits;
 	node->next = head;
@@ -219,7 +219,7 @@ keyacc_amatch(
 	 * other checks if we find object identity. But that use case is
 	 * too rare to care for it.
 	 */
-	
+
 	/* 2nd check: Address families must be the same. */
 	if (AF(a1) != AF(a2))
 		return FALSE;
@@ -317,7 +317,7 @@ free_auth_mem(void)
 	cache_keyacclist = NULL;
 	for (alloc = authallocs; alloc != NULL; alloc = next_alloc) {
 		next_alloc = alloc->link;
-		free(alloc->mem);	
+		free(alloc->mem);
 	}
 	authfreekeys = NULL;
 	authnumfreekeys = 0;
@@ -525,7 +525,7 @@ freesymkey(
 
 	authcache_flush_id(sk->keyid);
 	keyacc_all_free(sk->keyacclist);
-	
+
 	bucket = &key_hash[KEYHASH(sk->keyid)];
 	if (sk->secret != NULL) {
 		memset(sk->secret, '\0', sk->secretsize);
@@ -649,7 +649,7 @@ authtrust(
 	 * There are two conditions remaining. Either it does not
 	 * exist and is to be trusted or it does exist and is or is
 	 * not to be trusted.
-	 */	
+	 */
 	if (sk != NULL) {
 		/*
 		 * Key exists. If it is to be trusted, say so and update
@@ -727,9 +727,9 @@ authistrusted(
 		return (KEY_TRUSTED & sk->flags) &&
 		    keyacc_contains(sk->keyacclist, sau, TRUE);
 	}
-	
+
 	authkeynotfound++;
-	return FALSE;    
+	return FALSE;
 }
 
 /* Note: There are two locations below where 'strncpy()' is used. While
@@ -754,7 +754,7 @@ MD5auth_setkey(
 {
 	symkey *	sk;
 	u_char *	secret;
-	
+
 	DEBUG_ENSURE(keytype <= USHRT_MAX);
 	DEBUG_ENSURE(secretsize < 4 * 1024);
 	/*
@@ -809,7 +809,7 @@ MD5auth_setkey(
 			printf("%02x", secret[j]);
 		}
 		printf("\n");
-	}	
+	}
 #endif
 }
 
@@ -953,7 +953,7 @@ pwdecode_hex(
 	)
 {
 	static const char hex[] = "00112233445566778899AaBbCcDdEeFf";
-	
+
 	size_t		srclen = strlen(src);
 	size_t		reslen = (srclen >> 1) + (srclen & 1);
 	u_char		tmp;
@@ -963,7 +963,7 @@ pwdecode_hex(
 	if (reslen > dstlen) {
 		errno = ENOMEM;
 		reslen = (size_t)-1;
-	} else {	
+	} else {
 		for (j = 0; j < srclen; ++j) {
 			tmp = *(const unsigned char*)(src + j);
 			ptr = strchr(hex, tmp);
@@ -990,16 +990,16 @@ authdecodepw(
 	u_char *	dst,
 	size_t 		dstlen,
 	const char *	src,
-	int		fmt
+	enum AuthPwdEnc	enc
 	)
 {
 	size_t		reslen;
-	
+
 	if ( !(dst && dstlen && src)) {
 		errno  = EINVAL;
 		reslen = (size_t)-1;
 	} else {
-		switch (fmt) {
+		switch (enc) {
 		case AUTHPWD_UNSPEC:
 			if (strlen(src) <= 20)
 				reslen = pwdecode_plain(dst, dstlen, src);

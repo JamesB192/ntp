@@ -67,13 +67,17 @@ extern	int	xsbprintf(char**, char* const, char const*, ...) NTP_PRINTF(3, 4);
 typedef void (*ctrl_c_fn)(void);
 
 /* authkeys.c */
-#define AUTHPWD_UNSPEC	0
-#define AUTHPWD_PLAIN	1
-#define AUTHPWD_HEX	2
+#define AUTHPWD_MAXSECLEN	64	/* max. length of secret blob */
+
+enum AuthPwdEnc {
+	AUTHPWD_UNSPEC,	/* format unspecified, length used for discrimination */
+	AUTHPWD_PLAIN,	/* plain text, used as is */
+	AUTHPWD_HEX	/* hex-encoded string */
+};
 
 extern	void	auth_delkeys	(void);
 extern	int	auth_havekey	(keyid_t);
-extern	size_t	authdecodepw	(u_char *dst, size_t dstlen, const char *src, int fmt);
+extern	size_t	authdecodepw	(u_char *dst, size_t dstlen, const char *src, enum AuthPwdEnc);
 extern	int	authdecrypt	(keyid_t, u_int32 *, size_t, size_t);
 extern	size_t	authencrypt	(keyid_t, u_int32 *, size_t);
 extern	int	authhavekey	(keyid_t);
