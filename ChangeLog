@@ -1,4 +1,10 @@
 ---
+* [Bug 3689] Extension for MD5, SHA-1 and other keys <perlinger@ntp.org>
+  - ntp{q,dc} now use the same password processing as ntpd does in the key
+    file, so havin a binary secret >= 11 bytes is possible for all keys.
+    (This is a different approach to the roblem than suggested)
+
+---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
