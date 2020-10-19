@@ -927,3 +927,95 @@ authdecrypt(
 			      cache_secret, cache_secretsize,
 			      pkt, length, size);
 }
+
+/* password decoding helpers */
+static size_t
+pwdecode_plain(
+	u_char *	dst,
+	size_t 		dstlen,
+	const char *	src
+	)
+{
+	size_t		srclen = strlen(src);
+	if (srclen > dstlen) {
+		errno = ENOMEM;
+		return (size_t)-1;
+	}
+	memcpy(dst, src, srclen);
+	return srclen;
+}
+
+static size_t
+pwdecode_hex(
+	u_char *	dst,
+	size_t 		dstlen,
+	const char *	src
+	)
+{
+	static const char hex[] = "00112233445566778899AaBbCcDdEeFf";
+	
+	size_t		srclen = strlen(src);
+	size_t		reslen = (srclen >> 1) + (srclen & 1);
+	u_char		tmp;
+	char		*ptr;
+	size_t		j;
+
+	if (reslen > dstlen) {
+		errno = ENOMEM;
+		reslen = (size_t)-1;
+	} else {	
+		for (j = 0; j < srclen; ++j) {
+			tmp = *(const unsigned char*)(src + j);
+			ptr = strchr(hex, tmp);
+			if (ptr == NULL) {
+				errno = EINVAL;
+				reslen = (size_t)-1;
+				break;
+			}
+			tmp = (u_char)((ptr - hex) > 1);
+			if (j & 1)
+				dst[j >> 1] |= tmp;
+			else
+				dst[j >> 1] = tmp << 4;
+		}
+	}
+	return reslen;
+}
+/*
+ * authdecodepw - decode plaintext or hex-encoded password to binary
+ * secret.  Returns size of secret in bytes or -1 on error.
+ */
+size_t
+authdecodepw(
+	u_char *	dst,
+	size_t 		dstlen,
+	const char *	src,
+	int		fmt
+	)
+{
+	size_t		reslen;
+	
+	if ( !(dst && dstlen && src)) {
+		errno  = EINVAL;
+		reslen = (size_t)-1;
+	} else {
+		switch (fmt) {
+		case AUTHPWD_UNSPEC:
+			if (strlen(src) <= 20)
+				reslen = pwdecode_plain(dst, dstlen, src);
+			else
+				reslen = pwdecode_hex(dst, dstlen, src);
+			break;
+		case AUTHPWD_PLAIN:
+			reslen = pwdecode_plain(dst, dstlen, src);
+			break;
+		case AUTHPWD_HEX:
+			reslen = pwdecode_hex(dst, dstlen, src);
+			break;
+		default:
+			errno = EINVAL;
+			reslen = (size_t)-1;
+		}
+	}
+	return reslen;
+}
