@@ -1,5 +1,8 @@
 ---
 
+* [Bug 3676] compiler warnings (CMAC, interrupt_buf, typo, fallthrough)
+  - applied patches by Gerry Garvey
+* [Bug 3675] ntpq ccmds[] stores pointer to non-persistent storage
 * [Bug 3672] fix biased selection in median cut <perlinger@ntp.org>
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
   - follow-up: fix inverted sense in check, reset shortfall counter
