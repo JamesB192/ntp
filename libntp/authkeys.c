@@ -925,5 +925,5 @@ authdecrypt(
 
 	return MD5authdecrypt(cache_type,
 			      cache_secret, cache_secretsize,
-			      pkt, length, size);
+			      pkt, length, size, keyno);
 }
