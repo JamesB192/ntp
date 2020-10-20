@@ -20,6 +20,7 @@
 #include "log.h"
 #include "libntp.h"
 
+const char * progname;
 
 int shutting_down;
 int time_derived;

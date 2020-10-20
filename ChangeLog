@@ -1,5 +1,6 @@
 ---
 
+* [Bug 3688] GCC 10 build errors in testsuite <perlinger@ntp.org>
 * [Bug 3676] compiler warnings (CMAC, interrupt_buf, typo, fallthrough)
   - applied patches by Gerry Garvey
 * [Bug 3675] ntpq ccmds[] stores pointer to non-persistent storage
