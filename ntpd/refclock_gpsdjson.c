@@ -501,9 +501,10 @@ gpsd_start(
 {
 	clockprocT  * const pp = peer->procptr;
 	gpsd_unitT  * up;
-	gpsd_unitT ** uscan    = &s_clock_units;
+	gpsd_unitT ** uscan    = &s_clock_units;	
 
-	struct stat sb;
+	struct stat	sb;
+	char *		devname = NULL;
 
 	/* check if we can proceed at all or if init failed */
 	if ( ! gpsd_init_check())
@@ -531,17 +532,30 @@ gpsd_start(
 		 * practicable, we will have to read the symlink, if
 		 * any, so we can get the true device file.)
 		 */
-		if (-1 == myasprintf(&up->device, "%s%u",
+		if (-1 == myasprintf(&devname, "%s%u",
 				     s_dev_stem, up->unit)) {
 			msyslog(LOG_ERR, "%s: clock device name too long",
 				up->logname);
 			goto dev_fail;
 		}
-		if (-1 == stat(up->device, &sb) || !S_ISCHR(sb.st_mode)) {
+		up->device = ntp_realpath(devname);
+		if (NULL == up->device) {
+			msyslog(LOG_ERR, "%s: '%s' has no absolute path",
+				up->logname, devname);
+			goto dev_fail;
+		}
+		if (-1 == lstat(up->device, &sb)) {
+			msyslog(LOG_ERR, "%s: '%s' not accessible",
+				up->logname, up->device);
+			goto dev_fail;
+		}
+		if (!S_ISCHR(sb.st_mode)) {
 			msyslog(LOG_ERR, "%s: '%s' is not a character device",
 				up->logname, up->device);
 			goto dev_fail;
 		}
+		free(devname);
+		devname = NULL;
 	} else {
 		/* All set up, just increment use count. */
 		++up->refcount;
@@ -585,7 +599,7 @@ gpsd_start(
 
 dev_fail:
 	/* On failure, remove all UNIT ressources and declare defeat. */
-
+	free(devname);
 	INSIST (up);
 	if (!--up->refcount) {
 		*uscan = up->next_unit;
@@ -2204,6 +2218,7 @@ log_data(
 		mprintf("%s[%s]: '%s'\n", up->logname, what, s_lbuf);
 	}
 }
+
 
 #else
 NONEMPTY_TRANSLATION_UNIT

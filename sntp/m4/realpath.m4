@@ -22,7 +22,7 @@
 #serial 1
 
 AC_DEFUN([NTP_FUNC_REALPATH], [
-	AC_MSG_CHECKING([for a realpath() that accepts NULL as the 2nd argument])
+	AC_MSG_CHECKING([for POSIX-2008 compliant realpath()])
 	AC_REQUIRE([AC_PROG_CC_C99])
 
 	AC_LANG_PUSH([C])
@@ -31,7 +31,7 @@ AC_DEFUN([NTP_FUNC_REALPATH], [
 		[AC_LANG_SOURCE([[
 			#include <sys/param.h>
 			#include <stdlib.h>
-			int main() { exit (NULL == realpath(".", NULL)); }
+			int main() { return (NULL == realpath(".", NULL)); }
 			]])],
 		ans="yes",
 		ans="no",
@@ -40,7 +40,7 @@ AC_DEFUN([NTP_FUNC_REALPATH], [
 	AC_MSG_RESULT([$ans])
 	case "$ans" in
 	 yes)
-	    AC_DEFINE([HAVE_FUNC_REALPATH], [1],
+	    AC_DEFINE([HAVE_FUNC_POSIX_REALPATH], [1],
 			[Define to 1 if we have realpath() that supports NULL as the 2nd argument])
 	    ;;
 	esac
