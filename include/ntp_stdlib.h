@@ -40,6 +40,8 @@ extern	void	setup_logfile	(const char *);
 extern	void	errno_to_str(int, char *, size_t);
 #endif
 
+extern char *	ntp_realpath(const char * fsname);
+
 extern	int	xvsbprintf(char**, char* const, char const*, va_list) NTP_PRINTF(3, 0);
 extern	int	xsbprintf(char**, char* const, char const*, ...) NTP_PRINTF(3, 4);
 

@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3692] /dev/gpsN requirement prevents KPPS <perlinger@ntp.org>
+  - implement/wrap 'realpath()' to resolve symlinks in device names
 * [Bug 3690] newline in ntp clock variable (parse) <perlinger@ntp.org>
   - patch by Frank Kardel
 * [Bug 3689] Extension for MD5, SHA-1 and other keys <perlinger@ntp.org>
@@ -15,6 +17,7 @@
   - follow-up: fix inverted sense in check, reset shortfall counter
 * [Bug 3626] (SNTP) UTC offset calculation needs dst flag <perlinger@ntp.org>
   - applied patch by Gerry Garvey
+* Implement NTP_FUNC_REALPATH.  <stenn@ntp.org>
 
 ---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
