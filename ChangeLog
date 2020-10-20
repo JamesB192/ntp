@@ -1,5 +1,6 @@
 ---
 
+* [Bug 3672] fix biased selection in median cut <perlinger@ntp.org>
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
   - follow-up: fix inverted sense in check, reset shortfall counter
 * [Bug 3626] (SNTP) UTC offset calculation needs dst flag <perlinger@ntp.org>
