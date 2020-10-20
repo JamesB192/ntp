@@ -4285,7 +4285,7 @@ mk_utcinfo(
 	}
 	else
 	{
-		snprintf( t, size, "UTC offset parameter: %is, no leap second announced.\n", dtls );
+		snprintf( t, size, "UTC offset parameter: %is, no leap second announced.", dtls );
 	}
 
 }
