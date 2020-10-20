@@ -22,7 +22,7 @@
 #serial 1
 
 AC_DEFUN([NTP_FUNC_REALPATH], [
-	AC_MSG_CHECKING([for POSIX-2008 compliant realpath()])
+	AC_MSG_CHECKING([for a POSIX-2008 compliant realpath()])
 	AC_REQUIRE([AC_PROG_CC_C99])
 
 	AC_LANG_PUSH([C])
