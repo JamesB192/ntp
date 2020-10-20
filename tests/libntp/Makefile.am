@@ -37,6 +37,7 @@ check_PROGRAMS =		\
 	test-numtohost		\
 	test-octtoint		\
 	test-prettydate		\
+	test-realpath		\
 	test-recvbuff		\
 	test-refidsmear		\
 	test-refnumtoa		\
@@ -102,6 +103,7 @@ BUILT_SOURCES +=			\
 	$(srcdir)/run-numtohost.c	\
 	$(srcdir)/run-octtoint.c	\
 	$(srcdir)/run-prettydate.c	\
+	$(srcdir)/run-realpath.c	\
 	$(srcdir)/run-recvbuff.c	\
 	$(srcdir)/run-refidsmear.c	\
 	$(srcdir)/run-refnumtoa.c	\
@@ -378,6 +380,16 @@ test_prettydate_SOURCES =	\
 	$(NULL)
 
 $(srcdir)/run-prettydate.c: $(srcdir)/prettydate.c $(std_unity_list)
+	$(run_unity) $< $@
+
+###
+
+test_realpath_SOURCES =		\
+	realpath.c		\
+	run-realpath.c		\
+	$(NULL)
+
+$(srcdir)/run-realpath.c: $(srcdir)/realpath.c $(std_unity_list)
 	$(run_unity) $< $@
 
 ###
