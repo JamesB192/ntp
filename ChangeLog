@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3692] /dev/gpsN requirement prevents KPPS <perlinger@ntp.org>
+  - implement/wrap 'realpath()' to resolve symlinks in device names
 * Implement NTP_FUNC_REALPATH.  <stenn@ntp.org>
 
 ---
