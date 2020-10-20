@@ -1,4 +1,5 @@
 ---
+
 * [Bug 3626] (SNTP) UTC offset calculation needs dst flag <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 
