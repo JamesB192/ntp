@@ -1,5 +1,9 @@
 ---
 
+* [Bug 3689] Extension for MD5, SHA-1 and other keys <perlinger@ntp.org>
+  - ntp{q,dc} now use the same password processing as ntpd does in the key
+    file, so havin a binary secret >= 11 bytes is possible for all keys.
+    (This is a different approach to the roblem than suggested)
 * [Bug 3688] GCC 10 build errors in testsuite <perlinger@ntp.org>
 * [Bug 3676] compiler warnings (CMAC, interrupt_buf, typo, fallthrough)
   - applied patches by Gerry Garvey
