@@ -220,7 +220,8 @@ MD5authdecrypt(
 	size_t		klen,	/* key length */
 	u_int32	*	pkt,	/* packet pointer */
 	size_t		length,	/* packet length */
-	size_t		size	/* MAC size */
+	size_t		size,	/* MAC size */
+	keyid_t		keyno   /* key id (for err log) */
 	)
 {
 	u_char	digest[EVP_MAX_MD_SIZE];
@@ -236,7 +237,8 @@ MD5authdecrypt(
 		dlen = MAX_MDG_LEN;
 	if (size != (size_t)dlen + KEY_MAC_LEN) {
 		msyslog(LOG_ERR,
-		    "MAC decrypt: MAC length error");
+		    "MAC decrypt: MAC length error: len=%zu key=%d",
+			size, keyno);
 		return (0);
 	}
 	return !isc_tsmemcmp(digest,
