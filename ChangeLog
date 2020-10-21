@@ -1,12 +1,15 @@
 ---
 
-* [Bug 3694] NMEA refclock appears to unnecessarily require location in messages
+* [Bug 3694] NMEA refclock seems to unnecessarily require location in messages
   - misleading title; essentially a request to ignore the receiver status.
     Added a mode bit for this. <perlinger@ntp.org>
 * [Bug 3693] Improvement of error handling key lengths <perlinger@ntp.org>
   - original patch by Richard Schmidt, with mods & unit test fixes
 * [Bug 3692] /dev/gpsN requirement prevents KPPS <perlinger@ntp.org>
   - implement/wrap 'realpath()' to resolve symlinks in device names
+* [Bug 3691] Buffer Overflow reading GPSD output
+  - original patch by matt<ntpbr@mattcorallo.com>
+  - increased max PDU size to 4k to avoid truncation
 * [Bug 3690] newline in ntp clock variable (parse) <perlinger@ntp.org>
   - patch by Frank Kardel
 * [Bug 3689] Extension for MD5, SHA-1 and other keys <perlinger@ntp.org>
@@ -23,6 +26,7 @@
 * [Bug 3626] (SNTP) UTC offset calculation needs dst flag <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * Implement NTP_FUNC_REALPATH.  <stenn@ntp.org>
+>>>>>>>
 
 ---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
