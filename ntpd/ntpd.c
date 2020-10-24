@@ -684,8 +684,7 @@ detach_from_terminal(
  * Map user name/number to user ID
 */
 static int
-map_user(
-	)
+map_user(void)
 {
 	char *endp;
 
