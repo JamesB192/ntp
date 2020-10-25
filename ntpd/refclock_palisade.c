@@ -1225,9 +1225,9 @@ palisade_poll (
 		return;  /* using synchronous packet input */
 
 	if(up->type == CLK_PRAECIS) {
-		if(write(peer->procptr->io.fd,"SPSTAT\r\n",8) < 0)
+		if (write(peer->procptr->io.fd,"SPSTAT\r\n",8) < 0) {
 			msyslog(LOG_ERR, "Palisade(%d) write: %m:",unit);
-		else {
+		} else {
 			praecis_msg = 1;
 			return;
 		}
@@ -1407,7 +1407,10 @@ HW_poll (
 
 	/* Edge trigger */
 	if (up->type == CLK_ACUTIME)
-		write (pp->io.fd, "", 1);
+		if (write (pp->io.fd, "", 1) != 1)
+			msyslog(LOG_WARNING,
+				"Palisade(%d) HW_poll: failed to send trigger: %m", 
+				up->unit);
 		
 	if (ioctl(pp->io.fd, TIOCMSET, &x) < 0) { 
 #ifdef DEBUG

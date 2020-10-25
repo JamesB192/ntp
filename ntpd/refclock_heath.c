@@ -427,7 +427,7 @@ heath_poll(
 	if (ioctl(pp->io.fd, TIOCMBIC, (char *)&bits) < 0)
 		refclock_report(peer, CEVNT_FAULT);
 	get_systime(&pp->lastrec);
-	if (write(pp->io.fd, "T", 1) != 1)
+	if (refclock_write(peer, "T", 1, "T") != 1)
 		refclock_report(peer, CEVNT_FAULT);
 	ioctl(pp->io.fd, TIOCMBIS, (char *)&bits);
 	if (pp->coderecv == pp->codeproc) {
