@@ -320,14 +320,7 @@ static int	nmead_open	(const char * device);
  * support functions by defining NMEA_WRITE_SUPPORT to non-zero...
  */
 #if NMEA_WRITE_SUPPORT
-
 static	void gps_send(int, const char *, struct peer *);
-# ifdef SYS_WINNT
-#  undef write	/* ports/winnt/include/config.h: #define write _write */
-extern int async_write(int, const void *, unsigned int);
-#  define write(fd, data, octets)	async_write(fd, data, octets)
-# endif /* SYS_WINNT */
-
 #endif /* NMEA_WRITE_SUPPORT */
 
 /*
@@ -1215,7 +1208,7 @@ gps_send(
 		len - 2, cmd));
 
 	/* send out the whole stuff */
-	if (write(fd, cmd, len) == -1)
+	if (refclock_fdwrite(peer, fd, cmd, len) != len)
 		refclock_report(peer, CEVNT_FAULT);
 }
 #endif /* NMEA_WRITE_SUPPORT */

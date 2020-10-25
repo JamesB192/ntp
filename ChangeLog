@@ -1,4 +1,8 @@
 ---
+* [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
+  - plus some more work on warnings for unchecked results
+
+---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
