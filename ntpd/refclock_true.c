@@ -20,12 +20,6 @@
 #include "ntp_unixtime.h"
 #include "ntp_stdlib.h"
 
-#ifdef SYS_WINNT
-extern int async_write(int, const void *, unsigned int);
-#undef write
-#define write(fd, data, octets)	async_write(fd, data, octets)
-#endif
-
 /* This should be an atom clock but those are very hard to build.
  *
  * The PCL720 from P C Labs has an Intel 8253 lookalike, as well as a bunch
@@ -640,7 +634,7 @@ true_send(
 		size_t len = strlen(cmd);
 
 		true_debug(peer, "Send '%s'\n", cmd);
-		if (write(pp->io.fd, cmd, len) != (ssize_t)len)
+		if (refclock_write(peer, cmd, len, NULL) != (ssize_t)len)
 			refclock_report(peer, CEVNT_FAULT);
 		else
 			pp->polls++;
