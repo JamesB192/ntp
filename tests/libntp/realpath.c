@@ -68,6 +68,15 @@ void test_DevLinks(void) {
 
 	TEST_ASSERT_NOT_NULL_MESSAGE(dfs, "failed to open '/dev' !?!");
 	while (NULL != (ent = readdir(dfs))) {
+		/* the /dev/std{in,out,err} symlinks are prone to some
+		 * kind of race condition under Linux, so we better skip
+		 * them here; running tests in parallel can fail mysteriously
+		 * otherwise. (Dunno *how* this could happen, but it
+		 * did at some point in time, quite reliably...)
+		 */
+		if (!strncmp(ent->d_name, "std", 3))
+			continue;
+		/* otherwise build the full name & try to resolve: */
 		snprintf(nam, sizeof(nam), "/dev/%s", ent->d_name);
 		resolved = ntp_realpath(nam);
 		TEST_ASSERT_NOT_NULL_MESSAGE(resolved, errMsg("could not resolve '%s'", nam));
