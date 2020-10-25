@@ -1521,7 +1521,7 @@ process_version(
 
 	/* The logon string is actually the ?WATCH command of GPSD,
 	 * using JSON data and selecting the GPS device name we created
-	 * from our unit number. We have an old a newer version that
+	 * from our unit number. We have an old and a newer version that
 	 * request PPS (and TOFF) transmission.
 	 */
 	snprintf(up->buffer, sizeof(up->buffer),

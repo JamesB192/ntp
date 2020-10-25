@@ -2947,7 +2947,8 @@ clock_update(
 			 */
 #ifdef HAVE_WORKING_FORK
 			if (daemon_pipe[1] != -1) {
-				write(daemon_pipe[1], "S\n", 2);
+				if (2 != write(daemon_pipe[1], "S\n", 2))
+					msyslog(LOG_ERR, "ntpd: daemon failed to notify parent!");
 				close(daemon_pipe[1]);
 				daemon_pipe[1] = -1;
 				DPRINTF(1, ("notified parent --wait-sync is done\n"));

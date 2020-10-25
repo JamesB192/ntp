@@ -955,7 +955,9 @@ oncore_init_shmem(
 		shmem_old_size = sbuf.st_size;
 		if (shmem_old_size != 0) {
 			shmem_old = emalloc((unsigned) sbuf.st_size);
-			read(fd, shmem_old, shmem_old_size);
+			if (read(fd, shmem_old, shmem_old_size) != shmem_old_size)
+				oncore_log(instance, LOG_WARNING,
+					   "ONCORE: truncated/failed read of SHMEM file");
 		}
 		close(fd);
 	}
@@ -3537,7 +3539,8 @@ oncore_load_almanac(
 		if (!strncmp((char *) cp, "@@Cb", 4) &&
 		    oncore_checksum_ok(cp, 33) &&
 		    (*(cp+4) == 4 || *(cp+4) == 5)) {
-			write(instance->ttyfd, cp, n);
+			refclock_fdwrite(instance->peer, instance->ttyfd,
+					 cp, n, "data");
 			oncore_print_Cb(instance, cp);
 		}
 	}
@@ -3760,20 +3763,22 @@ oncore_sendmsg(
 {
 	int	fd;
 	u_char cs = 0;
+	const struct peer * peer;
 
-	fd = instance->ttyfd;
+	fd   = instance->ttyfd;
+	peer = instance->peer;
 #ifdef ONCORE_VERBOSE_SENDMSG
 	if (debug > 4) {
 		oncore_log_f(instance, LOG_DEBUG, "ONCORE: Send @@%c%c %d",
 			     ptr[0], ptr[1], (int)len);
 	}
 #endif
-	write(fd, "@@", (size_t) 2);
-	write(fd, ptr, len);
+	refclock_fdwrite(peer, fd, "@@", (size_t)2, "data");
+	refclock_fdwrite(peer, fd, ptr, len, "data");
 	while (len--)
 		cs ^= *ptr++;
-	write(fd, &cs, (size_t) 1);
-	write(fd, "\r\n", (size_t) 2);
+	refclock_fdwrite(peer, fd, &cs, (size_t)1, "data");
+	refclock_fdwrite(peer, fd, "\r\n", (size_t)2, "data");
 }
 
 
