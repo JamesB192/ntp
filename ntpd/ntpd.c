@@ -1447,8 +1447,10 @@ int scmp_sc[] = {
 #if defined(SYS_WINNT)
 	ntservice_isup();
 #elif defined(HAVE_WORKING_FORK)
-	if (daemon_pipe[1] != -1) {
-		write(daemon_pipe[1], "R\n", 2);
+	if ((daemon_pipe[1] != -1) && (2 != write(daemon_pipe[1], "R\n", 2))) {
+		msyslog(LOG_ERR, "ntpd: daemon failed to notify parent!");
+		close(daemon_pipe[1]);
+		daemon_pipe[1] = -1;
 	}
 #endif /* HAVE_WORKING_FORK */
 
