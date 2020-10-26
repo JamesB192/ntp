@@ -26,12 +26,17 @@ int crypto_rand_init = 0;
 #else
 
 # ifndef HAVE_ARC4RANDOM_BUF
-static void
-arc4random_buf(void *buf, size_t nbytes);
+static int arc4random_stir(void);
+static void arc4random_buf(void *buf, size_t nbytes);
 
-void
-evutil_secure_rng_get_bytes(void *buf, size_t nbytes);
+int evutil_secure_rng_init(void);
+void evutil_secure_rng_get_bytes(void *buf, size_t nbytes);
 
+static int
+arc4random_stir(void)
+{
+	return(evutil_secure_rng_init());
+}
 static void
 arc4random_buf(void *buf, size_t nbytes)
 {
@@ -40,6 +45,8 @@ arc4random_buf(void *buf, size_t nbytes)
 }
 # endif
 #endif
+
+int crypto_rand_ok = 0;
 
 /*
  * As of late 2014, here's how we plan to provide cryptographic-quality
@@ -71,11 +78,18 @@ ntp_crypto_srandom(
 {
 #ifdef USE_OPENSSL_CRYPTO_RAND
 	if (!crypto_rand_init) {
-		RAND_poll();
+		if (RAND_poll())
+			crypto_rand_ok = 1;
 		crypto_rand_init = 1;
 	}
 #else
-	/* No initialization needed for arc4random() */
+	/*
+	 * Explicitly init arc4random to make sure it does seed OK. This
+	 * is the only way we can tell if it can successfully get
+	 * entropy from the system.
+	 */
+	if (!arc4random_stir())
+		crypto_rand_ok = 1;
 #endif
 }
 
@@ -91,6 +105,9 @@ ntp_crypto_random_buf(
 	size_t nbytes
 	)
 {
+	if (!crypto_rand_ok)
+		return (-1);
+
 #ifdef USE_OPENSSL_CRYPTO_RAND
 	int rc;
 
