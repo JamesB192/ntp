@@ -1186,6 +1186,7 @@ printassoc(
 	const char *condition = "";
 	const char *last_event;
 	char buf[128];
+	char numev[32];
 
 	if (numassoc == 0) {
 		(void) xprintf(fp, "No association ID's in list\n");
@@ -1335,8 +1336,25 @@ printassoc(
 			last_event = "clock_alarm";
 			break;
 
+		case PEVNT_AUTH:
+			last_event = "bad_auth";
+			break;
+
+		case PEVNT_POPCORN:
+			last_event = "popcorn";
+			break;
+
+		case PEVNT_XLEAVE:
+			last_event = "interleave";
+			break;
+
+		case PEVNT_XERR:
+			last_event = "xleave_err";
+			break;
+
 		default:
-			last_event = "";
+			snprintf(numev, sizeof(numev), "<?%x?>", event);
+			last_event = numev;
 			break;
 		}
 		snprintf(buf, sizeof(buf),
