@@ -1335,6 +1335,22 @@ printassoc(
 			last_event = "clock_alarm";
 			break;
 
+		case PEVNT_AUTH:
+			last_event = "bad_auth";
+			break;
+
+		case PEVNT_POPCORN:
+			last_event = "popcorn";
+			break;
+
+		case PEVNT_XLEAVE:
+			last_event = "interleave";
+			break;
+
+		case PEVNT_XERR:
+			last_event = "xleave_err";
+			break;
+
 		default:
 			last_event = "";
 			break;
