@@ -17,6 +17,8 @@
     file, so havin a binary secret >= 11 bytes is possible for all keys.
     (This is a different approach to the roblem than suggested)
 * [Bug 3688] GCC 10 build errors in testsuite <perlinger@ntp.org>
+* [Bug 3687] ntp_crypto_rand RNG status not known <perlinger@ntp.org>
+  - patch by Gerry Garvey
 * [Bug 3677] additional peer events not decoded in associations listing <perlinger@ntp.org>
   - original patch by Gerry Garvey
 * [Bug 3676] compiler warnings (CMAC, interrupt_buf, typo, fallthrough)
@@ -32,7 +34,6 @@
 * [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
   - backport from -dev, plus some more work on warnings for unchecked results
 * Implement NTP_FUNC_REALPATH.  <stenn@ntp.org>
->>>>>>>
 
 ---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
