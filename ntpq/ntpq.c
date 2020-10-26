@@ -17,6 +17,9 @@
 #endif
 #ifdef SYS_WINNT
 # include <mswsock.h>
+# define PATH_DEVNULL	"NUL:"
+#else
+# define PATH_DEVNULL	"/dev/null"
 #endif
 #include <isc/net.h>
 #include <isc/result.h>
@@ -1617,6 +1620,7 @@ docmd(
 	int ntok;
 	static int i;
 	struct xcmd *xcmd;
+	int executeonly = 0;
 
 	/*
 	 * Tokenize the command line.  If nothing on it, return.
@@ -1624,6 +1628,14 @@ docmd(
 	tokenize(cmdline, tokens, &ntok);
 	if (ntok == 0)
 	    return;
+
+	/*
+	 * If command prefixed by '~', then quiet output
+	 */
+	if (*tokens[0] == '~') {
+		executeonly++;
+		tokens[0]++;
+	}
 
 	/*
 	 * Find the appropriate command description.
@@ -1681,6 +1693,13 @@ docmd(
 		current_output = fopen(fname, "w");
 		if (current_output == NULL) {
 			(void) fprintf(stderr, "***Error opening %s: ", fname);
+			perror("");
+			return;
+		}
+	} else if (executeonly) {		/* Redirect all output to null */
+		current_output = fopen(PATH_DEVNULL, "w");
+		if (current_output == NULL) {
+			(void) fprintf(stderr, "***Error redirecting output to /dev/null: ");
 			perror("");
 			return;
 		}

@@ -1,4 +1,5 @@
 ---
+
 * [Bug 3694] NMEA refclock seems to unnecessarily require location in messages
   - misleading title; essentially a request to ignore the receiver status.
     Added a mode bit for this. <perlinger@ntp.org>
@@ -19,6 +20,8 @@
 * [Bug 3676] compiler warnings (CMAC, interrupt_buf, typo, fallthrough)
   - applied patches by Gerry Garvey
 * [Bug 3675] ntpq ccmds[] stores pointer to non-persistent storage
+* [Bug 3674] ntpq command 'execute only' using '~' prefix <perlinger@ntp.org>
+  - idea+patch by Gerry Garvey
 * [Bug 3672] fix biased selection in median cut <perlinger@ntp.org>
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
   - follow-up: fix inverted sense in check, reset shortfall counter
