@@ -1,4 +1,10 @@
 ---
+* [Bug 3699] Problems handling drift file and restoring previous drifts <perlinger@ntp.org>
+  - command line options override config statements where applicable
+  - make initial frequency settings idempotent and reversible
+  - make sure kernel PLL gets a revovered drift componsation
+
+---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
