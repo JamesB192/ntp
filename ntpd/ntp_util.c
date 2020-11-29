@@ -64,6 +64,15 @@ static	char *stats_temp_file;		/* temp frequency file name */
 static double wander_resid;		/* last frequency update */
 double	wander_threshold = 1e-7;	/* initial frequency threshold */
 
+/* For things where command line has precedence, we have
+ * to remember we've already seen that. These options have to be
+ * applied only once...
+ */
+#define CMDARG_FREQ_FILE	0x01
+#define CMDARG_PID_FILE		0x02
+#define CMDARG_STATSDIR		0x04
+static unsigned int cmdargs_seen = 0;
+
 /*
  * Statistics file stuff
  */
@@ -397,24 +406,47 @@ stats_config(
 	 * Open and read frequency file.
 	 */
 	case STATS_FREQ_FILE:
-		if (!value || (len = strlen(value)) == 0)
+		if (!optflag && (cmdargs_seen & CMDARG_FREQ_FILE))
 			break;
-
-		stats_drift_file = erealloc(stats_drift_file, len + 1);
-		stats_temp_file = erealloc(stats_temp_file,
-		    len + sizeof(".TEMP"));
-		memcpy(stats_drift_file, value, (size_t)(len+1));
-		memcpy(stats_temp_file, value, (size_t)len);
-		memcpy(stats_temp_file + len, temp_ext, sizeof(temp_ext));
+		if (optflag)
+			cmdargs_seen |= CMDARG_FREQ_FILE;
+		
+		if (!value || (len = strlen(value)) == 0)
+		{
+			free(stats_drift_file);
+			free(stats_temp_file);
+			stats_drift_file = stats_temp_file = NULL;    
+		}
+		else
+		{
+			stats_drift_file = erealloc(stats_drift_file, len + 1);
+			stats_temp_file = erealloc(stats_temp_file,
+						   len + sizeof(".TEMP"));
+			memcpy(stats_drift_file, value, (size_t)(len+1));
+			memcpy(stats_temp_file, value, (size_t)len);
+			memcpy(stats_temp_file + len, temp_ext, sizeof(temp_ext));
+		}
+		
+		if (NULL == stats_drift_file) {
+			loop_config(LOOP_NOFREQ, 0.0);
+			prev_drift_comp = 0.0;
+			break;
+		}
 
 		/*
 		 * Open drift file and read frequency. If the file is
 		 * missing or contains errors, tell the loop to reset.
 		 */
-		if ((fp = fopen(stats_drift_file, "r")) == NULL)
-			break;
+		if ((fp = fopen(stats_drift_file, "r")) == NULL) {
+			if (errno != ENOENT)
+				msyslog(LOG_WARNING,
+					"cannot read frequency file %s: %s",
+					stats_drift_file, strerror(errno));
+ 			break;
+		}
 
 		if (fscanf(fp, "%lf", &old_drift) != 1) {
+			
 			msyslog(LOG_ERR,
 				"format error frequency file %s",
 				stats_drift_file);
@@ -425,12 +457,19 @@ stats_config(
 		fclose(fp);
 		loop_config(LOOP_FREQ, old_drift);
 		prev_drift_comp = drift_comp;
+		msyslog(LOG_INFO,
+			"initial drift restored to %f",
+			old_drift);
 		break;
 
 	/*
 	 * Specify statistics directory.
 	 */
 	case STATS_STATSDIR:
+		if (!optflag && (cmdargs_seen & CMDARG_STATSDIR))
+			break;
+		if (optflag)
+			cmdargs_seen |= CMDARG_STATSDIR;
 
 		/* - 1 since value may be missing the DIR_SEP. */
 		if (strlen(value) >= sizeof(statsdir) - 1) {
@@ -463,6 +502,11 @@ stats_config(
 	 * Open pid file.
 	 */
 	case STATS_PID_FILE:
+		if (!optflag && (cmdargs_seen & CMDARG_PID_FILE))
+			break;
+		if (optflag)
+			cmdargs_seen |= CMDARG_PID_FILE;
+		
 		if ((fp = fopen(value, "w")) == NULL) {
 			msyslog(LOG_ERR, "pid file %s: %m",
 			    value);
