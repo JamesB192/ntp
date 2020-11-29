@@ -3991,11 +3991,9 @@ config_vars(
 			break;
 
 		case T_Driftfile:
-			if ('\0' == curr_var->value.s[0]) {
-				stats_drift_file = 0;
+			if ('\0' == curr_var->value.s[0])
 				msyslog(LOG_INFO, "config: driftfile disabled");
-			} else
-			    stats_config(STATS_FREQ_FILE, curr_var->value.s, 0);
+			stats_config(STATS_FREQ_FILE, curr_var->value.s, 0);
 			break;
 
 		case T_Dscp:
