@@ -63,15 +63,7 @@ char	*stats_drift_file;		/* frequency file name */
 static	char *stats_temp_file;		/* temp frequency file name */
 static double wander_resid;		/* last frequency update */
 double	wander_threshold = 1e-7;	/* initial frequency threshold */
-
-/* For things where command line has precedence, we have
- * to remember we've already seen that. These options have to be
- * applied only once...
- */
-#define CMDARG_FREQ_FILE	0x01
-#define CMDARG_PID_FILE		0x02
-#define CMDARG_STATSDIR		0x04
-static unsigned int cmdargs_seen = 0;
+static unsigned int cmdargs_seen = 0;	/* stat options seen from command line */
 
 /*
  * Statistics file stuff
@@ -336,6 +328,27 @@ write_stats(void)
 /*
  * stats_config - configure the stats operation
  */
+static int
+allow_config(
+	unsigned int	option,
+	int/*BOOL*/	cmdopt)
+{
+	/* If an option was given on the command line, make sure it
+	 * persists and is not later changed by a corresponding option
+	 * from the config file. Done by simply remembering an option was
+	 * already seen from the command line.
+	 * 
+	 * BTW, if we ever define stats options beyond 31, this needs a
+	 * fix. Until then, simply assume the shift will not overflow.
+	 */
+	unsigned int mask = 1u << option;
+	int          retv = cmdopt || !(cmdargs_seen & mask);
+	if (cmdopt) 
+		cmdargs_seen |= mask;
+	return retv;
+}
+
+
 void
 stats_config(
 	int item,
@@ -350,9 +363,9 @@ stats_config(
 	l_fp	now;
 	time_t  ttnow;
 #ifndef VMS
-	const char temp_ext[] = ".TEMP";
+	static const char temp_ext[] = ".TEMP";
 #else
-	const char temp_ext[] = "-TEMP";
+	static const char temp_ext[] = "-TEMP";
 #endif
 
 	/*
@@ -406,10 +419,8 @@ stats_config(
 	 * Open and read frequency file.
 	 */
 	case STATS_FREQ_FILE:
-		if (!optflag && (cmdargs_seen & CMDARG_FREQ_FILE))
+		if (!allow_config(STATS_FREQ_FILE, optflag))
 			break;
-		if (optflag)
-			cmdargs_seen |= CMDARG_FREQ_FILE;
 		
 		if (!value || (len = strlen(value)) == 0)
 		{
@@ -427,49 +438,39 @@ stats_config(
 			memcpy(stats_temp_file + len, temp_ext, sizeof(temp_ext));
 		}
 		
-		if (NULL == stats_drift_file) {
-			loop_config(LOOP_NOFREQ, 0.0);
-			prev_drift_comp = 0.0;
-			break;
-		}
-
 		/*
 		 * Open drift file and read frequency. If the file is
 		 * missing or contains errors, tell the loop to reset.
 		 */
-		if ((fp = fopen(stats_drift_file, "r")) == NULL) {
+		if (NULL == stats_drift_file) {
+			loop_config(LOOP_NOFREQ, 0.0);
+			prev_drift_comp = 0.0;
+		} else if ((fp = fopen(stats_drift_file, "r")) == NULL) {
 			if (errno != ENOENT)
 				msyslog(LOG_WARNING,
 					"cannot read frequency file %s: %s",
 					stats_drift_file, strerror(errno));
- 			break;
-		}
-
-		if (fscanf(fp, "%lf", &old_drift) != 1) {
-			
+		} else if (fscanf(fp, "%lf", &old_drift) != 1) {
 			msyslog(LOG_ERR,
 				"format error frequency file %s",
 				stats_drift_file);
 			fclose(fp);
-			break;
-
+		} else {
+			loop_config(LOOP_FREQ, old_drift);
+			prev_drift_comp = drift_comp;
+			msyslog(LOG_INFO,
+				"initial drift restored to %f",
+				old_drift);
+			fclose(fp);
 		}
-		fclose(fp);
-		loop_config(LOOP_FREQ, old_drift);
-		prev_drift_comp = drift_comp;
-		msyslog(LOG_INFO,
-			"initial drift restored to %f",
-			old_drift);
 		break;
 
 	/*
 	 * Specify statistics directory.
 	 */
 	case STATS_STATSDIR:
-		if (!optflag && (cmdargs_seen & CMDARG_STATSDIR))
+		if (!allow_config(STATS_STATSDIR, optflag))
 			break;
-		if (optflag)
-			cmdargs_seen |= CMDARG_STATSDIR;
 
 		/* - 1 since value may be missing the DIR_SEP. */
 		if (strlen(value) >= sizeof(statsdir) - 1) {
@@ -502,10 +503,8 @@ stats_config(
 	 * Open pid file.
 	 */
 	case STATS_PID_FILE:
-		if (!optflag && (cmdargs_seen & CMDARG_PID_FILE))
+		if (!allow_config(STATS_PID_FILE, optflag))
 			break;
-		if (optflag)
-			cmdargs_seen |= CMDARG_PID_FILE;
 		
 		if ((fp = fopen(value, "w")) == NULL) {
 			msyslog(LOG_ERR, "pid file %s: %m",
