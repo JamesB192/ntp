@@ -439,27 +439,27 @@ check-pslsaveconfig: check-psl0 check-psl1 check-psl2
 	echo stamp > $@
 
 check-psl0: psl0.conf psl0save.conf
-	-diff -u $< psl0save.conf
-	cmp $< psl0save.conf && echo stamp > $@
+	-diff -u $(srcdir)/psl0.conf psl0save.conf
+	cmp $(srcdir)/psl0.conf psl0save.conf && echo stamp > $@
 
 psl0save.conf: psl0.conf ntpd
-	./ntpd --configfile $< --saveconfigquit $@+
+	./ntpd --configfile $(srcdir)/psl0.conf --saveconfigquit $@+
 	grep -v '^#' $@+ > $@
 
 check-psl1: psl1.conf psl1save.conf
-	-diff -u $< psl1save.conf
-	cmp $< psl1save.conf && echo stamp > $@
+	-diff -u $(srcdir)/psl1.conf psl1save.conf
+	cmp $(srcdir)/psl1.conf psl1save.conf && echo stamp > $@
 
 psl1save.conf: psl1.conf ntpd
-	./ntpd --configfile $< --saveconfigquit $@+
+	./ntpd --configfile $(srcdir)/psl1.conf --saveconfigquit $@+
 	grep -v '^#' $@+ > $@
 
 check-psl2: psl2.conf psl2save.conf
-	-diff -u $< psl2save.conf
-	cmp $< psl2save.conf && echo stamp > $@
+	-diff -u $(srcdir)/psl2.conf psl2save.conf
+	cmp $(srcdir)/psl2.conf psl2save.conf && echo stamp > $@
 
 psl2save.conf: psl2.conf ntpd
-	./ntpd --configfile $< --saveconfigquit $@+
+	./ntpd --configfile $(srcdir)/psl2.conf --saveconfigquit $@+
 	grep -v '^#' $@+ > $@
 
 ../libntp/libntpsim.a:
