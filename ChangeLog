@@ -1,4 +1,8 @@
 ---
+* [Bug 3724] ntp-keygen with openSSL 1.1.1 fails on Windows <perlinger@ntp.org>
+  - openssl applink needed again for openSSL-1.1.1
+
+---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3661] memory leak with AES128CMAC keys <perlinger@ntp.org>
