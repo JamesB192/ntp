@@ -250,6 +250,12 @@ extern int	refclock_ppsaugment(
     const struct refclock_atom*, l_fp *rcvtime ,
     double rcvfudge, double ppsfudge);
 
+#ifdef _WIN32
+#define ppsdev_open(ttyfd, ppspath, mode, flags) (ttyfd)
+#else
+extern int ppsdev_open(int ttyfd, const char *ppspath,
+		       int mode, int flags);
+#endif
 #endif /* REFCLOCK */
 
 #endif /* NTP_REFCLOCK_H */
