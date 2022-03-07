@@ -4295,6 +4295,26 @@ case "$ntp_signd_path" in
     ;;
 esac
 
+dnl check for 'magic pps' for Linux
+AC_MSG_CHECKING([if we want 'magic' PPS support])
+AC_ARG_ENABLE(
+    [magicpps],
+    [AS_HELP_STRING(
+	[--enable-magicpps],
+	[+ try to auto-instantiate PPS devices on Linux]
+    )],
+    [ans=$enableval],
+    [ans=yes]
+)
+AC_MSG_RESULT([$ans])
+case "$ans" in
+ yes)
+    AC_DEFINE([ENABLE_MAGICPPS], [1],
+	[auto-instantiate missing PPS devices on Linux])
+    AC_CHECK_FUNCS([openat fdopendir fstatat])
+    ;;
+esac
+
 AC_CHECK_HEADERS([libscf.h])
 LSCF=
 case "$ac_cv_header_libscf_h" in
