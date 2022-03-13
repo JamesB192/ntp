@@ -260,6 +260,7 @@
     <ClCompile Include="..\..\..\..\libparse\parse.c" />
     <ClCompile Include="..\..\..\..\libparse\parse_conf.c" />
     <ClCompile Include="..\..\..\..\libparse\trim_info.c" />
+    <ClCompile Include="..\..\..\..\ntpd\ntp_ppsdev.c" />
     <ClCompile Include="..\..\..\..\ntpd\cmd_args.c" />
     <ClCompile Include="..\..\..\..\ntpd\ntpd-opts.c" />
     <ClCompile Include="..\..\..\..\ntpd\ntpd.c" />

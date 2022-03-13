@@ -308,6 +308,10 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath="..\..\..\..\ntpd\ntp_ppsdev.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\ntpd\cmd_args.c"
 				>
 			</File>

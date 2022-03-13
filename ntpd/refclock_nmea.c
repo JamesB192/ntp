@@ -472,8 +472,7 @@ nmea_shutdown(
 #	    ifdef HAVE_PPSAPI
 		if (up->ppsapi_lit)
 			time_pps_destroy(up->atom.handle);
-		if ((up->ppsapi_fd != -1) && (up->ppsapi_fd != pp->io.fd))
-			close(up->ppsapi_fd);
+		ppsdev_close(pp->io.fd, up->ppsapi_fd);
 #	    endif
 		free(up);
 	}
@@ -519,36 +518,20 @@ nmea_control(
 
 	/* Light up the PPSAPI interface if not yet attempted. */
 	if ((CLK_FLAG1 & pp->sloppyclockflag) && !up->ppsapi_tried) {
-		int ppsfd;
+		const char *ppsname = device;
 		up->ppsapi_tried = TRUE;
 		/* get FD for the pps device; might be the tty itself! */
 		devlen = snprintf(device, sizeof(device), PPSDEV, unit);
-		if (devlen < sizeof(device)) {
-			ppsfd = ppsdev_open(
-				pp->io.fd, device,
-				PPSOPENMODE, (S_IRUSR|S_IWUSR));
-		} else {
-			ppsfd = pp->io.fd;
+		if (devlen >= sizeof(device)) {
 			msyslog(LOG_ERR, "%s PPS device name too long",
 				refnumtoa(&peer->srcadr));
+			ppsname = NULL;
 		}
-		/* Now do a dance to juggle it into place: */
-		if (-1 == up->ppsapi_fd) {
-			/* no previous FD -- that one is easy. */
-			up->ppsapi_fd = ppsfd;
-		} else if (ppsfd != pp->io.fd) {
-			/* new distinct pps FD -- take it! */
-			if (up->ppsapi_fd != pp->io.fd)
-				close(up->ppsapi_fd);
-			up->ppsapi_fd = ppsfd;			
-		}
-		/* If neither condition above is met, we have to keep
-		 * the existing pps handle:  It is either a device we
-		 * could not open again since we dropped privs, or it is
-		 * the tty handle because there was nothing else to open
-		 * right from the beginning.
-		 *
-		 * note: the PPS I/O handle remains valid until
+		up->ppsapi_fd = ppsdev_reopen(
+			pp->io.fd, up->ppsapi_fd,
+			ppsname, PPSOPENMODE, (S_IRUSR|S_IWUSR));
+		/* note 1: the pps fd might be the same as the tty fd
+		 * note 2: the current PPS fd remains valid until
 		 *  - the clock is shut down
 		 *  - flag1 is set again after being cleared
 		 */

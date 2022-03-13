@@ -24,6 +24,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\ntpd\ntp_ppsdev.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\ntpd\cmd_args.c">
       <Filter>Source Files</Filter>
     </ClCompile>
