@@ -337,15 +337,22 @@ findMatchingPpsDev(
 #endif /* linux PPS device matcher */
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 
-
 int
-ppsdev_open(
-	int         ttyfd  ,
-	const char *ppspath,
-	int         omode  ,
-	int         oflags )
+ppsdev_reopen(
+	int         ttyfd  , /* current tty FD, or -1 */
+	int         ppsfd  , /* current pps FD, or -1 */
+	const char *ppspath, /* path to pps device, or NULL */
+	int         omode  , /* open mode for pps device */
+	int         oflags ) /* openn flags for pps device */
 {
 	int retfd = -1;
+
+	/* avoid 'unused' warnings: we might not use all args, no
+	 * thanks to conditional compiling:)
+	 */
+	(void)ppspath;
+	(void)omode;
+	(void)oflags;
 
 #   if defined(__unix__) && !defined(_WIN32)
 	if (-1 == retfd) {	
@@ -358,7 +365,7 @@ ppsdev_open(
 #   endif
 	
 #   if defined(WITH_PPSDEV_MATCH)
-	if (-1 == retfd) {	
+	if ((-1 == retfd) && (-1 != ttyfd)) {	
 		char *xpath = findMatchingPpsDev(ttyfd);
 		if (xpath && *xpath) {
 			retfd = open(xpath, omode, oflags);
@@ -376,9 +383,28 @@ ppsdev_open(
 	 * try the FD given for the TTY/COMport...
 	 */
 	if (-1 == retfd)
+		retfd = ppsfd;
+	if (-1 == retfd)
 		retfd = ttyfd;
+
+	/* Close the old pps FD, but only if the new pps FD is neither
+	 * the tty FD nor the existing pps FD!
+	 */
+	if ((retfd != ttyfd) && (retfd != ppsfd))
+		ppsdev_close(ttyfd, ppsfd);
 	
 	return retfd;
 }
 
+void
+ppsdev_close(
+	int ttyfd, /* current tty FD, or -1 */
+	int ppsfd) /* current pps FD, or -1 */
+{
+	/* The pps fd might be the same as the tty fd.  We close the pps
+	 * channel only if it's valid and _NOT_ the tty itself:
+	 */
+	if ((-1 != ppsfd) && (ttyfd != ppsfd))
+		close(ppsfd);
+}
 /* --*-- that's all folks --*-- */
