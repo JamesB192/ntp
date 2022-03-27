@@ -100,8 +100,13 @@ xdirOpenAt(
 }
 
 /* --------------------------------------------------------------------
- * read content of a file (with a size limit) into  piece of allocated
+ * read content of a file (with a size limit) into a piece of allocated
  * memory and trim any trailing whitespace.
+ *
+ * The issue here is that several files in the 'sysfs' tree claim a size
+ * of 4096 bytes when you 'stat' them -- but reading gives EOF after a
+ * few chars.  (I *can* understand why the kernel takes this shortcut.
+ * it's just a bit unwieldy...)
  */
 static char*
 readFileAt(
@@ -109,24 +114,28 @@ readFileAt(
 	const char *path)
 {
 	struct stat sb;
-	char *ret = NULL, *tmp;
+	char *ret = NULL;
 	ssize_t rdlen;
 	int dfd;
 	
 	if (-1 == (dfd = openat(rfd, path, OModeF)) || -1 == fstat(dfd, &sb))
 		goto fail;
-	if ((sb.st_size > 0x2000) || (NULL == (tmp = malloc(sb.st_size + 1))))
+	if ((sb.st_size > 0x2000) || (NULL == (ret = malloc(sb.st_size + 1))))
 		goto fail;
-	if (1 > (rdlen = read(dfd, tmp, sb.st_size)))
+	if (1 > (rdlen = read(dfd, ret, sb.st_size)))
 		goto fail;
-	while (rdlen > 0 && tmp[rdlen - 1] <= ' ')
+	close(dfd);
+
+	while (rdlen > 0 && ret[rdlen - 1] <= ' ')
 		--rdlen;
-	tmp[rdlen] = '\0';
-	ret = tmp;
+	ret[rdlen] = '\0';
+	return ret;
+
   fail:
+	free(ret);
 	if (-1 != dfd)
 		close(dfd);
-	return ret;    
+	return NULL;    
 }
 
 /* --------------------------------------------------------------------
@@ -142,20 +151,23 @@ findDevByDevId(
 	XDIR           xdir;
 	char          *name = NULL;
 	
-	if (xdirOpenAt(&xdir, AT_FDCWD, "/dev")) {
-		while (!name && (dent = readdir(xdir.dir))) {
-			if (-1 == fstatat(xdir.dfd, dent->d_name,
-					  &sb, AT_SYMLINK_NOFOLLOW))
-				continue;
-			if (!S_ISCHR(sb.st_mode))
-				continue;
-			if (sb.st_rdev == rdev) {
-				if (-1 == asprintf(&name, "/dev/%s", dent->d_name))
-					name = NULL;
-			}
+	if (!xdirOpenAt(&xdir, AT_FDCWD, "/dev"))
+		goto done;
+	
+	while (!name && (dent = readdir(xdir.dir))) {
+		if (-1 == fstatat(xdir.dfd, dent->d_name,
+				  &sb, AT_SYMLINK_NOFOLLOW))
+			continue;
+		if (!S_ISCHR(sb.st_mode))
+			continue;
+		if (sb.st_rdev == rdev) {
+			if (-1 == asprintf(&name, "/dev/%s", dent->d_name))
+				name = NULL;
 		}
-		xdirClose(&xdir);
 	}
+	xdirClose(&xdir);
+
+  done:
 	return name;
 }
 
@@ -197,26 +209,33 @@ getPpsTuple(
 	unsigned long dmaj, dmin;
 	struct stat   sb;
 	char         *bufp, *endp, *scan;
-	
+
+	/* 'path' contains the primary path to the associated TTY:
+	 * we 'stat()' for the device id in 'st_rdev'.
+	 */
 	if (NULL == (bufp = readFileAt(fdDir, "path")))
-		goto fail;
+		goto done;
 	if ((-1 == stat(bufp, &sb)) || !S_ISCHR(sb.st_mode))
-		goto fail;
+		goto done;
 	*pTty = sb.st_rdev;
 	free(bufp);
-	
+
+	/* 'dev' holds the device ID of the PPS device as 'major:minor'
+	 * in text format.   *sigh* couldn't that simply be the name of
+	 * the PPS device itself, as in 'path' above??? But nooooo....
+	 */
 	if (NULL == (bufp = readFileAt(fdDir, "dev")))
-		goto fail;
+		goto done;
 	dmaj = strtoul((scan = bufp), &endp, 10);
 	if ((endp == scan) || (*endp != ':') || (dmaj >= 256))
-		goto fail;
+		goto done;
 	dmin = strtoul((scan = endp + 1), &endp, 10);
 	if ((endp == scan) || (*endp >= ' ') || (dmin >= 256))
-		goto fail;
+		goto done;
 	*pPps = makedev((unsigned int)dmaj, (unsigned int)dmin);
 	rc = TRUE;
 	
-  fail:
+  done:
 	free(bufp);
 	return rc;	
 }
@@ -232,28 +251,39 @@ findPpsDevId(
 	dev_t  ttyId ,
 	dev_t *pPpsId)
 {
-	BOOL found = FALSE;
-	XDIR ClsDir;
+	BOOL           found = FALSE;
+	XDIR           ClassDir;
+	struct dirent *dent;
+	dev_t          othId, ppsId;
+	int            fdDevDir;
 	
-	if (xdirOpenAt(&ClsDir, AT_FDCWD, "/sys/class/pps")) {
-		struct dirent *dent;
-		dev_t          othId, ppsId;
+	if (!xdirOpenAt(&ClassDir, AT_FDCWD, "/sys/class/pps"))
+		goto done;
 		
-		while (!found && (dent = readdir(ClsDir.dir))) {
-			int   fdDevDir;
-			if (strncmp("pps", dent->d_name, 3))
-				continue;
-			if (-1 == (fdDevDir = openat(
-					   ClsDir.dfd, dent->d_name, OModeD)))
-				continue;
-			found = getPpsTuple(fdDevDir, &othId, &ppsId)
-			     && (ttyId == othId);
-			close(fdDevDir);
-		}
-		if (found)
-			*pPpsId = ppsId;
-		xdirClose(&ClsDir);
+	while (!found && (dent = readdir(ClassDir.dir))) {
+
+		/* If the entry is not a referring to a PPS device or
+		 * if we can't open the directory for reading, skipt it:
+		 */
+		if (strncmp("pps", dent->d_name, 3))
+			continue;
+		fdDevDir = openat(ClassDir.dfd, dent->d_name, OModeD);
+		if (-1 == fdDevDir)
+			continue;
+
+		/* get the data and check if device ID for the TTY
+		 * is what we're looking for:
+		 */
+		found = getPpsTuple(fdDevDir, &othId, &ppsId)
+		    && (ttyId == othId);
+		close(fdDevDir);
 	}
+	
+	xdirClose(&ClassDir);
+	
+	if (found)
+		*pPpsId = ppsId;
+  done:
 	return found;
 }
 
@@ -308,8 +338,8 @@ findMatchingPpsDev(
 	if (!dpath)
 		goto done;
 
-	/* And since ince we're 'root', we might as well try to clone
-	 * the ownership and access rights from the original TTY to the
+	/* And since we're 'root', we might as well try to clone the
+	 * ownership and access rights from the original TTY to the
 	 * PPS device.  If that does not work, we just have to live with
 	 * what we've got so far...
 	 */
