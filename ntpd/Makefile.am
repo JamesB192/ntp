@@ -234,6 +234,7 @@ ntpdsim_SOURCES =		\
 libntpd_a_SOURCES =		\
 	cmd_args.c		\
 	jupiter.h		\
+	ntp_clockdev.c		\
 	ntp_control.c		\
 	ntp_crypto.c		\
 	ntp_filegen.c		\

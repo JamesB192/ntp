@@ -39,6 +39,7 @@
 #include "ntp_io.h"
 #include "ntp_unixtime.h"
 #include "ntp_refclock.h"
+#include "ntp_clockdev.h"
 #include "ntp_filegen.h"
 #include "ntp_stdlib.h"
 #include "lib_strbuf.h"
@@ -242,6 +243,7 @@ static void free_all_config_trees(void);
 static void free_config_access(config_tree *);
 static void free_config_auth(config_tree *);
 static void free_config_fudge(config_tree *);
+static void free_config_device(config_tree *);
 static void free_config_logconfig(config_tree *);
 static void free_config_monitor(config_tree *);
 static void free_config_nic_rules(config_tree *);
@@ -343,6 +345,7 @@ static void config_setvar(config_tree *);
 static void config_ttl(config_tree *);
 static void config_trap(config_tree *);
 static void config_fudge(config_tree *);
+static void config_device(config_tree *);
 static void config_peers(config_tree *);
 static void config_unpeers(config_tree *);
 static void config_nic_rules(config_tree *, int/*BOOL*/ input_from_file);
@@ -483,6 +486,7 @@ free_config_tree(
 	free_config_ttl(ptree);
 	free_config_trap(ptree);
 	free_config_fudge(ptree);
+	free_config_device(ptree);
 	free_config_vars(ptree);
 	free_config_peers(ptree);
 	free_config_unpeers(ptree);
@@ -897,6 +901,42 @@ dump_config_tree(
 						atrv->value.i);
 					break;
 
+				case T_String:
+					fprintf(df, " %s %s",
+						keyword(atrv->attr),
+						atrv->value.s);
+					break;
+				}
+			}
+			fprintf(df, "\n");
+		}
+
+		addr_opts = HEAD_PFIFO(ptree->device);
+		for ( ; addr_opts != NULL; addr_opts = addr_opts->link) {
+			peer_addr = peern->addr;
+			fudge_addr = addr_opts->addr;
+
+			s1 = peer_addr->address;
+			s2 = fudge_addr->address;
+
+			if (strcmp(s1, s2))
+				continue;
+
+			fprintf(df, "device %s", s1);
+
+			for (atrv = HEAD_PFIFO(addr_opts->options);
+			     atrv != NULL;
+			     atrv = atrv->link) {
+
+				switch (atrv->type) {
+#ifdef DEBUG
+				default:
+					fprintf(df, "\n# dump error:\n"
+						"# unknown device atrv->type %d\n"
+						"device %s", atrv->type,
+						s1);
+					break;
+#endif
 				case T_String:
 					fprintf(df, " %s %s",
 						keyword(atrv->attr),
@@ -3957,6 +3997,67 @@ config_fudge(
 }
 #endif	/* !SIM */
 
+#ifndef SIM
+static void
+config_device(
+	config_tree *ptree
+	)
+{
+	addr_opts_node *curr_device;
+	attr_val *curr_opt;
+	sockaddr_u addr_sock;
+	address_node *addr_node;
+	char *ttyName, *ppsName;
+
+	curr_device = HEAD_PFIFO(ptree->device);
+	for (; curr_device != NULL; curr_device = curr_device->link) {
+		/* Get the reference clock address and
+		 * ensure that it is sane
+		 */
+		addr_node = curr_device->addr;
+		ZERO_SOCK(&addr_sock);
+		if (getnetnum(addr_node->address, &addr_sock, 1, t_REF)
+		    != 1) {
+			msyslog(LOG_ERR,
+				"unrecognized device reference clock address %s, line ignored",
+				addr_node->address);
+			continue;
+		}
+		if (!ISREFCLOCKADR(&addr_sock)) {
+			msyslog(LOG_ERR,
+				"inappropriate address %s for the device command, line ignored",
+				stoa(&addr_sock));
+			continue;
+		}
+
+		ppsName = ttyName = NULL;
+		curr_opt = HEAD_PFIFO(curr_device->options);
+		for (; curr_opt != NULL; curr_opt = curr_opt->link) {
+			switch (curr_opt->attr) {
+
+			case T_TimeData:
+				ttyName = curr_opt->value.s;
+				break;
+
+			case T_PpsData:
+				ppsName = curr_opt->value.s;
+				break;
+
+			default:
+				msyslog(LOG_ERR,
+					"Unexpected device spec %s (%d) for %s",
+					token_name(curr_opt->attr),
+					curr_opt->attr, addr_node->address);
+				exit(curr_opt->attr ? curr_opt->attr : 1);
+			}
+		}
+# ifdef REFCLOCK
+		clockdev_update(&addr_sock, ttyName, ppsName);
+# endif
+	}
+}
+#endif	/* !SIM */
+
 
 #ifdef FREE_CFG_T
 static void
@@ -3965,6 +4066,14 @@ free_config_fudge(
 	)
 {
 	FREE_ADDR_OPTS_FIFO(ptree->fudge);
+}
+
+static void
+free_config_device(
+	config_tree *ptree
+	)
+{
+	FREE_ADDR_OPTS_FIFO(ptree->device);
 }
 #endif	/* FREE_CFG_T */
 
@@ -4848,6 +4957,7 @@ config_ntpd(
 
 	config_trap(ptree);	/* [bug 2923] dep. on io_open_sockets() */
 	config_other_modes(ptree);
+	config_device(ptree);
 	config_peers(ptree);
 	config_unpeers(ptree);
 	config_fudge(ptree);

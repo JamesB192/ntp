@@ -132,7 +132,7 @@ hopfserial_start (
 	/* LDISC_STD, LDISC_RAW
 	 * Open serial port. Use CLK line discipline, if available.
 	 */
-	fd = refclock_open(gpsdev, SPEED232, LDISC_CLK);
+	fd = refclock_open(&peer->srcadr, gpsdev, SPEED232, LDISC_CLK);
 	if (fd <= 0) {
 #ifdef DEBUG
 		printf("hopfSerialClock(%d) start: open %s failed\n", unit, gpsdev);

@@ -222,7 +222,7 @@ heath_start(
 	 * Open serial port
 	 */
 	snprintf(device, sizeof(device), DEVICE, unit);
-	fd = refclock_open(device, speed[peer->ttl & 0x3],
+	fd = refclock_open(&peer->srcadr, device, speed[peer->ttl & 0x3],
 			   LDISC_REMOTE);
 	if (fd <= 0)
 		return (0);

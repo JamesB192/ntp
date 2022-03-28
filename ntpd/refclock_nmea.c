@@ -367,45 +367,34 @@ nmea_start(
 	size_t				devlen;
 	u_int32				rate;
 	int				baudrate;
-	const char *			baudtext;
-
 
 	/* Get baudrate choice from mode byte bits 4/5/6 */
 	rate = (peer->ttl & NMEA_BAUDRATE_MASK) >> NMEA_BAUDRATE_SHIFT;
 
 	switch (rate) {
+	default:
 	case 0:
 		baudrate = SPEED232;
-		baudtext = "4800";
 		break;
 	case 1:
 		baudrate = B9600;
-		baudtext = "9600";
 		break;
 	case 2:
 		baudrate = B19200;
-		baudtext = "19200";
 		break;
 	case 3:
 		baudrate = B38400;
-		baudtext = "38400";
 		break;
 #   ifdef B57600
 	case 4:
 		baudrate = B57600;
-		baudtext = "57600";
 		break;
 #   endif
 #   ifdef B115200
 	case 5:
 		baudrate = B115200;
-		baudtext = "115200";
 		break;
 #   endif
-	default:
-		baudrate = SPEED232;
-		baudtext = "4800 (fallback)";
-		break;
 	}
 
 	/* Allocate and initialize unit structure */
@@ -436,14 +425,12 @@ nmea_start(
 			refnumtoa(&peer->srcadr));
 		return FALSE; /* buffer overflow */
 	}
-	pp->io.fd = refclock_open(device, baudrate, LDISC_CLK);
+	pp->io.fd = refclock_open(&peer->srcadr, device, baudrate, LDISC_CLK);
 	if (0 >= pp->io.fd) {
 		pp->io.fd = nmead_open(device);
 		if (-1 == pp->io.fd)
 			return FALSE;
 	}
-	LOGIF(CLOCKINFO, (LOG_NOTICE, "%s serial %s open at %s bps",
-	      refnumtoa(&peer->srcadr), device, baudtext));
 
 	/* succeed if this clock can be added */
 	return io_addclock(&pp->io) != 0;
@@ -528,6 +515,7 @@ nmea_control(
 			ppsname = NULL;
 		}
 		up->ppsapi_fd = ppsdev_reopen(
+			&peer->srcadr,
 			pp->io.fd, up->ppsapi_fd,
 			ppsname, PPSOPENMODE, (S_IRUSR|S_IWUSR));
 		/* note 1: the pps fd might be the same as the tty fd

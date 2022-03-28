@@ -120,7 +120,7 @@ dumbclock_start(
 	if (debug)
 		printf ("starting Dumbclock with device %s\n",device);
 #endif
-	fd = refclock_open(device, SPEED232, 0);
+	fd = refclock_open(&peer->srcadr, device, SPEED232, 0);
 	if (fd <= 0)
 		return (0);
 

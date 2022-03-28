@@ -166,7 +166,7 @@ as2201_start(
 	 * Open serial port. Use CLK line discipline, if available.
 	 */
 	snprintf(gpsdev, sizeof(gpsdev), DEVICE, unit);
-	fd = refclock_open(gpsdev, SPEED232, LDISC_CLK);
+	fd = refclock_open(&peer->srcadr, gpsdev, SPEED232, LDISC_CLK);
 	if (fd <= 0)
 		return (0);
 
