@@ -684,7 +684,7 @@ oncore_start(
 	}
 #endif	/* !SYS_WINNT */
 
-	fd1 = refclock_open(device1, SPEED, LDISC_RAW);
+	fd1 = refclock_open(&peer->srcadr, device1, SPEED, LDISC_RAW);
 	if (fd1 <= 0) {
 		oncore_log_f(instance, LOG_ERR, "Can't open fd1 (%s)",
 			     device1);

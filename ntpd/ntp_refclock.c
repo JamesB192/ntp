@@ -10,6 +10,7 @@
 #include "ntp_unixtime.h"
 #include "ntp_tty.h"
 #include "ntp_refclock.h"
+#include "ntp_clockdev.h"
 #include "ntp_stdlib.h"
 #include "ntp_assert.h"
 #include "timespecops.h"
@@ -71,6 +72,8 @@ static int  refclock_cmpl_fp (const void *, const void *);
 static int  refclock_sample (struct refclockproc *);
 static int  refclock_ioctl(int, u_int);
 static void refclock_checkburst(struct peer *, struct refclockproc *);
+static int  symBaud2numBaud(int symBaud);
+static int  numBaud2symBaud(int numBaud);
 
 /* circular buffer functions
  *
@@ -877,13 +880,15 @@ process_refclock_packet(
  */
 int
 refclock_open(
-	const char	*dev,	/* device name pointer */
+	const sockaddr_u *srcadr,
+ 	const char	*dev,	/* device name pointer */
 	u_int		speed,	/* serial port speed (code) */
 	u_int		lflags	/* line discipline flags */
 	)
 {
+	const char *cdev;
 	int	fd;
-	int	omode;
+	int	omode;	
 #ifdef O_NONBLOCK
 	char	trash[128];	/* litter bin for old input data */
 #endif
@@ -899,6 +904,9 @@ refclock_open(
 	omode |= O_NOCTTY;
 #endif
 
+	if (NULL != (cdev = clockdev_lookup(srcadr, 0)))
+		dev = cdev;
+	
 	fd = open(dev, omode, 0777);
 	/* refclock_open() long returned 0 on failure, avoid it. */
 	if (0 == fd) {
@@ -921,6 +929,9 @@ refclock_open(
 		close(fd);
 		return -1;
 	}
+	msyslog(LOG_NOTICE, "%s serial %s open at %d bps",
+		refnumtoa(srcadr), dev, symBaud2numBaud(speed));
+
 #ifdef O_NONBLOCK
 	/*
 	 * We want to make sure there is no pending trash in the input
@@ -1769,4 +1780,47 @@ refclock_format_lcode(
 	va_end(va);
 }
 
+static const int baudTable[][2] = {
+	{B0, 0},
+	{B50, 50},
+	{B75, 75},
+	{B110, 110},
+	{B134, 134},
+	{B150, 150},
+	{B200, 200},
+	{B300, 300},
+	{B600, 600},
+	{B1200, 1200},
+	{B1800, 1800},
+	{B2400, 2400},
+	{B4800, 4800},
+	{B9600, 9600},
+	{B19200, 19200},
+	{B38400, 38400},
+#   ifdef B57600
+	{B57600, 57600 },
+#   endif
+#   ifdef B115200
+	{B115200, 115200},
+#   endif
+	{-1, -1}
+};
+    
+
+static int  symBaud2numBaud(int symBaud)
+{
+	int i;
+	for (i = 0; baudTable[i][1] >= 0; ++i)
+		if (baudTable[i][0] == symBaud)
+			break;
+	return baudTable[i][1];
+}
+static int  numBaud2symBaud(int numBaud)
+{
+	int i;
+	for (i = 0; baudTable[i][1] >= 0; ++i)
+		if (baudTable[i][1] == numBaud)
+			break;
+	return baudTable[i][0];
+}
 #endif /* REFCLOCK */

@@ -281,7 +281,7 @@ true_start(
 	 * Open serial port
 	 */
 	snprintf(device, sizeof(device), DEVICE, unit);
-	fd = refclock_open(device, SPEED232, LDISC_CLK);
+	fd = refclock_open(&peer->srcadr, device, SPEED232, LDISC_CLK);
 	if (fd <= 0)
 		return 0;
 
