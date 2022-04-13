@@ -78,7 +78,7 @@ getClockIdent(
 	return (clkType << 8) + clkUnit;
 }
 
-/* Purge the complete redirection lis.t */
+/* Purge the complete redirection list. */
 void
 clockdev_clear(void)
 {
