@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpq-opts.h)
  *
- *  It has been AutoGen-ed  June 26, 2022 at 05:41:46 AM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  June 27, 2022 at 12:01:04 AM by AutoGen 5.18.5
  *  From the definitions    ntpq-opts.def
  *  and the template file   options
  *
@@ -74,15 +74,16 @@ typedef enum {
     INDEX_OPT_OLD_RV           =  7,
     INDEX_OPT_PEERS            =  8,
     INDEX_OPT_REFID            =  9,
-    INDEX_OPT_WIDE             = 10,
-    INDEX_OPT_VERSION          = 11,
-    INDEX_OPT_HELP             = 12,
-    INDEX_OPT_MORE_HELP        = 13,
-    INDEX_OPT_SAVE_OPTS        = 14,
-    INDEX_OPT_LOAD_OPTS        = 15
+    INDEX_OPT_UNCONNECTED      = 10,
+    INDEX_OPT_WIDE             = 11,
+    INDEX_OPT_VERSION          = 12,
+    INDEX_OPT_HELP             = 13,
+    INDEX_OPT_MORE_HELP        = 14,
+    INDEX_OPT_SAVE_OPTS        = 15,
+    INDEX_OPT_LOAD_OPTS        = 16
 } teOptIndex;
 /** count of all options for ntpq */
-#define OPTION_CT    16
+#define OPTION_CT    17
 /** ntpq version */
 #define NTPQ_VERSION       "4.2.8p15"
 /** Full ntpq version text */
@@ -179,6 +180,10 @@ typedef enum {
 #  warning undefining REFID due to option name conflict
 #  undef   REFID
 # endif
+# ifdef    UNCONNECTED
+#  warning undefining UNCONNECTED due to option name conflict
+#  undef   UNCONNECTED
+# endif
 # ifdef    WIDE
 #  warning undefining WIDE due to option name conflict
 #  undef   WIDE
@@ -194,6 +199,7 @@ typedef enum {
 # undef OLD_RV
 # undef PEERS
 # undef REFID
+# undef UNCONNECTED
 # undef WIDE
 #endif  /*  NO_OPTION_NAME_WARNINGS */
 
@@ -219,6 +225,7 @@ typedef enum {
 } te_Refid;
 #define OPT_REFID_VAL2STR(_v)    optionKeywordName(&DESC(REFID), (_v))
 #define OPT_VALUE_REFID          (DESC(REFID).optArg.argEnum)
+#define VALUE_OPT_UNCONNECTED    'u'
 #define VALUE_OPT_WIDE           'w'
 /** option flag (value) for help-value option */
 #define VALUE_OPT_HELP          '?'

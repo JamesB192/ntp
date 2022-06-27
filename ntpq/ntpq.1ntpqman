@@ -10,11 +10,11 @@
 .ds B-Font B
 .ds I-Font I
 .ds R-Font R
-.TH ntpq 1ntpqman "26 Jun 2022" "4.2.8p15" "User Commands"
+.TH ntpq 1ntpqman "27 Jun 2022" "4.2.8p15" "User Commands"
 .\"
 .\" EDIT THIS FILE WITH CAUTION (in-mem file)
 .\"
-.\" It has been AutoGen-ed June 26, 2022 at 05:34:20 AM by AutoGen 5.18.5
+.\" It has been AutoGen-ed June 27, 2022 at 12:01:14 AM by AutoGen 5.18.5
 .\" From the definitions ntpq-opts.def
 .\" and the template file agman-cmd.tpl
 .SH NAME
@@ -125,6 +125,12 @@ for this option is:
  ipv4
 .sp
 Set the default display format for S2+ refids.
+.TP
+.NOP \f\*[B-Font]\-u\f[], \f\*[B-Font]\-\-unconnected\f[]
+Use unconnected UDP to communicate with ntpd (default on Windows).
+.sp
+Open an unconnected UDP association to ntpd (the default
+on Windows).
 .TP
 .NOP \f\*[B-Font]\-w\f[], \f\*[B-Font]\-\-wide\f[]
 Display the full 'remote' value.

@@ -10,11 +10,11 @@
 .ds B-Font B
 .ds I-Font I
 .ds R-Font R
-.TH ntpdc 1ntpdcman "26 Jun 2022" "4.2.8p15" "User Commands"
+.TH ntpdc 1ntpdcman "27 Jun 2022" "4.2.8p15" "User Commands"
 .\"
 .\" EDIT THIS FILE WITH CAUTION (in-mem file)
 .\"
-.\" It has been AutoGen-ed June 26, 2022 at 05:34:10 AM by AutoGen 5.18.5
+.\" It has been AutoGen-ed June 27, 2022 at 12:01:03 AM by AutoGen 5.18.5
 .\" From the definitions ntpdc-opts.def
 .\" and the template file agman-cmd.tpl
 .SH NAME
@@ -106,6 +106,12 @@ command.
 .sp
 Print a list of the peers known to the server as well as a summary
 of their state. This is equivalent to the 'dmpeers' interactive command.
+.TP
+.NOP \f\*[B-Font]\-u\f[], \f\*[B-Font]\-\-unconnected\f[]
+Use unconnected UDP to communicate with ntpd (default on Windows).
+.sp
+Open an unconnected UDP association to ntpd (the default
+on Windows).
 .TP
 .NOP \f\*[B-Font]\-\&?\f[], \f\*[B-Font]\-\-help\f[]
 Display usage information and exit.

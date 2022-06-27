@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpdc-opts.c)
  *
- *  It has been AutoGen-ed  June 26, 2022 at 05:34:04 AM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  June 27, 2022 at 12:00:57 AM by AutoGen 5.18.5
  *  From the definitions    ntpdc-opts.def
  *  and the template file   options
  *
@@ -68,7 +68,7 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for ntpdc options
  */
-static char const ntpdc_opt_strs[1914] =
+static char const ntpdc_opt_strs[2004] =
 /*     0 */ "ntpdc 4.2.8p15\n"
             "Copyright (C) 1992-2020 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
@@ -115,27 +115,30 @@ static char const ntpdc_opt_strs[1914] =
 /*  1411 */ "Show a list of the peers\0"
 /*  1436 */ "SHOWPEERS\0"
 /*  1446 */ "showpeers\0"
-/*  1456 */ "display extended usage information and exit\0"
-/*  1500 */ "help\0"
-/*  1505 */ "extended usage information passed thru pager\0"
-/*  1550 */ "more-help\0"
-/*  1560 */ "output version information and exit\0"
-/*  1596 */ "version\0"
-/*  1604 */ "save the option state to a config file\0"
-/*  1643 */ "save-opts\0"
-/*  1653 */ "load options from a config file\0"
-/*  1685 */ "LOAD_OPTS\0"
-/*  1695 */ "no-load-opts\0"
-/*  1708 */ "no\0"
-/*  1711 */ "NTPDC\0"
-/*  1717 */ "ntpdc - vendor-specific NTPD control program - Ver. 4.2.8p15\n"
+/*  1456 */ "Use unconnected UDP to communicate with ntpd (default on Windows)\0"
+/*  1522 */ "UNCONNECTED\0"
+/*  1534 */ "unconnected\0"
+/*  1546 */ "display extended usage information and exit\0"
+/*  1590 */ "help\0"
+/*  1595 */ "extended usage information passed thru pager\0"
+/*  1640 */ "more-help\0"
+/*  1650 */ "output version information and exit\0"
+/*  1686 */ "version\0"
+/*  1694 */ "save the option state to a config file\0"
+/*  1733 */ "save-opts\0"
+/*  1743 */ "load options from a config file\0"
+/*  1775 */ "LOAD_OPTS\0"
+/*  1785 */ "no-load-opts\0"
+/*  1798 */ "no\0"
+/*  1801 */ "NTPDC\0"
+/*  1807 */ "ntpdc - vendor-specific NTPD control program - Ver. 4.2.8p15\n"
             "Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]... [ host ...]\n\0"
-/*  1848 */ "$HOME\0"
-/*  1854 */ ".\0"
-/*  1856 */ ".ntprc\0"
-/*  1863 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  1897 */ "\n\0"
-/*  1899 */ "ntpdc 4.2.8p15";
+/*  1938 */ "$HOME\0"
+/*  1944 */ ".\0"
+/*  1946 */ ".ntprc\0"
+/*  1953 */ "http://bugs.ntp.org, bugs@ntp.org\0"
+/*  1987 */ "\n\0"
+/*  1989 */ "ntpdc 4.2.8p15";
 
 /**
  *  ipv4 option description with
@@ -286,14 +289,26 @@ static int const aShowpeersCantList[] = {
 /** Compiled in flag settings for the showpeers option */
 #define SHOWPEERS_FLAGS     (OPTST_DISABLED)
 
+/**
+ *  unconnected option description:
+ */
+/** Descriptive text for the unconnected option */
+#define UNCONNECTED_DESC      (ntpdc_opt_strs+1456)
+/** Upper-cased name for the unconnected option */
+#define UNCONNECTED_NAME      (ntpdc_opt_strs+1522)
+/** Name string for the unconnected option */
+#define UNCONNECTED_name      (ntpdc_opt_strs+1534)
+/** Compiled in flag settings for the unconnected option */
+#define UNCONNECTED_FLAGS     (OPTST_DISABLED)
+
 /*
  *  Help/More_Help/Version option descriptions:
  */
-#define HELP_DESC       (ntpdc_opt_strs+1456)
-#define HELP_name       (ntpdc_opt_strs+1500)
+#define HELP_DESC       (ntpdc_opt_strs+1546)
+#define HELP_name       (ntpdc_opt_strs+1590)
 #ifdef HAVE_WORKING_FORK
-#define MORE_HELP_DESC  (ntpdc_opt_strs+1505)
-#define MORE_HELP_name  (ntpdc_opt_strs+1550)
+#define MORE_HELP_DESC  (ntpdc_opt_strs+1595)
+#define MORE_HELP_name  (ntpdc_opt_strs+1640)
 #define MORE_HELP_FLAGS (OPTST_IMM | OPTST_NO_INIT)
 #else
 #define MORE_HELP_DESC  HELP_DESC
@@ -306,14 +321,14 @@ static int const aShowpeersCantList[] = {
 #  define VER_FLAGS     (OPTST_SET_ARGTYPE(OPARG_TYPE_STRING) | \
                          OPTST_ARG_OPTIONAL | OPTST_IMM | OPTST_NO_INIT)
 #endif
-#define VER_DESC        (ntpdc_opt_strs+1560)
-#define VER_name        (ntpdc_opt_strs+1596)
-#define SAVE_OPTS_DESC  (ntpdc_opt_strs+1604)
-#define SAVE_OPTS_name  (ntpdc_opt_strs+1643)
-#define LOAD_OPTS_DESC     (ntpdc_opt_strs+1653)
-#define LOAD_OPTS_NAME     (ntpdc_opt_strs+1685)
-#define NO_LOAD_OPTS_name  (ntpdc_opt_strs+1695)
-#define LOAD_OPTS_pfx      (ntpdc_opt_strs+1708)
+#define VER_DESC        (ntpdc_opt_strs+1650)
+#define VER_name        (ntpdc_opt_strs+1686)
+#define SAVE_OPTS_DESC  (ntpdc_opt_strs+1694)
+#define SAVE_OPTS_name  (ntpdc_opt_strs+1733)
+#define LOAD_OPTS_DESC     (ntpdc_opt_strs+1743)
+#define LOAD_OPTS_NAME     (ntpdc_opt_strs+1775)
+#define NO_LOAD_OPTS_name  (ntpdc_opt_strs+1785)
+#define LOAD_OPTS_pfx      (ntpdc_opt_strs+1798)
 #define LOAD_OPTS_name     (NO_LOAD_OPTS_name + 3)
 /**
  *  Declare option callback procedures
@@ -454,6 +469,18 @@ static tOptDesc optDesc[OPTION_CT] = {
      /* desc, NAME, name */ SHOWPEERS_DESC, SHOWPEERS_NAME, SHOWPEERS_name,
      /* disablement strs */ NULL, NULL },
 
+  {  /* entry idx, value */ 10, VALUE_OPT_UNCONNECTED,
+     /* equiv idx, value */ 10, VALUE_OPT_UNCONNECTED,
+     /* equivalenced to  */ NO_EQUIVALENT,
+     /* min, max, act ct */ 0, 1, 0,
+     /* opt state flags  */ UNCONNECTED_FLAGS, 0,
+     /* last opt argumnt */ { NULL }, /* --unconnected */
+     /* arg list/cookie  */ NULL,
+     /* must/cannot opts */ NULL, NULL,
+     /* option proc      */ NULL,
+     /* desc, NAME, name */ UNCONNECTED_DESC, UNCONNECTED_NAME, UNCONNECTED_name,
+     /* disablement strs */ NULL, NULL },
+
   {  /* entry idx, value */ INDEX_OPT_VERSION, VALUE_OPT_VERSION,
      /* equiv idx value  */ NO_EQUIVALENT, VALUE_OPT_VERSION,
      /* equivalenced to  */ NO_EQUIVALENT,
@@ -522,24 +549,24 @@ static tOptDesc optDesc[OPTION_CT] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** Reference to the upper cased version of ntpdc. */
-#define zPROGNAME       (ntpdc_opt_strs+1711)
+#define zPROGNAME       (ntpdc_opt_strs+1801)
 /** Reference to the title line for ntpdc usage. */
-#define zUsageTitle     (ntpdc_opt_strs+1717)
+#define zUsageTitle     (ntpdc_opt_strs+1807)
 /** ntpdc configuration file name. */
-#define zRcName         (ntpdc_opt_strs+1856)
+#define zRcName         (ntpdc_opt_strs+1946)
 /** Directories to search for ntpdc config files. */
 static char const * const apzHomeList[3] = {
-    ntpdc_opt_strs+1848,
-    ntpdc_opt_strs+1854,
+    ntpdc_opt_strs+1938,
+    ntpdc_opt_strs+1944,
     NULL };
 /** The ntpdc program bug email address. */
-#define zBugsAddr       (ntpdc_opt_strs+1863)
+#define zBugsAddr       (ntpdc_opt_strs+1953)
 /** Clarification/explanation of what ntpdc does. */
-#define zExplain        (ntpdc_opt_strs+1897)
+#define zExplain        (ntpdc_opt_strs+1987)
 /** Extra detail explaining what ntpdc does. */
 #define zDetail         (NULL)
 /** The full version string for ntpdc. */
-#define zFullVersion    (ntpdc_opt_strs+1899)
+#define zFullVersion    (ntpdc_opt_strs+1989)
 /* extracted from optcode.tlib near line 364 */
 
 #if defined(ENABLE_NLS)
@@ -661,7 +688,7 @@ tOptions ntpdcOptions = {
       NO_EQUIVALENT, /* '-#' option index */
       NO_EQUIVALENT /* index of default opt */
     },
-    15 /* full option count */, 10 /* user option count */,
+    16 /* full option count */, 11 /* user option count */,
     ntpdc_full_usage, ntpdc_short_usage,
     NULL, NULL,
     PKGDATADIR, ntpdc_packager_info
@@ -845,6 +872,9 @@ implied warranty.\n"));
 
   /* referenced via ntpdcOptions.pOptDesc->pzText */
   puts(_("Show a list of the peers"));
+
+  /* referenced via ntpdcOptions.pOptDesc->pzText */
+  puts(_("Use unconnected UDP to communicate with ntpd (default on Windows)"));
 
   /* referenced via ntpdcOptions.pOptDesc->pzText */
   puts(_("display extended usage information and exit"));

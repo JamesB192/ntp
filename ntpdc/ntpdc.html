@@ -179,6 +179,8 @@ This software is released under the NTP license, &lt;http://ntp.org/license&gt;.
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#ntpdc-showpeers" accesskey="9">ntpdc showpeers</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">showpeers option (-s)
 </td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#ntpdc-unconnected">ntpdc unconnected</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">unconnected option (-u)
+</td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#ntpdc-config">ntpdc config</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">presetting/configuring ntpdc
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#ntpdc-exit-status">ntpdc exit status</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">exit status
@@ -240,6 +242,7 @@ Usage:  ntpdc [ -&lt;flag&gt; [&lt;val&gt;] | --&lt;name&gt;[{=| }&lt;val&gt;] ]
                                 - prohibits the option 'command'
    -s no  showpeers      Show a list of the peers
                                 - prohibits the option 'command'
+   -u no  unconnected    Use unconnected UDP to communicate with ntpd (default on Windows)
       opt version        output version information and exit
    -? no  help           display extended usage information and exit
    -! no  more-help      extended usage information passed thru pager
@@ -398,7 +401,7 @@ of their state. This is equivalent to the &rsquo;peers&rsquo; interactive comman
 <a name="ntpdc-showpeers"></a>
 <div class="header">
 <p>
-Next: <a href="#ntpdc-config" accesskey="n" rel="next">ntpdc config</a>, Previous: <a href="#ntpdc-peers" accesskey="p" rel="prev">ntpdc peers</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
+Next: <a href="#ntpdc-unconnected" accesskey="n" rel="next">ntpdc unconnected</a>, Previous: <a href="#ntpdc-peers" accesskey="p" rel="prev">ntpdc peers</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
 </div>
 <a name="showpeers-option-_0028_002ds_0029"></a>
 <h4 class="subsection">1.1.9 showpeers option (-s)</h4>
@@ -414,16 +417,29 @@ command.
 
 <p>Print a list of the peers known to the server as well as a summary
 of their state. This is equivalent to the &rsquo;dmpeers&rsquo; interactive command.
+</p><hr>
+<a name="ntpdc-unconnected"></a>
+<div class="header">
+<p>
+Next: <a href="#ntpdc-config" accesskey="n" rel="next">ntpdc config</a>, Previous: <a href="#ntpdc-showpeers" accesskey="p" rel="prev">ntpdc showpeers</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
+</div>
+<a name="unconnected-option-_0028_002du_0029"></a>
+<h4 class="subsection">1.1.10 unconnected option (-u)</h4>
+<a name="index-ntpdc_002dunconnected"></a>
+
+<p>This is the &ldquo;use unconnected udp to communicate with ntpd (default on windows)&rdquo; option.
+Open an unconnected UDP association to ntpd (the default
+on Windows).
 </p>
 
 <hr>
 <a name="ntpdc-config"></a>
 <div class="header">
 <p>
-Next: <a href="#ntpdc-exit-status" accesskey="n" rel="next">ntpdc exit status</a>, Previous: <a href="#ntpdc-showpeers" accesskey="p" rel="prev">ntpdc showpeers</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
+Next: <a href="#ntpdc-exit-status" accesskey="n" rel="next">ntpdc exit status</a>, Previous: <a href="#ntpdc-unconnected" accesskey="p" rel="prev">ntpdc unconnected</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
 </div>
 <a name="presetting_002fconfiguring-ntpdc"></a>
-<h4 class="subsection">1.1.10 presetting/configuring ntpdc</h4>
+<h4 class="subsection">1.1.11 presetting/configuring ntpdc</h4>
 
 <p>Any option that is not marked as <i>not presettable</i> may be preset by
 loading values from configuration (&quot;rc&quot; or &quot;ini&quot;) files, and values from environment variables named <code>NTPDC</code> and <code>NTPDC_&lt;OPTION_NAME&gt;</code>.  <code>&lt;OPTION_NAME&gt;</code> must be one of
@@ -506,7 +522,7 @@ Only the first letter of the argument is examined:
 Next: <a href="#ntpdc-Usage" accesskey="n" rel="next">ntpdc Usage</a>, Previous: <a href="#ntpdc-config" accesskey="p" rel="prev">ntpdc config</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
 </div>
 <a name="ntpdc-exit-status-1"></a>
-<h4 class="subsection">1.1.11 ntpdc exit status</h4>
+<h4 class="subsection">1.1.12 ntpdc exit status</h4>
 
 <p>One of the following exit values will be returned:
 </p><dl compact="compact">
@@ -531,7 +547,7 @@ it to autogen-users@lists.sourceforge.net.  Thank you.
 Next: <a href="#ntpdc-See-Also" accesskey="n" rel="next">ntpdc See Also</a>, Previous: <a href="#ntpdc-exit-status" accesskey="p" rel="prev">ntpdc exit status</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
 </div>
 <a name="ntpdc-Usage-1"></a>
-<h4 class="subsection">1.1.12 ntpdc Usage</h4>
+<h4 class="subsection">1.1.13 ntpdc Usage</h4>
 <hr>
 <a name="ntpdc-See-Also"></a>
 <div class="header">
@@ -539,7 +555,7 @@ Next: <a href="#ntpdc-See-Also" accesskey="n" rel="next">ntpdc See Also</a>, Pre
 Next: <a href="#ntpdc-Authors" accesskey="n" rel="next">ntpdc Authors</a>, Previous: <a href="#ntpdc-Usage" accesskey="p" rel="prev">ntpdc Usage</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
 </div>
 <a name="ntpdc-See-Also-1"></a>
-<h4 class="subsection">1.1.13 ntpdc See Also</h4>
+<h4 class="subsection">1.1.14 ntpdc See Also</h4>
 <hr>
 <a name="ntpdc-Authors"></a>
 <div class="header">
@@ -547,7 +563,7 @@ Next: <a href="#ntpdc-Authors" accesskey="n" rel="next">ntpdc Authors</a>, Previ
 Next: <a href="#ntpdc-Bugs" accesskey="n" rel="next">ntpdc Bugs</a>, Previous: <a href="#ntpdc-See-Also" accesskey="p" rel="prev">ntpdc See Also</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
 </div>
 <a name="ntpdc-Authors-1"></a>
-<h4 class="subsection">1.1.14 ntpdc Authors</h4>
+<h4 class="subsection">1.1.15 ntpdc Authors</h4>
 <hr>
 <a name="ntpdc-Bugs"></a>
 <div class="header">
@@ -555,7 +571,7 @@ Next: <a href="#ntpdc-Bugs" accesskey="n" rel="next">ntpdc Bugs</a>, Previous: <
 Previous: <a href="#ntpdc-Authors" accesskey="p" rel="prev">ntpdc Authors</a>, Up: <a href="#ntpdc-Invocation" accesskey="u" rel="up">ntpdc Invocation</a> &nbsp; </p>
 </div>
 <a name="ntpdc-Bugs-1"></a>
-<h4 class="subsection">1.1.15 ntpdc Bugs</h4>
+<h4 class="subsection">1.1.16 ntpdc Bugs</h4>
 
 <hr>
 <a name="Usage"></a>

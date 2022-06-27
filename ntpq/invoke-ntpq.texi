@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntpq.texi)
 #
-# It has been AutoGen-ed  June 26, 2022 at 05:34:19 AM by AutoGen 5.18.5
+# It has been AutoGen-ed  June 27, 2022 at 12:01:13 AM by AutoGen 5.18.5
 # From the definitions    ntpq-opts.def
 # and the template file   agtexi-cmd.tpl
 @end ignore
@@ -923,6 +923,7 @@ This software is released under the NTP license, <http://ntp.org/license>.
 * ntpq old-rv::                 old-rv option
 * ntpq peers::                  peers option (-p)
 * ntpq refid::                  refid option (-r)
+* ntpq unconnected::            unconnected option (-u)
 * ntpq wide::                   wide option (-w)
 * ntpq config::                 presetting/configuring ntpq
 * ntpq exit status::            exit status
@@ -966,6 +967,7 @@ Usage:  ntpq [ -<flag> [<val>] | --<name>[@{=| @}<val>] ]... [ host ...]
    -p no  peers          Print a list of the peers
                                 - prohibits the option 'interactive'
    -r KWd refid          Set default display type for S2+ refids
+   -u no  unconnected    Use unconnected UDP to communicate with ntpd (default on Windows)
    -w no  wide           Display the full 'remote' value
       opt version        output version information and exit
    -? no  help           display extended usage information and exit
@@ -1115,6 +1117,13 @@ The available keywords are:
 or their numeric equivalent.@end itemize
 
 Set the default display format for S2+ refids.
+@node ntpq unconnected
+@subsection unconnected option (-u)
+@cindex ntpq-unconnected
+
+This is the ``use unconnected udp to communicate with ntpd (default on windows)'' option.
+Open an unconnected UDP association to ntpd (the default
+on Windows).
 @node ntpq wide
 @subsection wide option (-w)
 @cindex ntpq-wide
