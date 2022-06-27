@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntpdc.texi)
 #
-# It has been AutoGen-ed  June 26, 2022 at 05:34:08 AM by AutoGen 5.18.5
+# It has been AutoGen-ed  June 27, 2022 at 12:01:01 AM by AutoGen 5.18.5
 # From the definitions    ntpdc-opts.def
 # and the template file   agtexi-cmd.tpl
 @end ignore
@@ -52,6 +52,7 @@ This software is released under the NTP license, <http://ntp.org/license>.
 * ntpdc numeric::                numeric option (-n)
 * ntpdc peers::                  peers option (-p)
 * ntpdc showpeers::              showpeers option (-s)
+* ntpdc unconnected::            unconnected option (-u)
 * ntpdc config::                 presetting/configuring ntpdc
 * ntpdc exit status::            exit status
 * ntpdc Usage::                  Usage
@@ -102,6 +103,7 @@ Usage:  ntpdc [ -<flag> [<val>] | --<name>[@{=| @}<val>] ]... [ host ...]
                                 - prohibits the option 'command'
    -s no  showpeers      Show a list of the peers
                                 - prohibits the option 'command'
+   -u no  unconnected    Use unconnected UDP to communicate with ntpd (default on Windows)
       opt version        output version information and exit
    -? no  help           display extended usage information and exit
    -! no  more-help      extended usage information passed thru pager
@@ -243,6 +245,13 @@ command.
 
 Print a list of the peers known to the server as well as a summary
 of their state. This is equivalent to the 'dmpeers' interactive command.
+@node ntpdc unconnected
+@subsection unconnected option (-u)
+@cindex ntpdc-unconnected
+
+This is the ``use unconnected udp to communicate with ntpd (default on windows)'' option.
+Open an unconnected UDP association to ntpd (the default
+on Windows).
 
 
 @node ntpdc config
