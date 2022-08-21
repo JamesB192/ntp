@@ -239,13 +239,15 @@ static	int	assoccmp	(const void *, const void *);
 
 #ifndef BUILD_AS_LIB
 static	char   *list_digest_names(void);
-static	char   *insert_cmac	(char *list);
 static	void	on_ctrlc	(void);
 static	int	my_easprintf	(char**, const char *, ...) NTP_PRINTF(2, 3);
-# if defined(OPENSSL) && defined(HAVE_EVP_MD_DO_ALL_SORTED)
+#ifdef OPENSSL
+static	char   *insert_cmac	(char *list);
+# ifdef HAVE_EVP_MD_DO_ALL_SORTED
 static	void	list_md_fn	(const EVP_MD *m, const char *from,
 				 const char *to, void *arg);
-# endif /* defined(OPENSSL) && defined(HAVE_EVP_MD_DO_ALL_SORTED) */
+# endif /* HAVE_EVP_MD_DO_ALL_SORTED */
+#endif /* OPENSSL */
 #endif /* !defined(BUILD_AS_LIB) */
 
 
