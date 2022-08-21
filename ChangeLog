@@ -19,6 +19,8 @@
 * [Bug 3688] GCC 10 build errors in testsuite <perlinger@ntp.org>
 * [Bug 3687] ntp_crypto_rand RNG status not known <perlinger@ntp.org>
   - patch by Gerry Garvey
+* [Bug 3682] Fixes for warnings when compiled without OpenSSL <perlinger@ntp.org>
+  - original patch by Gerry Garvey
 * [Bug 3677] additional peer events not decoded in associations listing <perlinger@ntp.org>
   - original patch by Gerry Garvey
 * [Bug 3676] compiler warnings (CMAC, interrupt_buf, typo, fallthrough)
