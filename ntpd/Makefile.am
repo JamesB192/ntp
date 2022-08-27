@@ -242,6 +242,7 @@ libntpd_a_SOURCES =		\
 	ntp_monitor.c		\
 	ntp_peer.c		\
 	ntp_proto.c		\
+	ntp_ppsdev.c		\
 	ntp_refclock.c		\
 	ntp_request.c		\
 	ntp_restrict.c		\

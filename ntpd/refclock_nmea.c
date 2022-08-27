@@ -466,8 +466,7 @@ nmea_shutdown(
 #	    ifdef HAVE_PPSAPI
 		if (up->ppsapi_lit)
 			time_pps_destroy(up->atom.handle);
-		if (up->ppsapi_tried && up->ppsapi_fd != pp->io.fd)
-			close(up->ppsapi_fd);
+		ppsdev_close(pp->io.fd, up->ppsapi_fd);
 #	    endif
 		free(up);
 	}
@@ -504,25 +503,32 @@ nmea_control(
 	 * PPS control
 	 *
 	 * If /dev/gpspps$UNIT can be opened that will be used for
-	 * PPSAPI.  Otherwise, the GPS serial device /dev/gps$UNIT
-	 * already opened is used for PPSAPI as well. (This might not
-	 * work, in which case the PPS API remains unavailable...)
+	 * PPSAPI.  On Linux, a PPS device mathing the TTY will be
+	 * searched for and possibly created on the fly.  Otherwise, the
+	 * GPS serial device /dev/gps$UNIT already opened is used for
+	 * PPSAPI as well. (This might not work, in which case the PPS
+	 * API remains unavailable...)
 	 */
 
 	/* Light up the PPSAPI interface if not yet attempted. */
 	if ((CLK_FLAG1 & pp->sloppyclockflag) && !up->ppsapi_tried) {
+		const char *ppsname = device;
 		up->ppsapi_tried = TRUE;
+		/* get FD for the pps device; might be the tty itself! */
 		devlen = snprintf(device, sizeof(device), PPSDEV, unit);
-		if (devlen < sizeof(device)) {
-			up->ppsapi_fd = open(device, PPSOPENMODE,
-					     S_IRUSR | S_IWUSR);
-		} else {
-			up->ppsapi_fd = -1;
+		if (devlen >= sizeof(device)) {
 			msyslog(LOG_ERR, "%s PPS device name too long",
 				refnumtoa(&peer->srcadr));
+			ppsname = NULL;
 		}
-		if (-1 == up->ppsapi_fd)
-			up->ppsapi_fd = pp->io.fd;
+		up->ppsapi_fd = ppsdev_reopen(
+			pp->io.fd, up->ppsapi_fd,
+			ppsname, PPSOPENMODE, (S_IRUSR|S_IWUSR));
+		/* note 1: the pps fd might be the same as the tty fd
+		 * note 2: the current PPS fd remains valid until
+		 *  - the clock is shut down
+		 *  - flag1 is set again after being cleared
+		 */
 		if (refclock_ppsapi(up->ppsapi_fd, &up->atom)) {
 			/* use the PPS API for our own purposes now. */
 			up->ppsapi_lit = refclock_params(
@@ -534,9 +540,6 @@ nmea_control(
 					"%s set PPSAPI params fails",
 					refnumtoa(&peer->srcadr));
 			}
-			/* note: the PPS I/O handle remains valid until
-			 * flag1 is cleared or the clock is shut down.
-			 */
 		} else {
 			msyslog(LOG_WARNING,
 				"%s flag1 1 but PPSAPI fails",
@@ -550,10 +553,7 @@ nmea_control(
 		if (up->ppsapi_lit)
 			time_pps_destroy(up->atom.handle);
 		up->atom.handle = 0;
-		/* close/drop PPS fd */
-		if (up->ppsapi_fd != pp->io.fd)
-			close(up->ppsapi_fd);
-		up->ppsapi_fd = -1;
+		/* do !!NOT!! close/drop PPS fd here! */
 
 		/* clear markers and peer items */
 		up->ppsapi_gate  = FALSE;
