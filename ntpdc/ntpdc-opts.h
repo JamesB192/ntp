@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpdc-opts.h)
  *
- *  It has been AutoGen-ed  June 23, 2020 at 02:20:41 AM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  June 27, 2022 at 12:00:57 AM by AutoGen 5.18.5
  *  From the definitions    ntpdc-opts.def
  *  and the template file   options
  *
@@ -74,14 +74,15 @@ typedef enum {
     INDEX_OPT_NUMERIC          =  7,
     INDEX_OPT_PEERS            =  8,
     INDEX_OPT_SHOWPEERS        =  9,
-    INDEX_OPT_VERSION          = 10,
-    INDEX_OPT_HELP             = 11,
-    INDEX_OPT_MORE_HELP        = 12,
-    INDEX_OPT_SAVE_OPTS        = 13,
-    INDEX_OPT_LOAD_OPTS        = 14
+    INDEX_OPT_UNCONNECTED      = 10,
+    INDEX_OPT_VERSION          = 11,
+    INDEX_OPT_HELP             = 12,
+    INDEX_OPT_MORE_HELP        = 13,
+    INDEX_OPT_SAVE_OPTS        = 14,
+    INDEX_OPT_LOAD_OPTS        = 15
 } teOptIndex;
 /** count of all options for ntpdc */
-#define OPTION_CT    15
+#define OPTION_CT    16
 /** ntpdc version */
 #define NTPDC_VERSION       "4.2.8p15"
 /** Full ntpdc version text */
@@ -178,6 +179,10 @@ typedef enum {
 #  warning undefining SHOWPEERS due to option name conflict
 #  undef   SHOWPEERS
 # endif
+# ifdef    UNCONNECTED
+#  warning undefining UNCONNECTED due to option name conflict
+#  undef   UNCONNECTED
+# endif
 #else  /* NO_OPTION_NAME_WARNINGS */
 # undef IPV4
 # undef IPV6
@@ -189,6 +194,7 @@ typedef enum {
 # undef NUMERIC
 # undef PEERS
 # undef SHOWPEERS
+# undef UNCONNECTED
 #endif  /*  NO_OPTION_NAME_WARNINGS */
 
 /**
@@ -207,6 +213,7 @@ typedef enum {
 #define VALUE_OPT_NUMERIC        'n'
 #define VALUE_OPT_PEERS          'p'
 #define VALUE_OPT_SHOWPEERS      's'
+#define VALUE_OPT_UNCONNECTED    'u'
 /** option flag (value) for help-value option */
 #define VALUE_OPT_HELP          '?'
 /** option flag (value) for more-help-value option */
