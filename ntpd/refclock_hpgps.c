@@ -171,7 +171,7 @@ hpgps_start(
 		ldisc |= LDISC_7O1;
 		speed = SPEED232Z;
 	}
-	fd = refclock_open(device, speed, ldisc);
+	fd = refclock_open(&peer->srcadr, device, speed, ldisc);
 	if (fd <= 0)
 		return (0);
 	/*

@@ -1,4 +1,5 @@
 ---
+* [Bug 3758] Provide a 'device' config statement for refclocks <perlinger@ntp.org> 
 * [Bug 3757] Improve handling of Linux-PPS in NTPD <perlinger@ntp.org>
 * [Bug 3741] 4.2.8p15 can't build with glibc 2.34 <perlinger@ntp.org>
 * [Bug 3694] NMEA refclock seems to unnecessarily require location in messages
