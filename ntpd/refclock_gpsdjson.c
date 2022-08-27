@@ -150,6 +150,7 @@ typedef unsigned long int json_uint;
 #include "ntp_refclock.h"
 #include "ntp_stdlib.h"
 #include "ntp_calendar.h"
+#include "ntp_clockdev.h"
 #include "timespecops.h"
 
 /* get operation modes from mode word.
@@ -193,7 +194,7 @@ typedef unsigned long int json_uint;
 #define	REFID		"GPSD"	/* reference id */
 #define	DESCRIPTION	"GPSD JSON client clock" /* who we are */
 
-#define MAX_PDU_LEN	4096
+#define MAX_PDU_LEN	8192	/* multi-GNSS reports can be HUGE */
 #define TICKOVER_LOW	10
 #define TICKOVER_HIGH	120
 #define LOGTHROTTLE	3600
@@ -369,7 +370,7 @@ static void gpsd_parse(peerT * const peer,
 static BOOL convert_ascii_time(l_fp * fp, const char * gps_time);
 static void save_ltc(clockprocT * const pp, const char * const tc);
 static int  syslogok(clockprocT * const pp, gpsd_unitT * const up);
-static void log_data(peerT *peer, const char *what,
+static void log_data(peerT *peer, int level, const char *what,
 		     const char *buf, size_t len);
 static int16_t clamped_precision(int rawprec);
 
@@ -501,7 +502,8 @@ gpsd_start(
 {
 	clockprocT  * const pp = peer->procptr;
 	gpsd_unitT  * up;
-	gpsd_unitT ** uscan    = &s_clock_units;	
+	gpsd_unitT ** uscan    = &s_clock_units;
+	const char  *tmpName;
 
 	struct stat	sb;
 	char *		devname = NULL;
@@ -532,8 +534,10 @@ gpsd_start(
 		 * practicable, we will have to read the symlink, if
 		 * any, so we can get the true device file.)
 		 */
-		if (-1 == myasprintf(&devname, "%s%u",
-				     s_dev_stem, up->unit)) {
+		tmpName = clockdev_lookup(&peer->srcadr, 0);
+		if (NULL != tmpName) {
+			up->device = estrdup(tmpName);
+		} else if (-1 == myasprintf(&up->device, "%s%u", s_dev_stem, up->unit)) {
 			msyslog(LOG_ERR, "%s: clock device name too long",
 				up->logname);
 			goto dev_fail;
@@ -671,7 +675,7 @@ gpsd_receive(
 	char       *pdst, *edst, ch;
 
 	/* log the data stream, if this is enabled */
-	log_data(peer, "recv", (const char*)rbufp->recv_buffer,
+	log_data(peer, 3, "recv", (const char*)rbufp->recv_buffer,
 		 (size_t)rbufp->recv_length);
 
 
@@ -849,7 +853,7 @@ timer_primary(
 			size_t rlen = strlen(s_req_version);
 			DPRINTF(2, ("%s: timer livecheck: '%s'\n",
 				    up->logname, s_req_version));
-			log_data(peer, "send", s_req_version, rlen);
+			log_data(peer, 2, "send", s_req_version, rlen);
 			rc = write(pp->io.fd, s_req_version, rlen);
 			(void)rc;
 		} else if (-1 != up->fdt) {
@@ -1529,7 +1533,7 @@ process_version(
 		 up->device, (up->pf_toff ? ",\"pps\":true" : ""));
 	buf = up->buffer;
 	len = strlen(buf);
-	log_data(peer, "send", buf, len);
+	log_data(peer, 2, "send", buf, len);
 	if (len != write(pp->io.fd, buf, len) && (syslogok(pp, up))) {
 		/* Note: if the server fails to read our request, the
 		 * resulting data timeout will take care of the
@@ -2186,6 +2190,7 @@ add_string(
 static void
 log_data(
 	peerT      *peer,
+	int         level,
 	const char *what,
 	const char *buf ,
 	size_t      len )
@@ -2196,7 +2201,7 @@ log_data(
 	clockprocT * const pp = peer->procptr;
 	gpsd_unitT * const up = (gpsd_unitT *)pp->unitptr;
 
-	if (debug > 1) {
+	if (debug >= level) {
 		const char *sptr = buf;
 		const char *stop = buf + len;
 		char       *dptr = s_lbuf;

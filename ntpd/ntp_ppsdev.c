@@ -25,15 +25,21 @@
 #include "config.h"
 #include "ntpd.h"
 
+#if defined(HAVE_UNISTD_H)
+# include <unistd.h>
+#endif
+#if defined(HAVE_FCNTL_H)
+# include <fcntl.h>
+#endif
+
+#include <stdlib.h>
+
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 #if defined(__linux__) && defined(HAVE_OPENAT) && defined(HAVE_FDOPENDIR)
 #define WITH_PPSDEV_MATCH
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 
-#include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
@@ -367,8 +373,11 @@ findMatchingPpsDev(
 #endif /* linux PPS device matcher */
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 
+#include "ntp_clockdev.h"
+
 int
 ppsdev_reopen(
+	const sockaddr_u *srcadr,
 	int         ttyfd  , /* current tty FD, or -1 */
 	int         ppsfd  , /* current pps FD, or -1 */
 	const char *ppspath, /* path to pps device, or NULL */
@@ -376,6 +385,7 @@ ppsdev_reopen(
 	int         oflags ) /* openn flags for pps device */
 {
 	int retfd = -1;
+	const char *altpath;
 
 	/* avoid 'unused' warnings: we might not use all args, no
 	 * thanks to conditional compiling:)
@@ -383,6 +393,9 @@ ppsdev_reopen(
 	(void)ppspath;
 	(void)omode;
 	(void)oflags;
+
+	if (NULL != (altpath = clockdev_lookup(srcadr, 1)))
+		ppspath = altpath;
 
 #   if defined(__unix__) && !defined(_WIN32)
 	if (-1 == retfd) {	
