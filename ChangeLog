@@ -5,6 +5,10 @@
 * [Bug 3741] 4.2.8p15 can't build with glibc 2.34 <perlinger@ntp.org>
 * [Bug 3724] ntp-keygen with openSSL 1.1.1 fails on Windows <perlinger@ntp.org>
   - openssl applink needed again for openSSL-1.1.1
+* [Bug 3699] Problems handling drift file and restoring previous drifts <perlinger@ntp.org>
+  - command line options override config statements where applicable
+  - make initial frequency settings idempotent and reversible
+  - make sure kernel PLL gets a revovered drift componsation
 * [Bug 3695] Fix memory leak with ntpq on Windows Server 2019 <perlinger@ntp.org>
 * [Bug 3694] NMEA refclock seems to unnecessarily require location in messages
   - misleading title; essentially a request to ignore the receiver status.
