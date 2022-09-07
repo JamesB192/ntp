@@ -109,10 +109,7 @@ ntp_crypto_random_buf(
 		return (-1);
 
 #ifdef USE_OPENSSL_CRYPTO_RAND
-	int rc;
-
-	rc = RAND_bytes(buf, size2int_chk(nbytes));
-	if (1 != rc) {
+	if (1 != RAND_bytes(buf, size2int_chk(nbytes))) {
 		unsigned long err;
 		char *err_str;
 
@@ -123,9 +120,8 @@ ntp_crypto_random_buf(
 
 		return -1;
 	}
-	return 0;
 #else
 	arc4random_buf(buf, nbytes);
-	return 0;
 #endif
+	return 0;
 }
