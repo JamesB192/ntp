@@ -235,7 +235,7 @@ get_systime(
 	 * must scale up the result by 2.0 to cover the full fractional
 	 * range.
 	 */
-	dfuzz = ntp_random() * 2. / FRAC * sys_fuzz;
+	dfuzz = ntp_uurandom() * sys_fuzz;
 	DTOLFP(dfuzz, &lfpfuzz);
 	L_ADD(&result, &lfpfuzz);
 
