@@ -740,7 +740,7 @@ receive(
 	 * surviving packets.
 	 */
 	if (restrict_mask & RES_FLAKE) {
-		if ((double)ntp_random() / 0x7fffffff < .1) {
+		if (ntp_uurandom() < .1) {
 			DPRINTF(2, ("receive: drop: RES_FLAKE\n"));
 			sys_restricted++;
 			return;			/* no flakeway */

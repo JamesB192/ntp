@@ -37,6 +37,8 @@
 * [Bug 3672] fix biased selection in median cut <perlinger@ntp.org>
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
   - follow-up: fix inverted sense in check, reset shortfall counter
+* [Bug 3640] ntp.conf: missing documentation for "discard monitor" default value
+  - sidekick: fixed a bug in discard monitor implementation <perlingeræntp.org>
 * [Bug 3626] (SNTP) UTC offset calculation needs dst flag <perlinger@ntp.org>
   - applied patch by Gerry Garvey
 * [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
