@@ -114,7 +114,7 @@ $(srcdir)/ntpsnmpd.html: $(srcdir)/ntpsnmpd.texi $(top_srcdir)/sntp/include/vers
 	cd $(srcdir) && ( makeinfo --force --html --no-split -o ntpsnmpd.html ntpsnmpd.texi || true )
 
 include $(top_srcdir)/bincheck.mf
-include $(top_srcdir)/sntp/check-libntp.mf
+include $(top_srcdir)/check-libntp.mf
 include $(top_srcdir)/check-libopts.mf
 include $(top_srcdir)/depsver.mf
 include $(top_srcdir)/includes.mf

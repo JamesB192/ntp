@@ -42,7 +42,7 @@ ntp_configure_cache_version=20120806
 
 NTP_CACHEVERSION([main], [$ntp_configure_cache_version])
 
-AM_INIT_AUTOMAKE([1.15 foreign -Wall -Wno-gnu])
+AM_INIT_AUTOMAKE([1.15 foreign subdir-objects -Wall -Wno-gnu])
 
 AM_SILENT_RULES([yes])
 
@@ -76,11 +76,7 @@ NTP_VPATH_HACK		dnl used only by ntpd/Makefile.am
 
 NTP_LOCINFO([sntp])	dnl takes over from NTP_BINDIR, in NTP_LIBNTP
 
-dnl AM_PROG_AR req. automake 1.12
-m4_ifdef(
-    [AM_PROG_AR],
-    [AM_PROG_AR]
-)
+AM_PROG_AR
 
 # So far, the only shared library we might use is libopts.
 # It's a small library - we might as well use a static version of it.

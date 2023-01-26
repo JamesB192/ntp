@@ -14,6 +14,8 @@ CLEANFILES =			\
 	$(NULL)
 
 DISTCLEANFILES =		\
+	.version		\
+	version.c
 	kod-output-blank	\
 	kod-output-single 	\
 	kod-output-multiple	\
@@ -108,7 +110,6 @@ AM_CPPFLAGS += $(LIBOPTS_CFLAGS)
 AM_CPPFLAGS += $(CPPFLAGS_LIBEVENT)
 AM_CPPFLAGS += $(CPPFLAGS_NTP)
 AM_CPPFLAGS += -DUNITY_INCLUDE_CONFIG_H
-#AM_CPPFLAGS += -I$(top_srcdir)/sntp/unity
 AM_CPPFLAGS += -I$(top_srcdir)/unity
 AM_CPPFLAGS += $(NTP_HARD_CPPFLAGS)
 
@@ -129,33 +130,33 @@ BUILT_SOURCES +=				\
 test_networking_SOURCES =		\
 	networking.c			\
 	run-networking.c		\
-	$(top_builddir)/version.c	\
+	version.c			\
 	$(NULL)
 
 test_packetHandling_SOURCES =		\
 	packetHandling.c		\
 	run-packetHandling.c		\
-	$(top_builddir)/version.c	\
+	version.c			\
 	$(NULL)
 
 test_kodDatabase_SOURCES =		\
 	kodDatabase.c			\
 	run-kodDatabase.c		\
-	$(top_builddir)/version.c	\
+	version.c			\
 	$(NULL)
 
 test_keyFile_SOURCES =			\
 	fileHandlingTest.c		\
 	keyFile.c			\
 	run-keyFile.c			\
-	$(top_builddir)/version.c	\
+	version.c			\
 	$(NULL)
 
 test_kodFile_SOURCES =			\
 	fileHandlingTest.c		\
 	kodFile.c			\
 	run-kodFile.c			\
-	$(top_builddir)/version.c	\
+	version.c			\
 	$(NULL)
 
 test_packetProcessing_SOURCES =		\
@@ -178,13 +179,13 @@ test_crypto_CFLAGS =			\
 test_crypto_SOURCES =			\
 	crypto.c			\
 	run-crypto.c			\
-	$(top_builddir)/version.c	\
+	version.c			\
 	$(NULL)
 
 test_log_SOURCES =			\
-	t-log.c			\
+	t-log.c				\
 	run-t-log.c			\
-	$(top_builddir)/version.c	\
+	version.c			\
 	$(NULL)
 
 
@@ -215,10 +216,6 @@ $(srcdir)/run-crypto.c: $(srcdir)/crypto.c $(std_unity_list)
 $(srcdir)/run-t-log.c: $(srcdir)/t-log.c $(std_unity_list)
 	$(run_unity) $< $@
 
-
-#$(srcdir)/../version.c: $(srcdir)/../version.c
-#	gcc -o version.o ../version.c
-
 TESTS = 
 
 if !NTP_CROSSCOMPILE
@@ -228,34 +225,17 @@ endif
 #TESTS += tests-runner
 #endif
 
-## ensure ../libsntp.a is built
+version.c: ../../libntp/libntp.a ../unity/libunity.a Makefile $(top_srcdir)/scm-rev
+	env CSET=`cat $(srcdir)/../scm-rev` $(top_builddir)/../scripts/build/mkver sntp-tests
 
-BUILT_SOURCES	+= check-libsntp
-CLEANFILES	+= check-libsntp
+version.o: version.c
+	env CCACHE_DISABLE=1 $(COMPILE) -c version.c -o version.o
 
-check-libsntp: ../libsntp.a
-	@echo stamp > $@
+$(top_srcdir)/scm-rev:
+	cd .. && $(MAKE) $(AM_MAKEFLAGS) check-scm-rev
 
-../libsntp.a:
-	cd .. && $(MAKE) $(AM_MAKEFLAGS) libsntp.a
-
-## check-libntp.mf - automake fragment
-## slightly adapted for deeper directory
-
-BUILT_SOURCES	+= check-libntp check-libunity
-CLEANFILES	+= check-libntp	check-libunity
-
-check-libntp: ../../libntp/libntp.a
-	@echo stamp > $@
-
-../../libntp/libntp.a:
-	cd ../../libntp && $(MAKE) $(AM_MAKEFLAGS) libntp.a
-
-check-libunity: ../unity/libunity.a
-	@echo stamp > $@
-
-../unity/libunity.a:
-	cd ../unity && $(MAKE) $(AM_MAKEFLAGS) libunity.a
-
+include $(top_srcdir)/check-libntp.mf
+include $(top_srcdir)/check-libsntp.mf
+include $(top_srcdir)/check-libunity.mf
 include $(top_srcdir)/depsver.mf
 include $(top_srcdir)/includes.mf

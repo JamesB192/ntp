@@ -133,7 +133,7 @@ version.o: version.c
 	env CCACHE_DISABLE=1 $(COMPILE) -c version.c -o version.o
 
 include $(top_srcdir)/bincheck.mf
-include $(top_srcdir)/sntp/check-libntp.mf
+include $(top_srcdir)/check-libntp.mf
 include $(top_srcdir)/check-libopts.mf
 include $(top_srcdir)/depsver.mf
 include $(top_srcdir)/includes.mf
