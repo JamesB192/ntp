@@ -23,7 +23,10 @@
 #endif
 
 #include "config.h"
+
 #include "ntpd.h"
+
+#ifdef REFCLOCK
 
 #if defined(HAVE_UNISTD_H)
 # include <unistd.h>
@@ -451,3 +454,6 @@ ppsdev_close(
 		close(ppsfd);
 }
 /* --*-- that's all folks --*-- */
+#else
+NONEMPTY_TRANSLATION_UNIT
+#endif /* !defined(REFCLOCK) */

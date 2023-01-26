@@ -149,6 +149,6 @@ nl.c: nl_in.c nl.pl Makefile.am ../config.h ../include/ntp_request.h ntpdc.h
 
 include $(top_srcdir)/bincheck.mf
 include $(top_srcdir)/check-libopts.mf
-include $(top_srcdir)/sntp/check-libntp.mf
+include $(top_srcdir)/check-libntp.mf
 include $(top_srcdir)/depsver.mf
 include $(top_srcdir)/includes.mf

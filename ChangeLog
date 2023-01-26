@@ -1,5 +1,6 @@
 ---
 
+* [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
 * [Bug 3758] Provide a 'device' config statement for refclocks <perlinger@ntp.org> 
 * [Bug 3757] Improve handling of Linux-PPS in NTPD <perlinger@ntp.org>
 * [Bug 3741] 4.2.8p15 can't build with glibc 2.34 <perlinger@ntp.org>
@@ -8,7 +9,7 @@
 * [Bug 3699] Problems handling drift file and restoring previous drifts <perlinger@ntp.org>
   - command line options override config statements where applicable
   - make initial frequency settings idempotent and reversible
-  - make sure kernel PLL gets a revovered drift componsation
+  - make sure kernel PLL gets a recovered drift componsation
 * [Bug 3695] Fix memory leak with ntpq on Windows Server 2019 <perlinger@ntp.org>
 * [Bug 3694] NMEA refclock seems to unnecessarily require location in messages
   - misleading title; essentially a request to ignore the receiver status.
@@ -24,8 +25,8 @@
   - patch by Frank Kardel
 * [Bug 3689] Extension for MD5, SHA-1 and other keys <perlinger@ntp.org>
   - ntp{q,dc} now use the same password processing as ntpd does in the key
-    file, so havin a binary secret >= 11 bytes is possible for all keys.
-    (This is a different approach to the roblem than suggested)
+    file, so having a binary secret >= 11 bytes is possible for all keys.
+    (This is a different approach to the problem than suggested)
 * [Bug 3688] GCC 10 build errors in testsuite <perlinger@ntp.org>
 * [Bug 3687] ntp_crypto_rand RNG status not known <perlinger@ntp.org>
   - patch by Gerry Garvey
@@ -63,8 +64,7 @@
 * [Bug 3662] Fix build errors on Windows with VS2008 <burnicki@ntp.org>
 * [Bug 3660] Manycast orphan mode startup discovery problem. <stenn@ntp.org>
   - integrated patch from Charles Claggett
-* [Bug 3659] Move definition of psl[] from ntp_config.h to
-  ntp_config.h <perlinger@ntp.org>
+* [Bug 3659] Move definition of psl[] from ntp_config.h to ntp_config.c <perlinger@ntp.org>
 * [Bug 3657] Wrong "Autokey group mismatch" debug message <perlinger@ntp.org>
 * [Bug 3655] ntpdc memstats hash counts <perlinger@ntp.org>
   - fix by Gerry garvey

@@ -40,7 +40,7 @@ sntp_configure_cache_version=20120806
 
 NTP_CACHEVERSION([sntp], [$sntp_configure_cache_version])
 
-AM_INIT_AUTOMAKE([1.15 foreign -Wall -Wno-gnu])
+AM_INIT_AUTOMAKE([1.15 foreign subdir-objects -Wall -Wno-gnu])
 
 AM_SILENT_RULES([yes])
 
@@ -58,11 +58,7 @@ NTP_HARDEN
 
 NTP_LOCINFO()
 
-dnl AM_PROG_AR req. automake 1.12
-m4_ifdef(
-    [AM_PROG_AR],
-    [AM_PROG_AR]
-)
+AM_PROG_AR
 
 NTP_LIBNTP
 

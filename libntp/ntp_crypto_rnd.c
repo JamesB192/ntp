@@ -14,7 +14,7 @@
 #endif
 #include <stdio.h>
 
-#include <l_stdlib.h>
+#include <ntp_stdlib.h>
 #include <ntp_random.h>
 #include "safecast.h"
 
@@ -23,27 +23,8 @@
 #include <openssl/rand.h>
 
 int crypto_rand_init = 0;
-#else
-
-# ifndef HAVE_ARC4RANDOM_BUF
-static int arc4random_stir(void);
-static void arc4random_buf(void *buf, size_t nbytes);
-
-int evutil_secure_rng_init(void);
-void evutil_secure_rng_get_bytes(void *buf, size_t nbytes);
-
-static int
-arc4random_stir(void)
-{
-	return(evutil_secure_rng_init());
-}
-static void
-arc4random_buf(void *buf, size_t nbytes)
-{
-	evutil_secure_rng_get_bytes(buf, nbytes);
-	return;
-}
-# endif
+#elif !defined(HAVE_ARC4RANDOM_BUF)
+#include <event2/util.h>
 #endif
 
 int crypto_rand_ok = 0;
@@ -51,30 +32,31 @@ int crypto_rand_ok = 0;
 /*
  * As of late 2014, here's how we plan to provide cryptographic-quality
  * random numbers:
- * 
+ *
  * - If we are building with OpenSSL, use RAND_poll() and RAND_bytes().
  * - Otherwise, use arc4random().
- * 
- * Use of arc4random() can be forced using configure --disable-openssl-random
+ *
+ * Use of arc4random() can be forced using configure options 
+ * --disable-openssl-random or --without-crypto.
  *
  * We can count on arc4random existing, thru the OS or thru libevent.
  * The quality of arc4random depends on the implementor.
- * 
+ *
  * RAND_poll() doesn't show up until XXX.  If it's not present, we
  * need to either provide our own or use arc4random().
  */
 
-/*
- * ntp_crypto_srandom:
- *
- * Initialize the random number generator, if needed by the underlying
- * crypto random number generation mechanism.
- */
+ /*
+  * ntp_crypto_srandom:
+  *
+  * Initialize the random number generator, if needed by the underlying
+  * crypto random number generation mechanism.
+  */
 
 void
 ntp_crypto_srandom(
 	void
-	)
+)
 {
 #ifdef USE_OPENSSL_CRYPTO_RAND
 	if (!crypto_rand_init) {
@@ -82,20 +64,25 @@ ntp_crypto_srandom(
 			crypto_rand_ok = 1;
 		crypto_rand_init = 1;
 	}
+#elif HAVE_ARC4RANDOM_BUF
+	/* 
+	 * arc4random_buf has no error return and needs no seeding nor reseeding.
+	 */
+	crypto_rand_ok = 1;
 #else
 	/*
-	 * Explicitly init arc4random to make sure it does seed OK. This
-	 * is the only way we can tell if it can successfully get
+	 * Explicitly init libevent secure RNG to make sure it seeds.
+	 * This is the only way we can tell if it can successfully get
 	 * entropy from the system.
 	 */
-	if (!arc4random_stir())
+	if (!evutil_secure_rng_init())
 		crypto_rand_ok = 1;
 #endif
 }
 
 
 /*
- * ntp_crypto_random_buf:
+ * ntp_crypto_random_buf:  Used by ntp-keygen
  *
  * Returns 0 on success, -1 on error.
  */
@@ -106,22 +93,23 @@ ntp_crypto_random_buf(
 	)
 {
 	if (!crypto_rand_ok)
-		return (-1);
+		return -1;
 
-#ifdef USE_OPENSSL_CRYPTO_RAND
+#if defined(USE_OPENSSL_CRYPTO_RAND)
 	if (1 != RAND_bytes(buf, size2int_chk(nbytes))) {
 		unsigned long err;
 		char *err_str;
 
 		err = ERR_get_error();
 		err_str = ERR_error_string(err, NULL);
-		/* XXX: Log the error */
-		(void)&err_str;
+		msyslog(LOG_ERR, "RAND_bytes failed: %s", err_str);
 
 		return -1;
 	}
-#else
+#elif defined(HAVE_ARC4RANDOM_BUF)
 	arc4random_buf(buf, nbytes);
+#else
+	evutil_secure_rng_get_bytes(buf, nbytes);
 #endif
 	return 0;
 }
