@@ -1489,6 +1489,7 @@ QueueSocketRecv(
 		"QueueSocketRecv: cannot schedule socket receive";
 
 	WSABUF	wsabuf;
+	DWORD	err;
 	int	rc;
 
 	lpo->onIoDone = OnSocketRecv;
@@ -1504,10 +1505,17 @@ QueueSocketRecv(
 	wsabuf.buf = (char *)buff->recv_buffer;
 	wsabuf.len = sizeof(buff->recv_buffer);
 
-	rc = WSARecvFrom(lpo->io.sfd, &wsabuf, 1, NULL, &lpo->ioFlags,
-			 &buff->recv_srcadr.sa, &buff->recv_srcadr_len, 
-			 &lpo->ol, NULL);
-	return !rc || IoResultCheck((DWORD)WSAGetLastError(), lpo, msgh);
+	do {
+		rc = WSARecvFrom(lpo->io.sfd, &wsabuf, 1, NULL, &lpo->ioFlags,
+			&buff->recv_srcadr.sa, &buff->recv_srcadr_len,
+			&lpo->ol, NULL);
+		if (!rc) {
+			return TRUE;
+		}
+		err = (DWORD)WSAGetLastError();
+	} while (WSAENETRESET == err);	/* [Bug 3784] ICMP TTL exceeded */
+
+	return IoResultCheck(err, lpo, msgh);
 }
 
 /* ----------------------------------------------------------------- */
