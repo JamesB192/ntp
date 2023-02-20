@@ -1,3 +1,6 @@
+* [Bug 3640] document "discard monitor" and fix the code. <hart@ntp.org>
+  - fixed bug identified by Edward McGuire <perlinger@ntp.org>
+
 ---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
 
