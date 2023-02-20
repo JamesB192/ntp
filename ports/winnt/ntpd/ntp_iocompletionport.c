@@ -1865,17 +1865,17 @@ GetReceivedBuffers(void)
 			FALSE, INFINITE, TRUE);
 		switch (index) {
 
-		case WAIT_OBJECT_0 + 0: /* Io event */
-			DPRINTF(4, ("IoEvent occurred\n"));
-			have_packet = TRUE;
+		case WAIT_OBJECT_0 + 0: /* timer */
+			timer();
 			break;
 
 		case WAIT_OBJECT_0 + 1: /* exit request */
 			exit(0);
 			break;
 
-		case WAIT_OBJECT_0 + 2: /* timer */
-			timer();
+		case WAIT_OBJECT_0 + 2: /* Io event */
+			DPRINTF(7, ("IoEvent occurred\n"));
+			have_packet = TRUE;
 			break;
 
 		case WAIT_IO_COMPLETION: /* there might be something after APC */
