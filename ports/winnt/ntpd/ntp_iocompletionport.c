@@ -268,9 +268,9 @@ init_io_completion_port(void)
 	}
 
 	/* Initialize the Wait Handles table */
-	WaitHandles[0] = WaitableIoEventHandle;
+	WaitHandles[0] = WaitableTimerHandle;
 	WaitHandles[1] = WaitableExitEventHandle; /* exit request */
-	WaitHandles[2] = WaitableTimerHandle;
+	WaitHandles[2] = WaitableIoEventHandle;
 	ActiveWaitHandles = 3;
 
 	/* Supply ntp_worker.c with function to add or remove a
