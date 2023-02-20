@@ -2886,6 +2886,7 @@ clock_update(
 	 * Clock exceeds panic threshold. Life as we know it ends.
 	 */
 	case -1:
+		msyslog(LOG_ERR, "Clock offset exceeds panic threshold.");
 #ifdef HAVE_LIBSCF_H
 		/*
 		 * For Solaris enter the maintenance mode.
@@ -2899,10 +2900,13 @@ clock_update(
 			/*
 			 * Sleep until SMF kills us.
 			 */
+			msyslog(LOG_ERR, "%s placed into maintenance. "
+				"Set system clock by hand before clearing.");
 			for (;;)
 				pause();
 		}
 #endif /* HAVE_LIBSCF_H */
+		msyslog(LOG_ERR, "Set system clock by hand.");
 		exit (-1);
 		/* not reached */
 
