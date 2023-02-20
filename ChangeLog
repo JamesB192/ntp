@@ -1,5 +1,6 @@
 ---
 
+* [Bug 2410] syslog an error message on panic exceeded.
 * [Bug 3784] high-load ntpd on Windows deaf after enough ICMP TTL exceeded <hart@ntp.org>
 * [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
 * [Bug 3758] Provide a 'device' config statement for refclocks <perlinger@ntp.org> 
