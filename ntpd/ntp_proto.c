@@ -1333,7 +1333,7 @@ receive(
 		 * manycaster has already synchronized to us.
 		 */
 		if (   sys_leap == LEAP_NOTINSYNC
-		    || sys_stratum > hisstratum + 1
+		    || sys_stratum >= hisstratum
 		    || (!sys_cohort && sys_stratum == hisstratum + 1)
 		    || rbufp->dstadr->addr_refid == pkt->refid) {
 			DPRINTF(2, ("receive: sys leap: %0x, sys_stratum %d > hisstratum+1 %d, !sys_cohort %d && sys_stratum == hisstratum+1, loop refid %#x == pkt refid %#x\n", sys_leap, sys_stratum, hisstratum + 1, !sys_cohort, rbufp->dstadr->addr_refid, pkt->refid));
