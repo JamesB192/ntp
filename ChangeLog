@@ -1,5 +1,5 @@
 ---
-
+* [Bug 3660] Revert 4.2.8p15 change to manycast. <hart@ntp.org>
 * [Bug 3786] Timer starvation on high-load Windows ntpd. <hart@ntp.org>
 * [Bug 2410] syslog an error message on panic exceeded. <brian.utterback@oracle.com>
 * [Bug 3784] high-load ntpd on Windows deaf after enough ICMP TTL exceeded <hart@ntp.org>
