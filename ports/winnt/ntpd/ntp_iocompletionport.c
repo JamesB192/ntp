@@ -1407,7 +1407,7 @@ io_completion_port_add_clock_io(
 	}
 
 	if (NULL == (lpo = IoCtxAlloc(iopad, rio->device_ctx))) {
-		msyslog(LOG_ERR, "%: no IO context: %m", msgh);
+		msyslog(LOG_ERR, "%s: no IO context: %m", msgh);
 		goto fail;
 	}
 

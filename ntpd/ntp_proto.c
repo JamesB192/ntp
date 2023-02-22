@@ -87,7 +87,7 @@ nak_error_codes {
 #define	POOL_SOLICIT_WINDOW	8
 
 /*
- * flag bits propagated from pool to individual peers
+ * flag bits propagated from pool/manycast to individual peers
  */
 #define POOL_FLAG_PMASK		(FLAG_IBURST | FLAG_NOSELECT)
 
