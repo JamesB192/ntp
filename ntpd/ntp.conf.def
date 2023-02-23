@@ -2945,12 +2945,12 @@ The number can contain other modem control codes as well.
 .It Xo Cm pollskewlist
 .Oo
 .Ar poll
-.Ar value | value
+.Ar early late
 .Oc
 .Ar ...
 .Oo
 .Cm default
-.Ar value | value
+.Ar early late
 .Oc
 .Xc
 Enable skewing of our poll requests to our servers.
@@ -2963,9 +2963,11 @@ a poll interval of 17 corresponds to
 131,072 seconds, or about a day and a half.
 The next two numbers must be between 0 and one-half of the poll interval,
 inclusive.
-The first number specifies how early the poll may start,
+Ar early
+specifies how early the poll may start,
 while
-the second number specifies how late the poll may be delayed.
+Ar late
+specifies how late the poll may be delayed.
 With no arguments, internally specified default values are chosen.
 .It Xo Ic reset
 .Oo

@@ -2022,16 +2022,17 @@ dopeers(
 	if (!dogetassoc(fp))
 		return;
 
-	for (u = 0; u < numhosts; u++) {
-		if (getnetnum(chosts[u].name, &netnum, fullname, af)) {
-			name_or_num = nntohost(&netnum);
-			sl = strlen(name_or_num);
-			maxhostlen = max(maxhostlen, sl);
+	if (numhosts > 1) {
+		for (u = 0; u < numhosts; u++) {
+			if (getnetnum(chosts[u].name, &netnum, fullname, af)) {
+				name_or_num = nntohost(&netnum);
+				sl = strlen(name_or_num);
+				maxhostlen = max(maxhostlen, sl);
+			}
 		}
-	}
-	if (numhosts > 1)
 		xprintf(fp, "%-*.*s ", (int)maxhostlen, (int)maxhostlen,
 			"server (local)");
+	}
 	xprintf(fp,
 		"     remote           refid      st t when poll reach   delay   offset  jitter\n");
 	if (numhosts > 1)
@@ -2076,16 +2077,17 @@ doapeers(
 	if (!dogetassoc(fp))
 		return;
 
-	for (u = 0; u < numhosts; u++) {
-		if (getnetnum(chosts[u].name, &netnum, fullname, af)) {
-			name_or_num = nntohost(&netnum);
-			sl = strlen(name_or_num);
-			maxhostlen = max(maxhostlen, sl);
+	if (numhosts > 1) {
+		for (u = 0; u < numhosts; u++) {
+			if (getnetnum(chosts[u].name, &netnum, fullname, af)) {
+				name_or_num = nntohost(&netnum);
+				sl = strlen(name_or_num);
+				maxhostlen = max(maxhostlen, sl);
+			}
 		}
-	}
-	if (numhosts > 1)
 		xprintf(fp, "%-*.*s ", (int)maxhostlen, (int)maxhostlen,
 			"server (local)");
+	}
 	xprintf(fp,
 		"     remote       refid   assid  st t when poll reach   delay   offset  jitter\n");
 	if (numhosts > 1)
@@ -2198,14 +2200,15 @@ doopeers(
 	if (!dogetassoc(fp))
 		return;
 
-	for (i = 0; i < numhosts; ++i) {
-		if (getnetnum(chosts[i].name, &netnum, fullname, af))
-			if (strlen(fullname) > maxhostlen)
-				maxhostlen = strlen(fullname);
+	if (numhosts > 1) {
+		for (i = 0; i < numhosts; ++i) {
+			if (getnetnum(chosts[i].name, &netnum, fullname, af)) {
+				maxhostlen = max(maxhostlen, strlen(fullname));
+			}
+			xprintf(fp, "%-*.*s ", (int)maxhostlen, (int)maxhostlen,
+				"server");
+		}
 	}
-	if (numhosts > 1)
-		xprintf(fp, "%-*.*s ", (int)maxhostlen, (int)maxhostlen,
-			"server");
 	xprintf(fp,
 	    "     remote           local      st t when poll reach   delay   offset    disp\n");
 	if (numhosts > 1)

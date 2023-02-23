@@ -3240,7 +3240,8 @@ sendpkt(
 			PKT_MODE(pkt->li_vn_mode),
 			pkt->stratum,
 			pkt->ppoll, pkt->precision,
-			pkt->rootdelay, pkt->rootdisp, pkt->refid,
+			FPTOD(NTOHS_FP(pkt->rootdelay)),
+			FPTOD(NTOHS_FP(pkt->rootdisp)),  pkt->refid,
 			len - MIN_V4_PKT_LEN, (u_char *)&pkt->exten);
 
 	return;
@@ -3403,7 +3404,7 @@ fetch_timestamp(
 						nts.l_uf = (unsigned long)(ticks * (unsigned long)(sys_tick * FRAC));
 					}
 					DPRINTF(4, ("fetch_timestamp: system bintime network time stamp: %ld.%09lu\n",
-						    pbt.sec, (unsigned long)((nts.l_uf / FRAC) * 1e9)));
+						    (long)pbt.sec, (u_long)((nts.l_uf / FRAC) * 1e9)));
 				}
 				break;
 #endif  /* HAVE_BINTIME */

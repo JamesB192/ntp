@@ -721,8 +721,27 @@ openhost(
 		a_info = getaddrinfo(hname, svc, &hints, &ai);
 	}
 #ifdef AI_ADDRCONFIG
-	/* Some older implementations don't like AI_ADDRCONFIG. */
-	if (a_info == EAI_BADFLAGS) {
+	/*
+	 * Some older implementations don't like AI_ADDRCONFIG.
+	 * Some versions of Windows return WSANO_DATA when there is no
+	 * global address and AI_ADDRCONFIG is used.  AI_ADDRCONFIG
+	 * is useful to short-circuit DNS lookups for IP protocols
+	 * for which the host has no local addresses.  Windows
+	 * unfortunately instead interprets AI_ADDRCONFIG to relate
+	 * to off-host connectivity and so fails lookup when
+	 * localhost works.
+	 * To further muddy matters, some versions of WS2tcpip.h
+	 * comment out #define EAI_NODATA WSANODATA claiming it
+	 * was removed from RFC 2553bis and mentioning a need to
+	 * contact the authors to find out why, but "helpfully"
+	 * #defines EAI_NODATA EAI_NONAME   (== WSAHOST_NOT_FOUND)
+	 * So we get more ugly platform-specific workarounds.
+	 */
+	if (
+#if defined(WIN32)
+	    WSANO_DATA == a_info || EAI_NONAME == a_info ||
+#endif
+	    EAI_BADFLAGS == a_info) {
 		hints.ai_flags &= ~AI_ADDRCONFIG;
 		a_info = getaddrinfo(hname, svc, &hints, &ai);
 	}
@@ -3908,7 +3927,7 @@ ntpq_custom_opt_handler(
 
 struct hstate {
 	char *list;
-	const char **seen;
+	char const **seen;
 	int idx;
 };
 
@@ -3948,7 +3967,7 @@ list_md_fn(const EVP_MD *m, const char *from, const char *to, void *arg)
 			return;
 
 	n = (seen - hstate->seen) + 2;
-	hstate->seen = erealloc(hstate->seen, n * sizeof(*seen));
+	hstate->seen = erealloc((void *)hstate->seen, n * sizeof(*seen));
 	hstate->seen[n-2] = name;
 	hstate->seen[n-1] = NULL;
 
@@ -4098,12 +4117,12 @@ list_digest_names(void)
 	struct hstate hstate = { NULL, NULL, K_PER_LINE+1 };
 
 	/* replace calloc(1, sizeof(const char *)) */
-	hstate.seen = (const char **)emalloc_zero(sizeof(const char *));
+	hstate.seen = emalloc_zero(sizeof(const char*));
 
 	INIT_SSL();
 	EVP_MD_do_all_sorted(list_md_fn, &hstate);
 	list = hstate.list;
-	free(hstate.seen);
+	free((void *)hstate.seen);
 
 	list = insert_cmac(list);	/* Insert CMAC into SSL digests list */
 
