@@ -1,5 +1,12 @@
-
 ---
+* [Bug 3595] pollskewlist documentation uses | when it shouldn't.
+  - ntp.conf manual page and miscopt.html corrections. <hart@ntp.org>
+* [Bug 3797] Windows getaddrinfo w/AI_ADDRCONFIG fails for localhost when 
+             disconnected, breaking ntpq and ntpdc. <hart@ntp.org>
+* [Bug 3774] mode 6 packets corrupted in rawstats file <hart@ntp.org>
+  - Reported by Edward McGuire, fix identified by <wei6410@sina.com>.
+* [Bug 3793] Wrong variable type passed to record_raw_stats(). <hart@ntp.org>
+  - Report and patch by Yuezhen LUAN <wei6410@sina.com>.
 * [Bug 3640] document "discard monitor" and fix the code. <hart@ntp.org>
   - fixed bug identified by Edward McGuire <perlinger@ntp.org>
 * [Bug 3660] Revert 4.2.8p15 change to manycast. <hart@ntp.org>

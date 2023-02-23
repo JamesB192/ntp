@@ -743,6 +743,13 @@ record_raw_stats(
 	if (!stats_control)
 		return;
 
+	/*
+	 * Mode 6 and mode 7 packets do not have the format of normal
+	 * NTP packets and will log garbage.  So don't.  [Bug 3774]
+	 */
+	if (MODE_CONTROL == mode || MODE_PRIVATE == mode)
+		return;
+
 	get_systime(&now);
 	filegen_setup(&rawstats, now.l_ui);
 	day = now.l_ui / 86400 + MJD_1900;
