@@ -2604,19 +2604,17 @@ io_setbclient(void)
 {
 #ifdef OPEN_BCAST_SOCKET
 	endpt *		ep;
-	unsigned int	nif, ni4, ni6;
+	unsigned int	nif, ni4;
 
-	nif = ni4 = ni6 = 0;
+	nif = ni4 = 0;
 	set_reuseaddr(1);
 
 	for (ep = ep_list; ep != NULL; ep = ep->elink) {
-		/* count IPv6 vs IPv4 interfaces. Needed later to decide
+		/* count IPv4 interfaces. Needed later to decide
 		 * if we should log an error or not.
 		 */
-		switch (ep->family) {
-		case AF_INET : ++ni4; break;
-		case AF_INET6: ++ni6; break;
-		default      :        break;
+		if (AF_INET == ep->family) {
+			++ni4;
 		}
 		
 		if (ep->flags & (INT_WILDCARD | INT_LOOPBACK))
@@ -2696,7 +2694,7 @@ io_setbclient(void)
 		 * and no IPv4 interfaces at all. We suppress the error
 		 * log in that case... everything else should work!
 		 */
-		if (ni4 && !ni6) {
+		if (ni4) {
 			msyslog(LOG_ERR,
 				"Unable to listen for broadcasts, no broadcast interfaces available");
 		}
