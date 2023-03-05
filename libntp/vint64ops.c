@@ -21,9 +21,9 @@
 
 vint64
 strtouv64(
-	const char  *begp,
-	const char **endp,
-	int	     base
+	char const *		begp,
+	char const ** const	endp,
+	int			base
 	)
 {
 	vint64  res;
