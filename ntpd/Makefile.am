@@ -192,6 +192,7 @@ noinst_DATA =				\
 
 noinst_HEADERS =			\
 	declcond.h			\
+	ntp_clockdev.h			\
 	ntp_leapsec.h			\
 	$(NULL)
 
