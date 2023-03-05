@@ -43,6 +43,10 @@
   - backport from -dev, plus some more work on warnings for unchecked results
 * Implement NTP_FUNC_REALPATH.  <stenn@ntp.org>
 * Lose a gmake construct in ntpd/Makefile.am.  <stenn@ntp.org>
+* upgrade to: autogen-5.18.16
+* upgrade to: libopts-42.1.17
+* upgrade to: autoconf-2.71
+* upgrade to: automake-1.16.15
 
 ---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
