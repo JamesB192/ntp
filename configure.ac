@@ -403,7 +403,7 @@ case "$ac_cv_header_stdatomic_h" in
 		    [[
 			atomic_thread_fence(memory_order_seq_cst);
 		    ]]
-		)]
+		)],
 		[ntp_cv_func_atomic_thread_fence=yes],
 		[ntp_cv_func_atomic_thread_fence=no]
 	    )]
