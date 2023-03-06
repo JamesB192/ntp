@@ -5,9 +5,9 @@ AC_PREREQ([2.68])
 AC_INIT(
     [sntp],
     [VERSION_NUMBER],
-    [http://bugs.ntp.org./],
+    [https://bugs.ntp.org/],
     [],
-    [http://www.ntp.org./]dnl
+    [https://www.ntp.org/]dnl
 )
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([libevent/build-aux])
