@@ -60,6 +60,7 @@
   - backport from -dev, plus some more work on warnings for unchecked results
 * [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
 * [Bug 2410] syslog an error message on panic exceeded. <brian.utterback@oracle.com>
+* Use https in the AC_INIT URLs in configure.ac.  <stenn@ntp.org>
 * Implement NTP_FUNC_REALPATH.  <stenn@ntp.org>
 * Lose a gmake construct in ntpd/Makefile.am.  <stenn@ntp.org>
 * upgrade to: autogen-5.18.16
