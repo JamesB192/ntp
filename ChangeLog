@@ -1,20 +1,13 @@
 ---
-* [Bug 3781] log "Unable to listen for broadcasts" for IPv4 <hart@ntp.org>
-* [Bug 3595] pollskewlist documentation uses | when it shouldn't.
-  - ntp.conf manual page and miscopt.html corrections. <hart@ntp.org>
 * [Bug 3797] Windows getaddrinfo w/AI_ADDRCONFIG fails for localhost when 
              disconnected, breaking ntpq and ntpdc. <hart@ntp.org>
-* [Bug 3774] mode 6 packets corrupted in rawstats file <hart@ntp.org>
-  - Reported by Edward McGuire, fix identified by <wei6410@sina.com>.
 * [Bug 3793] Wrong variable type passed to record_raw_stats(). <hart@ntp.org>
   - Report and patch by Yuezhen LUAN <wei6410@sina.com>.
-* [Bug 3640] document "discard monitor" and fix the code. <hart@ntp.org>
-  - fixed bug identified by Edward McGuire <perlinger@ntp.org>
-* [Bug 3660] Revert 4.2.8p15 change to manycast. <hart@ntp.org>
 * [Bug 3786] Timer starvation on high-load Windows ntpd. <hart@ntp.org>
-* [Bug 2410] syslog an error message on panic exceeded. <brian.utterback@oracle.com>
 * [Bug 3784] high-load ntpd on Windows deaf after enough ICMP TTL exceeded <hart@ntp.org>
-* [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
+* [Bug 3781] log "Unable to listen for broadcasts" for IPv4 <hart@ntp.org>
+* [Bug 3774] mode 6 packets corrupted in rawstats file <hart@ntp.org>
+  - Reported by Edward McGuire, fix identified by <wei6410@sina.com>.
 * [Bug 3758] Provide a 'device' config statement for refclocks <perlinger@ntp.org> 
 * [Bug 3757] Improve handling of Linux-PPS in NTPD <perlinger@ntp.org>
 * [Bug 3741] 4.2.8p15 can't build with glibc 2.34 <perlinger@ntp.org>
@@ -56,10 +49,17 @@
 * [Bug 3672] fix biased selection in median cut <perlinger@ntp.org>
 * [Bug 3666] avoid unlimited receive buffer allocation <perlinger@ntp.org>
   - follow-up: fix inverted sense in check, reset shortfall counter
+* [Bug 3660] Revert 4.2.8p15 change to manycast. <hart@ntp.org>
+* [Bug 3640] document "discard monitor" and fix the code. <hart@ntp.org>
+  - fixed bug identified by Edward McGuire <perlinger@ntp.org>
 * [Bug 3626] (SNTP) UTC offset calculation needs dst flag <perlinger@ntp.org>
   - applied patch by Gerry Garvey
+* [Bug 3595] pollskewlist documentation uses | when it shouldn't.
+  - ntp.conf manual page and miscopt.html corrections. <hart@ntp.org>
 * [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
   - backport from -dev, plus some more work on warnings for unchecked results
+* [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
+* [Bug 2410] syslog an error message on panic exceeded. <brian.utterback@oracle.com>
 * Implement NTP_FUNC_REALPATH.  <stenn@ntp.org>
 * Lose a gmake construct in ntpd/Makefile.am.  <stenn@ntp.org>
 * upgrade to: autogen-5.18.16
