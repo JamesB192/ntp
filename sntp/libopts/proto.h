@@ -247,16 +247,16 @@ load_opt_line(tOptions * opts, tOptState * opt_state, char * line,
 /*
  * Static declarations from makeshell.c
  */
-noreturn static void
+lo_noreturn static void
 option_exits(int exit_code);
 
-noreturn static void
+lo_noreturn static void
 ao_bug(char const * msg);
 
 static void
 fserr_warn(char const * prog, char const * op, char const * fname);
 
-noreturn static void
+lo_noreturn static void
 fserr_exit(char const * prog, char const * op, char const * fname);
 
 static void

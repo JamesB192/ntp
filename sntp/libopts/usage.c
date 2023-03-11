@@ -514,7 +514,7 @@ optionPrintParagraphs(char const * text, bool plain, FILE * fp)
  *  If "exitCode" is "AO_EXIT_REQ_USAGE" (normally 64), then output will to
  *  to stdout and the actual exit code will be "EXIT_SUCCESS".
 =*/
-noreturn void
+lo_noreturn void
 optionUsage(tOptions * opts, int usage_exit_code)
 {
     int exit_code = (usage_exit_code == AO_EXIT_REQ_USAGE)

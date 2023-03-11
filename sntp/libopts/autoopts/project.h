@@ -77,5 +77,11 @@ typedef int tSuccess;
 #define MOD_LOCAL static
 #define parse_duration option_parse_duration
 
+#ifdef _MSC_VER
+#define lo_noreturn __declspec(noreturn)
+#else
+#define lo_noreturn noreturn
+#endif
+
 #endif /* AUTOGEN_PROJECT_H */
 /* end of project.h */
