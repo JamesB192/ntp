@@ -35,7 +35,7 @@
 #define UPPER(_c) (toupper(to_uchar(_c)))
 #define LOWER(_c) (tolower(to_uchar(_c)))
 
-noreturn static void
+lo_noreturn static void
 option_exits(int exit_code)
 {
     if (print_exit)
@@ -43,7 +43,7 @@ option_exits(int exit_code)
     exit(exit_code);
 }
 
-noreturn static void
+lo_noreturn static void
 ao_bug(char const * msg)
 {
     fprintf(stderr, zao_bug_msg, msg);
@@ -57,7 +57,7 @@ fserr_warn(char const * prog, char const * op, char const * fname)
             op, fname);
 }
 
-noreturn static void
+lo_noreturn static void
 fserr_exit(char const * prog, char const * op, char const * fname)
 {
     fserr_warn(prog, op, fname);

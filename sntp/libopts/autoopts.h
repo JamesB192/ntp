@@ -463,12 +463,12 @@ static char const * program_pkgdatadir   = pkgdatadir_default;
 static tOptionLoadMode option_load_mode  = OPTION_LOAD_UNCOOKED;
 static tePagerState pagerState           = PAGER_STATE_INITIAL;
 
-static noreturn void option_exits(int exit_code);
-static noreturn void fserr_exit(char const * prog, char const * op,
-                                char const * fname);
-static          void fserr_warn(char const * prog, char const * op,
-                                char const * fname);
-static noreturn void ao_bug(char const * msg);
+static lo_noreturn void option_exits(int exit_code);
+static lo_noreturn void fserr_exit(char const * prog, char const * op,
+                                   char const * fname);
+static             void fserr_warn(char const * prog, char const * op,
+                                   char const * fname);
+static lo_noreturn void ao_bug(char const * msg);
 
        FILE *       option_usage_fp      = NULL;
 

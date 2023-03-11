@@ -1,5 +1,6 @@
 ---
 * [Bug 3800] libopts-42.1.17 does not compile with Microsoft C. <hart@ntp.org>
+* [Bug 3799] Enable libopts noreturn compiler advice for MSC. <hart@ntp.org>
 * [Bug 3797] Windows getaddrinfo w/AI_ADDRCONFIG fails for localhost when 
              disconnected, breaking ntpq and ntpdc. <hart@ntp.org>
 * [Bug 3795] pollskewlist documentation uses | when it shouldn't.

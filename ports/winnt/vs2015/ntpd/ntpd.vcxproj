@@ -500,6 +500,7 @@
       </AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\version.c;%(Outputs)</Outputs>
     </CustomBuild>
+    <None Include="..\..\..\..\ChangeLog" />
     <None Include="..\..\libntp\MSG00001.bin" />
     <None Include="..\libntp\messages.mc" />
   </ItemGroup>
