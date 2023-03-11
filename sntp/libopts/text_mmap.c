@@ -187,7 +187,7 @@ validate_mmap(char const * fname, int prot, int flags, tmap_info_t * mapinfo)
          */
         int o_flag =
 #ifdef _WIN32
-            O_BINARY |
+            _O_BINARY |
 #endif
             FILE_WRITABLE(prot, flags) ? O_RDWR : O_RDONLY;
 
