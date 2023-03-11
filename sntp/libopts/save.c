@@ -480,6 +480,30 @@ prt_nested(FILE * fp, tOptDesc * od, save_flags_mask_t save_fl)
     } while (--opt_ct > 0);
 }
 
+#ifdef _MSC_VER
+/**
+ * truncate() emulation for Microsoft C
+ *
+ * @param[in] fname  the save file name
+ * @param[in] newsz  new size of fname in octets
+ */
+static int
+truncate(char const* fname, size_t newsz)
+{
+    int fd;
+    int err;
+
+    fd = open(fname, O_RDWR);
+    if (fd < 0)
+            return fd;
+    err = _chsize_s(fd, newsz);
+    close(fd);
+    if (0 != err)
+            errno = err;
+    return err;
+}
+#endif /* _MSC_VER */
+
 /**
  * remove the current program settings
  *
