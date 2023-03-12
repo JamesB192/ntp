@@ -1,4 +1,5 @@
 ---
+* [Bug 3801] gpsdjson refclock gps_open() device name mishandled. <hart@ntp.org>
 * [Bug 3797] Windows getaddrinfo w/AI_ADDRCONFIG fails for localhost when 
              disconnected, breaking ntpq and ntpdc. <hart@ntp.org>
 * [Bug 3795] pollskewlist documentation uses | when it shouldn't.
@@ -6,7 +7,8 @@
 * [Bug 3793] Wrong variable type passed to record_raw_stats(). <hart@ntp.org>
   - Report and patch by Yuezhen LUAN <wei6410@sina.com>.
 * [Bug 3786] Timer starvation on high-load Windows ntpd. <hart@ntp.org>
-* [Bug 3784] high-load ntpd on Windows deaf after enough ICMP TTL exceeded <hart@ntp.org>
+* [Bug 3784] high-load ntpd on Windows deaf after enough ICMP TTL exceeded.
+             <hart@ntp.org>
 * [Bug 3781] log "Unable to listen for broadcasts" for IPv4 <hart@ntp.org>
 * [Bug 3774] mode 6 packets corrupted in rawstats file <hart@ntp.org>
   - Reported by Edward McGuire, fix identified by <wei6410@sina.com>.
