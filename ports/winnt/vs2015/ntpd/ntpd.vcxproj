@@ -304,6 +304,7 @@
     <ClCompile Include="..\..\..\..\ntpd\refclock_datum.c" />
     <ClCompile Include="..\..\..\..\ntpd\refclock_dumbclock.c" />
     <ClCompile Include="..\..\..\..\ntpd\refclock_fg.c" />
+    <ClCompile Include="..\..\..\..\ntpd\refclock_gpsdjson.c" />
     <ClCompile Include="..\..\..\..\ntpd\refclock_gpsvme.c" />
     <ClCompile Include="..\..\..\..\ntpd\refclock_heath.c" />
     <ClCompile Include="..\..\..\..\ntpd\refclock_hopfpci.c" />
