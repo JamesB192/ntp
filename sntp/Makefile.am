@@ -166,9 +166,6 @@ $(PROGRAMS): version.o
 version.c: $(sntp_OBJECTS) ../libntp/libntp.a Makefile $(srcdir)/scm-rev
 	env CSET=`cat $(srcdir)/scm-rev` $(top_builddir)/../scripts/build/mkver sntp
 
-version.o: version.c
-	env CCACHE_DISABLE=1 $(COMPILE) -c version.c -o version.o
-
 check-autogen-version.def: FRC
 	@cd $(srcdir)							\
 	&& test -r ../include/autogen-version.def			\
