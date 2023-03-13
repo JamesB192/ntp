@@ -478,9 +478,6 @@ $(top_srcdir)/sntp/scm-rev:
 version.c: $(ntpd_OBJECTS) ../libntp/libntp.a @LIBPARSE@ Makefile $(top_srcdir)/sntp/scm-rev
 	env CSET=`cat $(top_srcdir)/sntp/scm-rev` $(top_builddir)/scripts/build/mkver ntpd
 
-version.o: version.c
-	env CCACHE_DISABLE=1 $(COMPILE) -c version.c -o version.o
-
 $(srcdir)/Makefile.am:
 	@: do-nothing
 
