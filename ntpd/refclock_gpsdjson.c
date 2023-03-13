@@ -542,12 +542,15 @@ gpsd_start(
 				up->logname);
 			goto dev_fail;
 		}
+		devname = up->device;
 		up->device = ntp_realpath(devname);
 		if (NULL == up->device) {
 			msyslog(LOG_ERR, "%s: '%s' has no absolute path",
 				up->logname, devname);
 			goto dev_fail;
 		}
+		free(devname);
+		devname = NULL;
 		if (-1 == lstat(up->device, &sb)) {
 			msyslog(LOG_ERR, "%s: '%s' not accessible",
 				up->logname, up->device);
@@ -558,8 +561,6 @@ gpsd_start(
 				up->logname, up->device);
 			goto dev_fail;
 		}
-		free(devname);
-		devname = NULL;
 	} else {
 		/* All set up, just increment use count. */
 		++up->refcount;

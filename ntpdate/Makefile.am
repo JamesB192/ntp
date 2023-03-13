@@ -34,9 +34,6 @@ $(top_srcdir)/sntp/scm-rev:
 version.c: $(ntpdate_OBJECTS) ../libntp/libntp.a Makefile $(top_srcdir)/sntp/scm-rev
 	env CSET=`cat $(top_srcdir)/sntp/scm-rev` $(top_builddir)/scripts/build/mkver ntpdate
 	
-version.o: version.c
-	env CCACHE_DISABLE=1 $(COMPILE) -c version.c -o version.o
-
 include $(top_srcdir)/bincheck.mf
 include $(top_srcdir)/check-libntp.mf
 include $(top_srcdir)/depsver.mf
