@@ -139,9 +139,6 @@ $(top_srcdir)/sntp/scm-rev:
 version.c: $(ntpdc_OBJECTS) ../libntp/libntp.a Makefile $(top_srcdir)/sntp/scm-rev
 	env CSET=`cat $(top_srcdir)/sntp/scm-rev` $(top_builddir)/scripts/build/mkver ntpdc
 	
-version.o: version.c
-	env CCACHE_DISABLE=1 $(COMPILE) -c version.c -o version.o
-
 # I ran nl_in.c (attached, to be installed into ntpdc) through
 # $(CC) -E nl_in.c | nl.pl > nl.c
 nl.c: nl_in.c nl.pl Makefile.am ../config.h ../include/ntp_request.h ntpdc.h

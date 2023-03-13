@@ -35,7 +35,7 @@ AC_PRESERVE_HELP_ORDER
 # the date YYYYMMDD optionally with -HHMM if there is more than one
 # bump in a day.
 
-ntp_configure_cache_version=20120806
+ntp_configure_cache_version=20230313
 
 # When the cache version of config.cache and configure do not
 # match, NTP_CACHEVERSION will flush the cache.
@@ -475,7 +475,7 @@ case "$have_adjtimex" in
 			struct nlist n;
 			n.n_un.n_name = 0;
 		    ]]
-		)]
+		)],
 		[ntp_cv_struct_nlist_n_un=yes],
 		[ntp_cv_struct_nlist_n_un=no]
 	    )]

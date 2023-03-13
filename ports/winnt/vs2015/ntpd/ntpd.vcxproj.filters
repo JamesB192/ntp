@@ -306,6 +306,9 @@
     <ClCompile Include="..\..\ntpd\nt_ppsimpl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\ntpd\refclock_gpsdjson.c">
+      <Filter>Reference Clock</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\ascii.h">
