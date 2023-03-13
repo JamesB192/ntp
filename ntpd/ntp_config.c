@@ -389,7 +389,7 @@ static int getnetnum(const char *num, sockaddr_u *addr, int complain,
 #endif
 
 #if defined(__GNUC__) /* this covers CLANG, too */
-static void  __attribute__((noreturn,format(printf,1,2))) fatal_error(const char *fmt, ...)
+static void  __attribute__((__noreturn__,format(printf,1,2))) fatal_error(const char *fmt, ...)
 #elif defined(_MSC_VER)
 static void __declspec(noreturn) fatal_error(const char *fmt, ...)
 #else
