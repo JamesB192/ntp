@@ -110,7 +110,7 @@ $(srcdir)/invoke-ntpsnmpd.texi: $(srcdir)/ntpsnmpd-opts.def $(std_def_list)
 	$(run_ag) -Tagtexi-cmd.tpl -DLEVEL=section ntpsnmpd-opts.def
 	$(top_srcdir)/scripts/build/check--help $@
 
-$(srcdir)/ntpsnmpd.html: $(srcdir)/ntpsnmpd.texi $(top_srcdir)/sntp/include/version.texi
+$(srcdir)/ntpsnmpd.html: $(srcdir)/invoke-ntpsnmpd.texi $(srcdir)/ntpsnmpd.texi $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -o ntpsnmpd.html ntpsnmpd.texi || true )
 
 include $(top_srcdir)/bincheck.mf
