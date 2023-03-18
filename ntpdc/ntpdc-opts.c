@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpdc-opts.c)
  *
- *  It has been AutoGen-ed  March  5, 2023 at 02:05:13 AM by AutoGen 5.18.16
+ *  It has been AutoGen-ed  March 18, 2023 at 11:21:36 AM by AutoGen 5.18.16
  *  From the definitions    ntpdc-opts.def
  *  and the template file   options
  *
@@ -73,7 +73,7 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for ntpdc options
  */
-static char const ntpdc_opt_strs[2004] =
+static char const ntpdc_opt_strs[2005] =
 /*     0 */ "ntpdc 4.2.8p15\n"
             "Copyright (C) 1992-2023 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
@@ -141,9 +141,9 @@ static char const ntpdc_opt_strs[2004] =
 /*  1938 */ "$HOME\0"
 /*  1944 */ ".\0"
 /*  1946 */ ".ntprc\0"
-/*  1953 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  1987 */ "\n\0"
-/*  1989 */ "ntpdc 4.2.8p15";
+/*  1953 */ "https://bugs.ntp.org, bugs@ntp.org\0"
+/*  1988 */ "\n\0"
+/*  1990 */ "ntpdc 4.2.8p15";
 
 /**
  *  ipv4 option description with
@@ -567,11 +567,11 @@ static char const * const apzHomeList[3] = {
 /** The ntpdc program bug email address. */
 #define zBugsAddr       (ntpdc_opt_strs+1953)
 /** Clarification/explanation of what ntpdc does. */
-#define zExplain        (ntpdc_opt_strs+1987)
+#define zExplain        (ntpdc_opt_strs+1988)
 /** Extra detail explaining what ntpdc does. */
 #define zDetail         (NULL)
 /** The full version string for ntpdc. */
-#define zFullVersion    (ntpdc_opt_strs+1989)
+#define zFullVersion    (ntpdc_opt_strs+1990)
 /* extracted from optcode.tlib near line 342 */
 
 #if defined(ENABLE_NLS)

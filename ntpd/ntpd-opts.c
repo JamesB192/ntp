@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpd-opts.c)
  *
- *  It has been AutoGen-ed  March  5, 2023 at 02:05:11 AM by AutoGen 5.18.16
+ *  It has been AutoGen-ed  March 18, 2023 at 11:21:10 AM by AutoGen 5.18.16
  *  From the definitions    ntpd-opts.def
  *  and the template file   options
  *
@@ -79,7 +79,7 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for ntpd options
  */
-static char const ntpd_opt_strs[3132] =
+static char const ntpd_opt_strs[3133] =
 /*     0 */ "ntpd 4.2.8p15\n"
             "Copyright (C) 1992-2023 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
@@ -213,9 +213,9 @@ static char const ntpd_opt_strs[3132] =
 /*  2950 */ "ntpd - NTP daemon program - Ver. 4.2.8p15\n"
             "Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]... \\\n"
             "\t\t[ <server1> ... <serverN> ]\n\0"
-/*  3082 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  3116 */ "\n\0"
-/*  3118 */ "ntpd 4.2.8p15";
+/*  3082 */ "https://bugs.ntp.org, bugs@ntp.org\0"
+/*  3117 */ "\n\0"
+/*  3119 */ "ntpd 4.2.8p15";
 
 /**
  *  ipv4 option description with
@@ -1273,11 +1273,11 @@ static tOptDesc optDesc[OPTION_CT] = {
 /** The ntpd program bug email address. */
 #define zBugsAddr       (ntpd_opt_strs+3082)
 /** Clarification/explanation of what ntpd does. */
-#define zExplain        (ntpd_opt_strs+3116)
+#define zExplain        (ntpd_opt_strs+3117)
 /** Extra detail explaining what ntpd does. */
 #define zDetail         (NULL)
 /** The full version string for ntpd. */
-#define zFullVersion    (ntpd_opt_strs+3118)
+#define zFullVersion    (ntpd_opt_strs+3119)
 /* extracted from optcode.tlib near line 342 */
 
 #if defined(ENABLE_NLS)
