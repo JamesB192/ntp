@@ -3,7 +3,7 @@
 copyright = {
     date  = "1992-2023";
     owner = "The University of Delaware and Network Time Foundation";
-    eaddr = "http://bugs.ntp.org, bugs@ntp.org";
+    eaddr = "https://bugs.ntp.org, bugs@ntp.org";
     type  = ntp;
 };
 
