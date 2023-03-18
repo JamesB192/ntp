@@ -17,6 +17,8 @@
 * [Bug 3741] 4.2.8p15 can't build with glibc 2.34 <perlinger@ntp.org>
 * [Bug 3724] ntp-keygen with openSSL 1.1.1 fails on Windows <perlinger@ntp.org>
   - openssl applink needed again for openSSL-1.1.1
+* [Bug 3719] configure.ac checks for closefrom() and getdtablesize() missing.
+             Reported by Brian Utterback, broken in 2010 by <hart@ntp.org>
 * [Bug 3699] Problems handling drift file and restoring previous drifts <perlinger@ntp.org>
   - command line options override config statements where applicable
   - make initial frequency settings idempotent and reversible
