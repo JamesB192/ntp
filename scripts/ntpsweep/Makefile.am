@@ -98,5 +98,5 @@ $(srcdir)/invoke-ntpsweep.texi: ntpsweep-opts ntpsweep-opts.def $(std_def_list)
 
 ### HTML
 
-$(srcdir)/ntpsweep.html: invoke-ntpsweep.menu invoke-ntpsweep.texi ntpsweep.texi $(top_srcdir)/sntp/include/version.texi
+$(srcdir)/ntpsweep.html: $(srcdir)/invoke-ntpsweep.texi $(srcdir)/ntpsweep.texi $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -I ../sntp -o ntpsweep.html ntpsweep.texi || true )

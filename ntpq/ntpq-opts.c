@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpq-opts.c)
  *
- *  It has been AutoGen-ed  March  5, 2023 at 02:05:15 AM by AutoGen 5.18.16
+ *  It has been AutoGen-ed  March 18, 2023 at 11:21:44 AM by AutoGen 5.18.16
  *  From the definitions    ntpq-opts.def
  *  and the template file   options
  *
@@ -73,7 +73,7 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for ntpq options
  */
-static char const ntpq_opt_strs[2067] =
+static char const ntpq_opt_strs[2068] =
 /*     0 */ "ntpq 4.2.8p15\n"
             "Copyright (C) 1992-2023 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
@@ -145,9 +145,9 @@ static char const ntpq_opt_strs[2067] =
 /*  1999 */ "$HOME\0"
 /*  2005 */ ".\0"
 /*  2007 */ ".ntprc\0"
-/*  2014 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  2048 */ "ntpq 4.2.8p15\0"
-/*  2062 */ "hash";
+/*  2014 */ "https://bugs.ntp.org, bugs@ntp.org\0"
+/*  2049 */ "ntpq 4.2.8p15\0"
+/*  2063 */ "hash";
 
 /**
  *  ipv4 option description with
@@ -592,7 +592,7 @@ static char const * const apzHomeList[3] = {
 /** Extra detail explaining what ntpq does. */
 #define zDetail         (NULL)
 /** The full version string for ntpq. */
-#define zFullVersion    (ntpq_opt_strs+2048)
+#define zFullVersion    (ntpq_opt_strs+2049)
 /* extracted from optcode.tlib near line 342 */
 
 #if defined(ENABLE_NLS)
@@ -665,7 +665,7 @@ doOptRefid(tOptions* pOptions, tOptDesc* pOptDesc)
 
 /* extracted from optmain.tlib near line 945 */
     static char const * const names[2] = {
-        ntpq_opt_strs+2062, ntpq_opt_strs+1041 };
+        ntpq_opt_strs+2063, ntpq_opt_strs+1041 };
 
     if (pOptions <= OPTPROC_EMIT_LIMIT) {
         (void) optionEnumerationVal(pOptions, pOptDesc, names, 2);

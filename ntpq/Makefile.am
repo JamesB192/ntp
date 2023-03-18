@@ -117,7 +117,7 @@ $(srcdir)/invoke-ntpq.texi: $(srcdir)/ntpq-opts.def $(std_def_list)
 	$(run_ag) -Tagtexi-cmd.tpl -DLEVEL=section ntpq-opts.def
 	$(top_srcdir)/scripts/build/check--help $@
 
-$(srcdir)/ntpq.html: $(srcdir)/ntpq.texi $(top_srcdir)/sntp/include/version.texi
+$(srcdir)/ntpq.html: $(srcdir)/invoke-ntpq.texi $(srcdir)/ntpq.texi $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -o ntpq.html ntpq.texi || true )
 
 ###
