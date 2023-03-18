@@ -111,7 +111,7 @@ $(srcdir)/invoke-ntp-keygen.texi: $(srcdir)/ntp-keygen-opts.def $(std_def_list)
 	$(run_ag) -Tagtexi-cmd.tpl -DLEVEL=section ntp-keygen-opts.def
 	$(top_srcdir)/scripts/build/check--help $@
 
-$(srcdir)/ntp-keygen.html: $(srcdir)/ntp-keygen.texi $(top_srcdir)/sntp/include/version.texi
+$(srcdir)/ntp-keygen.html: $(srcdir)/invoke-ntp-keygen.texi $(srcdir)/ntp-keygen.texi $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -o ntp-keygen.html ntp-keygen.texi || true )
 
 

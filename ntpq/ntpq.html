@@ -242,6 +242,8 @@ interactive format commands from the standard input.
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#ntpq-refid" accesskey="9">ntpq refid</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#ntpq-unconnected">ntpq unconnected</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#ntpq-wide">ntpq wide</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#ntpq-config">ntpq config</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -1264,6 +1266,8 @@ This software is released under the NTP license, &lt;http://ntp.org/license&gt;.
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#ntpq-refid" accesskey="9">ntpq refid</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">refid option (-r)
 </td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#ntpq-unconnected">ntpq unconnected</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">unconnected option (-u)
+</td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#ntpq-wide">ntpq wide</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">wide option (-w)
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#ntpq-config">ntpq config</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">presetting/configuring ntpq
@@ -1293,7 +1297,7 @@ used to select the program, defaulting to <samp>more</samp>.  Both will exit
 with a status code of 0.
 </p>
 <div class="example">
-<pre class="example">ntpq - standard NTP query program - Ver. 4.2.8p14
+<pre class="example">ntpq - standard NTP query program - Ver. 4.2.8p15
 Usage:  ntpq [ -&lt;flag&gt; [&lt;val&gt;] | --&lt;name&gt;[{=| }&lt;val&gt;] ]... [ host ...]
   Flg Arg Option-Name    Description
    -4 no  ipv4           Force IPv4 name resolution
@@ -1315,6 +1319,7 @@ Usage:  ntpq [ -&lt;flag&gt; [&lt;val&gt;] | --&lt;name&gt;[{=| }&lt;val&gt;] ].
    -p no  peers          Print a list of the peers
                                 - prohibits the option 'interactive'
    -r KWd refid          Set default display type for S2+ refids
+   -u no  unconnected    Use unconnected UDP to communicate with ntpd (default on Windows)
    -w no  wide           Display the full 'remote' value
       opt version        output version information and exit
    -? no  help           display extended usage information and exit
@@ -1336,7 +1341,7 @@ The valid &quot;refid&quot; option keywords are:
   hash ipv4
   or an integer from 0 through 1
 
-Please send bug reports to:  &lt;http://bugs.ntp.org, bugs@ntp.org&gt;
+Please send bug reports to:  &lt;https://bugs.ntp.org, bugs@ntp.org&gt;
 </pre></div>
 
 <hr>
@@ -1478,7 +1483,7 @@ of their state. This is equivalent to the &rsquo;peers&rsquo; interactive comman
 <a name="ntpq-refid"></a>
 <div class="header">
 <p>
-Next: <a href="#ntpq-wide" accesskey="n" rel="next">ntpq wide</a>, Previous: <a href="#ntpq-peers" accesskey="p" rel="prev">ntpq peers</a>, Up: <a href="#ntpq-Invocation" accesskey="u" rel="up">ntpq Invocation</a> &nbsp; </p>
+Next: <a href="#ntpq-unconnected" accesskey="n" rel="next">ntpq unconnected</a>, Previous: <a href="#ntpq-peers" accesskey="p" rel="prev">ntpq peers</a>, Up: <a href="#ntpq-Invocation" accesskey="u" rel="up">ntpq Invocation</a> &nbsp; </p>
 </div>
 <a name="refid-option-_0028_002dr_0029"></a>
 <h4 class="subsection">1.1.10 refid option (-r)</h4>
@@ -1496,17 +1501,31 @@ The available keywords are:
 <pre class="example">    hash ipv4
 </pre></div>
 
-<p>or their numeric equivalent.</p></li></ul>
+<p>or their numeric equivalent.
+</p></li></ul>
 
 <p>Set the default display format for S2+ refids.
+</p><hr>
+<a name="ntpq-unconnected"></a>
+<div class="header">
+<p>
+Next: <a href="#ntpq-wide" accesskey="n" rel="next">ntpq wide</a>, Previous: <a href="#ntpq-refid" accesskey="p" rel="prev">ntpq refid</a>, Up: <a href="#ntpq-Invocation" accesskey="u" rel="up">ntpq Invocation</a> &nbsp; </p>
+</div>
+<a name="unconnected-option-_0028_002du_0029"></a>
+<h4 class="subsection">1.1.11 unconnected option (-u)</h4>
+<a name="index-ntpq_002dunconnected"></a>
+
+<p>This is the &ldquo;use unconnected udp to communicate with ntpd (default on windows)&rdquo; option.
+Open an unconnected UDP association to ntpd (the default
+on Windows).
 </p><hr>
 <a name="ntpq-wide"></a>
 <div class="header">
 <p>
-Next: <a href="#ntpq-config" accesskey="n" rel="next">ntpq config</a>, Previous: <a href="#ntpq-refid" accesskey="p" rel="prev">ntpq refid</a>, Up: <a href="#ntpq-Invocation" accesskey="u" rel="up">ntpq Invocation</a> &nbsp; </p>
+Next: <a href="#ntpq-config" accesskey="n" rel="next">ntpq config</a>, Previous: <a href="#ntpq-unconnected" accesskey="p" rel="prev">ntpq unconnected</a>, Up: <a href="#ntpq-Invocation" accesskey="u" rel="up">ntpq Invocation</a> &nbsp; </p>
 </div>
 <a name="wide-option-_0028_002dw_0029"></a>
-<h4 class="subsection">1.1.11 wide option (-w)</h4>
+<h4 class="subsection">1.1.12 wide option (-w)</h4>
 <a name="index-ntpq_002dwide"></a>
 
 <p>This is the &ldquo;display the full &rsquo;remote&rsquo; value&rdquo; option.
@@ -1522,7 +1541,7 @@ and continue the data display properly indented on the next line.
 Next: <a href="#ntpq-exit-status" accesskey="n" rel="next">ntpq exit status</a>, Previous: <a href="#ntpq-wide" accesskey="p" rel="prev">ntpq wide</a>, Up: <a href="#ntpq-Invocation" accesskey="u" rel="up">ntpq Invocation</a> &nbsp; </p>
 </div>
 <a name="presetting_002fconfiguring-ntpq"></a>
-<h4 class="subsection">1.1.12 presetting/configuring ntpq</h4>
+<h4 class="subsection">1.1.13 presetting/configuring ntpq</h4>
 
 <p>Any option that is not marked as <i>not presettable</i> may be preset by
 loading values from configuration (&quot;rc&quot; or &quot;ini&quot;) files, and values from environment variables named <code>NTPQ</code> and <code>NTPQ_&lt;OPTION_NAME&gt;</code>.  <code>&lt;OPTION_NAME&gt;</code> must be one of
@@ -1583,7 +1602,7 @@ the associated name/value pair list (see: optionFindValue).
 
 <p>Print the program version to standard out, optionally with licensing
 information, then exit 0.  The optional argument specifies how much licensing
-detail to provide.  The default is to print just the version.  The licensing infomation may be selected with an option argument.
+detail to provide.  The default is to print just the version.  The licensing information may be selected with an option argument.
 Only the first letter of the argument is examined:
 </p>
 <dl compact="compact">
@@ -1605,7 +1624,7 @@ Only the first letter of the argument is examined:
 Previous: <a href="#ntpq-config" accesskey="p" rel="prev">ntpq config</a>, Up: <a href="#ntpq-Invocation" accesskey="u" rel="up">ntpq Invocation</a> &nbsp; </p>
 </div>
 <a name="ntpq-exit-status-1"></a>
-<h4 class="subsection">1.1.13 ntpq exit status</h4>
+<h4 class="subsection">1.1.14 ntpq exit status</h4>
 
 <p>One of the following exit values will be returned:
 </p><dl compact="compact">
