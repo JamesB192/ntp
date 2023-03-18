@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntpq.texi)
 #
-# It has been AutoGen-ed  June 27, 2022 at 12:01:13 AM by AutoGen 5.18.5
+# It has been AutoGen-ed  March 18, 2023 at 11:21:50 AM by AutoGen 5.18.16
 # From the definitions    ntpq-opts.def
 # and the template file   agtexi-cmd.tpl
 @end ignore
@@ -989,7 +989,7 @@ The valid "refid" option keywords are:
   hash ipv4
   or an integer from 0 through 1
 
-Please send bug reports to:  <http://bugs.ntp.org, bugs@@ntp.org>
+Please send bug reports to:  <https://bugs.ntp.org, bugs@@ntp.org>
 @end example
 @exampleindent 4
 
@@ -1114,7 +1114,8 @@ The available keywords are:
     hash ipv4
 @end example
 
-or their numeric equivalent.@end itemize
+or their numeric equivalent.
+@end itemize
 
 Set the default display format for S2+ refids.
 @node ntpq unconnected
@@ -1201,7 +1202,7 @@ The command line options relating to configuration and/or usage help are:
 
 Print the program version to standard out, optionally with licensing
 information, then exit 0.  The optional argument specifies how much licensing
-detail to provide.  The default is to print just the version.  The licensing infomation may be selected with an option argument.
+detail to provide.  The default is to print just the version.  The licensing information may be selected with an option argument.
 Only the first letter of the argument is examined:
 
 @table @samp
