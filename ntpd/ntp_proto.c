@@ -141,6 +141,7 @@ int leap_sec_in_progress;
  * Nonspecified system state variables
  */
 int	sys_bclient;		/* broadcast client enable */
+int	sys_mclient;		/* multicast client enable */
 double	sys_bdelay;		/* broadcast client default delay */
 int	sys_authenticate;	/* requre authentication for config */
 l_fp	sys_authdelay;		/* authentication delay */
@@ -1475,8 +1476,8 @@ receive(
 			return;
 		}
 #endif /* AUTOKEY */
-		if (sys_bclient == 0) {
-			DPRINTF(2, ("receive: AM_NEWBCL drop: not a bclient\n"));
+		if (!sys_bclient && !sys_mclient) {
+			DPRINTF(2, ("receive: AM_NEWBCL drop: not a bclient/mclient\n"));
 			sys_restricted++;
 			return;			/* not enabled */
 		}
@@ -5215,6 +5216,7 @@ init_proto(void)
 	sys_survivors = 0;
 	sys_manycastserver = 0;
 	sys_bclient = 0;
+	sys_mclient = 0;
 	sys_bdelay = BDELAY_DEFAULT;	/*[Bug 3031] delay cutoff */
 	sys_authenticate = 1;
 	sys_stattime = current_time;
@@ -5256,7 +5258,7 @@ proto_config(
 
 	case PROTO_BROADCLIENT: /* broadcast client (bclient) */
 		sys_bclient = (int)value;
-		if (sys_bclient == 0)
+		if (!sys_bclient)
 			io_unsetbclient();
 		else
 			io_setbclient();
@@ -5366,7 +5368,7 @@ proto_config(
 	case PROTO_MULTICAST_ADD: /* add group address */
 		if (svalue != NULL)
 			io_multicast_add(svalue);
-		sys_bclient = 1;
+		sys_mclient = 1;
 		break;
 
 	case PROTO_MULTICAST_DEL: /* delete group address */
