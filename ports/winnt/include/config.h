@@ -309,8 +309,7 @@ extern void arc4random_buf(void *buf, size_t nbytes);
  */
 #define __func__	__FUNCTION__
 
-typedef int pid_t;		/* PID is an int */
-typedef int ssize_t;	/* ssize is an int */
+typedef int	pid_t;	/* PID is an int */
 
 /*
  * Map the stream to the file number
@@ -502,6 +501,13 @@ typedef unsigned long uintptr_t;
   typedef unsigned __int64 uint64_t;
 #endif
 
+#ifdef _WIN64		/* mirroring SIZE_MAX from limits.h */
+  typedef SSIZE_T	ssize_t;
+#define SSIZE_MAX	_I64_MAX
+#else
+  typedef int		ssize_t;
+#define SSIZE_MAX	INT_MAX
+#endif
 
 /* Directory separator, usually / or \ */
 #define	DIR_SEP	'\\'

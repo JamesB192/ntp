@@ -277,16 +277,16 @@ followlink(
 	ssize_t	len;
 	char *	target;
 
-	REQUIRE(bufsiz > 0);
+	REQUIRE(bufsiz > 0 && bufsiz <= SSIZE_MAX);
 
 	target = emalloc(bufsiz);
 	len = readlink(fname, target, bufsiz);
-	if (len < 0 ) {
+	if (len < 0) {
 		fname[0] = '\0';
 		return;
 	}
-	if (len > (int)bufsiz - 1)
-		len = (int)bufsiz - 1;
+	if ((size_t)len > bufsiz - 1)
+		len = bufsiz - 1;
 	memcpy(fname, target, len);
 	fname[len] = '\0';
 	free(target);
