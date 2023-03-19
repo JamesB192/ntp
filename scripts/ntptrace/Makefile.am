@@ -91,5 +91,5 @@ $(srcdir)/invoke-ntptrace.texi: ntptrace-opts $(srcdir)/ntptrace-opts.def $(std_
 
 ### HTML
 
-$(srcdir)/ntptrace.html: $(srcdir)/invoke-ntptrace.menu $(srcdir)/invoke-ntptrace.texi $(srcdir)/ntptrace.texi $(top_srcdir)/sntp/include/version.texi
+$(srcdir)/ntptrace.html: $(srcdir)/invoke-ntptrace.texi $(srcdir)/ntptrace.texi $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -I ../sntp -o ntptrace.html ntptrace.texi || true )

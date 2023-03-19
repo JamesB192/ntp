@@ -118,7 +118,7 @@ $(srcdir)/invoke-ntpdc.texi: $(srcdir)/ntpdc-opts.def $(std_def_list)
 	$(run_ag) -Tagtexi-cmd.tpl -DLEVEL=section ntpdc-opts.def
 	$(top_srcdir)/scripts/build/check--help $@
 
-$(srcdir)/ntpdc.html: $(srcdir)/invoke-ntpdc.menu $(srcdir)/invoke-ntpdc.texi $(srcdir)/ntpdc.texi $(top_srcdir)/sntp/include/version.texi
+$(srcdir)/ntpdc.html: $(srcdir)/invoke-ntpdc.texi $(srcdir)/ntpdc.texi $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -I ../sntp -o ntpdc.html ntpdc.texi || true )
 
 ntpdc_SOURCES = ntpdc.c ntpdc_ops.c ntpdc-opts.c ntpdc-opts.h
