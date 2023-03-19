@@ -14,6 +14,8 @@
 * [Bug 3758] Provide a 'device' config statement for refclocks <perlinger@ntp.org> 
 * [Bug 3757] Improve handling of Linux-PPS in NTPD <perlinger@ntp.org>
 * [Bug 3741] 4.2.8p15 can't build with glibc 2.34 <perlinger@ntp.org>
+* [Bug 3725] Make copyright of clk_wharton.c compatible with Debian.
+             Philippe De Muyter <phdm@macqel.be>
 * [Bug 3724] ntp-keygen with openSSL 1.1.1 fails on Windows <perlinger@ntp.org>
   - openssl applink needed again for openSSL-1.1.1
 * [Bug 3699] Problems handling drift file and restoring previous drifts <perlinger@ntp.org>
@@ -59,6 +61,8 @@
   - applied patch by Gerry Garvey
 * [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
   - backport from -dev, plus some more work on warnings for unchecked results
+* [Bug 2990] multicastclient incorrectly causes bind to broadcast address.
+             Integrated patch from Brian Utterback. <hart@ntp.org>
 * [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
 * [Bug 2410] syslog an error message on panic exceeded. <brian.utterback@oracle.com>
 * Use https in the AC_INIT URLs in configure.ac.  <stenn@ntp.org>
