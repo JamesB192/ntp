@@ -170,6 +170,6 @@ $(srcdir)/invoke-summary.texi: summary-opts $(srcdir)/summary-opts.def $(std_def
 
 ### HTML
 
-$(srcdir)/summary.html: $(srcdir)/invoke-summary.menu $(srcdir)/invoke-summary.texi $(srcdir)/summary.texi $(top_srcdir)/sntp/include/version.texi
+$(srcdir)/summary.html: $(srcdir)/invoke-summary.texi $(srcdir)/summary.texi $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -I ../sntp -o summary.html summary.texi || true )
 

@@ -1,4 +1,6 @@
 ---
+* [Bug 3802] ntp-keygen -I default identity modulus bits too small for
+             OpenSSL 3.  Reported by rmsh1216@163.com <hart@ntp.org>
 * [Bug 3801] gpsdjson refclock gps_open() device name mishandled. <hart@ntp.org>
 * [Bug 3800] libopts-42.1.17 does not compile with Microsoft C. <hart@ntp.org>
 * [Bug 3799] Enable libopts noreturn compiler advice for MSC. <hart@ntp.org>
@@ -19,6 +21,8 @@
 * [Bug 3741] 4.2.8p15 can't build with glibc 2.34 <perlinger@ntp.org>
 * [Bug 3724] ntp-keygen with openSSL 1.1.1 fails on Windows <perlinger@ntp.org>
   - openssl applink needed again for openSSL-1.1.1
+* [Bug 3719] configure.ac checks for closefrom() and getdtablesize() missing.
+             Reported by Brian Utterback, broken in 2010 by <hart@ntp.org>
 * [Bug 3699] Problems handling drift file and restoring previous drifts <perlinger@ntp.org>
   - command line options override config statements where applicable
   - make initial frequency settings idempotent and reversible
@@ -62,6 +66,7 @@
   - applied patch by Gerry Garvey
 * [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
   - backport from -dev, plus some more work on warnings for unchecked results
+* [Bug 3103] libopts zsave_warn format string too few arguments <bkorb@gnu.org>
 * [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
 * [Bug 2410] syslog an error message on panic exceeded. <brian.utterback@oracle.com>
 * Use https in the AC_INIT URLs in configure.ac.  <stenn@ntp.org>

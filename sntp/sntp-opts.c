@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (sntp-opts.c)
  *
- *  It has been AutoGen-ed  March  5, 2023 at 02:05:19 AM by AutoGen 5.18.16
+ *  It has been AutoGen-ed  March 18, 2023 at 11:21:00 AM by AutoGen 5.18.16
  *  From the definitions    sntp-opts.def
  *  and the template file   options
  *
@@ -73,7 +73,7 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for sntp options
  */
-static char const sntp_opt_strs[2566] =
+static char const sntp_opt_strs[2567] =
 /*     0 */ "sntp 4.2.8p15\n"
             "Copyright (C) 1992-2023 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
@@ -166,9 +166,9 @@ static char const sntp_opt_strs[2566] =
 /*  2501 */ "$HOME\0"
 /*  2507 */ ".\0"
 /*  2509 */ ".ntprc\0"
-/*  2516 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  2550 */ "\n\0"
-/*  2552 */ "sntp 4.2.8p15";
+/*  2516 */ "https://bugs.ntp.org, bugs@ntp.org\0"
+/*  2551 */ "\n\0"
+/*  2553 */ "sntp 4.2.8p15";
 
 /**
  *  ipv4 option description with
@@ -765,11 +765,11 @@ static char const * const apzHomeList[3] = {
 /** The sntp program bug email address. */
 #define zBugsAddr       (sntp_opt_strs+2516)
 /** Clarification/explanation of what sntp does. */
-#define zExplain        (sntp_opt_strs+2550)
+#define zExplain        (sntp_opt_strs+2551)
 /** Extra detail explaining what sntp does. */
 #define zDetail         (NULL)
 /** The full version string for sntp. */
-#define zFullVersion    (sntp_opt_strs+2552)
+#define zFullVersion    (sntp_opt_strs+2553)
 /* extracted from optcode.tlib near line 342 */
 
 #if defined(ENABLE_NLS)

@@ -94,5 +94,5 @@ $(srcdir)/invoke-update-leap.texi: $(srcdir)/update-leap-opts.def $(std_def_list
 
 ### HTML
 
-$(srcdir)/update-leap.html: $(srcdir)/update-leap.texi $(top_srcdir)/sntp/include/version.texi
+$(srcdir)/update-leap.html: $(srcdir)/invoke-update-leap.texi $(srcdir)/update-leap.texi $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -I ../sntp -o update-leap.html update-leap.texi || true )

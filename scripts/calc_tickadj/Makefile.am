@@ -102,5 +102,5 @@ $(srcdir)/invoke-calc_tickadj.texi: $(srcdir)/calc_tickadj-opts $(srcdir)/calc_t
 
 ### HTML
 
-$(srcdir)/calc_tickadj.html: $(srcdir)/invoke-calc_tickadj.menu $(srcdir)/invoke-calc_tickadj.texi $(srcdir)/calc_tickadj.texi
+$(srcdir)/calc_tickadj.html: $(srcdir)/invoke-calc_tickadj.texi $(srcdir)/calc_tickadj.texi  $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -I ../sntp -o calc_tickadj.html calc_tickadj.texi || true )

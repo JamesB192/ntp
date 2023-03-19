@@ -1405,7 +1405,7 @@ used to select the program, defaulting to <samp>more</samp>.  Both will exit
 with a status code of 0.
 </p>
 <div class="example">
-<pre class="example">ntp-keygen (ntp) - Create a NTP host key - Ver. 4.2.8p14
+<pre class="example">ntp-keygen (ntp) - Create a NTP host key - Ver. 4.2.8p15
 Usage:  ntp-keygen [ -&lt;flag&gt; [&lt;val&gt;] | --&lt;name&gt;[{=| }&lt;val&gt;] ]...
   Flg Arg Option-Name    Description
    -b Num imbits         identity modulus bits
@@ -1452,7 +1452,7 @@ The following option preset mechanisms are supported:
  - reading file ./.ntprc
  - examining environment variables named NTP_KEYGEN_*
 
-Please send bug reports to:  &lt;http://bugs.ntp.org, bugs@ntp.org&gt;
+Please send bug reports to:  &lt;https://bugs.ntp.org, bugs@ntp.org&gt;
 </pre></div>
 
 <hr>
@@ -1473,7 +1473,7 @@ This option takes a number argument <samp>imbits</samp>.
 <li> must be compiled in by defining <code>AUTOKEY</code> during the compilation.
 </li></ul>
 
-<p>The number of bits in the identity modulus.  The default is 256.
+<p>The number of bits in the identity modulus.  The default is 512.
 </p><hr>
 <a name="ntp_002dkeygen-certificate"></a>
 <div class="header">
@@ -1917,7 +1917,7 @@ the associated name/value pair list (see: optionFindValue).
 
 <p>Print the program version to standard out, optionally with licensing
 information, then exit 0.  The optional argument specifies how much licensing
-detail to provide.  The default is to print just the version.  The licensing infomation may be selected with an option argument.
+detail to provide.  The default is to print just the version.  The licensing information may be selected with an option argument.
 Only the first letter of the argument is examined:
 </p>
 <dl compact="compact">

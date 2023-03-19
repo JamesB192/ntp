@@ -262,7 +262,7 @@ $(srcdir)/invoke-sntp.texi: $(srcdir)/sntp-opts.def $(std_def_list)
 	$(run_ag) -Tagtexi-cmd.tpl -DLEVEL=section sntp-opts.def
 	$(top_srcdir)/../scripts/build/check--help $@
 
-$(srcdir)/sntp.html: $(srcdir)/invoke-sntp.menu $(srcdir)/invoke-sntp.texi $(srcdir)/sntp.texi $(srcdir)/include/version.texi
+$(srcdir)/sntp.html: $(srcdir)/invoke-sntp.texi $(srcdir)/sntp.texi $(srcdir)/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -o sntp.html sntp.texi || true )
 
 libtool: $(LIBTOOL_DEPS)
