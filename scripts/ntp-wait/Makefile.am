@@ -92,5 +92,5 @@ $(srcdir)/invoke-ntp-wait.texi: ntp-wait-opts $(srcdir)/ntp-wait-opts.def $(std_
 
 ### HTML
 
-$(srcdir)/ntp-wait.html: $(srcdir)/invoke-ntp-wait.menu $(srcdir)/invoke-ntp-wait.texi $(srcdir)/ntp-wait.texi $(top_srcdir)/sntp/include/version.texi
+$(srcdir)/ntp-wait.html: $(srcdir)/invoke-ntp-wait.texi $(srcdir)/ntp-wait.texi $(top_srcdir)/sntp/include/version.texi
 	cd $(srcdir) && ( makeinfo --force --html --no-split -I ../sntp -o ntp-wait.html ntp-wait.texi || true )
