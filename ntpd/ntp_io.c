@@ -2011,7 +2011,7 @@ update_interfaces(
 	 */
 	refresh_all_peerinterfaces();
 
-	if (broadcast_client_enabled || sys_bclient)
+	if (sys_bclient)
 		io_setbclient();
 
 #ifdef MCAST
