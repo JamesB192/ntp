@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntp-keygen-opts.c)
  *
- *  It has been AutoGen-ed  March  5, 2023 at 02:05:21 AM by AutoGen 5.18.16
+ *  It has been AutoGen-ed  March 18, 2023 at 11:22:01 AM by AutoGen 5.18.16
  *  From the definitions    ntp-keygen-opts.def
  *  and the template file   options
  *
@@ -75,7 +75,7 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for ntp-keygen options
  */
-static char const ntp_keygen_opt_strs[2442] =
+static char const ntp_keygen_opt_strs[2443] =
 /*     0 */ "ntp-keygen (ntp) 4.2.8p15\n"
             "Copyright (C) 1992-2023 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
@@ -174,9 +174,9 @@ static char const ntp_keygen_opt_strs[2442] =
 /*  2365 */ "$HOME\0"
 /*  2371 */ ".\0"
 /*  2373 */ ".ntprc\0"
-/*  2380 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  2414 */ "\n\0"
-/*  2416 */ "ntp-keygen (ntp) 4.2.8p15";
+/*  2380 */ "https://bugs.ntp.org, bugs@ntp.org\0"
+/*  2415 */ "\n\0"
+/*  2417 */ "ntp-keygen (ntp) 4.2.8p15";
 
 /**
  *  imbits option description:
@@ -978,11 +978,11 @@ static char const * const apzHomeList[3] = {
 /** The ntp-keygen program bug email address. */
 #define zBugsAddr       (ntp_keygen_opt_strs+2380)
 /** Clarification/explanation of what ntp-keygen does. */
-#define zExplain        (ntp_keygen_opt_strs+2414)
+#define zExplain        (ntp_keygen_opt_strs+2415)
 /** Extra detail explaining what ntp-keygen does. */
 #define zDetail         (NULL)
 /** The full version string for ntp-keygen. */
-#define zFullVersion    (ntp_keygen_opt_strs+2416)
+#define zFullVersion    (ntp_keygen_opt_strs+2417)
 /* extracted from optcode.tlib near line 342 */
 
 #if defined(ENABLE_NLS)
@@ -1023,7 +1023,7 @@ doUsageOpt(tOptions * opts, tOptDesc * od)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /**
  * Code to handle the imbits option, when AUTOKEY is #define-d.
- * The number of bits in the identity modulus.  The default is 256.
+ * The number of bits in the identity modulus.  The default is 512.
  * @param[in] pOptions the ntp-keygen options data structure
  * @param[in,out] pOptDesc the option descriptor for this option.
  */

@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpsnmpd-opts.c)
  *
- *  It has been AutoGen-ed  March  5, 2023 at 02:05:16 AM by AutoGen 5.18.16
+ *  It has been AutoGen-ed  March 18, 2023 at 11:21:54 AM by AutoGen 5.18.16
  *  From the definitions    ntpsnmpd-opts.def
  *  and the template file   options
  *
@@ -65,7 +65,7 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for ntpsnmpd options
  */
-static char const ntpsnmpd_opt_strs[1613] =
+static char const ntpsnmpd_opt_strs[1614] =
 /*     0 */ "ntpsnmpd 4.2.8p15\n"
             "Copyright (C) 1992-2023 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
@@ -111,9 +111,9 @@ static char const ntpsnmpd_opt_strs[1613] =
 /*  1544 */ "$HOME\0"
 /*  1550 */ ".\0"
 /*  1552 */ ".ntprc\0"
-/*  1559 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  1593 */ "\n\0"
-/*  1595 */ "ntpsnmpd 4.2.8p15";
+/*  1559 */ "https://bugs.ntp.org, bugs@ntp.org\0"
+/*  1594 */ "\n\0"
+/*  1596 */ "ntpsnmpd 4.2.8p15";
 
 /**
  *  nofork option description:
@@ -319,11 +319,11 @@ static char const * const apzHomeList[3] = {
 /** The ntpsnmpd program bug email address. */
 #define zBugsAddr       (ntpsnmpd_opt_strs+1559)
 /** Clarification/explanation of what ntpsnmpd does. */
-#define zExplain        (ntpsnmpd_opt_strs+1593)
+#define zExplain        (ntpsnmpd_opt_strs+1594)
 /** Extra detail explaining what ntpsnmpd does. */
 #define zDetail         (NULL)
 /** The full version string for ntpsnmpd. */
-#define zFullVersion    (ntpsnmpd_opt_strs+1595)
+#define zFullVersion    (ntpsnmpd_opt_strs+1596)
 /* extracted from optcode.tlib near line 342 */
 
 #if defined(ENABLE_NLS)
