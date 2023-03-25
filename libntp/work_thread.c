@@ -389,7 +389,7 @@ send_blocking_resp_internal(
 #ifndef WORK_PIPE
 
 /* --------------------------------------------------------------------
- * Check if a (Windows-)hanndle to a semaphore is actually the same we
+ * Check if a (Windows-)handle to a semaphore is actually the same we
  * are using inside the sema wrapper.
  */
 static BOOL
