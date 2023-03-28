@@ -35,7 +35,7 @@ AC_PRESERVE_HELP_ORDER
 # the date YYYYMMDD optionally with -HHMM if there is more than one
 # bump in a day.
 
-ntp_configure_cache_version=20230313
+ntp_configure_cache_version=20230326
 
 # When the cache version of config.cache and configure do not
 # match, NTP_CACHEVERSION will flush the cache.
@@ -64,8 +64,6 @@ ntp_jupiter_ok=${ntp_jupiter_ok=no}
 NTP_PROG_CC
 NTP_COMPILER
 
-dnl # Do we need CXX for anything besides google test?
-dnl AC_PROG_CXX
 AC_PROG_YACC
 dnl AC_PROG_CC_C_O 	# called by NTP_COMPILER
 AX_C99_STRUCT_INIT
@@ -1108,7 +1106,7 @@ AC_CACHE_CHECK(
 	    [[
 		extern int syscall (int, ...);
 	    ]]
-	)]
+	)],
 	[ntp_cv_decl_syscall=yes],
 	[ntp_cv_decl_syscall=no]
     )]
@@ -4417,11 +4415,6 @@ AC_DEFINE_UNQUOTED([DYNAMIC_INTERLEAVE], [$ntp_dynamic_interleave],
 AC_MSG_RESULT([$ntp_ok])
 
 NTP_UNITYBUILD
-
-dnl  gtest is needed for our tests subdirs. It would be nice if we could
-dnl  require a C++ compiler only if we will use gtest, but AC_PROG_CXX
-dnl  can't be conditionalized.
-NTP_GOOGLETEST
 
 NTP_PROBLEM_TESTS
 

@@ -28,10 +28,10 @@ VPHACK_AFTER=
 endif
 
 vphack:
-	test -e info_trimble.c || ln -s $(srcdir)/info_trimble.c .
+	$(AM_V_at)test -e info_trimble.c || ln -s $(srcdir)/info_trimble.c .
 
 vphack_after:
-	test -L info_trimble.c || ( \
+	$(AM_V_at)test -L info_trimble.c || ( \
 		mv info_trimble.c $(srcdir)/info_trimble.c && \
 		ln -s $(srcdir)/info_trimble.c . \
 		)

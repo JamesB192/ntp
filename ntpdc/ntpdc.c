@@ -961,8 +961,7 @@ sendrequest(
 		reqsize = (reqsize + 3) & ~3;
 	} else
 		reqsize = req_pkt_size;
-	ptstamp = (void *)((char *)&qpkt + reqsize);
-	ptstamp--;
+	ptstamp = (void *)((char *)&qpkt + reqsize - sizeof *ptstamp);
 	get_systime(&ts);
 	L_ADD(&ts, &delay_time);
 	HTONL_FP(&ts, ptstamp);
