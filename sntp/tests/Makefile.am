@@ -2,6 +2,8 @@ NULL =
 BUILT_SOURCES =
 EXTRA_PROGRAMS =
 
+# data CLEANFILES down below
+
 CLEANFILES =			\
 	debug-output-lfp-bin	\
 	debug-output-lfp-dec	\
@@ -11,11 +13,11 @@ CLEANFILES =			\
 	kod-output-single	\
 	testLogfile.log		\
 	testLogfile2.log	\
+	.version		\
+	version.c		\
 	$(NULL)
 
 DISTCLEANFILES =		\
-	.version		\
-	version.c
 	kod-output-blank	\
 	kod-output-single 	\
 	kod-output-multiple	\
@@ -130,34 +132,39 @@ BUILT_SOURCES +=				\
 test_networking_SOURCES =		\
 	networking.c			\
 	run-networking.c		\
-	version.c			\
 	$(NULL)
+
+nodist_test_networking_SOURCES =	version.c
 
 test_packetHandling_SOURCES =		\
 	packetHandling.c		\
 	run-packetHandling.c		\
-	version.c			\
 	$(NULL)
+
+nodist_test_packetHandling_SOURCES =	version.c
 
 test_kodDatabase_SOURCES =		\
 	kodDatabase.c			\
 	run-kodDatabase.c		\
-	version.c			\
 	$(NULL)
+
+nodist_test_kodDatabase_SOURCES =	version.c
 
 test_keyFile_SOURCES =			\
 	fileHandlingTest.c		\
 	keyFile.c			\
 	run-keyFile.c			\
-	version.c			\
 	$(NULL)
+
+nodist_test_keyFile_SOURCES =		version.c
 
 test_kodFile_SOURCES =			\
 	fileHandlingTest.c		\
 	kodFile.c			\
 	run-kodFile.c			\
-	version.c			\
 	$(NULL)
+
+nodist_test_kodFile_SOURCES =		version.c
 
 test_packetProcessing_SOURCES =		\
 	packetProcessing.c		\
@@ -165,11 +172,15 @@ test_packetProcessing_SOURCES =		\
 	sntptest.c			\
 	$(NULL)
 
+nodist_test_packetProcessing_SOURCES =	version.c
+
 test_utilities_SOURCES =		\
 	fileHandlingTest.c		\
 	utilities.c			\
 	run-utilities.c			\
 	$(NULL)
+
+nodist_test_utilities_SOURCES =		version.c
 
 test_crypto_CFLAGS =			\
 	$(CFLAGS_LIBEVENT)		\
@@ -179,14 +190,16 @@ test_crypto_CFLAGS =			\
 test_crypto_SOURCES =			\
 	crypto.c			\
 	run-crypto.c			\
-	version.c			\
 	$(NULL)
+
+nodist_test_crypto_SOURCES =		version.c
 
 test_log_SOURCES =			\
 	t-log.c				\
 	run-t-log.c			\
-	version.c			\
 	$(NULL)
+
+nodist_test_log_SOURCES =		version.c
 
 
 $(srcdir)/run-kodFile.c: $(srcdir)/kodFile.c $(std_unity_list)
@@ -225,14 +238,16 @@ endif
 #TESTS += tests-runner
 #endif
 
-version.c: ../../libntp/libntp.a ../unity/libunity.a Makefile $(top_srcdir)/scm-rev
-	env CSET=`cat $(srcdir)/../scm-rev` $(top_builddir)/../scripts/build/mkver sntp-tests
+version.c: Makefile $(top_srcdir)/scm-rev
+	$(AM_V_GEN)env CSET=`cat $(srcdir)/../scm-rev` $(top_builddir)/../scripts/build/mkver sntp-tests
 
-version.o: version.c
-	env CCACHE_DISABLE=1 $(COMPILE) -c version.c -o version.o
+$(top_srcdir)/scm-rev: FRC.scm-rev
+	$(AM_V_GEN)cd .. && $(MAKE) $(AM_MAKEFLAGS) check-scm-rev
 
-$(top_srcdir)/scm-rev:
-	cd .. && $(MAKE) $(AM_MAKEFLAGS) check-scm-rev
+FRC.scm-rev:
+	@: FRC.scm-rev "force" depends on nothing and is not a file, so is	\
+	   always out-of-date causing targets which depend on it to also	\
+	   be outdated so their rules to fire each time they are built.
 
 include $(top_srcdir)/check-libntp.mf
 include $(top_srcdir)/check-libsntp.mf

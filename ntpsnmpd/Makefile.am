@@ -75,12 +75,12 @@ $(srcdir)/ntpsnmpd-opts.h: $(srcdir)/ntpsnmpd-opts.c
 	@: do-nothing action to avoid default SCCS get, .h built with .c
 	
 $(srcdir)/ntpsnmpd-opts.c: $(srcdir)/ntpsnmpd-opts.def $(std_def_list)
-	$(run_ag) ntpsnmpd-opts.def
+	$(AM_V_GEN)$(run_ag) ntpsnmpd-opts.def
 
 ###
 
 $(srcdir)/ntpsnmpd.1ntpsnmpdman: $(srcdir)/ntpsnmpd-opts.def $(std_def_list)
-	$(run_ag) -DMAN_SECTION=1ntpsnmpdman -Tagman-cmd.tpl ntpsnmpd-opts.def
+	$(AM_V_GEN)$(run_ag) -DMAN_SECTION=1ntpsnmpdman -Tagman-cmd.tpl ntpsnmpd-opts.def
 
 $(srcdir)/ntpsnmpd.man.in: $(srcdir)/ntpsnmpd.1ntpsnmpdman $(top_srcdir)/sntp/scripts/mansec2subst.sed
 	sed -f $(top_srcdir)/sntp/scripts/mansec2subst.sed $(srcdir)/ntpsnmpd.1ntpsnmpdman > $(srcdir)/ntpsnmpd.man.in+
@@ -89,7 +89,7 @@ $(srcdir)/ntpsnmpd.man.in: $(srcdir)/ntpsnmpd.1ntpsnmpdman $(top_srcdir)/sntp/sc
 ###
 
 $(srcdir)/ntpsnmpd.1ntpsnmpdmdoc: $(srcdir)/ntpsnmpd-opts.def $(std_def_list)
-	$(run_ag) -DMAN_SECTION=1ntpsnmpdmdoc -Tagmdoc-cmd.tpl ntpsnmpd-opts.def
+	$(AM_V_GEN)$(run_ag) -DMAN_SECTION=1ntpsnmpdmdoc -Tagmdoc-cmd.tpl ntpsnmpd-opts.def
 
 $(srcdir)/ntpsnmpd.mdoc.in: $(srcdir)/ntpsnmpd.1ntpsnmpdmdoc $(top_srcdir)/sntp/scripts/mansec2subst.sed
 	sed -f $(top_srcdir)/sntp/scripts/mansec2subst.sed $(srcdir)/ntpsnmpd.1ntpsnmpdmdoc > $(srcdir)/ntpsnmpd.mdoc.in+
@@ -107,7 +107,7 @@ $(srcdir)/invoke-ntpsnmpd.menu: $(srcdir)/invoke-ntpsnmpd.texi
 	@: do-nothing action to avoid default SCCS get, .menu built with .texi
 	
 $(srcdir)/invoke-ntpsnmpd.texi: $(srcdir)/ntpsnmpd-opts.def $(std_def_list)
-	$(run_ag) -Tagtexi-cmd.tpl -DLEVEL=section ntpsnmpd-opts.def
+	$(AM_V_GEN)$(run_ag) -Tagtexi-cmd.tpl -DLEVEL=section ntpsnmpd-opts.def
 	$(top_srcdir)/scripts/build/check--help $@
 
 $(srcdir)/ntpsnmpd.html: $(srcdir)/invoke-ntpsnmpd.texi $(srcdir)/ntpsnmpd.texi $(top_srcdir)/sntp/include/version.texi
