@@ -4511,7 +4511,7 @@ kill_asyncio(
 
 
 /*
- * Add and delete functions for the list of open sockets
+ * Add and delete functions for the list of input file descriptors
  */
 static void
 add_fd_to_list(
@@ -4701,14 +4701,16 @@ localaddrtoa(
 
 #ifdef HAS_ROUTING_SOCKET
 # ifndef UPDATE_GRACE
-#  define UPDATE_GRACE	2	/* wait UPDATE_GRACE seconds before scanning */
+#  define UPDATE_GRACE	3	/* min. UPDATE_GRACE - 1 seconds before scanning */
 # endif
 
 static void
 process_routing_msgs(struct asyncio_reader *reader)
 {
-	char buffer[5120];
-	int cnt, msg_type;
+	static char *	buffer;
+	static size_t	buffsz = 8192;
+	int		cnt, new, msg_type;
+	socklen_t	len;
 #ifdef HAVE_RTNETLINK
 	struct nlmsghdr *nh;
 #else
@@ -4726,15 +4728,34 @@ process_routing_msgs(struct asyncio_reader *reader)
 		return;
 	}
 
-	cnt = read(reader->fd, buffer, sizeof(buffer));
+	if (NULL == buffer) {
+		buffer = emalloc(buffsz);
+	}
+
+	cnt = read(reader->fd, buffer, buffsz);
 
 	if (cnt < 0) {
 		if (errno == ENOBUFS) {
-			msyslog(LOG_ERR,
-				"routing socket reports: %m");
+			/* increase socket buffer by 25% */
+			len = sizeof cnt;
+			if (0 > getsockopt(reader->fd, SOL_SOCKET, SO_RCVBUF, &cnt, &len) ||
+			    sizeof cnt != len) {
+				msyslog(LOG_ERR,
+					"routing getsockopt SO_RCVBUF %u %u: %m - disabling",
+					(u_int)cnt, (u_int)sizeof cnt);
+				goto disable;
+			}
+			new = cnt + (cnt / 4);
+			if (0 > setsockopt(reader->fd, SOL_SOCKET, SO_RCVBUF, &new, sizeof new)) {
+				msyslog(LOG_ERR,
+					"routing setsockopt SO_RCVBUF %d -> %d: %m - disabling",
+					cnt, new);
+				goto disable;
+			}
 		} else {
 			msyslog(LOG_ERR,
 				"routing socket reports: %m - disabling");
+		    disable:
 			remove_asyncio_reader(reader);
 			delete_asyncio_reader(reader);
 		}

@@ -248,7 +248,6 @@ static void free_config_logconfig(config_tree *);
 static void free_config_monitor(config_tree *);
 static void free_config_nic_rules(config_tree *);
 static void free_config_other_modes(config_tree *);
-static void free_config_peers(config_tree *);
 static void free_config_phone(config_tree *);
 static void free_config_reset_counters(config_tree *);
 static void free_config_rlimit(config_tree *);
@@ -258,12 +257,15 @@ static void free_config_tinker(config_tree *);
 static void free_config_tos(config_tree *);
 static void free_config_trap(config_tree *);
 static void free_config_ttl(config_tree *);
-static void free_config_unpeers(config_tree *);
 static void free_config_vars(config_tree *);
 
 #ifdef SIM
 static void free_config_sim(config_tree *);
-#endif
+#else	/* !SIM follows */
+static void free_config_peers(config_tree *);
+static void free_config_unpeers(config_tree *);
+static int is_sane_resolved_address(sockaddr_u *peeraddr, int hmode);
+#endif	/* !SIM */
 static void destroy_address_fifo(address_fifo *);
 #define FREE_ADDRESS_FIFO(pf)			\
 	do {					\
@@ -275,7 +277,6 @@ static void free_config_tree(config_tree *ptree);
 #endif	/* FREE_CFG_T */
 
 static void destroy_restrict_node(restrict_node *my_node);
-static int is_sane_resolved_address(sockaddr_u *peeraddr, int hmode);
 static void save_and_apply_config_tree(int/*BOOL*/ from_file);
 static void destroy_int_fifo(int_fifo *);
 #define FREE_INT_FIFO(pf)			\
@@ -325,7 +326,6 @@ static void config_monitor(config_tree *);
 static void config_rlimit(config_tree *);
 static void config_system_opts(config_tree *);
 static void config_tinker(config_tree *);
-static int  config_tos_clock(config_tree *);
 static void config_tos(config_tree *);
 static void config_vars(config_tree *);
 
@@ -342,6 +342,7 @@ static void config_access(config_tree *);
 static void config_mdnstries(config_tree *);
 static void config_phone(config_tree *);
 static void config_setvar(config_tree *);
+static int  config_tos_clock(config_tree *);
 static void config_ttl(config_tree *);
 static void config_trap(config_tree *);
 static void config_fudge(config_tree *);
@@ -352,7 +353,6 @@ static void config_nic_rules(config_tree *, int/*BOOL*/ input_from_file);
 static void config_reset_counters(config_tree *);
 static u_char get_correct_host_mode(int token);
 static int peerflag_bits(peer_node *);
-#endif	/* !SIM */
 
 #ifdef WORKER
 static void peer_name_resolved(int, int, void *, const char *, const char *,
@@ -364,7 +364,8 @@ static void unpeer_name_resolved(int, int, void *, const char *, const char *,
 static void trap_name_resolved(int, int, void *, const char *, const char *,
 			const struct addrinfo *,
 			const struct addrinfo *);
-#endif
+#endif	/* WORKER */
+#endif	/* !SIM */
 
 enum gnn_type {
 	t_UNK,		/* Unknown */
@@ -488,13 +489,14 @@ free_config_tree(
 	free_config_fudge(ptree);
 	free_config_device(ptree);
 	free_config_vars(ptree);
-	free_config_peers(ptree);
-	free_config_unpeers(ptree);
 	free_config_nic_rules(ptree);
 	free_config_reset_counters(ptree);
 #ifdef SIM
 	free_config_sim(ptree);
-#endif
+#else	/* !SIM follows */
+	free_config_peers(ptree);
+	free_config_unpeers(ptree);
+#endif	/* !SIM */
 	free_auth_node(ptree);
 
 	free(ptree);
@@ -2190,7 +2192,7 @@ free_config_auth(
 }
 #endif	/* FREE_CFG_T */
 
-
+#ifndef SIM
 /* Configure low-level clock-related parameters. Return TRUE if the
  * clock might need adjustment like era-checking after the call, FALSE
  * otherwise.
@@ -2223,6 +2225,7 @@ config_tos_clock(
 	    
 	return ret;
 }
+#endif	/* SIM */
 
 static void
 config_tos(
@@ -3585,7 +3588,6 @@ config_phone(
 		}
 	}
 }
-#endif	/* !SIM */
 
 static void
 config_mdnstries(
@@ -3597,6 +3599,7 @@ config_mdnstries(
 	mdnstries = ptree->mdnstries;
 #endif  /* HAVE_DNSREGISTRATION */
 }
+#endif	/* !SIM */
 
 #ifdef FREE_CFG_T
 static void
@@ -3885,6 +3888,7 @@ config_fudge(
 	sockaddr_u addr_sock;
 	address_node *addr_node;
 	struct refclockstat clock_stat;
+	char refid_str[5];
 	int err_flag;
 
 	curr_fudge = HEAD_PFIFO(ptree->fudge);
@@ -3940,8 +3944,10 @@ config_fudge(
 			case T_Refid:
 				clock_stat.haveflags |= CLK_HAVEVAL2;
 				/* strncpy() does exactly what we want here: */
-				strncpy((char*)&clock_stat.fudgeval2,
-					curr_opt->value.s, 4);
+				strncpy(refid_str, curr_opt->value.s, 
+					sizeof refid_str - 1);
+				memcpy(&clock_stat.fudgeval2, refid_str,
+				       sizeof clock_stat.fudgeval2);
 				break;
 
 			case T_Flag1:
@@ -4195,6 +4201,7 @@ free_config_vars(
 #endif	/* FREE_CFG_T */
 
 
+#ifndef SIM
 /* Define a function to check if a resolved address is sane.
  * If yes, return 1, else return 0;
  */
@@ -4237,7 +4244,6 @@ is_sane_resolved_address(
 }
 
 
-#ifndef SIM
 static u_char
 get_correct_host_mode(
 	int token
@@ -4482,7 +4488,7 @@ config_peers(
 		}
 	}
 }
-#endif	/* !SIM */
+
 
 /*
  * peer_name_resolved()
@@ -4582,7 +4588,6 @@ free_config_peers(
 #endif	/* FREE_CFG_T */
 
 
-#ifndef SIM
 static void
 config_unpeers(
 	config_tree *ptree
@@ -4658,7 +4663,6 @@ config_unpeers(
 # endif
 	}
 }
-#endif	/* !SIM */
 
 
 /*
@@ -4738,6 +4742,7 @@ free_config_unpeers(
 	}
 }
 #endif	/* FREE_CFG_T */
+#endif	/* !SIM */
 
 
 #ifndef SIM
