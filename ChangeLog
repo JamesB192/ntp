@@ -1,3 +1,5 @@
+* [Bug 3806] libntp/mstolfp.c needs bounds checking <perlinger@ntp.org>
+  - solved numerically instead of using string manipulation
 ---
 * [Bug 3802] ntp-keygen -I default identity modulus bits too small for
              OpenSSL 3.  Reported by rmsh1216@163.com <hart@ntp.org>
