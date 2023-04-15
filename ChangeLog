@@ -1,4 +1,6 @@
 ---
+* [Sec 3807] praecis_parse() in the Palisade refclock driver has a
+             hypothetical input buffer overflow. Reported by ... stenn@
 * [Bug 3802] ntp-keygen -I default identity modulus bits too small for
              OpenSSL 3.  Reported by rmsh1216@163.com <hart@ntp.org>
 * [Bug 3801] gpsdjson refclock gps_open() device name mishandled. <hart@ntp.org>
