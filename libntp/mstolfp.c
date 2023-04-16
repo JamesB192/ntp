@@ -35,9 +35,9 @@ mstolfp(
 		++str;
 	
 	switch (ch) {
-	case '-': neg = TRUE;
-	case '+': ++str;
-	default : break;
+	    case '-': neg = TRUE;
+	    case '+': ++str;
+	    default : break;
 	}
 	
 	if (!isdigit(ch = *(const unsigned char*)str) && (ch != '.'))
@@ -67,6 +67,7 @@ mstolfp(
 	 * messy to fix in the unit tests. So we stay with the slightly
 	 * suboptimal calculation...)
 	 */
+	/* round */
 	if (r >= 500)
 		L_ADDUF(lfp, 1u);
 	/* fix sign */
