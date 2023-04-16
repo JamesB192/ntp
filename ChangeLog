@@ -75,6 +75,7 @@
              Integrated patch from Brian Utterback. <hart@ntp.org>
 * [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
 * [Bug 2410] syslog an error message on panic exceeded. <brian.utterback@oracle.com>
+* Disable "embedded NUL in string" messages in libopts, when we can. <stenn@>
 * Use https in the AC_INIT URLs in configure.ac.  <stenn@ntp.org>
 * Implement NTP_FUNC_REALPATH.  <stenn@ntp.org>
 * Lose a gmake construct in ntpd/Makefile.am.  <stenn@ntp.org>
