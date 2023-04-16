@@ -1279,7 +1279,7 @@ praecis_parse (
 		return;
 	}
 
-	memcpy(buf+p, rbufp->recv_space.X_recv_buffer, rbufp->recv_length);
+	memcpy(buf+p, rbufp->recv_buffer, rbufp->recv_length);
 	p += rbufp->recv_length;
 
 	if (   p >= 2

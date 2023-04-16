@@ -244,11 +244,11 @@ fg_receive(
 	}
 
 	/* Below I trying to find a correct reply in buffer.
-	 * Sometime GPS reply located in the beginnig of buffer,
+	 * Sometime GPS reply located in the beginning of buffer,
 	 * sometime you can find it with some offset.
 	 */
 
-	bpt = (char *)rbufp->recv_space.X_recv_buffer;
+	bpt = (char *)rbufp->recv_buffer;
 	while (*bpt != '\x10')
 		bpt++;
 
