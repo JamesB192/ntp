@@ -8,6 +8,8 @@ endif
 libopts_la_SOURCES      = libopts.c
 libopts_la_CPPFLAGS     = -I$(srcdir)
 libopts_la_LDFLAGS      = -version-info  42:1:17
+# HMS: we're not currently otherwise using AM_CFLAGS>..
+AM_CFLAGS		= $(CC_NOFORMAT)
 EXTRA_DIST		=
 BUILT_SOURCES		=
 MOSTLYCLEANFILES	=
