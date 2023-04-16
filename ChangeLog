@@ -1,6 +1,8 @@
 * [Bug 3806] libntp/mstolfp.c needs bounds checking <perlinger@ntp.org>
   - solved numerically instead of using string manipulation
 ---
+* [Sec 3807] praecis_parse() in the Palisade refclock driver has a
+             hypothetical input buffer overflow. Reported by ... stenn@
 * [Bug 3802] ntp-keygen -I default identity modulus bits too small for
              OpenSSL 3.  Reported by rmsh1216@163.com <hart@ntp.org>
 * [Bug 3801] gpsdjson refclock gps_open() device name mishandled. <hart@ntp.org>
@@ -77,6 +79,8 @@
              Integrated patch from Brian Utterback. <hart@ntp.org>
 * [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
 * [Bug 2410] syslog an error message on panic exceeded. <brian.utterback@oracle.com>
+* Use recv_buffer instead of the longer recv_space.X_recv_buffer.
+* Disable "embedded NUL in string" warnings in libopts, when we can. <stenn@>
 * Use https in the AC_INIT URLs in configure.ac.  <stenn@ntp.org>
 * Implement NTP_FUNC_REALPATH.  <stenn@ntp.org>
 * Lose a gmake construct in ntpd/Makefile.am.  <stenn@ntp.org>
