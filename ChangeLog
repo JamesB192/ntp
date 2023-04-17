@@ -79,6 +79,7 @@
              Integrated patch from Brian Utterback. <hart@ntp.org>
 * [Bug 2525] Turn on automake subdir-objects across the project. <hart@ntp.org>
 * [Bug 2410] syslog an error message on panic exceeded. <brian.utterback@oracle.com>
+* Use correct rounding in mstolfp(). perlinger/hart
 * M_ADDF should use u_int32.  <hart@ntp.org>
 * Only define tv_fmt_libbuf() if we will use it. <stenn@ntp.org>
 * Use recv_buffer instead of the longer recv_space.X_recv_buffer. hart/stenn

@@ -61,17 +61,11 @@ mstolfp(
 	lfp->l_uf |= q;
 	r -= q * 1000u;
 
-	/* numerically, rounding should happen *after* the sign correction
-	 * but that would produce different bit patterns from the previous
-	 * implementation. (off-by-one in the fraction. Neglectible, but
-	 * messy to fix in the unit tests. So we stay with the slightly
-	 * suboptimal calculation...)
-	 */
-	/* round */
-	if (r >= 500)
-		L_ADDUF(lfp, 1u);
 	/* fix sign */
 	if (neg)
 		L_NEG(lfp);
+	/* round */
+	if (r >= 500)
+		L_ADDF(lfp, (neg ? -1 : 1));
 	return 1;
 }
