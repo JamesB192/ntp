@@ -403,7 +403,7 @@ refclock_transmit(
 	peer->procptr->inpoll = TRUE;
 	if (refclock_conf[clktype]->clock_poll != noentry)
 		(refclock_conf[clktype]->clock_poll)(unit, peer);
-	poll_update(peer, peer->hpoll);
+	poll_update(peer, peer->hpoll, 0);
 }
 
 

@@ -920,7 +920,7 @@ local_clock(
 		tc_counter = 0;
 		tc_twinlo  = current_time + max(deadband, 60);
 		tc_twinhi  = tc_twinlo + deadband;
-		poll_update(peer, sys_poll);
+		poll_update(peer, sys_poll, 0);
 	}
 
 	/*

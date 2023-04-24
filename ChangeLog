@@ -3,9 +3,14 @@
 
 From ntp-4.2.8p14:
 ---
+(4.2.8p14) 2020/03/03 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3610] process_control() should bail earlier on short packets. stenn@
   - Reported by Philippe Antoine
+* [Sec 3596] Highly predictable timestamp attack. <stenn@ntp.org>
+  - Reported by Miroslav Lichvar
+* [Sec 3592] DoS attack on client ntpd <perlinger@ntp.org>
+  - Reported by Miroslav Lichvar
 * [Bug 3637] Emit the version of ntpd in saveconfig.  stenn@
 * [Bug 3636] NMEA: combine time/date from multiple sentences <perlinger@ntp.org>
 * [Bug 3635] Make leapsecond file hash check optional <perlinger@ntp.org>
@@ -88,6 +93,10 @@ From ntp-4.2.8p14:
 * [Bug 1433] runtime check whether the kernel really supports capabilities
   - (modified) patch by Kurt Roeckx <perlinger@ntp.org>
 * Clean up sntp/networking.c:sendpkt() error message.  <stenn@ntp.org>
+* Provide more detail on unrecognized config file parser tokens. <stenn@ntp.org>
+* Startup log improvements. <stenn@ntp.org>
+* Update the copyright year.
+* html/confopt.html: cleanup. <stenn@ntp.org>
 
 (4.3.99) 2019/06/07 Released by Harlan Stenn <stenn@ntp.org>
 From ntp-4.2.8p13:

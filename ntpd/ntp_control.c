@@ -3493,7 +3493,7 @@ write_variables(
 				return;
 			}
 		}
-
+		
 		if (ext_var) {
 			octets = strlen(v->text) + strlen(valuep) + 2;
 			vareqv = emalloc(octets);

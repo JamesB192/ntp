@@ -3,7 +3,7 @@
 set -e
 
 clt=`./scripts/build/genChangeLogTag`
-first=`sed '1q;d' < ChangeLog`
+first=`head -1 < ChangeLog`
 
 case "$first" in
  ---)	echo "ChangeLog is -stable"

@@ -906,8 +906,15 @@ ntpdmain(
 				" %s", saved_argv[i]);
 			cp += strlen(cp);
 		}
-		msyslog(LOG_INFO, "%s", buf);
+		msyslog(LOG_NOTICE, "%s", buf);
 	}
+
+	msyslog(LOG_NOTICE, "----------------------------------------------------");
+	msyslog(LOG_NOTICE, "ntp-4 is maintained by Network Time Foundation,");
+	msyslog(LOG_NOTICE, "Inc. (NTF), a non-profit 501(c)(3) public-benefit");
+	msyslog(LOG_NOTICE, "corporation.  Support and training for ntp-4 are");
+	msyslog(LOG_NOTICE, "available at https://www.nwtime.org/support");
+	msyslog(LOG_NOTICE, "----------------------------------------------------");
 
 	/*
 	 * Install trap handlers to log errors and assertion failures.
