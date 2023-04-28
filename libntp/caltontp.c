@@ -12,7 +12,7 @@
 
 /*
  * Juergen Perlinger, 2008-11-12
- * Add support for full calendar calculatios. If the day-of-year is provided
+ * Add support for full calendar calculations. If the day-of-year is provided
  * (that is, not zero) it will be used instead of month and day-of-month;
  * otherwise a full turn through the calendar calculations will be taken.
  *

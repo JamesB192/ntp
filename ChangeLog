@@ -84,6 +84,7 @@
 * Only define tv_fmt_libbuf() if we will use it. <stenn@ntp.org>
 * Use recv_buffer instead of the longer recv_space.X_recv_buffer. hart/stenn
 * Disable "embedded NUL in string" warnings in libopts, when we can. <stenn@>
+* syslog valid incoming KoDs.  <stenn@ntp.org>
 * Rename a poorly-named variable.  <stenn@ntp.org>
 * Disable "embedded NUL in string" messages in libopts, when we can. <stenn@>
 * Use https in the AC_INIT URLs in configure.ac.  <stenn@ntp.org>
