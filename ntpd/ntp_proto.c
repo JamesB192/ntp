@@ -1984,32 +1984,36 @@ receive(
 			return;
 		}
 
-	/*
-	 * Basic mode checks:
-	 *
-	 * If there is no origin timestamp, it's either an initial packet
-	 * or we've already received a response to our query.  Of course,
-	 * should 'aorg' be all-zero because this really was the original
-	 * transmit timestamp, we'll ignore this reply.  There is a window
-	 * of one nanosecond once every 136 years' time where this is
-	 * possible.  We currently ignore this situation, as a completely
-	 * zero timestamp is (quietly?) disallowed.
-	 *
-	 * Otherwise, check for bogus packet in basic mode.
-	 * If it is bogus, switch to interleaved mode and resynchronize,
-	 * but only after confirming the packet is not bogus in
-	 * symmetric interleaved mode.
-	 *
-	 * This could also mean somebody is forging packets claiming to
-	 * be from us, attempting to cause our server to KoD us.
-	 *
-	 * We have earlier asserted that hisstratum cannot be 0.
-	 * If hisstratum is STRATUM_UNSPEC, it means he's not sync'd.
-	 */
+		/*
+		 * Basic mode checks:
+		 *
+		 * If there is no origin timestamp, it's either an initial
+		 * packet or we've already received a response to our query.
+		 * Of course, should 'aorg' be all-zero because this really
+		 * was the original transmit timestamp, we'll ignore this
+		 * reply.  There is a window of one nanosecond once every
+		 * 136 years' time where this is possible.  We currently
+		 * ignore this situation, as a completely zero timestamp
+		 * is (quietly?) disallowed.
+		 *
+		 * Otherwise, check for bogus packet in basic mode.
+		 * If it is bogus, switch to interleaved mode and
+		 * resynchronize, but only after confirming the packet is
+		 * not bogus in symmetric interleaved mode.
+		 *
+		 * This could also mean somebody is forging packets claiming
+		 * to be from us, attempting to cause our server to KoD us.
+		 *
+		 * We have earlier asserted that hisstratum cannot be 0.
+		 * If hisstratum is STRATUM_UNSPEC, it means he's not sync'd.
+		 */
 
-	/* XXX: FLAG_LOOPNONCE */
-	DEBUG_INSIST(0 == (FLAG_LOOPNONCE & peer->flags));
+		/* XXX: FLAG_LOOPNONCE */
+		DEBUG_INSIST(0 == (FLAG_LOOPNONCE & peer->flags));
 
+		msyslog(LOG_INFO,
+			"receive: Got KoD %s from %s",
+			pkt->refid, ntoa(&peer->srcadr));
 	} else if (peer->flip == 0) {
 		if (0) {
 		} else if (L_ISZERO(&p_org)) {
