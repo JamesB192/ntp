@@ -2898,15 +2898,16 @@ clock_update(
 		 */
 		if ((fmri = getenv("SMF_FMRI")) != NULL) {
 			if (smf_maintain_instance(fmri, 0) < 0) {
-				printf("smf_maintain_instance: %s\n",
-				    scf_strerror(scf_error()));
+				msyslog(LOG_ERR, "smf_maintain_instance: %s",
+						 scf_strerror(scf_error()));
 				exit(1);
 			}
 			/*
 			 * Sleep until SMF kills us.
 			 */
 			msyslog(LOG_ERR, "%s placed into maintenance. "
-				"Set system clock by hand before clearing.");
+				"Set system clock by hand before clearing.",
+				fmri);
 			for (;;)
 				pause();
 		}
