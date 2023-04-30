@@ -1,4 +1,5 @@
 ---
+* [Bug 3808] Assertion failure in ntpq on malformed RT-11 date <perlinger@ntp.org>
 * [Bug 3802] ntp-keygen -I default identity modulus bits too small for
              OpenSSL 3.  Reported by rmsh1216@163.com <hart@ntp.org>
 * [Bug 3801] gpsdjson refclock gps_open() device name mishandled. <hart@ntp.org>
