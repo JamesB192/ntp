@@ -1,4 +1,6 @@
 ---
+* [Bug 3814] First poll delay of new or cleared associations miscalculated.
+             <hart@ntp.org>
 * [Bug 3802] ntp-keygen -I default identity modulus bits too small for
              OpenSSL 3.  Reported by rmsh1216@163.com <hart@ntp.org>
 * [Bug 3801] gpsdjson refclock gps_open() device name mishandled. <hart@ntp.org>

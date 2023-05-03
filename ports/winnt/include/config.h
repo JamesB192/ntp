@@ -75,7 +75,7 @@
 
 /* Prevent inclusion of winsock.h in windows.h */
 #ifndef _WINSOCKAPI_
-#define _WINSOCKAPI_  
+#define _WINSOCKAPI_
 #endif
 
 #ifndef __RPCASYNC_H__
@@ -213,15 +213,7 @@ typedef int socklen_t;
 #define SO_EXCLUSIVEADDRUSE ((int)(~SO_REUSEADDR))
 #endif
 
-#if defined _MSC_VER && _MSC_VER < 1400
-/*
- * Use 32-bit time definitions for versions prior to VS 2005
- * VS 2005 defaults to 64-bit time
- */
-# define SIZEOF_TIME_T 4
-#else
-# define SIZEOF_TIME_T 8
-#endif
+#define SIZEOF_TIME_T 8
 
 
 /*
