@@ -1814,7 +1814,7 @@ yyerror(
 	if (!lex_from_file()) {
 		/* Save the error message in the correct buffer */
 		retval = snprintf(remote_config.err_msg + remote_config.err_pos,
-				  MAXLINE - remote_config.err_pos,
+				  sizeof remote_config.err_msg - remote_config.err_pos,
 				  "column %d %s",
 				  ip_ctx->errpos.ncol, msg);
 
