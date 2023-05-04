@@ -389,7 +389,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\isc\mem.h">
-      <Filter>Header Files</Filter>
+      <Filter>libisc Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\netdb.h">
       <Filter>Header Files</Filter>
