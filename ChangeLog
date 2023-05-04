@@ -1,6 +1,7 @@
 ---
 * [Bug 3814] First poll delay of new or cleared associations miscalculated.
              <hart@ntp.org>
+* [Sec 3808] Assertion failure in ntpq on malformed RT-11 date <perlinger@ntp.org>
 * [Sec 3807] praecis_parse() in the Palisade refclock driver has a
              hypothetical input buffer overflow. Reported by ... stenn@
 * [Sec 3806] libntp/mstolfp.c needs bounds checking <perlinger@ntp.org>

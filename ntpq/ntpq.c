@@ -2207,9 +2207,11 @@ rtdatetolfp(
 	if (cal.year < 100)
 		cal.year += 1900;
 
-	lfp->l_ui = caltontp(&cal);
+	/* check for complaints from 'caltontp()'! */
 	lfp->l_uf = 0;
-	return 1;
+	errno = 0;
+	lfp->l_ui = caltontp(&cal);
+	return (errno == 0);
 }
 
 
