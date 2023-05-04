@@ -3228,19 +3228,19 @@ peer_clear(
 
 	/*
 	 * During initialization use the association count to spread out
-	 * the polls at one-second intervals. Passive associations'
-	 * first poll is delayed by the "discard minimum" to avoid rate
-	 * limiting. Other post-startup new or cleared associations
+	 * the polls at one-second intervals. Unconfigured associations'
+	 * first poll is delayed by the "discard minimum" plus 1 to avoid
+	 * rate limiting. Other post-startup new or cleared associations
 	 * randomize the first poll over the minimum poll interval to
 	 * avoid implosion.
 	 */
 	peer->nextdate = peer->update = peer->outdate = current_time;
 	if (initializing) {
 		peer->nextdate += peer_associations;
-	} else if (MODE_PASSIVE == peer->hmode) {
-		peer->nextdate += ntp_minpkt;
+	} else if (!(FLAG_CONFIG & peer->flags)) {
+		peer->nextdate += ntp_minpkt + 1;
 	} else {
-		peer->nextdate += ntp_random() % peer->minpoll;
+		peer->nextdate += ntp_random() % (1 << peer->minpoll);
 	}
 #ifdef AUTOKEY
 	peer->refresh = current_time + (1 << NTP_REFRESH);
