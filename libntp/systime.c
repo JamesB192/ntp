@@ -614,7 +614,7 @@ tv_fmt_libbuf(
 		 (u_int)ptv->tv_usec);
 	return retv;
 }
-#endif
+#endif	/* SIZEOF_TIME_T > 4 */
 
 
 int /*BOOL*/
