@@ -591,6 +591,8 @@ step_systime(
 	return TRUE;
 }
 
+
+#if SIZEOF_TIME_T > 4
 static const char *
 tv_fmt_libbuf(
 	const struct timeval * ptv
@@ -612,6 +614,7 @@ tv_fmt_libbuf(
 		 (u_int)ptv->tv_usec);
 	return retv;
 }
+#endif	/* SIZEOF_TIME_T > 4 */
 
 
 int /*BOOL*/
