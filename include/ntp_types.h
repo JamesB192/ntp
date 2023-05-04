@@ -258,10 +258,11 @@ aligned_ptr(
  * Macro to use in otherwise-empty source files to comply with ANSI C
  * requirement that each translation unit (source file) contain some
  * declaration.  This has commonly been done by declaring an unused
- * global variable of type int or char.  An extern reference to exit()
- * serves the same purpose without bloat.
+ * global variable of type int or char.  An extern reference to abs()
+ * serves the same purpose without bloat.  We once used exit() but
+ * that can produce warnings on systems that declare exit() noreturn.
  */
-#define	NONEMPTY_TRANSLATION_UNIT	extern void exit(int);
+#define	NONEMPTY_TRANSLATION_UNIT	extern int abs(int);
 
 /*
  * On Unix struct sock_timeval is equivalent to struct timeval.
