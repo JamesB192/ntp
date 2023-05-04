@@ -821,10 +821,6 @@ static u_char	res_async;	/* sending async trap response? */
 static	char *reqpt;
 static	char *reqend;
 
-#ifndef MIN
-#define MIN(a, b) (((a) <= (b)) ? (a) : (b))
-#endif
-
 /*
  * init_control - initialize request data
  */
