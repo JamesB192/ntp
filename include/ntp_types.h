@@ -168,11 +168,11 @@ typedef unsigned long long u_int64;
 
 /*
  * and here the trouble starts: We need a representation with more than
- * 64 bits. If a scalar of that size is not available, we need a struct
+ * 32 bits. If a scalar of that size is not available, we need a struct
  * that holds the value in split representation.
  *
  * To ease the usage a bit, we alwys use a union that is in processor
- * byte order and might or might not contain a 64bit scalar.
+ * byte order and might or might not contain a 64-bit scalar.
  */
 
 #if SIZEOF_SHORT != 2
