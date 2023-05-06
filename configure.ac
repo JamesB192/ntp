@@ -4208,6 +4208,24 @@ case "$ans" in
 esac
 
 
+AC_MSG_CHECKING([if we want a debug assert on an OOB KoD RATE value])
+AC_ARG_ENABLE(
+    [bug3767-fix],
+    [AS_HELP_STRING(
+	[--enable-bug3767-fix],
+	[+ Disable debug assertion on OOB KoD RATE value]
+    )],
+    [ans=$enableval],
+    [ans=yes]
+)
+AC_MSG_RESULT([$ans])
+case "$ans" in
+ no)
+    AC_DEFINE([DISABLE_BUG3767_FIX], [1],
+	[Disable debug assertion on OOB KoD RATE value?])
+esac
+
+
 AC_MSG_CHECKING([if we should use the IRIG sawtooth filter])
 
 case "$host" in

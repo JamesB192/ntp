@@ -3082,7 +3082,9 @@ get_pollskew(
 	)
 {
 
+#ifdef DISABLE_BUG3767_FIX
 	DEBUG_INSIST(3 <= p && 17 >= p);
+#endif
 	if (3 <= p && 17 >= p) {
 		*rv = psl[p - 3];
 
