@@ -89,6 +89,8 @@
 * Only define tv_fmt_libbuf() if we will use it. <stenn@ntp.org>
 * Use recv_buffer instead of the longer recv_space.X_recv_buffer. hart/stenn
 * Disable "embedded NUL in string" warnings in libopts, when we can. <stenn@>
+* If DEBUG is enabled, the startup banner now says that debug assertions
+  are in force and that ntpd will abort if any are violated. <stenn@ntp.org>
 * syslog valid incoming KoDs.  <stenn@ntp.org>
 * Rename a poorly-named variable.  <stenn@ntp.org>
 * Disable "embedded NUL in string" messages in libopts, when we can. <stenn@>
