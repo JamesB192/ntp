@@ -792,6 +792,28 @@ receive(
 	}
 
 	/*
+	 * Validate the poll interval in the packet.
+	 * 0 probably indicates a data-minimized packet.
+	 * A valid poll interval is required for RATEKISS, where
+	 * a value of 0 is not allowed.  We check for this below.
+	 * 
+	 * There might be arguments against this check.  If you have
+	 * any of these arguments, please let us know.
+	 *
+	 * At this point, the packet cannot be a mode[67] packet.
+	 */
+	if (   pkt->ppoll
+	    && (   (NTP_MINPOLL > pkt->ppoll)
+	        || (NTP_MAXPOLL < pkt->ppoll)
+	       )
+	   ) {
+		DPRINTF(2, ("receive: drop: Invalid ppoll (%d) from %s\n",
+				pkt->ppoll, stoa(&rbufp->recv_srcadr)));
+		sys_badlength++;
+		return;			/* invalid packet poll */
+	}
+
+	/*
 	 * Parse the extension field if present. We figure out whether
 	 * an extension field is present by measuring the MAC size. If
 	 * the number of words following the packet header is 0, no MAC
@@ -2013,7 +2035,7 @@ receive(
 
 		msyslog(LOG_INFO,
 			"receive: Got KoD %s from %s",
-			pkt->refid, ntoa(&peer->srcadr));
+			refid_str(pkt->refid, hisstratum), ntoa(&peer->srcadr));
 	} else if (peer->flip == 0) {
 		if (0) {
 		} else if (L_ISZERO(&p_org)) {
@@ -2240,9 +2262,17 @@ receive(
 
 	/*
 	 * Check to see if this is a RATE Kiss Code
-	 * Currently this kiss code will accept whatever poll
+	 * Currently this kiss code will accept whatever valid poll
 	 * rate that the server sends
 	 */
+	if (   (NTP_MINPOLL > pkt->ppoll)
+	    || (NTP_MAXPOLL < pkt->ppoll)
+	   ) {
+		DPRINTF(2, ("RATEKISS: Invalid ppoll (%d) from %s\n",
+				pkt->ppoll, stoa(&rbufp->recv_srcadr)));
+		sys_badlength++;
+		return;			/* invalid packet poll */
+	}
 	peer->ppoll = max(peer->minpoll, pkt->ppoll);
 	if (kissCode == RATEKISS) {
 		peer->selbroken++;	/* Increment the KoD count */
