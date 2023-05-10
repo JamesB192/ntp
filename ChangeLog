@@ -89,7 +89,6 @@
 * M_ADDF should use u_int32.  <hart@ntp.org>
 * Only define tv_fmt_libbuf() if we will use it. <stenn@ntp.org>
 * Use recv_buffer instead of the longer recv_space.X_recv_buffer. hart/stenn
-* Disable "embedded NUL in string" warnings in libopts, when we can. <stenn@>
 * Make sure the value returned by refid_str() prints cleanly. <stenn@ntp.org>
 * If DEBUG is enabled, the startup banner now says that debug assertions
   are in force and that ntpd will abort if any are violated. <stenn@ntp.org>
