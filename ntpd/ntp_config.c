@@ -2232,6 +2232,8 @@ config_tos(
 	config_tree *ptree
 	)
 {
+	char const	improper_operation_msg[] = 
+				" - daemon will not operate properly!";
 	attr_val *	tos;
 	int		item;
 	double		val;
@@ -2245,9 +2247,11 @@ config_tos(
 	 * just log an error but do not stop: This might be caused by
 	 * remote config, and it might be fixed by remote config, too.
 	 */
-	int l_maxclock = sys_maxclock;
-	int l_minclock = sys_minclock;
-	int l_minsane  = sys_minsane;
+	int l_maxclock	= sys_maxclock;
+	int l_minclock	= sys_minclock;
+	int l_minsane	= sys_minsane;
+	int l_floor	= sys_floor;
+	int l_ceiling	= sys_ceiling;
 
 	/* -*- phase one: inspect / sanitize the values */
 	tos = HEAD_PFIFO(ptree->orphan_cmds);
@@ -2264,30 +2268,49 @@ config_tos(
 			val = tos->value.d;
 			if (val > 4) {
 				msyslog(LOG_WARNING,
-					"Using maximum bcpollbstep ceiling %d, %d requested",
+					"Using maximum tos bcpollbstep %d, %d requested",
 					4, (int)val);
 				tos->value.d = 4;
 			} else if (val < 0) {
 				msyslog(LOG_WARNING,
-					"Using minimum bcpollbstep floor %d, %d requested",
+					"Using minimum tos bcpollbstep %d, %d requested",
 					0, (int)val);
 				tos->value.d = 0;
 			}
 			break;
 
-		case T_Ceiling:
-			val = tos->value.d;
-			if (val > STRATUM_UNSPEC - 1) {
+		case T_Floor:
+			l_floor = (int)tos->value.d;
+			if (l_floor > STRATUM_UNSPEC - 1) {
 				msyslog(LOG_WARNING,
-					"Using maximum tos ceiling %d, %d requested",
-					STRATUM_UNSPEC - 1, (int)val);
+					"Using maximum tos floor %d, %d requested",
+					STRATUM_UNSPEC - 1, l_floor);
 				tos->value.d = STRATUM_UNSPEC - 1;
-			} else if (val < 1) {
+			}
+			else if (l_floor < 0) {
 				msyslog(LOG_WARNING,
 					"Using minimum tos floor %d, %d requested",
-					1, (int)val);
-				tos->value.d = 1;
+					0, l_floor);
+				tos->value.d = 0;
 			}
+			l_floor = (int)tos->value.d;
+			break;
+
+		case T_Ceiling:
+			l_ceiling = (int)tos->value.d;
+			if (l_ceiling > STRATUM_UNSPEC - 1) {
+				msyslog(LOG_WARNING,
+					"Using maximum tos ceiling %d, %d requested",
+					STRATUM_UNSPEC - 1, l_ceiling);
+				tos->value.d = STRATUM_UNSPEC - 1;
+			}
+			else if (l_ceiling < 0) {
+				msyslog(LOG_WARNING,
+					"Using minimum tos ceiling %d, %d requested",
+					0, l_ceiling);
+				tos->value.d = 0;
+			}
+			l_ceiling = (int)tos->value.d;
 			break;
 
 		case T_Minclock:
@@ -2314,10 +2337,16 @@ config_tos(
 	}
 
 	if ( ! (l_minsane < l_minclock && l_minclock <= l_maxclock)) {
-		msyslog(LOG_ERR,
-			"tos error: must have minsane (%d) < minclock (%d) <= maxclock (%d)"
-			" - daemon will not operate properly!",
-			l_minsane, l_minclock, l_maxclock);
+		msyslog(LOG_ERR, "Must have tos "
+			"minsane (%d) < minclock (%d) <= maxclock (%d)%s",
+			l_minsane, l_minclock, l_maxclock,
+			improper_operation_msg);
+	}
+
+	if (l_floor > l_ceiling) {
+		msyslog(LOG_ERR, "Must have tos "
+			"floor (%d) <= ceiling (%d)%s",
+			l_floor, l_ceiling, improper_operation_msg);
 	}
 
 	/* -*- phase two: forward the values to the protocol machinery */
