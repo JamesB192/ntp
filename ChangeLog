@@ -1,4 +1,5 @@
 ---
+* [Bug 3817] Bounds-check "tos floor" configuration. <hart@ntp.org>
 * [Bug 3814] First poll delay of new or cleared associations miscalculated.
              <hart@ntp.org>
 * [Bug 3802] ntp-keygen -I default identity modulus bits too small for
