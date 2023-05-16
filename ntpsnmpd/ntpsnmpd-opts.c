@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntpsnmpd-opts.c)
  *
- *  It has been AutoGen-ed  June  7, 2019 at 02:02:24 AM by AutoGen 5.18.5
+ *  It has been AutoGen-ed  May 16, 2023 at 12:17:04 AM by AutoGen 5.18.5
  *  From the definitions    ntpsnmpd-opts.def
  *  and the template file   options
  *
@@ -18,7 +18,7 @@
  * The ntpsnmpd program is copyrighted and licensed
  * under the following terms:
  *
- *  Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.
+ *  Copyright (C) 1992-2020 The University of Delaware and Network Time Foundation, all rights reserved.
  *  This is free software. It is licensed for use, modification and
  *  redistribution under the terms of the NTP License, copies of which
  *  can be seen at:
@@ -50,7 +50,7 @@ extern "C" {
 #endif
 extern FILE * option_usage_fp;
 #define zCopyright      (ntpsnmpd_opt_strs+0)
-#define zLicenseDescrip (ntpsnmpd_opt_strs+343)
+#define zLicenseDescrip (ntpsnmpd_opt_strs+344)
 
 
 #ifndef NULL
@@ -60,15 +60,15 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for ntpsnmpd options
  */
-static char const ntpsnmpd_opt_strs[1607] =
-/*     0 */ "ntpsnmpd 4.3.99\n"
-            "Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.\n"
+static char const ntpsnmpd_opt_strs[1610] =
+/*     0 */ "ntpsnmpd 4.3.100\n"
+            "Copyright (C) 1992-2020 The University of Delaware and Network Time Foundation, all rights reserved.\n"
             "This is free software. It is licensed for use, modification and\n"
             "redistribution under the terms of the NTP License, copies of which\n"
             "can be seen at:\n"
             "  <http://ntp.org/license>\n"
             "  <http://opensource.org/licenses/ntp-license.php>\n\0"
-/*   343 */ "Permission to use, copy, modify, and distribute this software and its\n"
+/*   344 */ "Permission to use, copy, modify, and distribute this software and its\n"
             "documentation for any purpose with or without fee is hereby granted,\n"
             "provided that the above copyright notice appears in all copies and that\n"
             "both the copyright notice and this permission notice appear in supporting\n"
@@ -78,47 +78,47 @@ static char const ntpsnmpd_opt_strs[1607] =
             "Time Foundation makes no representations about the suitability this\n"
             "software for any purpose.  It is provided \"as is\" without express or\n"
             "implied warranty.\n\0"
-/*  1011 */ "Do not fork\0"
-/*  1023 */ "NOFORK\0"
-/*  1030 */ "nofork\0"
-/*  1037 */ "Log to syslog()\0"
-/*  1053 */ "SYSLOG\0"
-/*  1060 */ "syslog\0"
-/*  1067 */ "The socket address ntpsnmpd uses to connect to net-snmpd\0"
-/*  1124 */ "AGENTXSOCKET\0"
-/*  1137 */ "agentxsocket\0"
-/*  1150 */ "unix:/var/agentx/master\0"
-/*  1174 */ "display extended usage information and exit\0"
-/*  1218 */ "help\0"
-/*  1223 */ "extended usage information passed thru pager\0"
-/*  1268 */ "more-help\0"
-/*  1278 */ "output version information and exit\0"
-/*  1314 */ "version\0"
-/*  1322 */ "save the option state to a config file\0"
-/*  1361 */ "save-opts\0"
-/*  1371 */ "load options from a config file\0"
-/*  1403 */ "LOAD_OPTS\0"
-/*  1413 */ "no-load-opts\0"
-/*  1426 */ "no\0"
-/*  1429 */ "NTPSNMPD\0"
-/*  1438 */ "ntpsnmpd - NTP SNMP MIB agent - Ver. 4.3.99\n"
+/*  1012 */ "Do not fork\0"
+/*  1024 */ "NOFORK\0"
+/*  1031 */ "nofork\0"
+/*  1038 */ "Log to syslog()\0"
+/*  1054 */ "SYSLOG\0"
+/*  1061 */ "syslog\0"
+/*  1068 */ "The socket address ntpsnmpd uses to connect to net-snmpd\0"
+/*  1125 */ "AGENTXSOCKET\0"
+/*  1138 */ "agentxsocket\0"
+/*  1151 */ "unix:/var/agentx/master\0"
+/*  1175 */ "display extended usage information and exit\0"
+/*  1219 */ "help\0"
+/*  1224 */ "extended usage information passed thru pager\0"
+/*  1269 */ "more-help\0"
+/*  1279 */ "output version information and exit\0"
+/*  1315 */ "version\0"
+/*  1323 */ "save the option state to a config file\0"
+/*  1362 */ "save-opts\0"
+/*  1372 */ "load options from a config file\0"
+/*  1404 */ "LOAD_OPTS\0"
+/*  1414 */ "no-load-opts\0"
+/*  1427 */ "no\0"
+/*  1430 */ "NTPSNMPD\0"
+/*  1439 */ "ntpsnmpd - NTP SNMP MIB agent - Ver. 4.3.100\n"
             "Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]...\n\0"
-/*  1540 */ "$HOME\0"
-/*  1546 */ ".\0"
-/*  1548 */ ".ntprc\0"
-/*  1555 */ "http://bugs.ntp.org, bugs@ntp.org\0"
-/*  1589 */ "\n\0"
-/*  1591 */ "ntpsnmpd 4.3.99";
+/*  1542 */ "$HOME\0"
+/*  1548 */ ".\0"
+/*  1550 */ ".ntprc\0"
+/*  1557 */ "http://bugs.ntp.org, bugs@ntp.org\0"
+/*  1591 */ "\n\0"
+/*  1593 */ "ntpsnmpd 4.3.100";
 
 /**
  *  nofork option description:
  */
 /** Descriptive text for the nofork option */
-#define NOFORK_DESC      (ntpsnmpd_opt_strs+1011)
+#define NOFORK_DESC      (ntpsnmpd_opt_strs+1012)
 /** Upper-cased name for the nofork option */
-#define NOFORK_NAME      (ntpsnmpd_opt_strs+1023)
+#define NOFORK_NAME      (ntpsnmpd_opt_strs+1024)
 /** Name string for the nofork option */
-#define NOFORK_name      (ntpsnmpd_opt_strs+1030)
+#define NOFORK_name      (ntpsnmpd_opt_strs+1031)
 /** Compiled in flag settings for the nofork option */
 #define NOFORK_FLAGS     (OPTST_DISABLED)
 
@@ -126,11 +126,11 @@ static char const ntpsnmpd_opt_strs[1607] =
  *  syslog option description:
  */
 /** Descriptive text for the syslog option */
-#define SYSLOG_DESC      (ntpsnmpd_opt_strs+1037)
+#define SYSLOG_DESC      (ntpsnmpd_opt_strs+1038)
 /** Upper-cased name for the syslog option */
-#define SYSLOG_NAME      (ntpsnmpd_opt_strs+1053)
+#define SYSLOG_NAME      (ntpsnmpd_opt_strs+1054)
 /** Name string for the syslog option */
-#define SYSLOG_name      (ntpsnmpd_opt_strs+1060)
+#define SYSLOG_name      (ntpsnmpd_opt_strs+1061)
 /** Compiled in flag settings for the syslog option */
 #define SYSLOG_FLAGS     (OPTST_DISABLED)
 
@@ -138,13 +138,13 @@ static char const ntpsnmpd_opt_strs[1607] =
  *  agentXSocket option description:
  */
 /** Descriptive text for the agentXSocket option */
-#define AGENTXSOCKET_DESC      (ntpsnmpd_opt_strs+1067)
+#define AGENTXSOCKET_DESC      (ntpsnmpd_opt_strs+1068)
 /** Upper-cased name for the agentXSocket option */
-#define AGENTXSOCKET_NAME      (ntpsnmpd_opt_strs+1124)
+#define AGENTXSOCKET_NAME      (ntpsnmpd_opt_strs+1125)
 /** Name string for the agentXSocket option */
-#define AGENTXSOCKET_name      (ntpsnmpd_opt_strs+1137)
+#define AGENTXSOCKET_name      (ntpsnmpd_opt_strs+1138)
 /** The compiled in default value for the agentXSocket option argument */
-#define AGENTXSOCKET_DFT_ARG   (ntpsnmpd_opt_strs+1150)
+#define AGENTXSOCKET_DFT_ARG   (ntpsnmpd_opt_strs+1151)
 /** Compiled in flag settings for the agentXSocket option */
 #define AGENTXSOCKET_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
@@ -152,11 +152,11 @@ static char const ntpsnmpd_opt_strs[1607] =
 /*
  *  Help/More_Help/Version option descriptions:
  */
-#define HELP_DESC       (ntpsnmpd_opt_strs+1174)
-#define HELP_name       (ntpsnmpd_opt_strs+1218)
+#define HELP_DESC       (ntpsnmpd_opt_strs+1175)
+#define HELP_name       (ntpsnmpd_opt_strs+1219)
 #ifdef HAVE_WORKING_FORK
-#define MORE_HELP_DESC  (ntpsnmpd_opt_strs+1223)
-#define MORE_HELP_name  (ntpsnmpd_opt_strs+1268)
+#define MORE_HELP_DESC  (ntpsnmpd_opt_strs+1224)
+#define MORE_HELP_name  (ntpsnmpd_opt_strs+1269)
 #define MORE_HELP_FLAGS (OPTST_IMM | OPTST_NO_INIT)
 #else
 #define MORE_HELP_DESC  HELP_DESC
@@ -169,14 +169,14 @@ static char const ntpsnmpd_opt_strs[1607] =
 #  define VER_FLAGS     (OPTST_SET_ARGTYPE(OPARG_TYPE_STRING) | \
                          OPTST_ARG_OPTIONAL | OPTST_IMM | OPTST_NO_INIT)
 #endif
-#define VER_DESC        (ntpsnmpd_opt_strs+1278)
-#define VER_name        (ntpsnmpd_opt_strs+1314)
-#define SAVE_OPTS_DESC  (ntpsnmpd_opt_strs+1322)
-#define SAVE_OPTS_name  (ntpsnmpd_opt_strs+1361)
-#define LOAD_OPTS_DESC     (ntpsnmpd_opt_strs+1371)
-#define LOAD_OPTS_NAME     (ntpsnmpd_opt_strs+1403)
-#define NO_LOAD_OPTS_name  (ntpsnmpd_opt_strs+1413)
-#define LOAD_OPTS_pfx      (ntpsnmpd_opt_strs+1426)
+#define VER_DESC        (ntpsnmpd_opt_strs+1279)
+#define VER_name        (ntpsnmpd_opt_strs+1315)
+#define SAVE_OPTS_DESC  (ntpsnmpd_opt_strs+1323)
+#define SAVE_OPTS_name  (ntpsnmpd_opt_strs+1362)
+#define LOAD_OPTS_DESC     (ntpsnmpd_opt_strs+1372)
+#define LOAD_OPTS_NAME     (ntpsnmpd_opt_strs+1404)
+#define NO_LOAD_OPTS_name  (ntpsnmpd_opt_strs+1414)
+#define LOAD_OPTS_pfx      (ntpsnmpd_opt_strs+1427)
 #define LOAD_OPTS_name     (NO_LOAD_OPTS_name + 3)
 /**
  *  Declare option callback procedures
@@ -301,24 +301,24 @@ static tOptDesc optDesc[OPTION_CT] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** Reference to the upper cased version of ntpsnmpd. */
-#define zPROGNAME       (ntpsnmpd_opt_strs+1429)
+#define zPROGNAME       (ntpsnmpd_opt_strs+1430)
 /** Reference to the title line for ntpsnmpd usage. */
-#define zUsageTitle     (ntpsnmpd_opt_strs+1438)
+#define zUsageTitle     (ntpsnmpd_opt_strs+1439)
 /** ntpsnmpd configuration file name. */
-#define zRcName         (ntpsnmpd_opt_strs+1548)
+#define zRcName         (ntpsnmpd_opt_strs+1550)
 /** Directories to search for ntpsnmpd config files. */
 static char const * const apzHomeList[3] = {
-    ntpsnmpd_opt_strs+1540,
-    ntpsnmpd_opt_strs+1546,
+    ntpsnmpd_opt_strs+1542,
+    ntpsnmpd_opt_strs+1548,
     NULL };
 /** The ntpsnmpd program bug email address. */
-#define zBugsAddr       (ntpsnmpd_opt_strs+1555)
+#define zBugsAddr       (ntpsnmpd_opt_strs+1557)
 /** Clarification/explanation of what ntpsnmpd does. */
-#define zExplain        (ntpsnmpd_opt_strs+1589)
+#define zExplain        (ntpsnmpd_opt_strs+1591)
 /** Extra detail explaining what ntpsnmpd does. */
 #define zDetail         (NULL)
 /** The full version string for ntpsnmpd. */
-#define zFullVersion    (ntpsnmpd_opt_strs+1591)
+#define zFullVersion    (ntpsnmpd_opt_strs+1593)
 /* extracted from optcode.tlib near line 364 */
 
 #if defined(ENABLE_NLS)
@@ -554,8 +554,8 @@ static void bogus_function(void) {
      translate option names.
    */
   /* referenced via ntpsnmpdOptions.pzCopyright */
-  puts(_("ntpsnmpd 4.3.99\n\
-Copyright (C) 1992-2017 The University of Delaware and Network Time Foundation, all rights reserved.\n\
+  puts(_("ntpsnmpd 4.3.100\n\
+Copyright (C) 1992-2020 The University of Delaware and Network Time Foundation, all rights reserved.\n\
 This is free software. It is licensed for use, modification and\n\
 redistribution under the terms of the NTP License, copies of which\n\
 can be seen at:\n"));
@@ -599,14 +599,14 @@ implied warranty.\n"));
   puts(_("load options from a config file"));
 
   /* referenced via ntpsnmpdOptions.pzUsageTitle */
-  puts(_("ntpsnmpd - NTP SNMP MIB agent - Ver. 4.3.99\n\
+  puts(_("ntpsnmpd - NTP SNMP MIB agent - Ver. 4.3.100\n\
 Usage:  %s [ -<flag> [<val>] | --<name>[{=| }<val>] ]...\n"));
 
   /* referenced via ntpsnmpdOptions.pzExplain */
   puts(_("\n"));
 
   /* referenced via ntpsnmpdOptions.pzFullVersion */
-  puts(_("ntpsnmpd 4.3.99"));
+  puts(_("ntpsnmpd 4.3.100"));
 
   /* referenced via ntpsnmpdOptions.pzFullUsage */
   puts(_("<<<NOT-FOUND>>>"));
