@@ -6,7 +6,7 @@
 #
 # EDIT THIS FILE WITH CAUTION  (invoke-ntp-keygen.texi)
 #
-# It has been AutoGen-ed  May 16, 2023 at 12:17:14 AM by AutoGen 5.18.5
+# It has been AutoGen-ed  May 17, 2023 at 12:45:04 AM by AutoGen 5.18.5
 # From the definitions    ntp-keygen-opts.def
 # and the template file   agtexi-cmd.tpl
 @end ignore
@@ -1056,7 +1056,7 @@ with a status code of 0.
 
 @exampleindent 0
 @example
-ntp-keygen (ntp) - Create a NTP host key - Ver. 4.3.100
+ntp-keygen (ntp) - Create a NTP host key - Ver. 4.3.101
 Usage:  ntp-keygen [ -<flag> [<val>] | --<name>[@{=| @}<val>] ]...
   Flg Arg Option-Name    Description
    -b Num imbits         identity modulus bits

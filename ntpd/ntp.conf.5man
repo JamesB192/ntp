@@ -10,11 +10,11 @@
 .ds B-Font B
 .ds I-Font I
 .ds R-Font R
-.TH ntp.conf 5man "16 May 2023" "4.3.100" "File Formats"
+.TH ntp.conf 5man "17 May 2023" "4.3.101" "File Formats"
 .\"
 .\" EDIT THIS FILE WITH CAUTION (in-mem file)
 .\"
-.\" It has been AutoGen-ed May 16, 2023 at 12:16:39 AM by AutoGen 5.18.5
+.\" It has been AutoGen-ed May 17, 2023 at 12:44:29 AM by AutoGen 5.18.5
 .\" From the definitions ntp.conf.def
 .\" and the template file agman-cmd.tpl
 .SH NAME
