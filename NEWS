@@ -20,6 +20,7 @@ Details below:
   - solved numerically instead of using string manipulation
 * [Sec 3767] An OOB KoD RATE value triggers an assertion when debug is enabled.
              <stenn@ntp.org>
+* [Bug 3819] Updated libopts/Makefile.am was missing NTP_HARD_* values. <stenn@>
 * [Bug 3817] Bounds-check "tos floor" configuration. <hart@ntp.org>
 * [Bug 3814] First poll delay of new or cleared associations miscalculated.
              <hart@ntp.org>
