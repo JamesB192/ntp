@@ -7,6 +7,7 @@
   - solved numerically instead of using string manipulation
 * [Sec 3767] An OOB KoD RATE value triggers an assertion when debug is enabled.
              <stenn@ntp.org>
+* [Bug 3819] Updated libopts/Makefile.am was missing NTP_HARD_* values. <stenn@>
 * [Bug 3817] Bounds-check "tos floor" configuration. <hart@ntp.org>
 * [Bug 3814] First poll delay of new or cleared associations miscalculated.
              <hart@ntp.org>
@@ -77,8 +78,6 @@
   - fixed bug identified by Edward McGuire <perlinger@ntp.org>
 * [Bug 3626] (SNTP) UTC offset calculation needs dst flag <perlinger@ntp.org>
   - applied patch by Gerry Garvey
-* [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
-  - backport from -dev, plus some more work on warnings for unchecked results
 * [Bug 3428] ntpd spinning consuming CPU on Linux router with full table.
              Reported by Israel G. Lugo. <hart@ntp.org>
 * [Bug 3103] libopts zsave_warn format string too few arguments <bkorb@gnu.org>
@@ -132,6 +131,8 @@
 * [Bug 3644] Unsynchronized server [...] selected as candidate <perlinger@ntp.org>
 * [Bug 3639] refclock_jjy: TS-JJY0x can skip time sync depending on the STUS reply. <abe@ntp.org>
   - applied patch by Takao Abe
+* [Bug 3432] refclocks that 'write()' should check the result <perlinger@ntp.org>
+  - plus some more work on warnings for unchecked results
 
 ---
 (4.2.8p14) 2020/03/03 Released by Harlan Stenn <stenn@ntp.org>
