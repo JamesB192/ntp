@@ -1,4 +1,5 @@
 ---
+
 * [Sec 3808] Assertion failure in ntpq on malformed RT-11 date <perlinger@ntp.org>
 * [Sec 3807] praecis_parse() in the Palisade refclock driver has a
              hypothetical input buffer overflow. Reported by ... stenn@
@@ -103,6 +104,7 @@
 * upgrade to: autoconf-2.71
 * upgrade to: automake-1.16.15
 * Upgrade to libevent-2.1.12-stable <stenn@ntp.org>
+* Support OpenSSL-3.0
 
 ---
 (4.2.8p15) 2020/06/23 Released by Harlan Stenn <stenn@ntp.org>
