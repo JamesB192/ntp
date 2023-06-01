@@ -1,9 +1,9 @@
-.Dd March 18 2023
+.Dd May 31 2023
 .Dt NTPSNMPD @NTPSNMPD_MS@ User Commands
 .Os
 .\"  EDIT THIS FILE WITH CAUTION  (ntpsnmpd-opts.mdoc)
 .\"
-.\"  It has been AutoGen-ed  March 18, 2023 at 11:21:56 AM by AutoGen 5.18.16
+.\"  It has been AutoGen-ed  May 31, 2023 at 02:50:11 PM by AutoGen 5.18.16
 .\"  From the definitions    ntpsnmpd-opts.def
 .\"  and the template file   agmdoc-cmd.tpl
 .Sh NAME

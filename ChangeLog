@@ -1,4 +1,5 @@
 ---
+(4.2.8p16) 2023/05/31 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Sec 3808] Assertion failure in ntpq on malformed RT-11 date <perlinger@ntp.org>
 * [Sec 3807] praecis_parse() in the Palisade refclock driver has a
