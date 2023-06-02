@@ -800,7 +800,7 @@ MD5auth_setkey(
 	allocsymkey(keyno, 0, (u_short)keytype, 0,
 		    secretsize, secret, ka);
 #ifdef DEBUG
-	if (debug >= 4) {
+	if (debug >= 1) {
 		size_t	j;
 
 		printf("auth_setkey: key %d type %d len %d ", (int)keyno,
@@ -972,7 +972,7 @@ pwdecode_hex(
 				reslen = (size_t)-1;
 				break;
 			}
-			tmp = (u_char)((ptr - hex) > 1);
+			tmp = (u_char)((ptr - hex) >> 1);
 			if (j & 1)
 				dst[j >> 1] |= tmp;
 			else
