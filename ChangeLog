@@ -1,4 +1,6 @@
 ---
+* [Bug 3822] ntpd significantly delays first poll of servers specified by name.
+             <hart@ntp.org>  Miroslav Lichvar identified regression in 4.2.8p16.
 * [Bug 3824] Spurious "ntpd: daemon failed to notify parent!" logged at
              event_sync.  Reported by Edward McGuire.  <hart@ntp.org>
 
