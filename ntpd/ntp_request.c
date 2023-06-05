@@ -1104,7 +1104,7 @@ sys_info(
 	is->flags = 0;
 	if (sys_authenticate)
 		is->flags |= INFO_FLAG_AUTHENTICATE;
-	if (sys_bclient)
+	if (sys_bclient || sys_mclient)
 		is->flags |= INFO_FLAG_BCLIENT;
 #ifdef REFCLOCK
 	if (cal_enable)
@@ -1184,7 +1184,7 @@ mem_stats(
 
 	for (i = 0; i < NTP_HASH_SIZE; i++)
 		ms->hashcount[i] = (u_char)
-		    max((u_int)peer_hash_count[i], UCHAR_MAX);
+		    min((u_int)peer_hash_count[i], UCHAR_MAX);
 
 	(void) more_pkt();
 	flush_pkt();

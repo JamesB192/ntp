@@ -119,7 +119,7 @@ NTstrerror(int err, BOOL *bfreebuf) {
 	*bfreebuf = FALSE;
 
 	/* Get the Winsock2 error messages */
-	if (errval >= WSABASEERR && errval <= (WSABASEERR + 1015)) {
+	if (errval >= WSABASEERR && errval <= (WSABASEERR + 1999)) {
 		retmsg = GetWSAErrorMessage(errval);
 		if (retmsg != NULL)
 			return (retmsg);

@@ -87,7 +87,7 @@ nak_error_codes {
 #define	POOL_SOLICIT_WINDOW	8
 
 /*
- * flag bits propagated from pool to individual peers
+ * flag bits propagated from pool/manycast to individual peers
  */
 #define POOL_FLAG_PMASK		(FLAG_IBURST | FLAG_NOSELECT)
 
@@ -141,6 +141,7 @@ int leap_sec_in_progress;
  * Nonspecified system state variables
  */
 int	sys_bclient;		/* broadcast client enable */
+int	sys_mclient;		/* multicast client enable */
 double	sys_bdelay;		/* broadcast client default delay */
 int	sys_authenticate;	/* requre authentication for config */
 l_fp	sys_authdelay;		/* authentication delay */
@@ -740,7 +741,7 @@ receive(
 	 * surviving packets.
 	 */
 	if (restrict_mask & RES_FLAKE) {
-		if ((double)ntp_random() / 0x7fffffff < .1) {
+		if (ntp_uurandom() < .1) {
 			DPRINTF(2, ("receive: drop: RES_FLAKE\n"));
 			sys_restricted++;
 			return;			/* no flakeway */
@@ -788,6 +789,28 @@ receive(
 			sys_badlength++;
 			return;			/* invalid mode */
 		}
+	}
+
+	/*
+	 * Validate the poll interval in the packet.
+	 * 0 probably indicates a data-minimized packet.
+	 * A valid poll interval is required for RATEKISS, where
+	 * a value of 0 is not allowed.  We check for this below.
+	 * 
+	 * There might be arguments against this check.  If you have
+	 * any of these arguments, please let us know.
+	 *
+	 * At this point, the packet cannot be a mode[67] packet.
+	 */
+	if (   pkt->ppoll
+	    && (   (NTP_MINPOLL > pkt->ppoll)
+	        || (NTP_MAXPOLL < pkt->ppoll)
+	       )
+	   ) {
+		DPRINTF(2, ("receive: drop: Invalid ppoll (%d) from %s\n",
+				pkt->ppoll, stoa(&rbufp->recv_srcadr)));
+		sys_badlength++;
+		return;			/* invalid packet poll */
 	}
 
 	/*
@@ -1336,6 +1359,7 @@ receive(
 		    || sys_stratum >= hisstratum
 		    || (!sys_cohort && sys_stratum == hisstratum + 1)
 		    || rbufp->dstadr->addr_refid == pkt->refid) {
+			DPRINTF(2, ("receive: sys leap: %0x, sys_stratum %d > hisstratum+1 %d, !sys_cohort %d && sys_stratum == hisstratum+1, loop refid %#x == pkt refid %#x\n", sys_leap, sys_stratum, hisstratum + 1, !sys_cohort, rbufp->dstadr->addr_refid, pkt->refid));
 			DPRINTF(2, ("receive: AM_FXMIT drop: LEAP_NOTINSYNC || stratum || loop\n"));
 			sys_declined++;
 			return;			/* no help */
@@ -1474,8 +1498,8 @@ receive(
 			return;
 		}
 #endif /* AUTOKEY */
-		if (sys_bclient == 0) {
-			DPRINTF(2, ("receive: AM_NEWBCL drop: not a bclient\n"));
+		if (!sys_bclient && !sys_mclient) {
+			DPRINTF(2, ("receive: AM_NEWBCL drop: not a bclient/mclient\n"));
 			sys_restricted++;
 			return;			/* not enabled */
 		}
@@ -1681,8 +1705,9 @@ receive(
 		 * MODE_ACTIVE KoDs, which will time out eventually.
 		 */
 		if (   hisleap != LEAP_NOTINSYNC
-		    && (hisstratum < sys_floor || hisstratum >= sys_ceiling)) {
-			DPRINTF(2, ("receive: AM_NEWPASS drop: Autokey group mismatch\n"));
+		       && (hisstratum < sys_floor || hisstratum >= sys_ceiling)) {
+			DPRINTF(2, ("receive: AM_NEWPASS drop: Remote stratum (%d) out of range\n",
+					hisstratum));
 			sys_declined++;
 			return;			/* no help */
 		}
@@ -1981,32 +2006,36 @@ receive(
 			return;
 		}
 
-	/*
-	 * Basic mode checks:
-	 *
-	 * If there is no origin timestamp, it's either an initial packet
-	 * or we've already received a response to our query.  Of course,
-	 * should 'aorg' be all-zero because this really was the original
-	 * transmit timestamp, we'll ignore this reply.  There is a window
-	 * of one nanosecond once every 136 years' time where this is
-	 * possible.  We currently ignore this situation, as a completely
-	 * zero timestamp is (quietly?) disallowed.
-	 *
-	 * Otherwise, check for bogus packet in basic mode.
-	 * If it is bogus, switch to interleaved mode and resynchronize,
-	 * but only after confirming the packet is not bogus in
-	 * symmetric interleaved mode.
-	 *
-	 * This could also mean somebody is forging packets claiming to
-	 * be from us, attempting to cause our server to KoD us.
-	 *
-	 * We have earlier asserted that hisstratum cannot be 0.
-	 * If hisstratum is STRATUM_UNSPEC, it means he's not sync'd.
-	 */
+		/*
+		 * Basic mode checks:
+		 *
+		 * If there is no origin timestamp, it's either an initial
+		 * packet or we've already received a response to our query.
+		 * Of course, should 'aorg' be all-zero because this really
+		 * was the original transmit timestamp, we'll ignore this
+		 * reply.  There is a window of one nanosecond once every
+		 * 136 years' time where this is possible.  We currently
+		 * ignore this situation, as a completely zero timestamp
+		 * is (quietly?) disallowed.
+		 *
+		 * Otherwise, check for bogus packet in basic mode.
+		 * If it is bogus, switch to interleaved mode and
+		 * resynchronize, but only after confirming the packet is
+		 * not bogus in symmetric interleaved mode.
+		 *
+		 * This could also mean somebody is forging packets claiming
+		 * to be from us, attempting to cause our server to KoD us.
+		 *
+		 * We have earlier asserted that hisstratum cannot be 0.
+		 * If hisstratum is STRATUM_UNSPEC, it means he's not sync'd.
+		 */
 
-	/* XXX: FLAG_LOOPNONCE */
-	DEBUG_INSIST(0 == (FLAG_LOOPNONCE & peer->flags));
+		/* XXX: FLAG_LOOPNONCE */
+		DEBUG_INSIST(0 == (FLAG_LOOPNONCE & peer->flags));
 
+		msyslog(LOG_INFO,
+			"receive: Got KoD %s from %s",
+			refid_str(pkt->refid, hisstratum), ntoa(&peer->srcadr));
 	} else if (peer->flip == 0) {
 		if (0) {
 		} else if (L_ISZERO(&p_org)) {
@@ -2233,9 +2262,17 @@ receive(
 
 	/*
 	 * Check to see if this is a RATE Kiss Code
-	 * Currently this kiss code will accept whatever poll
+	 * Currently this kiss code will accept whatever valid poll
 	 * rate that the server sends
 	 */
+	if (   (NTP_MINPOLL > pkt->ppoll)
+	    || (NTP_MAXPOLL < pkt->ppoll)
+	   ) {
+		DPRINTF(2, ("RATEKISS: Invalid ppoll (%d) from %s\n",
+				pkt->ppoll, stoa(&rbufp->recv_srcadr)));
+		sys_badlength++;
+		return;			/* invalid packet poll */
+	}
 	peer->ppoll = max(peer->minpoll, pkt->ppoll);
 	if (kissCode == RATEKISS) {
 		peer->selbroken++;	/* Increment the KoD count */
@@ -2485,10 +2522,6 @@ process_packet(
 	double	etemp, ftemp, td;
 #endif /* ASSYM */
 
-#if 0
-	sys_processed++;
-	peer->processed++;
-#endif
 	p_del = FPTOD(NTOHS_FP(pkt->rootdelay));
 	p_offset = 0;
 	p_disp = FPTOD(NTOHS_FP(pkt->rootdisp));
@@ -2500,10 +2533,6 @@ process_packet(
 	pleap = PKT_LEAP(pkt->li_vn_mode);
 	pversion = PKT_VERSION(pkt->li_vn_mode);
 	pstratum = PKT_TO_STRATUM(pkt->stratum);
-
-	/**/
-
-	/**/
 
 	/*
 	 * Verify the server is synchronized; that is, the leap bits,
@@ -2524,19 +2553,15 @@ process_packet(
 		peer->seldisptoolarge++;
 		DPRINTF(1, ("packet: flash header %04x\n",
 			    peer->flash));
-
-		/* ppoll updated? */
-		/* XXX: Fuzz the poll? */
-		poll_update(peer, peer->hpoll, (peer->hmode == MODE_CLIENT));
+		/* [Bug 3592] do *not* update poll on bad packets! */
 		return;
 	}
 
-	/**/
-
-#if 1
+	/*
+	 * update stats, now that we really handle this packet:
+	 */
 	sys_processed++;
 	peer->processed++;
-#endif
 
 	/*
 	 * Capture the header values in the client/peer association..
@@ -2571,9 +2596,6 @@ process_packet(
 		if (peer->burst > 0)
 			peer->nextdate = current_time;
 	}
-	poll_update(peer, peer->hpoll, (peer->hmode == MODE_CLIENT));
-
-	/**/
 
 	/*
 	 * If the peer was previously unreachable, raise a trap. In any
@@ -2899,23 +2921,28 @@ clock_update(
 	 * Clock exceeds panic threshold. Life as we know it ends.
 	 */
 	case -1:
+		msyslog(LOG_ERR, "Clock offset exceeds panic threshold.");
 #ifdef HAVE_LIBSCF_H
 		/*
 		 * For Solaris enter the maintenance mode.
 		 */
 		if ((fmri = getenv("SMF_FMRI")) != NULL) {
 			if (smf_maintain_instance(fmri, 0) < 0) {
-				printf("smf_maintain_instance: %s\n",
-				    scf_strerror(scf_error()));
+				msyslog(LOG_ERR, "smf_maintain_instance: %s",
+						 scf_strerror(scf_error()));
 				exit(1);
 			}
 			/*
 			 * Sleep until SMF kills us.
 			 */
+			msyslog(LOG_ERR, "%s placed into maintenance. "
+				"Set system clock by hand before clearing.",
+				fmri);
 			for (;;)
 				pause();
 		}
 #endif /* HAVE_LIBSCF_H */
+		msyslog(LOG_ERR, "Set system clock by hand.");
 		exit (-1);
 		/* not reached */
 
@@ -2960,7 +2987,8 @@ clock_update(
 			 */
 #ifdef HAVE_WORKING_FORK
 			if (daemon_pipe[1] != -1) {
-				write(daemon_pipe[1], "S\n", 2);
+				if (2 != write(daemon_pipe[1], "S\n", 2))
+					msyslog(LOG_ERR, "ntpd: daemon failed to notify parent!");
 				close(daemon_pipe[1]);
 				daemon_pipe[1] = -1;
 				DPRINTF(1, ("notified parent --wait-sync is done\n"));
@@ -3231,19 +3259,19 @@ peer_clear(
 
 	/*
 	 * During initialization use the association count to spread out
-	 * the polls at one-second intervals. Passive associations'
-	 * first poll is delayed by the "discard minimum" to avoid rate
-	 * limiting. Other post-startup new or cleared associations
+	 * the polls at one-second intervals. Unconfigured associations'
+	 * first poll is delayed by the "discard minimum" plus 1 to avoid
+	 * rate limiting. Other post-startup new or cleared associations
 	 * randomize the first poll over the minimum poll interval to
 	 * avoid implosion.
 	 */
 	peer->nextdate = peer->update = peer->outdate = current_time;
 	if (initializing) {
 		peer->nextdate += peer_associations;
-	} else if (MODE_PASSIVE == peer->hmode) {
-		peer->nextdate += ntp_minpkt;
+	} else if (!(FLAG_CONFIG & peer->flags)) {
+		peer->nextdate += ntp_minpkt + 1;
 	} else {
-		peer->nextdate += ntp_random() % peer->minpoll;
+		peer->nextdate += ntp_random() % (1 << peer->minpoll);
 	}
 #ifdef AUTOKEY
 	peer->refresh = current_time + (1 << NTP_REFRESH);
@@ -3455,11 +3483,13 @@ clock_select(void)
 	double	d, e, f, g;
 	double	high, low;
 	double	speermet;
+	double	lastresort_dist = MAXDISPERSE;
 	double	orphmet = 2.0 * U_INT32_MAX; /* 2x is greater than */
 	struct endpoint endp;
 	struct peer *osys_peer;
 	struct peer *sys_prefer = NULL;	/* prefer peer */
 	struct peer *typesystem = NULL;
+	struct peer *typelastresort = NULL;
 	struct peer *typeorphan = NULL;
 #ifdef REFCLOCK
 	struct peer *typeacts = NULL;
@@ -3521,6 +3551,22 @@ clock_select(void)
 		 */
 		if (peer_unfit(peer)) {
 			continue;
+		}
+
+		/*
+		 * If we have never been synchronised, look for any peer 
+		 * which has ever been synchronised and pick the one which 
+		 * has the lowest root distance. This can be used as a last 
+		 * resort if all else fails. Once we get an initial sync 
+		 * with this peer, sys_reftime gets set and so this 
+		 * function becomes disabled.
+		 */
+		if (L_ISZERO(&sys_reftime)) {
+			d = root_distance(peer);
+			if (!L_ISZERO(&peer->reftime) && d < lastresort_dist) {
+				typelastresort = peer;
+				lastresort_dist = d;
+			}
 		}
 
 		/*
@@ -3756,6 +3802,9 @@ clock_select(void)
 		if (typeorphan != NULL) {
 			peers[0].peer = typeorphan;
 			nlist = 1;
+		} else if (typelastresort != NULL) {
+			peers[0].peer = typelastresort;
+			nlist = 1;
 		}
 	}
 
@@ -3949,8 +3998,7 @@ clock_select(void)
 	 */
 	if (typesystem == NULL) {
 		if (osys_peer != NULL) {
-			if (sys_orphwait > 0)
-				orphwait = current_time + sys_orphwait;
+			orphwait = current_time + sys_orphwait;
 			report_event(EVNT_NOPEER, NULL, NULL);
 		}
 		sys_peer = NULL;
@@ -5203,6 +5251,7 @@ init_proto(void)
 	sys_survivors = 0;
 	sys_manycastserver = 0;
 	sys_bclient = 0;
+	sys_mclient = 0;
 	sys_bdelay = BDELAY_DEFAULT;	/*[Bug 3031] delay cutoff */
 	sys_authenticate = 1;
 	sys_stattime = current_time;
@@ -5244,7 +5293,7 @@ proto_config(
 
 	case PROTO_BROADCLIENT: /* broadcast client (bclient) */
 		sys_bclient = (int)value;
-		if (sys_bclient == 0)
+		if (!sys_bclient)
 			io_unsetbclient();
 		else
 			io_setbclient();
@@ -5344,7 +5393,7 @@ proto_config(
 
 	case PROTO_ORPHWAIT:	/* orphan wait (orphwait) */
 		orphwait -= sys_orphwait;
-		sys_orphwait = (int)dvalue;
+		sys_orphwait = (dvalue >= 1) ? (int)dvalue : NTP_ORPHWAIT;
 		orphwait += sys_orphwait;
 		break;
 
@@ -5354,7 +5403,7 @@ proto_config(
 	case PROTO_MULTICAST_ADD: /* add group address */
 		if (svalue != NULL)
 			io_multicast_add(svalue);
-		sys_bclient = 1;
+		sys_mclient = 1;
 		break;
 
 	case PROTO_MULTICAST_DEL: /* delete group address */

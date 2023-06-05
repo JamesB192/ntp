@@ -684,7 +684,7 @@ oncore_start(
 	}
 #endif	/* !SYS_WINNT */
 
-	fd1 = refclock_open(device1, SPEED, LDISC_RAW);
+	fd1 = refclock_open(&peer->srcadr, device1, SPEED, LDISC_RAW);
 	if (fd1 <= 0) {
 		oncore_log_f(instance, LOG_ERR, "Can't open fd1 (%s)",
 			     device1);
@@ -3433,7 +3433,7 @@ oncore_check_leap_sec(
 		if (instance->saw_Gj < 0) {	/* -1 DONT have Gj use Bj */
 			if ((instance->BEHa[4] == 6) || (instance->BEHa[4] == 12))
 				oncore_sendmsg(instance, oncore_cmd_Bj, sizeof(oncore_cmd_Bj));
-				oncore_sendmsg(instance, oncore_cmd_Bl, sizeof(oncore_cmd_Bl));
+			oncore_sendmsg(instance, oncore_cmd_Bl, sizeof(oncore_cmd_Bl));
 			return;
 		}
 
@@ -3879,7 +3879,7 @@ oncore_set_traim(
 			oncore_sendmsg(instance, oncore_cmd_Enx, sizeof(oncore_cmd_Enx));
 		else	/* chan == 12 */
 			oncore_sendmsg(instance, oncore_cmd_Ge0, sizeof(oncore_cmd_Ge0));
-			oncore_sendmsg(instance, oncore_cmd_Hn0, sizeof(oncore_cmd_Hn0));
+		oncore_sendmsg(instance, oncore_cmd_Hn0, sizeof(oncore_cmd_Hn0));
 	}
 }
 

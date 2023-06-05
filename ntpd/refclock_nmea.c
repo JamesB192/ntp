@@ -93,6 +93,7 @@
 #define NMEA_EXTLOG_MASK	0x00010000U
 #define NMEA_QUIETPPS_MASK	0x00020000U
 #define NMEA_DATETRUST_MASK	0x00040000U
+#define NMEA_IGNSTATUS_MASK	0x00080000U
 
 #define NMEA_PROTO_IDLEN	4	/* tag name must be at least 4 chars */
 #define NMEA_PROTO_MINLEN	6	/* min chars in sentence, excluding CS */
@@ -289,7 +290,7 @@ static	int	nmea_start	(int, struct peer *);
 static	void	nmea_shutdown	(int, struct peer *);
 static	void	nmea_receive	(struct recvbuf *);
 static	void	nmea_poll	(int, struct peer *);
-static	void	nmea_procrec	(struct peer *, l_fp);
+static	void	nmea_procrec	(struct peer * const, l_fp);
 #ifdef HAVE_PPSAPI
 static	double	tabsdiffd	(l_fp, l_fp);
 static	void	nmea_control	(int, const struct refclockstat *,
@@ -360,45 +361,34 @@ nmea_start(
 	size_t				devlen;
 	u_int32				rate;
 	int				baudrate;
-	const char *			baudtext;
-
 
 	/* Get baudrate choice from mode byte bits 4/5/6 */
 	rate = (peer->ttl & NMEA_BAUDRATE_MASK) >> NMEA_BAUDRATE_SHIFT;
 
 	switch (rate) {
+	default:
 	case 0:
 		baudrate = SPEED232;
-		baudtext = "4800";
 		break;
 	case 1:
 		baudrate = B9600;
-		baudtext = "9600";
 		break;
 	case 2:
 		baudrate = B19200;
-		baudtext = "19200";
 		break;
 	case 3:
 		baudrate = B38400;
-		baudtext = "38400";
 		break;
 #   ifdef B57600
 	case 4:
 		baudrate = B57600;
-		baudtext = "57600";
 		break;
 #   endif
 #   ifdef B115200
 	case 5:
 		baudrate = B115200;
-		baudtext = "115200";
 		break;
 #   endif
-	default:
-		baudrate = SPEED232;
-		baudtext = "4800 (fallback)";
-		break;
 	}
 
 	/* Allocate and initialize unit structure */
@@ -429,14 +419,12 @@ nmea_start(
 			refnumtoa(&peer->srcadr));
 		return FALSE; /* buffer overflow */
 	}
-	pp->io.fd = refclock_open(device, baudrate, LDISC_CLK);
+	pp->io.fd = refclock_open(&peer->srcadr, device, baudrate, LDISC_CLK);
 	if (0 >= pp->io.fd) {
 		pp->io.fd = nmead_open(device);
 		if (-1 == pp->io.fd)
 			return FALSE;
 	}
-	LOGIF(CLOCKINFO, (LOG_NOTICE, "%s serial %s open at %s bps",
-	      refnumtoa(&peer->srcadr), device, baudtext));
 
 	/* succeed if this clock can be added */
 	return io_addclock(&pp->io) != 0;
@@ -465,8 +453,7 @@ nmea_shutdown(
 #	    ifdef HAVE_PPSAPI
 		if (up->ppsapi_lit)
 			time_pps_destroy(up->atom.handle);
-		if (up->ppsapi_tried && up->ppsapi_fd != pp->io.fd)
-			close(up->ppsapi_fd);
+		ppsdev_close(pp->io.fd, up->ppsapi_fd);
 #	    endif
 		free(up);
 	}
@@ -503,25 +490,33 @@ nmea_control(
 	 * PPS control
 	 *
 	 * If /dev/gpspps$UNIT can be opened that will be used for
-	 * PPSAPI.  Otherwise, the GPS serial device /dev/gps$UNIT
-	 * already opened is used for PPSAPI as well. (This might not
-	 * work, in which case the PPS API remains unavailable...)
+	 * PPSAPI.  On Linux, a PPS device mathing the TTY will be
+	 * searched for and possibly created on the fly.  Otherwise, the
+	 * GPS serial device /dev/gps$UNIT already opened is used for
+	 * PPSAPI as well. (This might not work, in which case the PPS
+	 * API remains unavailable...)
 	 */
 
 	/* Light up the PPSAPI interface if not yet attempted. */
 	if ((CLK_FLAG1 & pp->sloppyclockflag) && !up->ppsapi_tried) {
+		const char *ppsname = device;
 		up->ppsapi_tried = TRUE;
+		/* get FD for the pps device; might be the tty itself! */
 		devlen = snprintf(device, sizeof(device), PPSDEV, unit);
-		if (devlen < sizeof(device)) {
-			up->ppsapi_fd = open(device, PPSOPENMODE,
-					     S_IRUSR | S_IWUSR);
-		} else {
-			up->ppsapi_fd = -1;
+		if (devlen >= sizeof(device)) {
 			msyslog(LOG_ERR, "%s PPS device name too long",
 				refnumtoa(&peer->srcadr));
+			ppsname = NULL;
 		}
-		if (-1 == up->ppsapi_fd)
-			up->ppsapi_fd = pp->io.fd;
+		up->ppsapi_fd = ppsdev_reopen(
+			&peer->srcadr,
+			pp->io.fd, up->ppsapi_fd,
+			ppsname, PPSOPENMODE, (S_IRUSR|S_IWUSR));
+		/* note 1: the pps fd might be the same as the tty fd
+		 * note 2: the current PPS fd remains valid until
+		 *  - the clock is shut down
+		 *  - flag1 is set again after being cleared
+		 */
 		if (refclock_ppsapi(up->ppsapi_fd, &up->atom)) {
 			/* use the PPS API for our own purposes now. */
 			up->ppsapi_lit = refclock_params(
@@ -533,9 +528,6 @@ nmea_control(
 					"%s set PPSAPI params fails",
 					refnumtoa(&peer->srcadr));
 			}
-			/* note: the PPS I/O handle remains valid until
-			 * flag1 is cleared or the clock is shut down.
-			 */
 		} else {
 			msyslog(LOG_WARNING,
 				"%s flag1 1 but PPSAPI fails",
@@ -549,10 +541,7 @@ nmea_control(
 		if (up->ppsapi_lit)
 			time_pps_destroy(up->atom.handle);
 		up->atom.handle = 0;
-		/* close/drop PPS fd */
-		if (up->ppsapi_fd != pp->io.fd)
-			close(up->ppsapi_fd);
-		up->ppsapi_fd = -1;
+		/* do !!NOT!! close/drop PPS fd here! */
 
 		/* clear markers and peer items */
 		up->ppsapi_gate  = FALSE;
@@ -868,6 +857,11 @@ nmea_procrec(
 		return;
 	}
 
+	/* ignore receiver status? [bug 3694] */
+	if (peer->ttl & NMEA_IGNSTATUS_MASK) { /* assume always good? */
+		pp->leap = LEAP_NOWARNING;
+	}
+	
 	/* check clock sanity; [bug 2143] */
 	if (pp->leap == LEAP_NOTINSYNC) { /* no good status? */
 		checkres = CEVNT_PROP;
@@ -1208,7 +1202,7 @@ gps_send(
 		len - 2, cmd));
 
 	/* send out the whole stuff */
-	if (refclock_fdwrite(peer, fd, cmd, len, NULL) != len)
+	if (refclock_fdwrite(peer, fd, cmd, len) != len)
 		refclock_report(peer, CEVNT_FAULT);
 }
 #endif /* NMEA_WRITE_SUPPORT */

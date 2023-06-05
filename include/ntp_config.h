@@ -234,6 +234,7 @@ struct config_tree_tag {
 	restrict_fifo *	restrict_opts;
 
 	addr_opts_fifo *fudge;
+	addr_opts_fifo *device;
 	attr_val_fifo *	rlimit;
 	attr_val_fifo *	tinker;
 	attr_val_fifo *	enable_opts;
@@ -274,16 +275,6 @@ typedef struct settrap_parms_tag {
 	sockaddr_u	ifaddr;
 	int		ifaddr_nonnull;
 } settrap_parms;
-
-
-/*
- * Poll Skew List
- */
-
-psl_item psl[17-3+1];		/* values for polls 3-17 */
-				/* To simplify the runtime code we */
-				/* don't want to have to special-case */
-				/* dealing with a default */
 
 
 /*

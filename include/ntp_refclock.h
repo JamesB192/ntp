@@ -221,7 +221,7 @@ extern	void	refclock_buginfo(sockaddr_u *,
 extern	void	refclock_control(sockaddr_u *,
 				 const struct refclockstat *,
 				 struct refclockstat *);
-extern	int	refclock_open	(const char *, u_int, u_int);
+extern	int	refclock_open	(const sockaddr_u *srcadr, const char *, u_int, u_int);
 extern	int	refclock_setup	(int, u_int, u_int);
 extern	void	refclock_timer	(struct peer *);
 extern	void	refclock_transmit(struct peer *);
@@ -255,6 +255,11 @@ struct refclock_atom;
 extern int	refclock_ppsaugment(
     const struct refclock_atom*, l_fp *rcvtime ,
     double rcvfudge, double ppsfudge);
+
+extern int ppsdev_reopen(const sockaddr_u *srcadr,
+			 int ttyfd, int ppsfd, const char *ppspath,
+			 int mode, int flags);
+extern void ppsdev_close(int ttyfd, int ppsfd);
 
 #endif /* REFCLOCK */
 

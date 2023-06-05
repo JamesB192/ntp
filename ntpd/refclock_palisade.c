@@ -304,15 +304,15 @@ palisade_start (
 	int fd;
 	char gpsdev[20];
 	struct termios tio;
+	u_int speed;
 
 	snprintf(gpsdev, sizeof(gpsdev), DEVICE, unit);
 
 	/*
 	 * Open serial port. 
 	 */
-	u_int speed;
 	speed = (CLK_TYPE(peer) == CLK_COPERNICUS) ? SPEED232COP : SPEED232;
-	fd = refclock_open(gpsdev, speed, LDISC_RAW);
+	fd = refclock_open(&peer->srcadr, gpsdev, speed, LDISC_RAW);
 	if (fd <= 0) {
 #ifdef DEBUG
 		printf("Palisade(%d) start: open %s failed\n", unit, gpsdev);
@@ -941,30 +941,32 @@ TSIP_decode (
 			return 0;
 		}
 		/* Get date & time from WN & ToW minus offset */
-		TCivilDate cd;
-		TGpsDatum wd;
-		l_fp ugo; /* UTC-GPS offset, negative number */
-		ugo.Ul_i.Xl_i = (int32_t)-GPS_UTC_Offset;
-		ugo.l_uf = 0;
-		wd = gpscal_from_gpsweek((wn % 1024), (int32_t)tow, ugo);
-		gpscal_to_calendar(&cd, &wd);
-		pp->year = cd.year;
-		pp->day = cd.yearday;
-		pp->hour = cd.hour;
-		pp->minute = cd.minute;
-		pp->second = cd.second;
-		pp->nsec = 0;
-		pp->leap = LEAP_NOWARNING;
+		{
+			TCivilDate cd;
+			TGpsDatum wd;
+			l_fp ugo; /* UTC-GPS offset, negative number */
+			ugo.Ul_i.Xl_i = (int32_t)-GPS_UTC_Offset;
+			ugo.l_uf = 0;
+			wd = gpscal_from_gpsweek((wn % 1024), (int32_t)tow, ugo);
+			gpscal_to_calendar(&cd, &wd);
+			pp->year = cd.year;
+			pp->day = cd.yearday;
+			pp->hour = cd.hour;
+			pp->minute = cd.minute;
+			pp->second = cd.second;
+			pp->nsec = 0;
+			pp->leap = LEAP_NOWARNING;
 #ifdef DEBUG
-		if (debug > 1)	{
-			printf("GPS TOW: %ld\n", tow);
-			printf("GPS WN: %d\n", wn);
-			printf("GPS UTC-GPS Offset: %d\n", GPS_UTC_Offset);
-			printf("TSIP_decode: unit %d: %02X #%d %02d:%02d:%02d.%09ld %02d/%02d/%04d ",
-			       up->unit, mb(0) & 0xff, event, pp->hour, pp->minute, pp->second,
-			       pp->nsec, cd.month, cd.monthday, pp->year);
-		}
+			if (debug > 1)	{
+				printf("GPS TOW: %ld\n", tow);
+				printf("GPS WN: %d\n", wn);
+				printf("GPS UTC-GPS Offset: %d\n", GPS_UTC_Offset);
+				printf("TSIP_decode: unit %d: %02X #%d %02d:%02d:%02d.%09ld %02d/%02d/%04d ",
+				       up->unit, mb(0) & 0xff, event, pp->hour, pp->minute, pp->second,
+				       pp->nsec, cd.month, cd.monthday, pp->year);
+			}
 #endif
+		}
 		return 1;
 	}
 
@@ -1247,20 +1249,53 @@ praecis_parse (
 
 	pp = peer->procptr;
 
-	memcpy(buf+p,rbufp->recv_space.X_recv_buffer, rbufp->recv_length);
+	if (p + rbufp->recv_length >= sizeof buf) {
+		struct palisade_unit *up;
+		up = pp->unitptr;
+
+		/*
+		 * We COULD see if there is a \r\n in the incoming
+		 * buffer before it overflows, and then process the
+		 * current line.
+		 *
+		 * Similarly, if we already have a hunk of data that
+		 * we're now flushing, that will cause the line of
+		 * data we're in the process of collecting to be garbage.
+		 *
+		 * Since we now check for this overflow and log when it
+		 * happens, we're now in a better place to easily see
+		 * what's going on and perhaps better choices can be made.
+		 */
+
+		/* Do we need to log the size of the overflow? */
+		msyslog(LOG_ERR, "Palisade(%d) praecis_parse(): input buffer overflow", 
+			up->unit);
+
+		p = 0;
+		praecis_msg = 0;
+
+		refclock_report(peer, CEVNT_BADREPLY);
+
+		return;
+	}
+
+	memcpy(buf+p, rbufp->recv_buffer, rbufp->recv_length);
 	p += rbufp->recv_length;
 
-	if(buf[p-2] == '\r' && buf[p-1] == '\n') {
+	if (   p >= 2
+	    && buf[p-2] == '\r' 
+	    && buf[p-1] == '\n') {
 		buf[p-2] = '\0';
 		record_clock_stats(&peer->srcadr, buf);
 
 		p = 0;
 		praecis_msg = 0;
 
-		if (HW_poll(pp) < 0)
+		if (HW_poll(pp) < 0) {
 			refclock_report(peer, CEVNT_FAULT);
-
+		}
 	}
+	return;
 }
 
 static void

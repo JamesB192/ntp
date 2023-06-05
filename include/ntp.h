@@ -128,7 +128,7 @@ typedef char s_char;
 #define MAX_TTL		8	/* max ttl mapping vector size */
 #define	BEACON		7200	/* manycast beacon interval */
 #define NTP_MAXEXTEN	2048	/* max extension field size */
-#define	NTP_ORPHWAIT	300	/* orphan wair (s) */
+#define	NTP_ORPHWAIT	300	/* orphan wait (s) */
 
 /*
  * Miscellaneous stuff
@@ -759,6 +759,7 @@ struct pkt {
 #define LOOP_CODEC		13	/* set audio codec frequency */
 #define	LOOP_LEAP		14	/* insert leap after second 23:59 */
 #define	LOOP_TICK		15	/* sim. low precision clock */
+#define LOOP_NOFREQ		16	/* undo a previos LOOP_FREQ */
 
 /*
  * Configuration items for the stats printer

@@ -2011,7 +2011,7 @@ update_interfaces(
 	 */
 	refresh_all_peerinterfaces();
 
-	if (broadcast_client_enabled || sys_bclient)
+	if (sys_bclient)
 		io_setbclient();
 
 #ifdef MCAST
@@ -2604,19 +2604,17 @@ io_setbclient(void)
 {
 #ifdef OPEN_BCAST_SOCKET
 	endpt *		ep;
-	unsigned int	nif, ni4, ni6;
+	unsigned int	nif, ni4;
 
-	nif = ni4 = ni6 = 0;
+	nif = ni4 = 0;
 	set_reuseaddr(1);
 
 	for (ep = ep_list; ep != NULL; ep = ep->elink) {
-		/* count IPv6 vs IPv4 interfaces. Needed later to decide
+		/* count IPv4 interfaces. Needed later to decide
 		 * if we should log an error or not.
 		 */
-		switch (ep->family) {
-		case AF_INET : ++ni4; break;
-		case AF_INET6: ++ni6; break;
-		default      :        break;
+		if (AF_INET == ep->family) {
+			++ni4;
 		}
 		
 		if (ep->flags & (INT_WILDCARD | INT_LOOPBACK))
@@ -2696,7 +2694,7 @@ io_setbclient(void)
 		 * and no IPv4 interfaces at all. We suppress the error
 		 * log in that case... everything else should work!
 		 */
-		if (ni4 && !ni6) {
+		if (ni4) {
 			msyslog(LOG_ERR,
 				"Unable to listen for broadcasts, no broadcast interfaces available");
 		}
@@ -3240,7 +3238,8 @@ sendpkt(
 			PKT_MODE(pkt->li_vn_mode),
 			pkt->stratum,
 			pkt->ppoll, pkt->precision,
-			pkt->rootdelay, pkt->rootdisp, pkt->refid,
+			FPTOD(NTOHS_FP(pkt->rootdelay)),
+			FPTOD(NTOHS_FP(pkt->rootdisp)),  pkt->refid,
 			len - MIN_V4_PKT_LEN, (u_char *)&pkt->exten);
 
 	return;
@@ -3293,15 +3292,20 @@ read_refclock_packet(
 	int			consumed;
 	struct recvbuf *	rb;
 
-	rb = get_free_recv_buffer();
+	rb = get_free_recv_buffer(TRUE);
 
 	if (NULL == rb) {
 		/*
-		 * No buffer space available - just drop the packet
+		 * No buffer space available - just drop the 'packet'.
+		 * Since this is a non-blocking character stream we read
+		 * all data that we can.
+		 *
+		 * ...hmmmm... what about "tcflush(fd,TCIFLUSH)" here?!?
 		 */
-		char buf[RX_BUFF_SIZE];
-
-		buflen = read(fd, buf, sizeof buf);
+		char buf[128];
+		do
+			buflen = read(fd, buf, sizeof(buf));
+		while (buflen > 0);
 		packets_dropped++;
 		return (buflen);
 	}
@@ -3398,7 +3402,7 @@ fetch_timestamp(
 						nts.l_uf = (unsigned long)(ticks * (unsigned long)(sys_tick * FRAC));
 					}
 					DPRINTF(4, ("fetch_timestamp: system bintime network time stamp: %ld.%09lu\n",
-						    pbt.sec, (unsigned long)((nts.l_uf / FRAC) * 1e9)));
+						    (long)pbt.sec, (u_long)((nts.l_uf / FRAC) * 1e9)));
 				}
 				break;
 #endif  /* HAVE_BINTIME */
@@ -3439,7 +3443,7 @@ fetch_timestamp(
 				break;
 #endif  /* HAVE_TIMESTAMP */
 			}
-			fuzz = ntp_random() * 2. / FRAC * sys_fuzz;
+			fuzz = ntp_uurandom() * sys_fuzz;
 			DTOLFP(fuzz, &lfpfuzz);
 			L_ADD(&nts, &lfpfuzz);
 #ifdef DEBUG_TIMING
@@ -3487,15 +3491,18 @@ read_network_packet(
 #endif
 
 	/*
-	 * Get a buffer and read the frame.  If we
-	 * haven't got a buffer, or this is received
-	 * on a disallowed socket, just dump the
+	 * Get a buffer and read the frame.  If we haven't got a buffer,
+	 * or this is received on a disallowed socket, just dump the
 	 * packet.
 	 */
 
-	rb = get_free_recv_buffer();
-	if (NULL == rb || itf->ignore_packets) {
-		char buf[RX_BUFF_SIZE];
+	rb = itf->ignore_packets ? NULL : get_free_recv_buffer(FALSE);
+	if (NULL == rb) {
+		/* A partial read on a UDP socket truncates the data and
+		 * removes the message from the queue. So there's no
+		 * need to have a full buffer here on the stack.
+		 */ 
+		char buf[16];
 		sockaddr_u from;
 
 		if (rb != NULL)
@@ -4504,7 +4511,7 @@ kill_asyncio(
 
 
 /*
- * Add and delete functions for the list of open sockets
+ * Add and delete functions for the list of input file descriptors
  */
 static void
 add_fd_to_list(
@@ -4694,14 +4701,16 @@ localaddrtoa(
 
 #ifdef HAS_ROUTING_SOCKET
 # ifndef UPDATE_GRACE
-#  define UPDATE_GRACE	2	/* wait UPDATE_GRACE seconds before scanning */
+#  define UPDATE_GRACE	3	/* min. UPDATE_GRACE - 1 seconds before scanning */
 # endif
 
 static void
 process_routing_msgs(struct asyncio_reader *reader)
 {
-	char buffer[5120];
-	int cnt, msg_type;
+	static char *	buffer;
+	static size_t	buffsz = 8192;
+	int		cnt, new, msg_type;
+	socklen_t	len;
 #ifdef HAVE_RTNETLINK
 	struct nlmsghdr *nh;
 #else
@@ -4719,15 +4728,34 @@ process_routing_msgs(struct asyncio_reader *reader)
 		return;
 	}
 
-	cnt = read(reader->fd, buffer, sizeof(buffer));
+	if (NULL == buffer) {
+		buffer = emalloc(buffsz);
+	}
+
+	cnt = read(reader->fd, buffer, buffsz);
 
 	if (cnt < 0) {
 		if (errno == ENOBUFS) {
-			msyslog(LOG_ERR,
-				"routing socket reports: %m");
+			/* increase socket buffer by 25% */
+			len = sizeof cnt;
+			if (0 > getsockopt(reader->fd, SOL_SOCKET, SO_RCVBUF, &cnt, &len) ||
+			    sizeof cnt != len) {
+				msyslog(LOG_ERR,
+					"routing getsockopt SO_RCVBUF %u %u: %m - disabling",
+					(u_int)cnt, (u_int)sizeof cnt);
+				goto disable;
+			}
+			new = cnt + (cnt / 4);
+			if (0 > setsockopt(reader->fd, SOL_SOCKET, SO_RCVBUF, &new, sizeof new)) {
+				msyslog(LOG_ERR,
+					"routing setsockopt SO_RCVBUF %d -> %d: %m - disabling",
+					cnt, new);
+				goto disable;
+			}
 		} else {
 			msyslog(LOG_ERR,
 				"routing socket reports: %m - disabling");
+		    disable:
 			remove_asyncio_reader(reader);
 			delete_asyncio_reader(reader);
 		}
@@ -4740,12 +4768,14 @@ process_routing_msgs(struct asyncio_reader *reader)
 #ifdef HAVE_RTNETLINK
 	for (nh = UA_PTR(struct nlmsghdr, buffer);
 	     NLMSG_OK(nh, cnt);
-	     nh = NLMSG_NEXT(nh, cnt)) {
+	     nh = NLMSG_NEXT(nh, cnt))
+	{
 		msg_type = nh->nlmsg_type;
 #else
 	for (p = buffer;
 	     (p + sizeof(struct rt_msghdr)) <= (buffer + cnt);
-	     p += rtm.rtm_msglen) {
+	     p += rtm.rtm_msglen)
+	{
 		memcpy(&rtm, p, sizeof(rtm));
 		if (rtm.rtm_version != RTM_VERSION) {
 			msyslog(LOG_ERR,
