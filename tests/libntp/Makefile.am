@@ -277,13 +277,13 @@ $(srcdir)/run-decodenetnum.c: $(srcdir)/decodenetnum.c $(std_unity_list)
 test_digests_SOURCES =		\
 	digests.c		\
 	run-digests.c		\
-	srcdir.c		\
 	$(NULL)
 
 $(srcdir)/run-digests.c: $(srcdir)/digests.c $(std_unity_list)
 	$(run_unity) $< $@
 
-BUILT_SOURCES += srcdir.c
+nodist_test_digests_SOURCES = srcdir.c
+CLEANFILES += srcdir.c
 
 srcdir.c: Makefile
 	$(AM_V_GEN)echo 'const char srcdir[] = "$(srcdir)";' >$@
