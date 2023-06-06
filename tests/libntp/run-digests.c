@@ -68,13 +68,13 @@ int main(int argc, char *argv[])
   progname = argv[0];
   suite_setup();
   UnityBegin("digests.c");
-  RUN_TEST(test_Digest_AES128CMAC, 121);
-  RUN_TEST(test_Digest_MD4, 180);
-  RUN_TEST(test_Digest_MD5, 239);
-  RUN_TEST(test_Digest_MDC2, 289);
-  RUN_TEST(test_Digest_RIPEMD160, 348);
-  RUN_TEST(test_Digest_SHA1, 407);
-  RUN_TEST(test_Digest_SHAKE128, 466);
+  RUN_TEST(test_Digest_AES128CMAC, 131);
+  RUN_TEST(test_Digest_MD4, 168);
+  RUN_TEST(test_Digest_MD5, 205);
+  RUN_TEST(test_Digest_MDC2, 238);
+  RUN_TEST(test_Digest_RIPEMD160, 275);
+  RUN_TEST(test_Digest_SHA1, 314);
+  RUN_TEST(test_Digest_SHAKE128, 353);
 
   return (UnityEnd());
 }
