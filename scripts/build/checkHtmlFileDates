@@ -1,6 +1,8 @@
 #! /bin/sh
 
-bk version > /dev/null 2>&1 || exit 0
+# Do nothing if the directory is not a BK repo,
+# or if BK is not even installed.
+bk status > /dev/null 2>&1 || exit 0
 
 for i in `find * -type f -name '*.html' -print | grep -v SCCS/`
 do

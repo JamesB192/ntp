@@ -1,3 +1,6 @@
+* [Bug 3825] Don't touch HTML files unless building inside a BK repo.
+             Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
+
 ---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>
 
