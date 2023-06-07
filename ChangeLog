@@ -1,3 +1,5 @@
+* [Bug 3827] Fix build in case CLOCK_HOPF6021 or CLOCK_WHARTON_400A
+             is disabled.  <burnicki@ntp.org>
 * [Bug 3825] Don't touch HTML files unless building inside a BK repo.
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
 
