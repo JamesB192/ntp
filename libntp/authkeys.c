@@ -927,6 +927,7 @@ authdecrypt(
 			      pkt, length, size, keyno);
 }
 
+
 /* password decoding helpers */
 static size_t
 pwdecode_plain(
