@@ -102,7 +102,7 @@ keytype_from_text(
 	int		key_type;
 	u_int		digest_len;
 #ifdef OPENSSL	/* --*-- OpenSSL code --*-- */
-	const u_long	max_digest_len = MAX_MAC_LEN - sizeof(keyid_t);
+	const u_long	max_digest_len = MAX_MDG_LEN;
 	char *		upcased;
 	char *		pch;
 	EVP_MD const *	md;
@@ -217,11 +217,6 @@ keytype_name(
 #   ifdef ENABLE_CMAC
 	if (NID_cmac == nid) {
 		name = CMAC;
-
-		if (debug) {
-			fprintf(stderr, "%s:%d:%s():%s:nid\n",
-				__FILE__, __LINE__, __func__, CMAC);
-		}
 	} else
 #   endif /*ENABLE_CMAC*/
 	if (NULL == name) {
