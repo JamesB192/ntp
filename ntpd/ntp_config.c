@@ -139,14 +139,11 @@ typedef struct peer_resolved_ctx_tag {
 #define MAXPPS		20	/* maximum length of PPS device string */
 
 /*
- * Poll Skew List
+ * Poll Skew List array has an entry for each supported poll
+ * interval, plus one for the default.
  */
-
-static psl_item psl[17-3+1];	/* values for polls 3-17 */
-				/* To simplify the runtime code we */
-				/* don't want to have to special-case */
-				/* dealing with a default */
-
+#define PSL_ENTRIES	(NTP_MAXPOLL - NTP_MINPOLL + 1)
+static psl_item psl[PSL_ENTRIES];
 
 /*
  * Miscellaneous macros
@@ -2617,7 +2614,6 @@ config_access(
 	u_short			mflags;
 	short			ippeerlimit;
 	int			range_err;
-	psl_item		my_psl_item;
 	attr_val *		atrv;
 	attr_val *		dflt_psl_atr;
 	const char *		signd_warning =
@@ -2962,18 +2958,18 @@ config_access(
 			freeaddrinfo(ai_list);
 	}
 
-	/* Deal with the Poll Skew List */
-
-	ZERO(psl);
-	ZERO(my_psl_item);
-
 	/*
+	 * pollskewlist
+	 *
 	 * First, find the last default pollskewlist item.
 	 * There should only be one of these with the current grammar,
 	 * but better safe than sorry.
 	 */
 	dflt_psl_atr = NULL;
 	atrv = HEAD_PFIFO(ptree->pollskewlist);
+	if (NULL != atrv) {
+		ZERO(psl);
+	}
 	for ( ; atrv != NULL; atrv = atrv->link) {
 		switch (atrv->attr) {
 		case -1:	/* default */
@@ -3012,7 +3008,7 @@ config_access(
 		|| 0 != dflt_psl_atr->value.r.last)) {
 		int i;
 
-		for (i = 3; i <= 17; ++i) {
+		for (i = NTP_MINPOLL; i <= NTP_MAXPOLL; ++i) {
 			attrtopsl(i, dflt_psl_atr);
 		}
 	}
@@ -3068,24 +3064,25 @@ config_access(
 void
 attrtopsl(int poll, attr_val *avp)
 {
-
-	DEBUG_INSIST((poll - 3) < sizeof psl);
-	if (poll < 3 || poll > 17) {
-		msyslog(LOG_ERR, "attrtopsl(%d, ...): Poll value is out of range - ignoring", poll);
+	if (poll < NTP_MINPOLL || poll > NTP_MAXPOLL) {
+		msyslog(LOG_ERR, "Poll %d value unsupported for pollskewlist",
+			poll);
 	} else {
-		int pao = poll - 3;		/* poll array offset */
+		int pao = poll - NTP_MINPOLL;	/* poll array offset */
 		int lower = avp->value.r.first;	/* a positive number */
 		int upper = avp->value.r.last;
 		int psmax = 1 << (poll - 1);
 		int qmsk;
 
+		DEBUG_INSIST(pao < COUNTOF(psl));
+
 		if (lower > psmax) {
-			msyslog(LOG_WARNING, "attrtopsl: default: poll %d lower bound reduced from %d to %d",
+			msyslog(LOG_WARNING, "pollskewlist %d lower bound reduced from %d to %d",
 				poll, lower, psmax);
 			lower = psmax;
 		}
 		if (upper > psmax) {
-			msyslog(LOG_WARNING, "attrtopsl: default: poll %d upper bound reduced from %d to %d",
+			msyslog(LOG_WARNING, "pollskewlist %d upper bound reduced from %d to %d",
 				poll, upper, psmax);
 			upper = psmax;
 		}
@@ -3099,8 +3096,6 @@ attrtopsl(int poll, attr_val *avp)
 		};
 		psl[pao].msk = qmsk;
 	}
-
-	return;
 } 
 #endif	/* !SIM */
 
@@ -3111,16 +3106,14 @@ get_pollskew(
 	psl_item *rv
 	)
 {
-
 #ifdef DISABLE_BUG3767_FIX
-	DEBUG_INSIST(3 <= p && 17 >= p);
+	DEBUG_INSIST(NTP_MINPOLL <= p && NTP_MAXPOLL >= p);
 #endif
-	if (3 <= p && 17 >= p) {
-		*rv = psl[p - 3];
-
+	if (NTP_MINPOLL <= p && p <= NTP_MAXPOLL) {
+		*rv = psl[p - NTP_MINPOLL];
 		return 0;
 	} else {
-		msyslog(LOG_ERR, "get_pollskew(%d): poll is not between 3 and 17!", p);
+		msyslog(LOG_DEBUG, "get_pollskew(%d): out of range", p);
 		return -1;
 	}
 
