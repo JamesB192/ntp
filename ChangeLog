@@ -1,4 +1,7 @@
 ---
+* [Bug 3831] pollskewlist zeroed on runtime configuration. <hart@ntp.org>
+
+---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Bug 3824] Spurious "ntpd: daemon failed to notify parent!" logged at
