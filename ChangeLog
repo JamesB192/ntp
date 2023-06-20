@@ -1,4 +1,9 @@
 ---
+* [Bug 3837] NULL pointer deref crash when ntpd deletes last interface.
+             Reported by renmingshuai.  Correct UNLINK_EXPR_SLIST() when the
+             list is empty. <hart@ntp.org>
+
+---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Bug 3824] Spurious "ntpd: daemon failed to notify parent!" logged at
