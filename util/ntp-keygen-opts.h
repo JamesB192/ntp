@@ -1,7 +1,7 @@
 /*
  *  EDIT THIS FILE WITH CAUTION  (ntp-keygen-opts.h)
  *
- *  It has been AutoGen-ed  June  1, 2023 at 01:42:55 AM by AutoGen 5.18.16
+ *  It has been AutoGen-ed  June  7, 2023 at 02:12:16 AM by AutoGen 5.18.16
  *  From the definitions    ntp-keygen-opts.def
  *  and the template file   options
  *
@@ -102,9 +102,9 @@ typedef enum {
 /** count of all options for ntp-keygen */
 #define OPTION_CT    26
 /** ntp-keygen version */
-#define NTP_KEYGEN_VERSION       "4.3.102"
+#define NTP_KEYGEN_VERSION       "4.3.103"
 /** Full ntp-keygen version text */
-#define NTP_KEYGEN_FULL_VERSION  "ntp-keygen (ntp) 4.3.102"
+#define NTP_KEYGEN_FULL_VERSION  "ntp-keygen (ntp) 4.3.103"
 
 /**
  *  Interface defines for all options.  Replace "n" with the UPPER_CASED
