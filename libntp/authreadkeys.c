@@ -276,8 +276,8 @@ authreadkeys(
 					  "authreadkeys: unexpected errno %d for key %d: %m",
 					  errno, keyno);
 				break;
-			}
 #endif
+			}
 			continue;
 		}
 		next = emalloc(sizeof(KeyDataT) + len);
