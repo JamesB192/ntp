@@ -989,6 +989,11 @@ AC_SUBST([LIBEVENT_GC_SECTIONS])
 
 AM_CONDITIONAL([INSTALL_LIBEVENT], [test "$enable_libevent_install" = "yes"])
 
+dnl Aloow addtional flags from a containing package such as NTP
+AC_SUBST([LIBEVENT_CFLAGS])
+AC_SUBST([LIBEVENT_CPPFLAGS])
+AC_SUBST([LIBEVENT_LDFLAGS])
+
 # Doxygen support
 DX_HTML_FEATURE(ON)
 DX_MAN_FEATURE(OFF)

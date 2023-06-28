@@ -6,6 +6,7 @@
 * [Bug 3828] BK should ignore a git repo in the same directory.
              <burnicki@ntp.org>
 * [Bug 3831] pollskewlist zeroed on runtime configuration. <hart@ntp.org>
+* [Bug 3835] NTP_HARD_*FLAGS not used by libevent tearoff.
 * Add DSA, DSA-SHA, and SHA to tests/libntp/digests.c. <hart@ntp.org>
 
 ---
