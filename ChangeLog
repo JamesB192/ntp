@@ -7,6 +7,9 @@
              <burnicki@ntp.org>
 * [Bug 3831] pollskewlist zeroed on runtime configuration. <hart@ntp.org>
 * [Bug 3835] NTP_HARD_*FLAGS not used by libevent tearoff.
+* [Bug 3837] NULL pointer deref crash when ntpd deletes last interface.
+             Reported by renmingshuai.  Correct UNLINK_EXPR_SLIST() when the
+             list is empty. <hart@ntp.org>
 * Add DSA, DSA-SHA, and SHA to tests/libntp/digests.c. <hart@ntp.org>
 
 ---
