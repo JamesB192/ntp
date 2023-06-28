@@ -106,11 +106,10 @@ case "$GCC" in
     #
     # libopts specifically builds a string with embedded NULs.
     # This causes a bunch of distracting warnings due to -Wformat.
-    # Let's see if we can figure out how to disable these.
     #
-    CFLAGS="$SAVED_CFLAGS -Wno-format"
+    CFLAGS="$SAVED_CFLAGS -Wno-format -Wno-format-security"
     AC_CACHE_CHECK(
-	[if $CC can handle -Wno-format], 
+	[if $CC can handle -Wno-format -Wno-format-security], 
 	[ntp_cv_gcc_Wno_format],
 	[
 	    AC_COMPILE_IFELSE(
@@ -120,13 +119,9 @@ case "$GCC" in
 	    )
 	]
     )
-
     case "$ntp_cv_gcc_Wno_format" in
      yes)
-	CC_NOFORMAT="$CC_NOFORMAT -Wno-format"
-	;;
-     no)
-	;;
+	CC_NOFORMAT="$CC_NOFORMAT -Wno-format -Wno-format-security"
     esac
 
     CFLAGS="$SAVED_CFLAGS"
