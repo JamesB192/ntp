@@ -1,9 +1,11 @@
+---
 * [Bug 3828] BK should ignore a git repo in the same directory.
              <burnicki@ntp.org>
 * [Bug 3827] Fix build in case CLOCK_HOPF6021 or CLOCK_WHARTON_400A
              is disabled.  <burnicki@ntp.org>
 * [Bug 3825] Don't touch HTML files unless building inside a BK repo.
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
+* Add DSA, DSA-SHA, and SHA to tests/libntp/digests.c. <hart@ntp.org>
 
 ---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>
