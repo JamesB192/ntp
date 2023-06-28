@@ -10,6 +10,9 @@
 * [Bug 3837] NULL pointer deref crash when ntpd deletes last interface.
              Reported by renmingshuai.  Correct UNLINK_EXPR_SLIST() when the
              list is empty. <hart@ntp.org>
+* [Bug 3841] 4.2.8p17 build break w/ gcc 12 -Wformat-security without -Wformat
+             Need to remove --Wformat-security when removing -Wformat to
+             silence numerous libopts warnings.  <hart@ntp.org>
 * Add DSA, DSA-SHA, and SHA to tests/libntp/digests.c. <hart@ntp.org>
 
 ---
