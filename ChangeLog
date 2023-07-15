@@ -9,6 +9,7 @@
              list is empty. <hart@ntp.org>
 * [Bug 3835] NTP_HARD_*FLAGS not used by libevent tearoff.
 * [Bug 3831] pollskewlist zeroed on runtime configuration. <hart@ntp.org>
+* [Bug 3830] configure libevent check intersperses output with answer. <stenn@>
 * [Bug 3828] BK should ignore a git repo in the same directory.
              <burnicki@ntp.org>
 * [Bug 3827] Fix build in case CLOCK_HOPF6021 or CLOCK_WHARTON_400A
