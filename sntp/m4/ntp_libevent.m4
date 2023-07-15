@@ -74,7 +74,6 @@ case "$ntp_use_local_libevent" in
  *) # If we have (a good enough) pkg-config, see if it can find libevent
     case "$PKG_CONFIG" in
      /*)
-	AC_MSG_CHECKING([if libevent $ntp_libevent_min_version or later is installed])
 	if $PKG_CONFIG --atleast-version=$ntp_libevent_min_version libevent
 	then
 	    ntp_use_local_libevent=no
@@ -83,6 +82,7 @@ case "$ntp_use_local_libevent" in
 	     *.*) ;;
 	     *) ntp_libevent_version='(unknown)' ;;
 	    esac
+	    AC_MSG_CHECKING([if libevent $ntp_libevent_min_version or later is installed])
 	    AC_MSG_RESULT([yes, version $ntp_libevent_version])
 	    CFLAGS_LIBEVENT=`$PKG_CONFIG --cflags libevent_pthreads`
 	    CPPFLAGS_LIBEVENT=`$PKG_CONFIG --cflags-only-I libevent`
@@ -116,6 +116,7 @@ case "$ntp_use_local_libevent" in
 	    # HMS: do we only need to do this if LIBISC_PTHREADS_NOTHREADS
 	    # is "pthreads"?
 	    CFLAGS_LIBEVENT=`$PKG_CONFIG --cflags libevent_pthreads`
+	    AC_MSG_CHECKING([if libevent $ntp_libevent_min_version or later is installed])
 	    AC_MSG_RESULT([no])
 	fi
 	;;
