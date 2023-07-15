@@ -1,18 +1,19 @@
 ---
-* [Bug 3825] Don't touch HTML files unless building inside a BK repo.
-             Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
-* [Bug 3827] Fix build in case CLOCK_HOPF6021 or CLOCK_WHARTON_400A
-             is disabled.  <burnicki@ntp.org>
-* [Bug 3828] BK should ignore a git repo in the same directory.
-             <burnicki@ntp.org>
-* [Bug 3831] pollskewlist zeroed on runtime configuration. <hart@ntp.org>
-* [Bug 3835] NTP_HARD_*FLAGS not used by libevent tearoff.
-* [Bug 3837] NULL pointer deref crash when ntpd deletes last interface.
-             Reported by renmingshuai.  Correct UNLINK_EXPR_SLIST() when the
-             list is empty. <hart@ntp.org>
+
 * [Bug 3841] 4.2.8p17 build break w/ gcc 12 -Wformat-security without -Wformat
              Need to remove --Wformat-security when removing -Wformat to
              silence numerous libopts warnings.  <hart@ntp.org>
+* [Bug 3837] NULL pointer deref crash when ntpd deletes last interface.
+             Reported by renmingshuai.  Correct UNLINK_EXPR_SLIST() when the
+             list is empty. <hart@ntp.org>
+* [Bug 3835] NTP_HARD_*FLAGS not used by libevent tearoff.
+* [Bug 3831] pollskewlist zeroed on runtime configuration. <hart@ntp.org>
+* [Bug 3828] BK should ignore a git repo in the same directory.
+             <burnicki@ntp.org>
+* [Bug 3827] Fix build in case CLOCK_HOPF6021 or CLOCK_WHARTON_400A
+             is disabled.  <burnicki@ntp.org>
+* [Bug 3825] Don't touch HTML files unless building inside a BK repo.
+             Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
 * html/clockopt.html cleanup.  <stenn@ntp.org>
 * Add DSA, DSA-SHA, and SHA to tests/libntp/digests.c. <hart@ntp.org>
 
