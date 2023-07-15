@@ -13,6 +13,7 @@
 * [Bug 3841] 4.2.8p17 build break w/ gcc 12 -Wformat-security without -Wformat
              Need to remove --Wformat-security when removing -Wformat to
              silence numerous libopts warnings.  <hart@ntp.org>
+* html/clockopt.html cleanup.  <stenn@ntp.org>
 * Add DSA, DSA-SHA, and SHA to tests/libntp/digests.c. <hart@ntp.org>
 
 ---
