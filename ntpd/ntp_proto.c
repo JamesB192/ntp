@@ -2981,20 +2981,6 @@ clock_update(
 			if (crypto_flags)
 				crypto_update();
 #endif	/* AUTOKEY */
-			/*
-			 * If our parent process is waiting for the
-			 * first clock sync, send them home satisfied.
-			 */
-#ifdef HAVE_WORKING_FORK
-			if (daemon_pipe[1] != -1) {
-				if (2 != write(daemon_pipe[1], "S\n", 2)) {
-					msyslog(LOG_ERR, "daemon failed to notify parent ntpd (--wait-sync)");
-				}
-				close(daemon_pipe[1]);
-				daemon_pipe[1] = -1;
-				DPRINTF(1, ("notified parent --wait-sync is done\n"));
-			}
-#endif /* HAVE_WORKING_FORK */
 
 		}
 
@@ -3933,13 +3919,13 @@ clock_select(void)
 			sys_clockhop = 0;
 		} else if ((x = fabs(typesystem->offset -
 		    osys_peer->offset)) < sys_mindisp) {
-			if (sys_clockhop == 0)
+			if (0 == sys_clockhop)
 				sys_clockhop = sys_mindisp;
 			else
 				sys_clockhop *= .5;
 			DPRINTF(1, ("select: clockhop %d %.6f %.6f\n",
 				j, x, sys_clockhop));
-			if (fabs(x) < sys_clockhop)
+			if (x < sys_clockhop)
 				typesystem = osys_peer;
 			else
 				sys_clockhop = 0;

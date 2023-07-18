@@ -608,7 +608,6 @@ detach_from_terminal(
 			pipe[1] = -1;
 			exit_code = wait_child_sync_if(
 					pipe[0], wait_sync);
-			DPRINTF(1, ("sync_if: rc=%d\n", exit_code));
 			if (exit_code <= 0) {
 				/* probe daemon exit code -- wait for
 				 * child process if we have an unexpected
@@ -616,7 +615,6 @@ detach_from_terminal(
 				 */
 				exit_code = wait_child_exit_if(
 						cpid, (exit_code < 0));
-				DPRINTF(1, ("exit_if: rc=%d\n", exit_code));
 			}
 		}
 		exit(exit_code);
@@ -1450,7 +1448,7 @@ int scmp_sc[] = {
 #if defined(SYS_WINNT)
 	ntservice_isup();
 #elif defined(HAVE_WORKING_FORK)
-	if (daemon_pipe[1] != -1) {
+	if (daemon_pipe[1] != -1 && 0 == wait_sync) {
 		if (2 != write(daemon_pipe[1], "R\n", 2)) {
 			msyslog(LOG_ERR, "daemon failed to notify parent ntpd after init");
 		}
@@ -1697,29 +1695,31 @@ wait_child_sync_if(
 		}
 		rc = read(pipe_read_fd, &ch, 1);
 		if (rc == 0) {
-			DPRINTF(2, ("daemon control: got EOF\n"));
+			/* DPRINTF is useless here as -d/-D disable forking */
+			fprintf(stderr, "daemon control: got EOF\n");
 			return -1;	/* unexpected EOF, check daemon */
 		} else if (rc == 1) {
-			DPRINTF(2, ("daemon control: got '%c'\n",
-				    (ch >= ' ' ? ch : '.')));
-			if (ch == 'R' && !wait_sync)
+			if (   ('S' == ch && wait_sync > 0)
+			    || ('R' == ch && 0 == wait_sync)) {
 				return 0;
-			if (ch == 'S' && wait_sync)
-				return 0;
+			}
 		} else {
-			DPRINTF(2, ("daemon control: read 1 char failed: %s\n",
-				    strerror(errno)));
+			mfprintf(stderr, "%s: daemon control: read 1 char failed: %m\n",
+				 progname);
+			msyslog(LOG_ERR, "daemon control: read 1 char failed: %m");
 			return EX_IOERR;
 		}
 	} while (wait_rem > 0);
 
-	if (wait_sync) {
+	if (wait_sync > 0) {
 		fprintf(stderr, "%s: -w/--wait-sync %ld timed out.\n",
 			progname, wait_sync);
+		msyslog(LOG_ERR, "-w/--wait-sync %ld timed out.", wait_sync);
 		return EX_PROTOCOL;
 	} else {
 		fprintf(stderr, "%s: daemon startup monitoring timed out.\n",
 			progname);
+		msyslog(LOG_ERR, "daemon startup monitoring timed out.");
 		return 0;
 	}
 }
@@ -1735,7 +1735,6 @@ wait_child_exit_if(
 	int	rc = 0;
 	int	wstatus;
 	if (cpid == waitpid(cpid, &wstatus, (blocking ? 0 : WNOHANG))) {
-		DPRINTF(1, ("child (pid=%d) dead now\n", cpid));
 		if (WIFEXITED(wstatus)) {
 			rc = WEXITSTATUS(wstatus);
 			msyslog(LOG_ERR, "daemon child exited with code %d",
@@ -1748,8 +1747,6 @@ wait_child_exit_if(
 			rc = EX_SOFTWARE;
 			msyslog(LOG_ERR, "daemon child died with unknown cause");
 		}
-	} else {
-		DPRINTF(1, ("child (pid=%d) still alive\n", cpid));
 	}
 	return rc;
 #    else
