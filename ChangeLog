@@ -1,13 +1,14 @@
 ---
 
-* [Bug 3846] Use -Wno-format-truncation by default.
+* [Bug 3849] ntpd --wait-sync times out. <hart@ntp.org>
+* [Bug 3846] Use -Wno-format-truncation by default. <hart@ntp.org>
 * [Bug 3841] 4.2.8p17 build break w/ gcc 12 -Wformat-security without -Wformat
              Need to remove --Wformat-security when removing -Wformat to
              silence numerous libopts warnings.  <hart@ntp.org>
 * [Bug 3837] NULL pointer deref crash when ntpd deletes last interface.
              Reported by renmingshuai.  Correct UNLINK_EXPR_SLIST() when the
              list is empty. <hart@ntp.org>
-* [Bug 3835] NTP_HARD_*FLAGS not used by libevent tearoff.
+* [Bug 3835] NTP_HARD_*FLAGS not used by libevent tearoff. <hart@ntp.org>
 * [Bug 3831] pollskewlist zeroed on runtime configuration. <hart@ntp.org>
 * [Bug 3830] configure libevent check intersperses output with answer. <stenn@>
 * [Bug 3828] BK should ignore a git repo in the same directory.
