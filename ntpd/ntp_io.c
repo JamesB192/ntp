@@ -182,6 +182,8 @@ u_int sys_ifnum;			/* next .ifnum to assign */
 int ninterfaces;			/* Total number of interfaces */
 
 int disable_dynamic_updates;		/* scan interfaces once only */
+int nonlocal_v4_addr_up;		/* should we try IPv4 pool? */
+int nonlocal_v6_addr_up;		/* should we try IPv6 pool? */
 
 #ifdef REFCLOCK
 /*
@@ -210,7 +212,7 @@ static int	update_interfaces(u_short, interface_receiver_t,
 static void	remove_interface(endpt *);
 static endpt *	create_interface(u_short, endpt *);
 
-static int	is_wildcard_addr	(const sockaddr_u *);
+static inline int is_wildcard_addr(const sockaddr_u *psau);
 
 /*
  * Multicast functions
@@ -304,6 +306,11 @@ endpt *		mc6_list;	/* IPv6 mcast-capable unicast endpts */
 
 static endpt *	wildipv4;
 static endpt *	wildipv6;
+
+static struct in_addr	rfc3927;
+static struct in_addr	rfc3927_mask;
+#define		IS_AUTOCONF(addr4)					\
+	((NSRCADR(addr4) & rfc3927_mask.s_addr) != rfc3927.s_addr)
 
 #ifdef SYS_WINNT
 int accept_wildcard_if_for_winnt;
@@ -465,6 +472,8 @@ init_io(void)
 #elif defined(HAVE_SIGNALED_IO)
 	(void) set_signal(input_handler);
 #endif
+	rfc3927.s_addr = 0xa9fe0000;		/* 169.254. */
+	rfc3927_mask.s_addr = 0xffff0000;	/* 169.254. */
 }
 
 
@@ -743,7 +752,7 @@ interface_enumerate(
 /*
  * do standard initialization of interface structure
  */
-static void
+static inline void
 init_interface(
 	endpt *ep
 	)
@@ -1759,6 +1768,7 @@ update_interfaces(
 	endpt			enumep;
 	endpt *			ep;
 	endpt *			next_ep;
+	struct in6_addr	*	psrcadr6;
 
 	DPRINTF(3, ("update_interfaces(%d)\n", port));
 
@@ -1769,6 +1779,7 @@ update_interfaces(
 	 */
 
 	new_interface_found = FALSE;
+	nonlocal_v4_addr_up = nonlocal_v6_addr_up = FALSE;
 	iter = NULL;
 	result = isc_interfaceiter_create(mctx, &iter);
 
@@ -1854,6 +1865,26 @@ update_interfaces(
 		if (!is_valid(&enumep.sin, isc_if.name))
 			continue;
 
+		/*
+		 * Keep track of having non-linklocal connectivity
+		 * for IPv4 and IPv6 so we don't solicit pool hosts
+		 * when it can't work.
+		 */
+		if (!(INT_LOOPBACK & enumep.flags)) {
+			if (IS_IPV6(&enumep.sin)) {
+				psrcadr6 = &enumep.sin.sa6.sin6_addr;
+				if (   !IN6_IS_ADDR_LINKLOCAL(psrcadr6)
+				    && !IN6_IS_ADDR_SITELOCAL(psrcadr6)) {
+		
+					nonlocal_v6_addr_up = TRUE;
+				}
+			} else {	/* ipv4 */
+				/* rfc3927 are link-local 169.254.0.0/16 */
+				if (IS_AUTOCONF(&enumep.sin)) {
+					nonlocal_v4_addr_up = TRUE;
+				}
+			}
+		}
 		/*
 		 * map to local *address* in order to map all duplicate
 		 * interfaces to an endpt structure with the appropriate
@@ -2017,8 +2048,8 @@ update_interfaces(
 #ifdef MCAST
 	/*
 	 * Check multicast interfaces and try to join multicast groups if
-         * not joined yet.
-         */
+	 * not joined yet.
+	 */
 	for (ep = ep_list; ep != NULL; ep = ep->elink) {
 		remaddr_t *entry;
 
