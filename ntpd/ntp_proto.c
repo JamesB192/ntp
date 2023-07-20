@@ -4808,6 +4808,7 @@ pool_xmit(
 	struct interface *	lcladr;
 	sockaddr_u *		rmtadr;
 	r4addr			r4a;
+	u_short			af;
 	u_short			restrict_mask;
 	struct peer *		p;
 	l_fp			xmt_tx;
@@ -4818,6 +4819,16 @@ pool_xmit(
 			/* free() is used with copy_addrinfo_list() */
 			free(pool->addrs);
 			pool->addrs = NULL;
+		}
+		af = AF(&pool->srcadr);
+		if (   (AF_INET == af && !nonlocal_v4_addr_up)
+		    || (AF_INET6 == af && !nonlocal_v6_addr_up)
+		    || (   AF_UNSPEC == af
+			&& !nonlocal_v4_addr_up
+			&& !nonlocal_v6_addr_up)) {
+
+			/* POOL DNS query would be useless [Bug 3845] */
+			return;
 		}
 		ZERO(hints);
 		hints.ai_family = AF(&pool->srcadr);
@@ -4843,8 +4854,13 @@ pool_xmit(
 
 	do {
 		/* copy_addrinfo_list ai_addr points to a sockaddr_u */
-		rmtadr = (sockaddr_u *)(void *)pool->ai->ai_addr;
+		rmtadr = (sockaddr_u*)(void*)pool->ai->ai_addr;
 		pool->ai = pool->ai->ai_next;
+		/* do not solicit when hopeless [Bug 3845] */
+		if (   (IS_IPV4(rmtadr) && !nonlocal_v4_addr_up)
+		    || (IS_IPV6(rmtadr) && !nonlocal_v6_addr_up)) {
+			continue;
+		}
 		p = findexistingpeer(rmtadr, NULL, NULL, MODE_CLIENT, 0, NULL);
 	} while (p != NULL && pool->ai != NULL);
 	if (p != NULL)
