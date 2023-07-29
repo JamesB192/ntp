@@ -307,10 +307,10 @@ endpt *		mc6_list;	/* IPv6 mcast-capable unicast endpts */
 static endpt *	wildipv4;
 static endpt *	wildipv6;
 
-static struct in_addr	rfc3927;
-static struct in_addr	rfc3927_mask;
+#define		RFC3927_ADDR	0xa9fe0000	/* 169.254. */
+#define		RFC3927_MASK	0xffff0000
 #define		IS_AUTOCONF(addr4)					\
-	((NSRCADR(addr4) & rfc3927_mask.s_addr) != rfc3927.s_addr)
+		((SRCADR(addr4) & RFC3927_MASK) == RFC3927_ADDR)
 
 #ifdef SYS_WINNT
 int accept_wildcard_if_for_winnt;
@@ -472,8 +472,6 @@ init_io(void)
 #elif defined(HAVE_SIGNALED_IO)
 	(void) set_signal(input_handler);
 #endif
-	rfc3927.s_addr = 0xa9fe0000;		/* 169.254. */
-	rfc3927_mask.s_addr = 0xffff0000;	/* 169.254. */
 }
 
 
@@ -1561,13 +1559,11 @@ sau_from_netaddr(
 	switch (pna->family) {
 
 	case AF_INET:
-		memcpy(&psau->sa4.sin_addr, &pna->type.in,
-		       sizeof(psau->sa4.sin_addr));
+		psau->sa4.sin_addr = pna->type.in;
 		break;
 
 	case AF_INET6:
-		memcpy(&psau->sa6.sin6_addr, &pna->type.in6,
-		       sizeof(psau->sa6.sin6_addr));
+		psau->sa6.sin6_addr = pna->type.in6;
 		break;
 	}
 }
@@ -1587,6 +1583,30 @@ is_wildcard_addr(
 #endif
 
 	return 0;
+}
+
+
+isc_boolean_t
+is_linklocal(
+	sockaddr_u *		psau
+)
+{
+	struct in6_addr *	p6addr;
+
+	if (IS_IPV6(psau)) {
+		p6addr = &psau->sa6.sin6_addr;
+		if (   IN6_IS_ADDR_LINKLOCAL(p6addr)
+		    || IN6_IS_ADDR_SITELOCAL(p6addr)) {
+
+			return TRUE;
+		}
+	} else if (IS_IPV4(psau)) {
+		/* autoconf are link-local 169.254.0.0/16 */
+		if (IS_AUTOCONF(psau)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 
@@ -1768,7 +1788,6 @@ update_interfaces(
 	endpt			enumep;
 	endpt *			ep;
 	endpt *			next_ep;
-	struct in6_addr	*	psrcadr6;
 
 	DPRINTF(3, ("update_interfaces(%d)\n", port));
 
@@ -1870,19 +1889,12 @@ update_interfaces(
 		 * for IPv4 and IPv6 so we don't solicit pool hosts
 		 * when it can't work.
 		 */
-		if (!(INT_LOOPBACK & enumep.flags)) {
+		if (   !(INT_LOOPBACK & enumep.flags)
+		    && !is_linklocal(&enumep.sin)) {
 			if (IS_IPV6(&enumep.sin)) {
-				psrcadr6 = &enumep.sin.sa6.sin6_addr;
-				if (   !IN6_IS_ADDR_LINKLOCAL(psrcadr6)
-				    && !IN6_IS_ADDR_SITELOCAL(psrcadr6)) {
-		
-					nonlocal_v6_addr_up = TRUE;
-				}
-			} else {	/* ipv4 */
-				/* rfc3927 are link-local 169.254.0.0/16 */
-				if (IS_AUTOCONF(&enumep.sin)) {
-					nonlocal_v4_addr_up = TRUE;
-				}
+				nonlocal_v6_addr_up = TRUE;
+			} else {
+				nonlocal_v4_addr_up = TRUE;
 			}
 		}
 		/*
