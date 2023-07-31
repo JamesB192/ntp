@@ -456,7 +456,7 @@ load_pps_provider(
 	HMODULE			hmod;
 	pppsapi_prov_init	pprov_init;
 
-	prov = emalloc(sizeof(*prov));
+	prov = emalloc_zero(sizeof(*prov));
 	hmod = LoadLibraryA(dllpath);
 	if (NULL == hmod) {
 		msyslog(LOG_WARNING, msgfmt, dllpath,

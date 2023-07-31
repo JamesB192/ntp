@@ -2,10 +2,13 @@
 
 * [Bug 3851] Drop pool server when no local address can reach it.
              <hart@ntp.org>
+* [Bug 3850] ntpq -c apeers breaks column formatting s2 w/refclock refid.
+             <hart@ntp.org>
 * [Bug 3849] ntpd --wait-sync times out. <hart@ntp.org>
 * [Bug 3846] Use -Wno-format-truncation by default. <hart@ntp.org>
 * [Bug 3845] accelerate pool clock_sync when IPv6 has only link-local access.
              <hart@ntp.org>
+* [Bug 3842] Windows ntpd ppsapi DLL load failure crashes. <hart@ntp.org>
 * [Bug 3841] 4.2.8p17 build break w/ gcc 12 -Wformat-security without -Wformat
              Need to remove --Wformat-security when removing -Wformat to
              silence numerous libopts warnings.  <hart@ntp.org>
