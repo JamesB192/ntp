@@ -472,7 +472,16 @@ transmit(
 		return;
 	}
 
-	/*
+	/* [Bug 3851] drop pool servers which can no longer be reached. */
+	if (MDF_PCLNT & peer->cast_flags) {
+		if (   (IS_IPV6(&peer->srcadr) && !nonlocal_v6_addr_up)
+		    || !nonlocal_v4_addr_up) {
+			unpeer(peer);
+			return;
+		}
+	}
+
+	 /*
 	 * In unicast modes the dance is much more intricate. It is
 	 * designed to back off whenever possible to minimize network
 	 * traffic.
@@ -636,6 +645,7 @@ receive(
 	keyid_t	skeyid = 0;		/* key IDs */
 	u_int32	opcode = 0;		/* extension field opcode */
 	sockaddr_u *dstadr_sin;		/* active runway */
+	u_char	cast_flags;		/* MDF_* flags for newpeer() */
 	struct peer *peer2;		/* aux peer structure pointer */
 	endpt	*match_ep;		/* newpeer() local address */
 	l_fp	p_org;			/* origin timestamp */
@@ -1450,11 +1460,15 @@ receive(
 			sys_declined++;
 			return;			/* no help */
 		}
+		cast_flags = MDF_UCAST;
+		if (MDF_POOL & peer2->cast_flags) {
+			cast_flags |= MDF_PCLNT;
+		}
 		peer = newpeer(&rbufp->recv_srcadr, NULL, rbufp->dstadr,
 			       r4a.ippeerlimit, MODE_CLIENT, hisversion,
 			       peer2->minpoll, peer2->maxpoll,
 			       (FLAG_PREEMPT | (POOL_FLAG_PMASK & peer2->flags)),
-			       (MDF_UCAST | MDF_UCLNT), 0, skeyid, sys_ident);
+			       cast_flags, 0, skeyid, sys_ident);
 		if (NULL == peer) {
 			DPRINTF(2, ("receive: AM_MANYCAST drop: duplicate\n"));
 			sys_declined++;
@@ -4094,9 +4108,9 @@ peer_xmit(
 	keyid_t	xkeyid = 0;	/* transmit key ID */
 	l_fp	xmt_tx, xmt_ty;
 
-	if (!peer->dstadr)	/* drop peers without interface */
+	if (!peer->dstadr) {	/* can't send */
 		return;
-
+	}
 	xpkt.li_vn_mode = PKT_LI_VN_MODE(sys_leap, peer->version,
 	    peer->hmode);
 	xpkt.stratum = STRATUM_TO_PKT(sys_stratum);

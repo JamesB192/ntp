@@ -463,9 +463,9 @@ struct peer {
 #define	FLAG_XLEAVE	0x1000	/* interleaved protocol */
 #define	FLAG_XB		0x2000	/* interleaved broadcast */
 #define	FLAG_XBOGUS	0x4000	/* interleaved bogus packet */
-#ifdef	OPENSSL
+#ifdef	AUTOKEY
 # define FLAG_ASSOC	0x8000	/* autokey request */
-#endif /* OPENSSL */
+#endif
 #define FLAG_TSTAMP_PPS	0x10000	/* PPS source provides absolute timestamp */
 #define FLAG_LOOPNONCE	0x20000	/* Use a nonce for the loopback test */
 
@@ -804,7 +804,7 @@ struct mon_data {
 #define	MDF_POOL	0x08	/* pool client solicitor */
 #define MDF_ACAST	0x10	/* manycast client solicitor */
 #define	MDF_BCLNT	0x20	/* eph. broadcast/multicast client */
-#define MDF_UCLNT	0x40	/* preemptible manycast or pool client */
+#define MDF_PCLNT	0x40	/* preemptible pool client */
 /*
  * In the context of struct peer in ntpd, three of the cast_flags bits
  * represent configured associations which never receive packets, and
