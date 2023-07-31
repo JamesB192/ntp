@@ -15,6 +15,7 @@
 #include "ntp_net.h"
 #include "ntp_debug.h"
 #include "ntp_malloc.h"
+#include "lib_strbuf.h"
 #include "ntp_string.h"
 #include "ntp_syslog.h"
 #include "ntp_keyacc.h"

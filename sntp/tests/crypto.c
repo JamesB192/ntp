@@ -169,12 +169,6 @@ test_VerifySHA1(void)
 void
 test_VerifyCMAC(void)
 {
-	const char* PKT_DATA =
-	    "sometestdata"				/* Data */
-	    "\0\0\0\0"					/* Key-ID (unused) */
-	    "\x4e\x0c\xf0\xe2\xc7\x8e\xbb\xbf"		/* MAC */
-	    "\x79\xfc\x87\xc7\x8b\xb7\x4a\x0b";
-	const int PKT_LEN = 12;
 	struct key cmac;
 
 	cmac.next = NULL;
