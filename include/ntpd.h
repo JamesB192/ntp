@@ -128,7 +128,8 @@ extern	void	io_unsetbclient	(void);
 extern	void	io_multicast_add(sockaddr_u *);
 extern	void	io_multicast_del(sockaddr_u *);
 extern	void	sendpkt 	(sockaddr_u *, struct interface *, int, struct pkt *, int);
-#ifdef DEBUG
+extern	isc_boolean_t	is_linklocal(sockaddr_u *psau);
+#ifdef DEBUG_TIMING
 extern	void	collect_timing  (struct recvbuf *, const char *, int, l_fp *);
 #endif
 #ifdef HAVE_SIGNALED_IO
