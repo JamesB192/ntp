@@ -98,15 +98,16 @@ test_IPv6AddressToRefId(void) {
 	} } };
 	sockaddr_u addr;
 
+	ZERO(addr);
 	addr.sa6.sin6_family = AF_INET6;
-
 	addr.sa6.sin6_addr = address;
 
 
 #if 0
 	TEST_ASSERT_EQUAL(expected, addr2refid(&addr));
 #else
-	(void)expected;
+	UNUSED_LOCAL(expected);
+	UNUSED_LOCAL(addr);
 	TEST_IGNORE_MESSAGE("Skipping because of big endian problem?");
 #endif
 }

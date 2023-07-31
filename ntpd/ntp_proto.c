@@ -4854,7 +4854,7 @@ pool_xmit(
 
 	do {
 		/* copy_addrinfo_list ai_addr points to a sockaddr_u */
-		rmtadr = (sockaddr_u*)(void*)pool->ai->ai_addr;
+		rmtadr = (sockaddr_u *)(void *)pool->ai->ai_addr;
 		pool->ai = pool->ai->ai_next;
 		/* do not solicit when hopeless [Bug 3845] */
 		if (   (IS_IPV4(rmtadr) && !nonlocal_v4_addr_up)

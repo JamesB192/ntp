@@ -5,28 +5,33 @@
 #define LIB_STRBUF_H
 
 #include <ntp_types.h>
-#include <ntp_malloc.h>			/* for ZERO() */
+#include <ntp_malloc.h>			/* for zero_mem() */
 
 /*
  * Sizes of things
  */
-#define LIB_NUMBUF	16
+#define LIB_NUMBUF	10
 #define	LIB_BUFLENGTH	128
 
-typedef char libbufstr[LIB_BUFLENGTH];
-extern libbufstr lib_stringbuf[LIB_NUMBUF];
-extern int lib_nextbuf;
-extern int lib_inited;
+extern char *	lib_stringbuf[LIB_NUMBUF];
+extern int	lib_nextbuf;
+extern int	lib_inited;
+extern int	ipv4_works;
+extern int	ipv6_works;
 
+extern	void	init_lib(void);
 
 /*
  * Macro to get a pointer to the next buffer
  */
-#define	LIB_GETBUF(bufp)					\
-	do {							\
-		ZERO(lib_stringbuf[lib_nextbuf]);		\
-		(bufp) = &lib_stringbuf[lib_nextbuf++][0];	\
-		lib_nextbuf %= COUNTOF(lib_stringbuf);		\
+#define	LIB_GETBUF(bufp)						\
+	do {								\
+		if (!lib_inited) {					\
+			init_lib();					\
+		}							\
+		zero_mem(lib_stringbuf[lib_nextbuf], LIB_BUFLENGTH);	\
+		(bufp) = lib_stringbuf[lib_nextbuf++];			\
+		lib_nextbuf %= COUNTOF(lib_stringbuf);			\
 	} while (FALSE)
 
 #endif	/* LIB_STRBUF_H */
