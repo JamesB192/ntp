@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3856] Enable Edit & Continue debugging with Visual Studio.
+             <hart@ntp.org>
 * [Bug 3853] Clean up warnings with modern compilers. <hart@ntp.org>
 * [Bug 3852] check-libntp.mf and friends are not triggering rebuilds as
              intended. <hart@ntp.org>
