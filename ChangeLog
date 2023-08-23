@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3864] ntpd IPv6 refid different for big-endian and little-endian.
+             <hart@ntp.org>
 * [Bug 3856] Enable Edit & Continue debugging with Visual Studio.
              <hart@ntp.org>
 * [Bug 3853] Clean up warnings with modern compilers. <hart@ntp.org>

@@ -254,7 +254,16 @@ MD5authdecrypt(
  * Calculate the reference id from the address. If it is an IPv4
  * address, use it as is. If it is an IPv6 address, do a md5 on
  * it and use the bottom 4 bytes.
- * The result is in network byte order.
+ * The result is in network byte order for IPv4 addreseses.  For
+ * IPv6, ntpd long differed in the hash calculated on big-endian
+ * vs. little-endian because the first four bytes of the MD5 hash
+ * were used as a u_int32 without any byte swapping.  This broke
+ * the refid-based loop detection between mixed-endian systems.
+ * In order to preserve behavior on the more-common little-endian
+ * systems, the hash is now byte-swapped on big-endian systems to
+ * match the little-endian hash.  This is ugly but it seems better
+ * than changing the IPv6 refid calculation on the more-common
+ * systems.
  */
 u_int32
 addr2refid(sockaddr_u *addr)
@@ -288,5 +297,8 @@ addr2refid(sockaddr_u *addr)
 	EVP_DigestFinal(ctx, digest, &len);
 	EVP_MD_CTX_free(ctx);
 	memcpy(&addr_refid, digest, sizeof(addr_refid));
-	return (addr_refid);
+#ifdef WORDS_BIGENDIAN
+	addr_refid = BYTESWAP32(addr_refid);
+#endif
+	return addr_refid;
 }

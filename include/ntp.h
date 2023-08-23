@@ -188,6 +188,9 @@ struct interface {
 	u_int32		flags;		/* interface flags */
 	int		last_ttl;	/* last TTL specified */
 	u_int32		addr_refid;	/* IPv4 addr or IPv6 hash */
+#    ifdef WORDS_BIGENDIAN
+	u_int32		old_refid;	/* byte-swapped IPv6 refid */
+#    endif
 	int		num_mcast;	/* mcast addrs enabled */
 	u_long		starttime;	/* current_time at creation */
 	volatile long	received;	/* number of incoming packets */
@@ -948,4 +951,10 @@ struct endpoint {
 #define MRU_ROW_LIMIT	256
 /* similar datagrams per response limit for ntpd */
 #define MRU_FRAGS_LIMIT	128
+
+#define BYTESWAP32(u32)							\
+			(((u_int32)(u32) & 0xff000000) >> 24 |		\
+			 ((u_int32)(u32) &   0xff0000) >>  8 |		\
+			 ((u_int32)(u32) &     0xff00) <<  8 |		\
+			 ((u_int32)(u32) &       0xff) << 24)
 #endif /* NTP_H */

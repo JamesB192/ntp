@@ -75,16 +75,15 @@ test_DecryptInvalid(void) {
 
 void
 test_IPv4AddressToRefId(void) {
-	sockaddr_u addr;
-	addr.sa4.sin_family = AF_INET;
-	u_int32 address;
+	sockaddr_u	addr;
+	u_int32		addr4n;
 
-	addr.sa4.sin_port = htons(80);
+	AF(&addr) = AF_INET;
+	SET_PORT(&addr, htons(80));
+	addr4n = inet_addr("192.0.2.1");
+	NSRCADR(&addr) = addr4n;
 
-	address = inet_addr("192.0.2.1");
-	addr.sa4.sin_addr.s_addr = address;
-
-	TEST_ASSERT_EQUAL(address, addr2refid(&addr));
+	TEST_ASSERT_EQUAL_UINT32(addr4n, addr2refid(&addr));
 }
 
 void
@@ -98,16 +97,8 @@ test_IPv6AddressToRefId(void) {
 	} } };
 	sockaddr_u addr;
 
-	ZERO(addr);
-	addr.sa6.sin6_family = AF_INET6;
-	addr.sa6.sin6_addr = address;
+	AF(&addr) = AF_INET6;
+	SOCK_ADDR6(&addr) = address;
 
-
-#if 0
 	TEST_ASSERT_EQUAL(expected, addr2refid(&addr));
-#else
-	UNUSED_LOCAL(expected);
-	UNUSED_LOCAL(addr);
-	TEST_IGNORE_MESSAGE("Skipping because of big endian problem?");
-#endif
 }

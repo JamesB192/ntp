@@ -834,6 +834,11 @@ add_interface(
 
 	/* Calculate the refid */
 	ep->addr_refid = addr2refid(&ep->sin);
+#    ifdef WORDS_BIGENDIAN
+	if (IS_IPV6(&ep->sin)) {
+		ep->old_refid = BYTESWAP32(ep->addr_refid);
+	}
+#    endif
 	/* link at tail so ntpdc -c ifstats index increases each row */
 	LINK_TAIL_SLIST(ep_list, ep, elink, endpt);
 	ninterfaces++;

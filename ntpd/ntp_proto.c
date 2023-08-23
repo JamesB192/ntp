@@ -1368,7 +1368,12 @@ receive(
 		if (   sys_leap == LEAP_NOTINSYNC
 		    || sys_stratum >= hisstratum
 		    || (!sys_cohort && sys_stratum == hisstratum + 1)
-		    || rbufp->dstadr->addr_refid == pkt->refid) {
+		    || rbufp->dstadr->addr_refid == pkt->refid
+#	    ifdef WORDS_BIGENDIAN	/* see local_refid() comment */
+		    || (   IS_IPV6(&rbufp->dstadr->sin)
+			&&rbufp->dstadr->old_refid ==  pkt->refid)
+#	    endif
+								  ) {
 			DPRINTF(2, ("receive: sys leap: %0x, sys_stratum %d > hisstratum+1 %d, !sys_cohort %d && sys_stratum == hisstratum+1, loop refid %#x == pkt refid %#x\n", sys_leap, sys_stratum, hisstratum + 1, !sys_cohort, rbufp->dstadr->addr_refid, pkt->refid));
 			DPRINTF(2, ("receive: AM_FXMIT drop: LEAP_NOTINSYNC || stratum || loop\n"));
 			sys_declined++;
@@ -5015,8 +5020,18 @@ key_expire(
 
 
 /*
- * local_refid(peer) - check peer refid to avoid selecting peers
+ * local_refid(peer) - Check peer refid to avoid selecting peers
  *		       currently synced to this ntpd.
+ * Note that until 4.2.8p18 and 4.3.1XX ntpd calculated the IPv6
+ * refid differently on different-endian systems.  It now calculates
+ * the refid the same on both, the same way it did on little-endian
+ * in the past.  On big-endian systems, ntpd also calculates a
+ * byte-swapped version of each of its IPv6 local addresses' refids,
+ * as endpt.old_refid and also detects a loop when seeing it.  This
+ * ensures new BE ntpd will detect loops interoperating with older
+ * BE ntpd, and keeps the more-common LE old ntpd code detecting
+ * loops with IPv6 refids correctly.  Thanks to Hal Murray for
+ * the byte-swapping idea.
  */
 static int
 local_refid(
@@ -5030,10 +5045,17 @@ local_refid(
 	else
 		unicast_ep = findinterface(&p->srcadr);
 
-	if (unicast_ep != NULL && p->refid == unicast_ep->addr_refid)
+	if (unicast_ep != NULL
+	    && (   p->refid == unicast_ep->addr_refid
+#ifdef WORDS_BIGENDIAN
+		|| (   IS_IPV6(&unicast_ep->sin)
+		    && p->refid == unicast_ep->old_refid)
+#endif
+							 )) {
 		return TRUE;
-	else
+	} else {
 		return FALSE;
+	}
 }
 
 
