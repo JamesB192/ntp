@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3854] ntpd 4.2.8p17 corrupts rawstats file with space in refid.
+             <hart@ntp.org>
 * [Bug 3851] Drop pool server when no local address can reach it.
              <hart@ntp.org>
 * [Bug 3850] ntpq -c apeers breaks column formatting s2 w/refclock refid.

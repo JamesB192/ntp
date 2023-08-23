@@ -227,6 +227,12 @@ typedef union {
  */
 #define	LOOPBACKADR	0x7f000001
 #define	LOOPNETMASK	0xff000000
+#ifdef WORDS_BIGENDIAN
+# define LOOPBACKADR_N	LOOPBACKADR
+#else 
+# define LOOPBACKADR_N	0x0100007f
+#endif
+
 
 #define	ISBADADR(srcadr)					\
 	(IS_IPV4(srcadr)					\
