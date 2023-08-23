@@ -39,15 +39,23 @@ const char *
 refid_str(
 	u_int32	refid,
 	int	stratum
-	)
+)
 {
 	char *	text;
 	size_t	tlen;
-	char *  cp;
-
-	if (stratum > 1)
+	char *	cp;
+	
+	/*
+	 * ntpd can have stratum = 0 and refid 127.0.0.1 in orphan mode.
+	 * https://bugs.ntp.org/3854.  Mirror the refid logic in timer().
+	 */
+	if (LOOPBACKADR_N == refid) {
+		if (stratum <= 1) {
+			return ".ORPH.";
+		}
+	} else if (stratum > 1) {
 		return numtoa(refid);
-
+	}
 	LIB_GETBUF(text);
 	text[0] = '.';
 	/* What if any non-NUL char is not printable? */
@@ -61,12 +69,12 @@ refid_str(
 	 * Now make sure the contents are 'graphic'.
 	 *
 	 * This refid is expected to be up to 4 ascii graphics.
-	 * If any character is not a graphic, replace it with a space.
+	 * If any character is not a graphic, replace it with a '?'.
 	 * This will at least alert the viewer of a problem.
 	 */
 	for (cp = text + 1; *cp; ++cp) {
 		if (!isgraph((int)*cp)) {
-			*cp = ' ';
+			*cp = '?';
 		}
 	}
 

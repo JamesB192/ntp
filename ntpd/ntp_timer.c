@@ -296,8 +296,8 @@ intres_timeout_req(
 void
 timer(void)
 {
-	struct peer *	p;
-	struct peer *	next_peer;
+	struct peer* p;
+	struct peer* next_peer;
 	l_fp		now;
 	time_t          tnow;
 
@@ -370,7 +370,8 @@ timer(void)
 #endif	/* AUTOKEY */
 			}
 			sys_stratum = (u_char)sys_orphan;
-		} else {
+		}
+		else {
 			if (sys_leap != LEAP_NOTINSYNC) {
 				set_sys_leap(LEAP_NOTINSYNC);
 				msyslog(LOG_WARNING, "%s",
@@ -378,10 +379,12 @@ timer(void)
 			}
 			sys_stratum = STRATUM_UNSPEC;
 		}
-		if (sys_stratum > 1)
-		    sys_refid = htonl(LOOPBACKADR);
-		else
-		    memcpy(&sys_refid, "LOOP", 4);
+		if (sys_stratum > 1) {
+			sys_refid = htonl(LOOPBACKADR);
+		}
+		else {
+			memcpy(&sys_refid, "ORPH", min(4, sizeof(sys_refid)));
+		}
 		sys_offset = 0;
 		sys_rootdelay = 0;
 		sys_rootdisp = 0;
@@ -396,16 +399,19 @@ timer(void)
 	 */
 	if (leapsec > LSPROX_NOWARN || 0 == (current_time & 7))
 		check_leapsec(now.l_ui, &tnow,
-                                (sys_leap == LEAP_NOTINSYNC));
-        if (sys_leap != LEAP_NOTINSYNC) {
-                if (leapsec >= LSPROX_ANNOUNCE && leapdif) {
-		        if (leapdif > 0)
-			        set_sys_leap(LEAP_ADDSECOND);
-		        else
-			        set_sys_leap(LEAP_DELSECOND);
-                } else {
-                        set_sys_leap(LEAP_NOWARNING);
-                }
+			(sys_leap == LEAP_NOTINSYNC));
+	if (sys_leap != LEAP_NOTINSYNC) {
+		if (leapsec >= LSPROX_ANNOUNCE && leapdif) {
+			if (leapdif > 0) {
+				set_sys_leap(LEAP_ADDSECOND);
+			}
+			else {
+				set_sys_leap(LEAP_DELSECOND);
+			}
+		}
+		else {
+			set_sys_leap(LEAP_NOWARNING);
+		}
 	}
 
 	/*
@@ -431,7 +437,7 @@ timer(void)
 	 */
 	if (revoke_timer && revoke_timer <= current_time) {
 		revoke_timer += (1UL << sys_revoke);
-		RAND_bytes((u_char *)&sys_private, 4);
+		RAND_bytes((u_char*)&sys_private, 4);
 	}
 #endif	/* AUTOKEY */
 
@@ -440,14 +446,14 @@ timer(void)
 	 */
 	if (interface_interval && interface_timer <= current_time) {
 		timer_interfacetimeout(current_time +
-		    interface_interval);
+			interface_interval);
 		DPRINTF(2, ("timer: interface update\n"));
 		interface_update(NULL, NULL);
 	}
 
-	if (worker_idle_timer && worker_idle_timer <= current_time)
+	if (worker_idle_timer && worker_idle_timer <= current_time) {
 		worker_idle_timer_fired();
-
+	}
 	/*
 	 * Finally, write hourly stats and do the hourly
 	 * and daily leapfile checks.
@@ -528,21 +534,27 @@ timer_clr_stats(void)
 
 
 static void
-check_leap_sec_in_progress( const leap_result_t *lsdata ) {
+check_leap_sec_in_progress(
+	const leap_result_t *lsdata
+	)
+{
 	int prv_leap_sec_in_progress = leap_sec_in_progress;
+
 	leap_sec_in_progress = lsdata->tai_diff && (lsdata->ddist < 3);
 
-	/* if changed we may have to update the leap status sent to clients */
-	if (leap_sec_in_progress != prv_leap_sec_in_progress)
+	/* if changed we have to update the leap bits sent to clients */
+	if (leap_sec_in_progress != prv_leap_sec_in_progress) {
 		set_sys_leap(sys_leap);
+	}
 }
 
 
 static void
 check_leapsec(
-	u_int32        now  ,
-	const time_t * tpiv ,
-        int/*BOOL*/    reset)
+	u_int32		now,
+	const time_t *	tpiv,
+	int/*BOOL*/	reset
+	)
 {
 	static const char leapmsg_p_step[] =
 	    "Positive leap second, stepped backward.";
@@ -556,10 +568,10 @@ check_leapsec(
 	    "Negative leap second, no step correction. "
 	    "System clock will be inaccurate for a long time.";
 
-	leap_result_t lsdata;
-	u_int32       lsprox;
+	leap_result_t	lsdata;
+	u_int32		lsprox;
 #ifdef AUTOKEY
-	int/*BOOL*/   update_autokey = FALSE;
+	int/*BOOL*/	update_autokey = FALSE;
 #endif
 
 #ifndef SYS_WINNT  /* WinNT port has its own leap second handling */
@@ -568,122 +580,115 @@ check_leapsec(
 # else
 	leapsec_electric(0);
 # endif
-#endif
+#endif	/* !SYS_WINNT */
+
 #ifdef LEAP_SMEAR
 	leap_smear.enabled = leap_smear_intv != 0;
 #endif
 	if (reset) {
 		lsprox = LSPROX_NOWARN;
 		leapsec_reset_frame();
-		memset(&lsdata, 0, sizeof(lsdata));
+		ZERO(lsdata);
 	} else {
-	  int fired;
+		int fired;
 
-	  fired = leapsec_query(&lsdata, now, tpiv);
+		fired = leapsec_query(&lsdata, now, tpiv);
 
-	  DPRINTF(3, ("*** leapsec_query: fired %i, now %u (0x%08X), tai_diff %i, ddist %u\n",
-		  fired, now, now, lsdata.tai_diff, lsdata.ddist));
+		DPRINTF(3, ("*** leapsec_query: fired %i, now %u (0x%08X),"
+			    " tai_diff %i, ddist %u\n",
+			    fired, now, now, lsdata.tai_diff, lsdata.ddist));
 
 #ifdef LEAP_SMEAR
-	  leap_smear.in_progress = 0;
-	  leap_smear.doffset = 0.0;
+		leap_smear.in_progress = FALSE;
+		leap_smear.doffset = 0.0;
 
-	  if (leap_smear.enabled) {
-		if (lsdata.tai_diff) {
-			if (leap_smear.interval == 0) {
-				leap_smear.interval = leap_smear_intv;
-				leap_smear.intv_end = lsdata.ttime.Q_s;
-				leap_smear.intv_start = leap_smear.intv_end - leap_smear.interval;
-				DPRINTF(1, ("*** leapsec_query: setting leap_smear interval %li, begin %.0f, end %.0f\n",
+		if (leap_smear.enabled) {
+			if (lsdata.tai_diff) {
+				if (0 == leap_smear.interval) {
+					leap_smear.interval = leap_smear_intv;
+					leap_smear.intv_end = lsdata.ttime.Q_s;
+					leap_smear.intv_start = leap_smear.intv_end - leap_smear.interval;
+					DPRINTF(1, ("*** leapsec_query: setting leap_smear interval %li, begin %.0f, end %.0f\n",
 					leap_smear.interval, leap_smear.intv_start, leap_smear.intv_end));
-			}
-		} else {
-			if (leap_smear.interval)
+				}
+			} else {
+				if (leap_smear.interval) {
 				DPRINTF(1, ("*** leapsec_query: clearing leap_smear interval\n"));
-			leap_smear.interval = 0;
-		}
+				leap_smear.interval = 0;
+			}
 
-		if (leap_smear.interval) {
-			double dtemp = now;
-			if (dtemp >= leap_smear.intv_start && dtemp <= leap_smear.intv_end) {
-				double leap_smear_time = dtemp - leap_smear.intv_start;
-				/*
-				 * For now we just do a linear interpolation over the smear interval
-				 */
+			if (leap_smear.interval) {
+				double dtemp = now;
+
+				if (dtemp >= leap_smear.intv_start && dtemp <= leap_smear.intv_end) {
+					double leap_smear_time = dtemp - leap_smear.intv_start;
 #if 0
-				// linear interpolation
-				leap_smear.doffset = -(leap_smear_time * lsdata.tai_diff / leap_smear.interval);
+					/*  linear interpolation */
+					leap_smear.doffset = -(leap_smear_time * lsdata.tai_diff / leap_smear.interval);
 #else
-				// Google approach: lie(t) = (1.0 - cos(pi * t / w)) / 2.0
-				leap_smear.doffset = -((double) lsdata.tai_diff - cos( M_PI * leap_smear_time / leap_smear.interval)) / 2.0;
+					/* Google approach : lie(t) = (1.0 - cos(pi * t / w)) / 2.0 */
+					leap_smear.doffset = -((double) lsdata.tai_diff - cos( M_PI * leap_smear_time / leap_smear.interval)) / 2.0;
 #endif
-				/*
-				 * TODO see if we're inside an inserted leap second, so we need to compute
-				 * leap_smear.doffset = 1.0 - leap_smear.doffset
-				 */
-				leap_smear.in_progress = 1;
-#if 0 && defined( DEBUG )
-				msyslog(LOG_NOTICE, "*** leapsec_query: [%.0f:%.0f] (%li), now %u (%.0f), smear offset %.6f ms\n",
-					leap_smear.intv_start, leap_smear.intv_end, leap_smear.interval,
-					now, leap_smear_time, leap_smear.doffset);
-#else
-				DPRINTF(1, ("*** leapsec_query: [%.0f:%.0f] (%li), now %u (%.0f), smear offset %.6f ms\n",
+					/*
+					 * TODO see if we're inside an inserted leap second, so we need to compute
+					 * leap_smear.doffset = 1.0 - leap_smear.doffset
+					 */
+					leap_smear.in_progress = TRUE;
+					DPRINTF(1, ("*** leapsec_query: [%.0f:%.0f] (%li), now %u (%.0f), smear offset %.6f ms\n",
 					leap_smear.intv_start, leap_smear.intv_end, leap_smear.interval,
 					now, leap_smear_time, leap_smear.doffset));
-#endif
 
+				}
 			}
+		} else {
+			leap_smear.interval = 0;
 		}
-	  }
-	  else
-		leap_smear.interval = 0;
-
-	  /*
-	   * Update the current leap smear offset, eventually 0.0 if outside smear interval.
-	   */
-	  DTOLFP(leap_smear.doffset, &leap_smear.offset);
-
+		/*
+		 * Update the current leap smear offset, eventually 0.0 if outside smear interval.
+		 */
+		DTOLFP(leap_smear.doffset, &leap_smear.offset);
 #endif	/* LEAP_SMEAR */
 
-	  if (fired) {
-		/* Full hit. Eventually step the clock, but always
-		 * announce the leap event has happened.
-		 */
-		const char *leapmsg = NULL;
-		double      lswarp  = lsdata.warped;
-		if (lswarp < 0.0) {
-			if (clock_max_back > 0.0 &&
-			    clock_max_back < -lswarp) {
-				step_systime(lswarp);
-				leapmsg = leapmsg_p_step;
-			} else {
-				leapmsg = leapmsg_p_slew;
+		if (fired) {
+			/* Full hit. Eventually step the clock, but always
+			 * announce the leap event has happened.
+			 */
+			const char *leapmsg = NULL;
+			double      lswarp  = lsdata.warped;
+			if (lswarp < 0.0) {
+				if (clock_max_back > 0.0 &&
+				    clock_max_back < -lswarp) {
+					step_systime(lswarp);
+					leapmsg = leapmsg_p_step;
+				} else {
+					leapmsg = leapmsg_p_slew;
+				}
+			} else 	if (lswarp > 0.0) {
+				if (clock_max_fwd > 0.0 &&
+				    clock_max_fwd < lswarp) {
+					step_systime(lswarp);
+					leapmsg = leapmsg_n_step;
+				} else {
+					leapmsg = leapmsg_n_slew;
+				}
 			}
-		} else 	if (lswarp > 0.0) {
-			if (clock_max_fwd > 0.0 &&
-			    clock_max_fwd < lswarp) {
-				step_systime(lswarp);
-				leapmsg = leapmsg_n_step;
-			} else {
-				leapmsg = leapmsg_n_slew;
+			if (leapmsg) {
+				msyslog(LOG_NOTICE, "%s", leapmsg);
 			}
+			report_event(EVNT_LEAP, NULL, NULL);
+#ifdef AUTOKEY
+			update_autokey = TRUE;
+#endif
+			lsprox  = LSPROX_NOWARN;
+			leapsec = LSPROX_NOWARN;
+			sys_tai = lsdata.tai_offs;
+		} else {
+#ifdef AUTOKEY
+			update_autokey = (sys_tai != (u_int)lsdata.tai_offs);
+#endif
+			lsprox  = lsdata.proximity;
+			sys_tai = lsdata.tai_offs;
 		}
-		if (leapmsg)
-			msyslog(LOG_NOTICE, "%s", leapmsg);
-		report_event(EVNT_LEAP, NULL, NULL);
-#ifdef AUTOKEY
-		update_autokey = TRUE;
-#endif
-		lsprox  = LSPROX_NOWARN;
-		leapsec = LSPROX_NOWARN;
-		sys_tai = lsdata.tai_offs;
-	  } else {
-#ifdef AUTOKEY
-		  update_autokey = (sys_tai != (u_int)lsdata.tai_offs);
-#endif
-		  lsprox  = lsdata.proximity;
-		  sys_tai = lsdata.tai_offs;
-	  }
 	}
 
 	/* We guard against panic alarming during the red alert phase.
@@ -691,13 +696,13 @@ check_leapsec(
 	 * to piping hot in one step. If things are already that wobbly,
 	 * we let the normal clock correction take over, even if a jump
 	 * is involved.
-         * Also make sure the alarming events are edge-triggered, that is,
-         * ceated only when the threshold is crossed.
-         */
-	if (  (leapsec > 0 || lsprox < LSPROX_ALERT)
-	    && leapsec < lsprox                     ) {
+	 * Also make sure the alarming events are edge-triggered, that is,
+	 * created only when the threshold is crossed.
+	 */
+	if (   (leapsec > 0 || lsprox < LSPROX_ALERT)
+	    && leapsec < lsprox) {
 		if (  leapsec < LSPROX_SCHEDULE
-                   && lsprox >= LSPROX_SCHEDULE) {
+		   && lsprox >= LSPROX_SCHEDULE) {
 			if (lsdata.dynamic)
 				report_event(PEVNT_ARMED, sys_peer, NULL);
 			else
@@ -706,22 +711,23 @@ check_leapsec(
 		leapsec = lsprox;
 	}
 	if (leapsec > lsprox) {
-		if (  leapsec >= LSPROX_SCHEDULE
-                   && lsprox   < LSPROX_SCHEDULE) {
+		if (   leapsec >= LSPROX_SCHEDULE
+		    && lsprox   < LSPROX_SCHEDULE) {
 			report_event(EVNT_DISARMED, NULL, NULL);
 		}
 		leapsec = lsprox;
 	}
 
-	if (leapsec >= LSPROX_SCHEDULE)
+	if (leapsec >= LSPROX_SCHEDULE) {
 		leapdif = lsdata.tai_diff;
-	else
+	} else {
 		leapdif = 0;
-
+	}
 	check_leap_sec_in_progress(&lsdata);
 
 #ifdef AUTOKEY
-	if (update_autokey)
+	if (update_autokey) {
 		crypto_update_taichange();
+	}
 #endif
 }
