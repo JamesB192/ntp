@@ -40,6 +40,60 @@ cmac_ctx_size(
 #endif	/* OPENSSL && ENABLE_CMAC */
 
 
+static EVP_MD_CTX *
+get_md_ctx(
+	int		type,
+	int/*BOOL*/	for_auth
+	)
+{
+#ifndef OPENSSL
+	return emalloc(sizeof(MD5_CTX));
+#else
+	EVP_MD_CTX *	ctx;
+#  if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	EVP_MD *	md;
+#  endif
+	const char *	md_name;
+
+	ctx = EVP_MD_CTX_new();
+	md_name = OBJ_nid2sn(type);
+
+#  if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	/*
+	 * See section FIPS Provider:
+	 * https://www.openssl.org/docs/man3.0/man7/crypto.html
+	 * for property query strings
+	 */
+	if (!for_auth && NID_md5 == type) {
+		md = EVP_MD_fetch(NULL, md_name, "fips=no");
+	} else {
+		md = EVP_MD_fetch(NULL, md_name, "");
+	}
+	if (NULL == md) {
+		msyslog(LOG_ERR, "Could not load digest %s", md_name);
+		exit(1);
+	}
+	if (!EVP_DigestInit_ex(ctx, md, NULL)) {
+		msyslog(LOG_ERR, "%s init failed", md_name);
+		exit(1);
+	}
+	EVP_MD_free(md);
+#  else	/* OPENSSL_VERSION_NUMBER < 0x30000000L follows */
+#    ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
+	if (!for_auth && NID_md5 == type) {
+		EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
+	}
+#    endif
+	if (!EVP_DigestInit_ex(ctx, EVP_get_digestbynid(type), NULL)) {
+		msyslog(LOG_ERR, "%s init failed", md_name);
+		exit(1);
+	}
+#  endif	/* OPENSSL_VERSION_NUMBER */
+	return ctx;
+#endif	/* OPENSSL */
+}
+
+
 static size_t
 make_mac(
 	const rwbuffT *	digest,
@@ -99,26 +153,13 @@ make_mac(
 			CMAC_CTX_free(ctx);
 	}
 	else
-#   endif /*ENABLE_CMAC*/
+#   endif /* ENABLE_CMAC */
 	{	/* generic MAC handling */
-		EVP_MD_CTX *	ctx   = EVP_MD_CTX_new();
+		EVP_MD_CTX *	ctx;
 		u_int		uilen = 0;
 
-		if ( ! ctx) {
-			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest CTX new failed.",
-				OBJ_nid2sn(ktype));
-			goto mac_fail;
-		}
-
-	   #ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
-		/* make sure MD5 is allowd */
-		EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
-	   #endif
-		/* [Bug 3457] DON'T use plain EVP_DigestInit! It would
-		 * kill the flags! */
-		if (!EVP_DigestInit_ex(ctx, EVP_get_digestbynid(ktype), NULL)) {
-			msyslog(LOG_ERR, "MAC encrypt: MAC %s Digest Init failed.",
-				OBJ_nid2sn(ktype));
+		ctx = get_md_ctx(ktype, TRUE);
+		if (NULL == ctx) {
 			goto mac_fail;
 		}
 		if ((size_t)EVP_MD_CTX_size(ctx) > digest->len) {
@@ -150,32 +191,23 @@ make_mac(
 
 #else /* !OPENSSL follows */
 
-	if (ktype == NID_md5)
-	{
-		EVP_MD_CTX *	ctx   = EVP_MD_CTX_new();
-		u_int		uilen = 0;
+	if (NID_md5 == ktype) {
+		EVP_MD_CTX *	ctx = emalloc(sizeof(MD5_CTX));
+		size_t		len = 0;
 
-		if (digest->len < 16) {
+		if (digest->len < MD5_LENGTH) {
 			msyslog(LOG_ERR, "%s", "MAC encrypt: MAC md5 buf too small.");
+		} else {
+			MD5Init(ctx);
+			MD5Update(ctx, (const void *)key->buf, key->len);
+			MD5Update(ctx, (const void *)msg->buf, msg->len);
+			MD5Final(digest->buf, ctx);
+			len = MD5_LENGTH;
 		}
-		else if ( ! ctx) {
-			msyslog(LOG_ERR, "%s", "MAC encrypt: MAC md5 Digest CTX new failed.");
-		}
-		else if (!EVP_DigestInit(ctx, EVP_get_digestbynid(ktype))) {
-			msyslog(LOG_ERR, "%s", "MAC encrypt: MAC md5 Digest INIT failed.");
-		}
-		else {
-			EVP_DigestUpdate(ctx, key->buf, key->len);
-			EVP_DigestUpdate(ctx, msg->buf, msg->len);
-			EVP_DigestFinal(ctx, digest->buf, &uilen);
-		}
-		if (ctx)
-			EVP_MD_CTX_free(ctx);
-		retlen = (size_t)uilen;
-	}
-	else
-	{
-		msyslog(LOG_ERR, "MAC encrypt: invalid key type %d"  , ktype);
+		free(ctx);
+		retlen = len;
+	} else {
+		msyslog(LOG_ERR, "MAC encrypt: invalid key type %d", ktype);
 	}
 
 #endif /* !OPENSSL */
@@ -261,30 +293,17 @@ addr2refid(sockaddr_u *addr)
 {
 	u_char		digest[EVP_MAX_MD_SIZE];
 	u_int32		addr_refid;
-	EVP_MD_CTX	*ctx;
+	EVP_MD_CTX *	ctx;
 	u_int		len;
 
-	if (IS_IPV4(addr))
+	if (IS_IPV4(addr)) {
 		return (NSRCADR(addr));
-
-	INIT_SSL();
-
-	ctx = EVP_MD_CTX_new();
-#   ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
-	/* MD5 is not used as a crypto hash here. */
-	EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
-#   endif
-	/* [Bug 3457] DON'T use plain EVP_DigestInit! It would kill the
-	 * flags! */
-	if (!EVP_DigestInit_ex(ctx, EVP_md5(), NULL)) {
-		msyslog(LOG_ERR,
-		    "MD5 init failed");
-		EVP_MD_CTX_free(ctx);	/* pedantic... but safe */
-		exit(1);
 	}
-
-	EVP_DigestUpdate(ctx, (u_char *)PSOCK_ADDR6(addr),
-	    sizeof(struct in6_addr));
+	INIT_SSL();
+	/* MD5 is not used for authentication here. */
+	ctx = get_md_ctx(NID_md5, FALSE);
+	EVP_DigestUpdate(ctx, (u_char *)&SOCK_ADDR6(addr),
+			 sizeof(SOCK_ADDR6(addr)));
 	EVP_DigestFinal(ctx, digest, &len);
 	EVP_MD_CTX_free(ctx);
 	memcpy(&addr_refid, digest, sizeof(addr_refid));
