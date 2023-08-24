@@ -29,6 +29,7 @@
              is disabled.  <burnicki@ntp.org>
 * [Bug 3825] Don't touch HTML files unless building inside a BK repo.
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
+* [Bug 3753] ntpd won't start with FIPS-enabled OpenSSL 3.x. <hart@ntp.org>
 * html/clockopt.html cleanup.  <stenn@ntp.org>
 * Add DSA, DSA-SHA, and SHA to tests/libntp/digests.c. <hart@ntp.org>
 

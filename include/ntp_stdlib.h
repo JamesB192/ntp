@@ -250,11 +250,13 @@ extern	int	ssl_init_done;
 			ssl_init();		\
 	} while (0)
 #else	/* !OPENSSL follows */
+#define ssl_check_version()	do {} while (0)
 #define	INIT_SSL()		do {} while (0)
 #endif
-extern	int	keytype_from_text	(const char *,	size_t *);
-extern	const char *keytype_name	(int);
-extern	char *	getpass_keytype		(int);
+extern	int	keytype_from_text	(const char *text,
+					 size_t *pdigest_len);
+extern	const char *keytype_name	(int type);
+extern	char *	getpass_keytype		(int type);
 
 /* strl-obsd.c */
 #ifndef HAVE_STRLCPY		/* + */
