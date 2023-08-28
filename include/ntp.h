@@ -200,11 +200,11 @@ struct interface {
 };
 
 /*
- * Flags for interfaces
+ * Flags for network endpoints (interfaces or really addresses)
  */
 #define INT_UP		0x001	/* Interface is up */
 #define	INT_PPP		0x002	/* Point-to-point interface */
-#define	INT_LOOPBACK	0x004	/* the loopback interface */
+#define	INT_LOOPBACK	0x004	/* ::1 or 127.0.0.1 */
 #define	INT_BROADCAST	0x008	/* can broadcast out this interface */
 #define INT_MULTICAST	0x010	/* can multicast out this interface */
 #define	INT_BCASTOPEN	0x020	/* broadcast receive socket is open */
@@ -342,12 +342,12 @@ struct peer {
 	u_char	status;		/* peer status */
 	u_char	new_status;	/* under-construction status */
 	u_char	reach;		/* reachability register */
+	u_char	filter_nextpt;	/* index into filter shift register */
 	int	flash;		/* protocol error test tally bits */
 	u_long	epoch;		/* reference epoch */
 	int	burst;		/* packets remaining in burst */
 	int	retry;		/* retry counter */
 	int	flip;		/* interleave mode control */
-	int	filter_nextpt;	/* index into filter shift register */
 	double	filter_delay[NTP_SHIFT]; /* delay shift register */
 	double	filter_offset[NTP_SHIFT]; /* offset shift register */
 	double	filter_disp[NTP_SHIFT]; /* dispersion shift register */
@@ -843,8 +843,7 @@ struct restrict_u_tag {
 	u_int32		count;		/* number of packets matched */
 	u_short		rflags;		/* restrict (accesslist) flags */
 	u_short		mflags;		/* match flags */
-	short		ippeerlimit;	/* IP peer limit */
-	int		srvfuzrftpoll;	/* server response: fuzz reftime */
+	short		ippeerlimit;	/* limit of associations matching */
 	u_long		expire;		/* valid until time */
 	union {				/* variant starting here */
 		res_addr4 v4;
@@ -856,15 +855,12 @@ struct restrict_u_tag {
 #define	V6_SIZEOF_RESTRICT_U	(offsetof(restrict_u, u)	\
 				 + sizeof(res_addr6))
 
+/* restrictions for (4) a given address */
 typedef struct r4addr_tag	r4addr;
 struct r4addr_tag {
 	u_short		rflags;		/* match flags */
 	short		ippeerlimit;	/* IP peer limit */
 };
-
-char *build_iflags(u_int32 flags);
-char *build_mflags(u_short mflags);
-char *build_rflags(u_short rflags);
 
 /*
  * Restrict (Access) flags (rflags)
@@ -948,4 +944,11 @@ struct endpoint {
 #define MRU_ROW_LIMIT	256
 /* similar datagrams per response limit for ntpd */
 #define MRU_FRAGS_LIMIT	128
+
+/* found on POSIX systems in sysexit.h */
+#ifndef EX_SOFTWARE
+# define EX_SOFTWARE	70	/* internal software error */
+#endif
+
+
 #endif /* NTP_H */

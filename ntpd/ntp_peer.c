@@ -658,11 +658,13 @@ set_peerdstadr(
 		p->dstadr->peercnt--;
 		UNLINK_SLIST(unlinked, p->dstadr->peers, p, ilink,
 			     struct peer);
-		msyslog(LOG_INFO, "%s local addr %s -> %s",
-			stoa(&p->srcadr), latoa(p->dstadr),
-			latoa(dstadr));
+		if (!IS_MCAST(&p->srcadr)) {
+			msyslog(LOG_INFO, "%s local addr %s -> %s",
+				stoa(&p->srcadr), latoa(p->dstadr),
+				latoa(dstadr));
+		}
 	}
-	
+
 	p->dstadr = dstadr;
 
 	/* link to list if we have an address after assignment */

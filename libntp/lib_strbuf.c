@@ -10,7 +10,6 @@
 
 #include "ntp_fp.h"
 #include "ntp_stdlib.h"
-#include "lib_strbuf.h"
 
 
 /*
