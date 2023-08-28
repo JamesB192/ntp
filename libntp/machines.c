@@ -13,7 +13,6 @@
 #include "ntp_syslog.h"
 #include "ntp_stdlib.h"
 #include "ntp_unixtime.h"
-#include "lib_strbuf.h"
 #include "ntp_debug.h"
 
 #ifdef HAVE_UNISTD_H

@@ -20,7 +20,6 @@
 
 #include "timepps.h"
 #include "ntp_stdlib.h"
-#include "lib_strbuf.h"
 #include "ntp_iocpltypes.h"
 #include "ntp_iocplmem.h"
 

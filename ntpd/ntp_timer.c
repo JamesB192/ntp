@@ -46,7 +46,7 @@ static void check_leapsec(u_int32, const time_t*, int/*BOOL*/);
 
 /*
  * These routines provide support for the event timer.  The timer is
- * implemented by an interrupt routine which sets a flag once every
+ * implemented by a signal routine which sets a flag once every
  * second, and a timer routine which is called when the mainline code
  * gets around to seeing the flag.  The timer routine dispatches the
  * clock adjustment code if its time has come, then searches the timer
@@ -54,7 +54,6 @@ static void check_leapsec(u_int32, const time_t*, int/*BOOL*/);
  * Finally, we call the hourly procedure to do cleanup and print a
  * message.
  */
-volatile int interface_interval;     /* init_io() sets def. 300s */
 
 /*
  * Initializing flag.  All async routines watch this and only do their
@@ -70,14 +69,15 @@ volatile int alarm_flag;
 /*
  * The counters and timeouts
  */
-static  u_long interface_timer;	/* interface update timer */
+	u_long endpt_scan_timer;	/* interface update timer */
 static	u_long adjust_timer;	/* second timer */
 static	u_long stats_timer;	/* stats timer */
 static	u_long leapf_timer;	/* Report leapfile problems once/day */
 static	u_long huffpuff_timer;	/* huff-n'-puff timer */
 static	u_long worker_idle_timer;/* next check for idle intres */
-u_long	leapsec;	        /* seconds to next leap (proximity class) */
-int     leapdif;                /* TAI difference step at next leap second*/
+int	endpt_scan_period;	/* init_io() sets def. 301s */
+u_long	leapsec;		/* seconds to next leap (proximity class) */
+int	leapdif;		/* TAI difference step at next leap second*/
 u_long	orphwait; 		/* orphan wait time */
 #ifdef AUTOKEY
 static	u_long revoke_timer;	/* keys revoke timer */
@@ -198,7 +198,7 @@ init_timer(void)
 	stats_timer = SECSPERHR;
 	leapf_timer = SECSPERDAY;
 	huffpuff_timer = 0;
-	interface_timer = 0;
+	endpt_scan_timer = 0;
 	current_time = 0;
 	timer_overflows = 0;
 	timer_xmtcalls = 0;
@@ -249,7 +249,7 @@ init_timer(void)
 		BOOL		rc;
 
 		Period = (1 << EVENT_TIMEOUT) * 1000;
-		DueTime.QuadPart = Period * 10000i64;
+		DueTime.QuadPart = Period * 10000ll;
 		rc = SetWaitableTimer(WaitableTimerHandle, &DueTime,
 				      Period, NULL, NULL, FALSE);
 		if (!rc) {
@@ -299,7 +299,7 @@ timer(void)
 	struct peer *	p;
 	struct peer *	next_peer;
 	l_fp		now;
-	time_t          tnow;
+	time_t		tnow;
 
 	/*
 	 * The basic timerevent is one second.  This is used to adjust the
@@ -333,15 +333,18 @@ timer(void)
 		 * usually tripped using iburst and minpoll of
 		 * 128 s or less.
 		 */
-		if (p->throttle > 0)
+		if (p->throttle > 0) {
 			p->throttle--;
+		}
 		if (p->nextdate <= current_time) {
 #ifdef REFCLOCK
-			if (FLAG_REFCLOCK & p->flags)
+			if (FLAG_REFCLOCK & p->flags) {
 				refclock_transmit(p);
-			else
+			} else
 #endif	/* REFCLOCK */
+			{
 				transmit(p);
+			}
 		}
 	}
 
@@ -379,9 +382,9 @@ timer(void)
 			sys_stratum = STRATUM_UNSPEC;
 		}
 		if (sys_stratum > 1)
-		    sys_refid = htonl(LOOPBACKADR);
+			sys_refid = htonl(LOOPBACKADR);
 		else
-		    memcpy(&sys_refid, "LOOP", 4);
+			memcpy(&sys_refid, "LOOP", 4);
 		sys_offset = 0;
 		sys_rootdelay = 0;
 		sys_rootdisp = 0;
@@ -396,16 +399,16 @@ timer(void)
 	 */
 	if (leapsec > LSPROX_NOWARN || 0 == (current_time & 7))
 		check_leapsec(now.l_ui, &tnow,
-                                (sys_leap == LEAP_NOTINSYNC));
-        if (sys_leap != LEAP_NOTINSYNC) {
-                if (leapsec >= LSPROX_ANNOUNCE && leapdif) {
-		        if (leapdif > 0)
-			        set_sys_leap(LEAP_ADDSECOND);
-		        else
-			        set_sys_leap(LEAP_DELSECOND);
-                } else {
-                        set_sys_leap(LEAP_NOWARNING);
-                }
+			      (sys_leap == LEAP_NOTINSYNC));
+	if (sys_leap != LEAP_NOTINSYNC) {
+		if (leapsec >= LSPROX_ANNOUNCE && leapdif) {
+			if (leapdif > 0)
+				set_sys_leap(LEAP_ADDSECOND);
+			else
+				set_sys_leap(LEAP_DELSECOND);
+		} else {
+			set_sys_leap(LEAP_NOWARNING);
+		}
 	}
 
 	/*
@@ -431,17 +434,20 @@ timer(void)
 	 */
 	if (revoke_timer && revoke_timer <= current_time) {
 		revoke_timer += (1UL << sys_revoke);
-		RAND_bytes((u_char *)&sys_private, 4);
+		RAND_bytes((u_char *)&sys_private, sizeof(sys_private));
 	}
 #endif	/* AUTOKEY */
 
 	/*
-	 * Interface update timer
+	 * Network interface rescan timer
 	 */
-	if (interface_interval && interface_timer <= current_time) {
-		timer_interfacetimeout(current_time +
-		    interface_interval);
-		DPRINTF(2, ("timer: interface update\n"));
+	if (endpt_scan_timer && endpt_scan_timer <= current_time) {
+		if (no_periodic_scan) {
+			endpt_scan_timer = 0;
+		} else {
+			endpt_scan_timer =   current_time
+					   + endpt_scan_period;
+		}
 		interface_update(NULL, NULL);
 	}
 
@@ -506,13 +512,6 @@ alarming(
 # endif
 }
 #endif /* SYS_WINNT */
-
-
-void
-timer_interfacetimeout(u_long timeout)
-{
-	interface_timer = timeout;
-}
 
 
 /*

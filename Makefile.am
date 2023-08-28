@@ -128,7 +128,7 @@ uninstall-local:
 CommitLog: FRC.CommitLog
 	cd $(srcdir)					\
 	&& $(PATH_TEST) -e CommitLog			\
-		-a SCCS/s.ChangeSet -ot CommitLog	\
+		-a .bk/SCCS/ChangeSet,s -ot CommitLog	\
 	|| scripts/build/genCommitLog
 
 # HMS: The following seems to be a work-in-progress...

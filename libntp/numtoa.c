@@ -12,7 +12,6 @@
 #include <ctype.h>
 
 #include "ntp_fp.h"
-#include "lib_strbuf.h"
 #include "ntp_stdlib.h"
 
 char *
