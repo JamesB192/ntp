@@ -11,6 +11,7 @@
 
 #include "declcond.h"	/* ntpd uses ntpd/declcond.h, others include/ */
 #include "l_stdlib.h"
+#include "lib_strbuf.h"
 #include "ntp_md5.h"
 #include "ntp_net.h"
 #include "ntp_debug.h"
@@ -114,7 +115,7 @@ extern	size_t	MD5authencrypt	(int type, const u_char *key, size_t klen,
 extern	int	MD5authdecrypt	(int type, const u_char *key, size_t klen,
 				 u_int32 *pkt, size_t length, size_t size,
 				 keyid_t keyno);
-extern	u_int32	addr2refid(sockaddr_u *);
+extern	u_int32	addr2refid	(sockaddr_u *);
 
 /* authkeys.c */
 extern	void	MD5auth_setkey	(keyid_t, int, const u_char *, size_t,
@@ -181,7 +182,6 @@ extern	const char * k_st_flags	(u_int32);
 extern	char *	statustoa	(int, int);
 extern	sockaddr_u * netof	(sockaddr_u *);
 extern	char *	numtoa		(u_int32);
-extern	char *	numtohost	(u_int32);
 extern	const char * socktoa	(const sockaddr_u *);
 extern	const char * sockporttoa(const sockaddr_u *);
 extern	u_short	sock_hash	(const sockaddr_u *);

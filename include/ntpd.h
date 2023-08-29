@@ -47,6 +47,17 @@
 # define DPRINTF(lvl, arg)	do {} while (0)
 #endif
 
+/* clear bitflag only on DEBUG builds */
+#ifdef DEBUG
+# define CLEAR_BIT_IF_DEBUG(bit, flags)			\
+	do {						\
+		(flags) &= ~(bit);			\
+	} while (FALSE)
+#else
+# define CLEAR_BIT_IF_DEBUG(bit, flags)			\
+	do {} while (FALSE)
+#endif
+
 
 /* nt_clockstuff.c */
 #ifdef SYS_WINNT
@@ -67,8 +78,8 @@ extern	u_short ctlsysstatus	(void);
 extern	void	init_control	(void);
 extern	void	process_control (struct recvbuf *, int);
 extern	void	report_event	(int, struct peer *, const char *);
-extern	int	mprintf_event	(int, struct peer *, const char *, ...)
-			NTP_PRINTF(3, 4);
+extern	int	mprintf_event	(int evcode, struct peer *p,
+				 const char *fmt, ...) NTP_PRINTF(3, 4);
 
 /* ntp_control.c */
 /*
@@ -118,7 +129,9 @@ extern	void	enable_broadcast	(endpt *, sockaddr_u *);
 extern	void	enable_multicast_if	(endpt *, sockaddr_u *);
 extern	void	interface_update	(interface_receiver_t, void *);
 #ifndef HAVE_IO_COMPLETION_PORT
-extern  void    io_handler              (void);
+extern	void	io_handler		(void);
+#else
+extern	void WINAPI ip_interface_changed(ULONG_PTR ctx);
 #endif
 extern	void	init_io 	(void);
 extern	void	io_open_sockets	(void);
@@ -127,7 +140,8 @@ extern	void	io_setbclient	(void);
 extern	void	io_unsetbclient	(void);
 extern	void	io_multicast_add(sockaddr_u *);
 extern	void	io_multicast_del(sockaddr_u *);
-extern	void	sendpkt 	(sockaddr_u *, struct interface *, int, struct pkt *, int);
+extern	void	sendpkt		(sockaddr_u *dest, endpt * ep, int ttl,
+				 struct pkt *pkt, int len);
 extern	isc_boolean_t	is_linklocal(sockaddr_u *psau);
 #ifdef DEBUG_TIMING
 extern	void	collect_timing  (struct recvbuf *, const char *, int, l_fp *);
@@ -144,6 +158,10 @@ extern	void	block_io_and_alarm	(void);
 #endif
 #define		latoa(pif)	localaddrtoa(pif)
 extern const char * localaddrtoa(endpt *);
+#ifdef DEBUG
+extern const char * iflags_str(u_int32 iflags);
+#endif
+
 
 /* ntp_loopfilter.c */
 extern	void	init_loopfilter(void);
@@ -227,7 +245,7 @@ extern	void	clock_select	(void);
 extern	void	set_sys_leap	(u_char);
 
 extern	u_long	leapsec;	/* seconds to next leap (proximity class) */
-extern  int     leapdif;        /* TAI difference step at next leap second*/
+extern  int	leapdif;	/* TAI difference step at next leap second */
 extern	int	sys_orphan;
 extern	double	sys_mindisp;
 extern	double	sys_maxdist;
@@ -259,18 +277,26 @@ extern	void	reset_auth_stats(void);
 /* ntp_restrict.c */
 extern	void	init_restrict	(void);
 extern	void	restrictions	(sockaddr_u *, r4addr *);
-extern	void	hack_restrict	(restrict_op, sockaddr_u *, sockaddr_u *,
-				 short, u_short, u_short, u_long);
+extern	void	hack_restrict	(restrict_op op, sockaddr_u *resaddr,
+				 sockaddr_u* resmask, short ippeerlimit,
+				 u_short mflags, u_short rflags,
+				 u_long expire);
 extern	void	restrict_source	(sockaddr_u *, int, u_long);
 extern	void	dump_restricts	(void);
+#ifdef DEBUG
+extern	const char *resop_str	(restrict_op op);
+extern	const char *rflags_str	(u_short rflags);
+extern	const char *mflags_str	(u_short mflags);
+#endif
+
 
 /* ntp_timer.c */
 extern	void	init_timer	(void);
 extern	void	reinit_timer	(void);
 extern	void	timer		(void);
 extern	void	timer_clr_stats (void);
-extern	void	timer_interfacetimeout (u_long);
-extern	volatile int interface_interval;
+extern	int	endpt_scan_period;	/* -U option default 301s */
+extern	u_long	endpt_scan_timer;	/* next scan current_time */
 extern	u_long	orphwait;		/* orphan wait time */
 #ifdef AUTOKEY
 extern	char	*sys_hostname;	/* host name */
@@ -289,17 +315,29 @@ extern	void	record_proto_stats (char *);
 extern	void	record_loop_stats (double, double, double, double, int);
 extern	void	record_clock_stats (sockaddr_u *, const char *);
 extern	int	mprintf_clock_stats(sockaddr_u *, const char *, ...)
-			NTP_PRINTF(2, 3);
-extern	void	record_raw_stats (sockaddr_u *srcadr, sockaddr_u *dstadr, l_fp *t1, l_fp *t2, l_fp *t3, l_fp *t4, int leap, int version, int mode, int stratum, int ppoll, int precision, double root_delay, double root_dispersion, u_int32 refid, int len, u_char *extra);
+					NTP_PRINTF(2, 3);
+extern	void	record_raw_stats (sockaddr_u *srcadr, sockaddr_u *dstadr,
+				  l_fp *t1, l_fp *t2, l_fp *t3, l_fp *t4,
+				  int leap, int version, int mode,
+				  int stratum, int ppoll, int precision,
+				  double root_delay, double root_dispersion,
+				  u_int32 refid, int len, u_char *extra);
 extern	void	check_leap_file	(int is_daily_check, u_int32 ntptime, const time_t * systime);
 extern	void	record_crypto_stats (sockaddr_u *, const char *);
 #ifdef DEBUG
 extern	void	record_timing_stats (const char *);
+extern	void	append_flagstr(char *flagstr, size_t sz, const char *text);
 #endif
 extern	char *	fstostr(time_t);	/* NTP timescale seconds */
 
 /* ntpd.c */
 extern	void	parse_cmdline_opts(int *, char ***);
+
+/* ntservice.c */
+#ifndef SYS_WINNT
+# define	ntservice_isup()	do {} while (FALSE)
+#endif
+
 /*
  * Signals we catch for debugging.
  */
@@ -382,7 +420,8 @@ extern volatile u_long handler_pkts;	/* number of pkts received by handler */
 extern u_long	io_timereset;		/* time counters were reset */
 
 /* ntp_io.c */
-extern int	disable_dynamic_updates;/* scan interfaces once only */
+extern int	no_periodic_scan;	/* no periodic net addr scans */
+extern int	scan_addrs_once;	/* no net addr rescans */
 extern int	nonlocal_v4_addr_up;	/* should we try IPv4 pool? */
 extern int	nonlocal_v6_addr_up;	/* should we try IPv6 pool? */
 extern u_int	sys_ifnum;		/* next .ifnum to assign */

@@ -26,7 +26,6 @@
 #include "ntp_crypto.h"
 #include "ntp_assert.h"
 #include "ntp_leapsec.h"
-#include "lib_strbuf.h"
 #include "timexsup.h"
 
 #include <rc_cmdlength.h>

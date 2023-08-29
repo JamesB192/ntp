@@ -240,5 +240,10 @@ typedef union {
 	     == (LOOPBACKADR & LOOPNETMASK))			\
 	 && SRCADR(srcadr) != LOOPBACKADR)
 
+#define IS_LOOPBACK_ADDR(psau)					\
+		(IS_IPV4(psau)					\
+		    ? LOOPBACKADR == SRCADR(psau)		\
+		    : IN6_IS_ADDR_LOOPBACK(PSOCK_ADDR6(psau))	\
+		)
 
 #endif /* NTP_NET_H */
