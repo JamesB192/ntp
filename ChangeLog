@@ -1,5 +1,6 @@
 ---
 
+* [Bug 3859] Use NotifyIpInterfaceChange on Windows ntpd. <hart@ntp.org>
 * [Bug 3856] Enable Edit & Continue debugging with Visual Studio.
              <hart@ntp.org>
 * [Bug 3854] ntpd 4.2.8p17 corrupts rawstats file with space in refid.
@@ -33,6 +34,9 @@
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
 * html/clockopt.html cleanup.  <stenn@ntp.org>
 * Add DSA, DSA-SHA, and SHA to tests/libntp/digests.c. <hart@ntp.org>
+* Provide ntpd thread names to debugger on Windows. <hart@ntp.org>
+* Remove dead code libntp/numtohost.c and its unit tests. <hart@ntp.org>
+* Remove class A, B, C IPv4 distinctions in netof(). <hart@ntp.org>
 
 ---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>

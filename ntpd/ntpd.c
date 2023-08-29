@@ -101,16 +101,6 @@
 #include "recvbuff.h"
 #include "ntp_cmdargs.h"
 
-#if 0				/* HMS: I don't think we need this. 961223 */
-#ifdef LOCK_PROCESS
-# ifdef SYS_SOLARIS
-#  include <sys/mman.h>
-# else
-#  include <sys/lock.h>
-# endif
-#endif
-#endif
-
 #ifdef SYS_WINNT
 # include "ntservice.h"
 #endif
@@ -1288,11 +1278,10 @@ ntpdmain(
 		 * is associated with running with uid 0 - should be refined on
 		 * ports that allow binding to NTP_PORT with uid != 0
 		 */
-		disable_dynamic_updates |= (sw_uid != 0);  /* also notifies routing message listener */
+		scan_addrs_once |= (sw_uid != 0);  /* used by routing socket code */
 #  endif /* !HAVE_LINUX_CAPABILITIES && !HAVE_SOLARIS_PRIVS */
 
-		if (disable_dynamic_updates && interface_interval) {
-			interface_interval = 0;
+		if (scan_addrs_once) {
 			msyslog(LOG_INFO, "running as non-root disables dynamic interface tracking");
 		}
 
@@ -1306,9 +1295,9 @@ ntpdmain(
 			cap_t caps;
 			char *captext;
 			
-			captext = (0 != interface_interval)
-				      ? "cap_sys_time,cap_net_bind_service=pe"
-				      : "cap_sys_time=pe";
+			captext = (scan_addrs_once)
+				    ? "cap_sys_time=pe";
+				    : "cap_sys_time,cap_net_bind_service=pe"
 			caps = cap_from_text(captext);
 			if (!caps) {
 				msyslog(LOG_ERR,
@@ -1445,9 +1434,8 @@ int scmp_sc[] = {
 	}
 #endif /* LIBSECCOMP and KERN_SECCOMP */
 
-#if defined(SYS_WINNT)
 	ntservice_isup();
-#elif defined(HAVE_WORKING_FORK)
+#if defined(HAVE_WORKING_FORK)
 	if (daemon_pipe[1] != -1 && 0 == wait_sync) {
 		if (2 != write(daemon_pipe[1], "R\n", 2)) {
 			msyslog(LOG_ERR, "daemon failed to notify parent ntpd after init");
@@ -1456,6 +1444,10 @@ int scmp_sc[] = {
 		daemon_pipe[1] = -1;
 	}
 #endif /* HAVE_WORKING_FORK */
+
+	if (scan_addrs_once || no_periodic_scan) {
+		endpt_scan_timer = 0;
+	}
 
 # ifndef HAVE_IO_COMPLETION_PORT
 	BLOCK_IO_AND_ALARM();

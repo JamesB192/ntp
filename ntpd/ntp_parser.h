@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.7.6.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison interface for Yacc-like parsers in C
 
@@ -35,8 +35,8 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-#ifndef YY_YY__SRC_NTP_STABLE_NTPD_NTP_PARSER_H_INCLUDED
-# define YY_YY__SRC_NTP_STABLE_NTPD_NTP_PARSER_H_INCLUDED
+#ifndef YY_YY_NTP_PARSER_H_INCLUDED
+# define YY_YY_NTP_PARSER_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 1
@@ -491,7 +491,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 52 "../../../src/ntp-stable-3758/ntpd/ntp_parser.y"
+#line 52 "../../ntpd/ntp_parser.y"
 
 	char *			String;
 	double			Double;
@@ -510,7 +510,7 @@ union YYSTYPE
 	script_info *		Sim_script;
 	script_info_fifo *	Sim_script_fifo;
 
-#line 514 "../../../src/ntp-stable-3758/ntpd/ntp_parser.h"
+#line 514 "ntp_parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -521,6 +521,8 @@ typedef union YYSTYPE YYSTYPE;
 
 extern YYSTYPE yylval;
 
+
 int yyparse (void);
 
-#endif /* !YY_YY__SRC_NTP_STABLE_NTPD_NTP_PARSER_H_INCLUDED  */
+
+#endif /* !YY_YY_NTP_PARSER_H_INCLUDED  */

@@ -177,13 +177,14 @@ endpt *	any_interface;		/* wildcard ipv4 interface */
 endpt *	any6_interface;		/* wildcard ipv6 interface */
 endpt *	loopback_interface;	/* loopback ipv4 interface */
 
-static isc_boolean_t broadcast_client_enabled;	/* is broadcast client enabled */
+static isc_boolean_t broadcast_client_enabled;
 u_int sys_ifnum;			/* next .ifnum to assign */
 int ninterfaces;			/* Total number of interfaces */
 
-int disable_dynamic_updates;		/* scan interfaces once only */
-int nonlocal_v4_addr_up;		/* should we try IPv4 pool? */
-int nonlocal_v6_addr_up;		/* should we try IPv6 pool? */
+int no_periodic_scan;		/* network endpoint scans */
+int scan_addrs_once;		/* because dropped privs */
+int nonlocal_v4_addr_up;	/* should we try IPv4 pool? */
+int nonlocal_v6_addr_up;	/* should we try IPv6 pool? */
 
 #ifdef REFCLOCK
 /*
@@ -316,6 +317,7 @@ static endpt *	wildipv6;
 int accept_wildcard_if_for_winnt;
 #else
 const int accept_wildcard_if_for_winnt = FALSE;
+#define		init_io_completion_port()	do {} while (FALSE)
 #endif
 
 static void	add_fd_to_list		(SOCKET, enum desc_type);
@@ -461,15 +463,14 @@ init_io(void)
 	/* Init buffer free list and stat counters */
 	init_recvbuff(RECV_INIT);
 	/* update interface every 5 minutes as default */
-	interface_interval = 300;
+	endpt_scan_period = 301;
 
 #ifdef WORK_PIPE
 	addremove_io_fd = &ntpd_addremove_io_fd;
 #endif
 
-#if defined(SYS_WINNT)
 	init_io_completion_port();
-#elif defined(HAVE_SIGNALED_IO)
+#if defined(HAVE_SIGNALED_IO)
 	(void) set_signal(input_handler);
 #endif
 }
@@ -822,7 +823,6 @@ add_interface(
 	endpt *		scan;
 	endpt *		scan_next;
 	endpt *		unlinked;
-	sockaddr_u *	addr;
 	int		ep_local;
 	int		scan_local;
 	int		same_subnet;
@@ -850,14 +850,11 @@ add_interface(
 			 ? &mc4_list
 			 : &mc6_list;
 
+	ep_local = is_linklocal(&ep->sin);
 	if (AF_INET6 == ep->family) {
-		ep_local =
-		    IN6_IS_ADDR_LINKLOCAL(PSOCK_ADDR6(&ep->sin)) ||
-		    IN6_IS_ADDR_SITELOCAL(PSOCK_ADDR6(&ep->sin));
 		ep_univ_iid = IS_IID_UNIV(&ep->sin);
 		ep_privacy = !!(INT_PRIVACY & ep->flags);
 	} else {
-		ep_local = FALSE;
 		ep_univ_iid = FALSE;
 		ep_privacy = FALSE;
 	}
@@ -886,15 +883,11 @@ add_interface(
 			continue;
 		same_subnet = addr_samesubnet(&ep->sin, &ep->mask,
 					      &scan->sin, &scan->mask);
+		scan_local = is_linklocal(&scan->sin);
 		if (AF_INET6 == ep->family) {
-			addr = &scan->sin;
-			scan_local =
-			    IN6_IS_ADDR_LINKLOCAL(PSOCK_ADDR6(addr)) ||
-			    IN6_IS_ADDR_SITELOCAL(PSOCK_ADDR6(addr));
-			scan_univ_iid = IS_IID_UNIV(addr);
+			scan_univ_iid = IS_IID_UNIV(&scan->sin);
 			scan_privacy = !!(INT_PRIVACY & scan->flags);
 		} else {
-			scan_local = FALSE;
 			scan_univ_iid = FALSE;
 			scan_privacy = FALSE;
 		}
@@ -1049,8 +1042,8 @@ remove_interface(
 
 	/* remove restrict interface entry */
 	SET_HOSTMASK(&resmask, AF(&ep->sin));
-	hack_restrict(RESTRICT_REMOVEIF, &ep->sin, &resmask,
-		      -3, RESM_NTPONLY | RESM_INTERFACE, RES_IGNORE, 0);
+	hack_restrict(RESTRICT_REMOVEIF, &ep->sin, &resmask, 0,
+		      RESM_NTPONLY | RESM_INTERFACE, 0, 0);
 }
 
 
@@ -1411,9 +1404,6 @@ convert_isc_if(
 	u_short port
 	)
 {
-	const u_char v6loop[16] = {0, 0, 0, 0, 0, 0, 0, 0,
-				   0, 0, 0, 0, 0, 0, 0, 1};
-
 	strlcpy(itf->name, isc_if->name, sizeof(itf->name));
 	itf->ifindex = isc_if->ifindex;
 	itf->family = (u_short)isc_if->af;
@@ -1463,15 +1453,8 @@ convert_isc_if(
 	 * Clear the loopback flag if the address is not localhost.
 	 * http://bugs.ntp.org/1683
 	 */
-	if (INT_LOOPBACK & itf->flags) {
-		if (AF_INET == itf->family) {
-			if (127 != (SRCADR(&itf->sin) >> 24))
-				itf->flags &= ~INT_LOOPBACK;
-		} else {
-			if (memcmp(v6loop, NSRCADR6(&itf->sin),
-				   sizeof(NSRCADR6(&itf->sin))))
-				itf->flags &= ~INT_LOOPBACK;
-		}
+	if ((INT_LOOPBACK & itf->flags) && !IS_LOOPBACK_ADDR(&itf->sin)) {
+		itf->flags &= ~INT_LOOPBACK;
 	}
 }
 
@@ -1527,9 +1510,9 @@ interface_update(
 {
 	int new_interface_found;
 
-	if (disable_dynamic_updates)
+	if (scan_addrs_once) {
 		return;
-
+	}
 	BLOCKIO();
 	new_interface_found = update_interfaces(NTP_PORT, receiver, data);
 	UNBLOCKIO();
@@ -2224,6 +2207,80 @@ create_interface(
 }
 
 
+#ifdef DEBUG
+const char *
+iflags_str(
+	u_int32 iflags
+)
+{
+	const size_t	sz = LIB_BUFLENGTH;
+	char *		ifs;
+
+	LIB_GETBUF(ifs);
+	ifs[0] = '\0';
+
+	if (iflags & INT_UP) {
+		CLEAR_BIT_IF_DEBUG(INT_UP, iflags);
+		append_flagstr(ifs, sz, "up");
+	}
+
+	if (iflags & INT_PPP) {
+		CLEAR_BIT_IF_DEBUG(INT_PPP, iflags);
+		append_flagstr(ifs, sz, "ppp");
+	}
+
+	if (iflags & INT_LOOPBACK) {
+		CLEAR_BIT_IF_DEBUG(INT_LOOPBACK, iflags);
+		append_flagstr(ifs, sz, "loopback");
+	}
+
+	if (iflags & INT_BROADCAST) {
+		CLEAR_BIT_IF_DEBUG(INT_BROADCAST, iflags);
+		append_flagstr(ifs, sz, "broadcast");
+	}
+
+	if (iflags & INT_MULTICAST) {
+		CLEAR_BIT_IF_DEBUG(INT_MULTICAST, iflags);
+		append_flagstr(ifs, sz, "multicast");
+	}
+
+	if (iflags & INT_BCASTOPEN) {
+		CLEAR_BIT_IF_DEBUG(INT_BCASTOPEN, iflags);
+		append_flagstr(ifs, sz, "bcastopen");
+	}
+
+	if (iflags & INT_MCASTOPEN) {
+		CLEAR_BIT_IF_DEBUG(INT_MCASTOPEN, iflags);
+		append_flagstr(ifs, sz, "mcastopen");
+	}
+
+	if (iflags & INT_WILDCARD) {
+		CLEAR_BIT_IF_DEBUG(INT_WILDCARD, iflags);
+		append_flagstr(ifs, sz, "wildcard");
+	}
+
+	if (iflags & INT_MCASTIF) {
+		CLEAR_BIT_IF_DEBUG(INT_MCASTIF, iflags);
+		append_flagstr(ifs, sz, "mcastif");
+	}
+
+	if (iflags & INT_PRIVACY) {
+		CLEAR_BIT_IF_DEBUG(INT_PRIVACY, iflags);
+		append_flagstr(ifs, sz, "IPv6privacy");
+	}
+
+	if (iflags & INT_BCASTXMIT) {
+		CLEAR_BIT_IF_DEBUG(INT_BCASTXMIT, iflags);
+		append_flagstr(ifs, sz, "bcastxmit");
+	}
+
+	DEBUG_INVARIANT(!iflags);
+
+	return ifs;
+}
+#endif	/* DEBUG */
+
+
 #ifdef SO_EXCLUSIVEADDRUSE
 static void
 set_excladdruse(
@@ -2380,15 +2437,6 @@ socket_broadcast_disable(
 
 #endif /* OPEN_BCAST_SOCKET */
 
-/*
- * return the broadcast client flag value
- */
-/*isc_boolean_t
-get_broadcastclient_flag(void)
-{
-	return (broadcast_client_enabled);
-}
-*/
 
 /*
  * Check to see if the address is a multicast address
@@ -2639,6 +2687,7 @@ socket_multicast_disable(
 }
 #endif	/* MCAST */
 
+
 /*
  * io_setbclient - open the broadcast client sockets
  */
@@ -2748,6 +2797,7 @@ io_setbclient(void)
 #endif	/* OPEN_BCAST_SOCKET */
 }
 
+
 /*
  * io_unsetbclient - close the broadcast client sockets
  */
@@ -2777,6 +2827,7 @@ io_unsetbclient(void)
 	}
 	broadcast_client_enabled = ISC_FALSE;
 }
+
 
 /*
  * io_multicast_add() - add multicast group address
@@ -3166,17 +3217,16 @@ open_socket(
 
 /* XXX ELIMINATE sendpkt similar in ntpq.c, ntpdc.c, ntp_io.c, ntptrace.c */
 /*
- * sendpkt - send a packet to the specified destination. Maintain a
- * send error cache so that only the first consecutive error for a
- * destination is logged.
+ * sendpkt - send a packet to the specified destination from the given endpt
+ *	     except for multicast, which may be sent from several addresses.
  */
 void
 sendpkt(
-	sockaddr_u *		dest,
-	struct interface *	ep,
-	int			ttl,
-	struct pkt *		pkt,
-	int			len
+	sockaddr_u *	dest,
+	endpt *		ep,
+	int		ttl,
+	struct pkt *	pkt,
+	int		len
 	)
 {
 	endpt *	src;
@@ -3211,9 +3261,6 @@ sendpkt(
 			    ismcast ? "\tMCAST\t***** " : "", src->fd,
 			    stoa(dest), stoa(&src->sin), ttl, len));
 #ifdef MCAST
-		/*
-		 * for the moment we use the bcast option to set multicast ttl
-		 */
 		if (ismcast && ttl > 0 && ttl != src->last_ttl) {
 			/*
 			 * set the multicast ttl for outgoing packets
@@ -3304,7 +3351,7 @@ fdbits(
 	static char buffer[256];
 	char * buf = buffer;
 
-	count = min(count,  255);
+	count = min(count,  sizeof(buffer) - 1);
 
 	while (count >= 0) {
 		*buf++ = FD_ISSET(count, set) ? '#' : '-';
@@ -3377,7 +3424,7 @@ read_refclock_packet(
 	 */
 	rb->recv_length = buflen;
 	rb->recv_peer = rp->srcclock;
-	rb->dstadr = 0;
+	rb->dstadr = NULL;
 	rb->fd = fd;
 	rb->recv_time = ts;
 	rb->receiver = rp->clock_recv;
@@ -3519,9 +3566,9 @@ fetch_timestamp(
  */
 static inline int
 read_network_packet(
-	SOCKET			fd,
-	struct interface *	itf,
-	l_fp			ts
+	SOCKET		fd,
+	endpt *		itf,
+	l_fp		ts
 	)
 {
 	GETSOCKNAME_SOCKLEN_TYPE fromlen;
@@ -3623,23 +3670,14 @@ read_network_packet(
 	** Bug 2672: Some OSes (MacOSX and Linux) don't block spoofed ::1
 	*/
 
-	if (AF_INET6 == itf->family) {
-		DPRINTF(2, ("Got an IPv6 packet, from <%s> (%d) to <%s> (%d)\n",
-			stoa(&rb->recv_srcadr),
-			IN6_IS_ADDR_LOOPBACK(PSOCK_ADDR6(&rb->recv_srcadr)),
-			stoa(&itf->sin),
-			!IN6_IS_ADDR_LOOPBACK(PSOCK_ADDR6(&itf->sin))
-			));
+	if (   IS_IPV6(&rb->recv_srcadr)
+	    && IN6_IS_ADDR_LOOPBACK(PSOCK_ADDR6(&rb->recv_srcadr))
+	    && !(INT_LOOPBACK & itf->flags)) {
 
-		if (   IN6_IS_ADDR_LOOPBACK(PSOCK_ADDR6(&rb->recv_srcadr))
-		    && !IN6_IS_ADDR_LOOPBACK(PSOCK_ADDR6(&itf->sin))
-		   ) {
-			packets_dropped++;
-			DPRINTF(2, ("DROPPING that packet\n"));
-			freerecvbuf(rb);
-			return buflen;
-		}
-		DPRINTF(2, ("processing that packet\n"));
+		packets_dropped++;
+		DPRINTF(2, ("DROPPING pkt with spoofed ::1 source on %s\n", latoa(itf)));
+		freerecvbuf(rb);
+		return -1;
 	}
 
 	/*
@@ -4761,14 +4799,12 @@ process_routing_msgs(struct asyncio_reader *reader)
 	char *p;
 #endif
 
-	if (disable_dynamic_updates) {
+	if (scan_addrs_once) {
 		/*
 		 * discard ourselves if we are not needed any more
 		 * usually happens when running unprivileged
 		 */
-		remove_asyncio_reader(reader);
-		delete_asyncio_reader(reader);
-		return;
+		goto disable;
 	}
 
 	if (NULL == buffer) {
@@ -4801,8 +4837,8 @@ process_routing_msgs(struct asyncio_reader *reader)
 		    disable:
 			remove_asyncio_reader(reader);
 			delete_asyncio_reader(reader);
+			return;
 		}
-		return;
 	}
 
 	/*
@@ -4878,7 +4914,7 @@ process_routing_msgs(struct asyncio_reader *reader)
 			 */
 			DPRINTF(3, ("routing message op = %d: scheduling interface update\n",
 				    msg_type));
-			timer_interfacetimeout(current_time + UPDATE_GRACE);
+			endpt_scan_timer = UPDATE_GRACE + current_time;
 			break;
 #ifdef HAVE_RTNETLINK
 		case NLMSG_DONE:
@@ -4951,4 +4987,3 @@ init_async_notifications(void)
 {
 }
 #endif
-

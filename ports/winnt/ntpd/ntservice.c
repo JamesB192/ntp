@@ -31,11 +31,10 @@
 #include "isc/win32os.h"
 #include <ssl_applink.c>
 
-
 /*
  * Globals
  */
-static SERVICE_STATUS_HANDLE hServiceStatus = 0;
+static SERVICE_STATUS_HANDLE hServiceStatus;
 static BOOL foreground = FALSE;
 static BOOL computer_shutting_down = FALSE;
 static int glb_argc;
@@ -153,8 +152,9 @@ ntservice_init(void)
 
 	if (!foreground) {
 		/* Register handler with the SCM */
-		hServiceStatus = RegisterServiceCtrlHandler(NTP_DISPLAY_NAME,
-					ServiceControl);
+		hServiceStatus = RegisterServiceCtrlHandler(
+					NTP_DISPLAY_NAME,
+					&ServiceControl);
 		if (!hServiceStatus) {
 			NTReportError(NTP_SERVICE_NAME,
 				"could not register with SCM");
@@ -164,7 +164,6 @@ ntservice_init(void)
 	} else {
 		snprintf(ConsoleTitle, sizeof(ConsoleTitle),
 			 "NTP Version %s", Version);
-		ConsoleTitle[sizeof(ConsoleTitle) - 1] = '\0';
 		SetConsoleTitle(ConsoleTitle);
 	}
 
@@ -257,17 +256,15 @@ ServiceControl(
 		/* fall through to stop case */
 
 	case SERVICE_CONTROL_STOP:
-		if (WaitableExitEventHandle != NULL) {
-			msyslog(LOG_INFO, "SCM requests stop (%s)",
-				msg_tab[!!computer_shutting_down]);
-			UpdateSCM(SERVICE_STOP_PENDING);
-			SetEvent(WaitableExitEventHandle);
-			Sleep(100);  //##++
-			break;
-		}
-		msyslog(LOG_ERR, "SCM requests stop (%s), but have no exit event!",
+		msyslog(LOG_INFO, "SCM requests stop (%s)",
 			msg_tab[!!computer_shutting_down]);
-		/* FALLTHROUGH */
+		UpdateSCM(SERVICE_STOP_PENDING);
+		if (WaitableExitEventHandle != NULL) {
+			SetEvent(WaitableExitEventHandle);
+		} else {
+			exit(EX_SOFTWARE);
+		}
+		break;
 
 	case SERVICE_CONTROL_PAUSE:
 	case SERVICE_CONTROL_CONTINUE:

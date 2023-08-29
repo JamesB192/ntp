@@ -42,7 +42,6 @@
 #include "ntp_clockdev.h"
 #include "ntp_filegen.h"
 #include "ntp_stdlib.h"
-#include "lib_strbuf.h"
 #include "ntp_assert.h"
 #include "ntp_random.h"
 /*
@@ -140,7 +139,7 @@ typedef struct peer_resolved_ctx_tag {
 
 /*
  * Poll Skew List array has an entry for each supported poll
- * interval, plus one for the default.
+ * interval.
  */
 #define PSL_ENTRIES	(NTP_MAXPOLL - NTP_MINPOLL + 1)
 static psl_item psl[PSL_ENTRIES];
@@ -335,7 +334,7 @@ static void config_ntpdsim(config_tree *);
 static void config_ntpd(config_tree *, int/*BOOL*/ input_from_file);
 static void config_other_modes(config_tree *);
 static void config_auth(config_tree *);
-static void attrtopsl(int poll, attr_val *avp);
+static void attrtopsl(u_char poll, attr_val *avp);
 static void config_access(config_tree *);
 static void config_mdnstries(config_tree *);
 static void config_phone(config_tree *);
@@ -377,9 +376,6 @@ static u_int32 get_pfxmatch(const char **, struct masks *);
 static u_int32 get_match(const char *, struct masks *);
 static u_int32 get_logmask(const char *);
 static int/*BOOL*/ is_refclk_addr(const address_node * addr);
-
-static void	appendstr(char *, size_t, const char *);
-
 
 #ifndef SIM
 static int getnetnum(const char *num, sockaddr_u *addr, int complain,
@@ -2424,21 +2420,22 @@ free_config_tos(
 
 static void
 config_monitor(
-	config_tree *ptree
-	)
+	config_tree* ptree
+)
 {
-	int_node *pfilegen_token;
-	const char *filegen_string;
-	const char *filegen_file;
-	FILEGEN *filegen;
-	filegen_node *my_node;
-	attr_val *my_opts;
-	int filegen_type;
-	int filegen_flag;
+	int_node *	pfilegen_token;
+	const char *	filegen_string;
+	const char *	filegen_file;
+	FILEGEN *	filegen;
+	filegen_node *	my_node;
+	attr_val*	my_opts;
+	int		filegen_type;
+	int		filegen_flag;
 
 	/* Set the statistics directory */
-	if (ptree->stats_dir)
-	    stats_config(STATS_STATSDIR, ptree->stats_dir, 0);
+	if (ptree->stats_dir) {
+		stats_config(STATS_STATSDIR, ptree->stats_dir, 0);
+	}
 
 	/* NOTE:
 	 * Calling filegen_get is brain dead. Doing a string
@@ -2960,49 +2957,29 @@ config_access(
 
 	/*
 	 * pollskewlist
-	 *
+	 */
+	atrv = HEAD_PFIFO(ptree->pollskewlist);
+	if (NULL == atrv) {
+		/* don't touch the poll skew list */
+		return;
+	}
+	ZERO(psl);
+	/*
 	 * First, find the last default pollskewlist item.
-	 * There should only be one of these with the current grammar,
-	 * but better safe than sorry.
 	 */
 	dflt_psl_atr = NULL;
-	atrv = HEAD_PFIFO(ptree->pollskewlist);
-	if (NULL != atrv) {
-		ZERO(psl);
-	}
 	for ( ; atrv != NULL; atrv = atrv->link) {
-		switch (atrv->attr) {
-		case -1:	/* default */
+		if (-1 == atrv->attr) {	/* default */
 			dflt_psl_atr = atrv;
-			break;
-
-		case 3:		/* Fall through */
-		case 4:		/* Fall through */
-		case 5:		/* Fall through */
-		case 6:		/* Fall through */
-		case 7:		/* Fall through */
-		case 8:		/* Fall through */
-		case 9:		/* Fall through */
-		case 10:	/* Fall through */
-		case 11:	/* Fall through */
-		case 12:	/* Fall through */
-		case 13:	/* Fall through */
-		case 14:	/* Fall through */
-		case 15:	/* Fall through */
-		case 16:	/* Fall through */
-		case 17:
-			/* ignore */
-			break;
-
-		default:
+		} else if (   atrv->attr < NTP_MINPOLL
+			   || atrv->attr > NTP_MAXPOLL) {
 			msyslog(LOG_ERR,
-				"config_access: default PSL scan: ignoring unexpected poll value %d",
-				atrv->attr);
-			break;
+				"Poll %d out of bounds for pollskewlist, (%d-%d)",
+				atrv->attr, NTP_MINPOLL, NTP_MAXPOLL);
 		}
 	}
 
-	/* If we have a nonzero default, initialize the PSL */
+	/* If we have a nonzero default, put it in all entries */
 	if (   dflt_psl_atr
 	    && (   0 != dflt_psl_atr->value.r.first
 		|| 0 != dflt_psl_atr->value.r.last)) {
@@ -3016,38 +2993,15 @@ config_access(
 	/* Finally, update the PSL with any explicit entries */
 	atrv = HEAD_PFIFO(ptree->pollskewlist);
 	for ( ; atrv != NULL; atrv = atrv->link) {
-		switch (atrv->attr) {
-		case -1:	/* default */
-			/* Ignore */
-			break;
-
-		case 3:		/* Fall through */
-		case 4:		/* Fall through */
-		case 5:		/* Fall through */
-		case 6:		/* Fall through */
-		case 7:		/* Fall through */
-		case 8:		/* Fall through */
-		case 9:		/* Fall through */
-		case 10:	/* Fall through */
-		case 11:	/* Fall through */
-		case 12:	/* Fall through */
-		case 13:	/* Fall through */
-		case 14:	/* Fall through */
-		case 15:	/* Fall through */
-		case 16:	/* Fall through */
-		case 17:
+		if (atrv->attr >= NTP_MINPOLL && atrv->attr <= NTP_MAXPOLL) {
 			attrtopsl(atrv->attr, atrv);
-			break;
-
-		default:
-			break;	/* Ignore - we reported this above */
 		}
 	}
 
 #if 0
 	int p;
 	msyslog(LOG_INFO, "Dumping PSL:");
-	for (p = 3; p <= 17; ++p) {
+	for (p = NTP_MINPOLL; p <= NTP_MAXPOLL; ++p) {
 		psl_item psi;
 
 		if (0 == get_pollskew(p, &psi)) {
@@ -3061,42 +3015,40 @@ config_access(
 }
 
 
-void
-attrtopsl(int poll, attr_val *avp)
+static void
+attrtopsl(
+	u_char		poll,
+	attr_val *	avp
+	)
 {
-	if (poll < NTP_MINPOLL || poll > NTP_MAXPOLL) {
-		msyslog(LOG_ERR, "Poll %d value unsupported for pollskewlist",
-			poll);
-	} else {
-		int pao = poll - NTP_MINPOLL;	/* poll array offset */
-		int lower = avp->value.r.first;	/* a positive number */
-		int upper = avp->value.r.last;
-		int psmax = 1 << (poll - 1);
-		int qmsk;
+	int	pao   = poll - NTP_MINPOLL;	/* poll array offset */
+	u_int32	lower = (u_short)avp->value.r.first; /* ntp_parser.y ensures */
+	u_int32	upper = (u_short)avp->value.r.last;  /* non-neg. first/last */
+	u_int	psmax = 1 << (poll - 1);
+	u_int32	qmsk;
 
-		DEBUG_INSIST(pao < COUNTOF(psl));
+	DEBUG_INSIST(pao >= 0 && pao < COUNTOF(psl));
 
-		if (lower > psmax) {
-			msyslog(LOG_WARNING, "pollskewlist %d lower bound reduced from %d to %d",
-				poll, lower, psmax);
-			lower = psmax;
-		}
-		if (upper > psmax) {
-			msyslog(LOG_WARNING, "pollskewlist %d upper bound reduced from %d to %d",
-				poll, upper, psmax);
-			upper = psmax;
-		}
-		psl[pao].sub = lower;
-		psl[pao].qty = lower + upper;
-
-		qmsk = 1;
-		while (qmsk < (lower + upper)) {
-			qmsk <<= 1;
-			qmsk |=  1;
-		};
-		psl[pao].msk = qmsk;
+	if (lower > psmax) {
+		msyslog(LOG_WARNING, "pollskewlist %d lower bound reduced from %d to %d",
+			poll, lower, psmax);
+		lower = psmax;
 	}
-} 
+	if (upper > psmax) {
+		msyslog(LOG_WARNING, "pollskewlist %d upper bound reduced from %d to %d",
+			poll, upper, psmax);
+		upper = psmax;
+	}
+	psl[pao].sub = lower;
+	psl[pao].qty = lower + upper;
+
+	qmsk = 1;
+	while (qmsk < (lower + upper)) {
+		qmsk <<= 1;
+		qmsk |=  1;
+	}
+	psl[pao].msk = qmsk;
+}
 #endif	/* !SIM */
 
 
@@ -3332,9 +3284,10 @@ config_nic_rules(
 			if_name = estrdup(if_name);
 
 		switch (curr_node->match_class) {
-
+#ifdef DEBUG
 		default:
 			fatal_error("config_nic_rules: match-class-token=%d", curr_node->match_class);
+#endif
 
 		case 0:
 			/*
@@ -3383,10 +3336,10 @@ config_nic_rules(
 		}
 
 		switch (curr_node->action) {
-
+#ifdef DEBUG
 		default:
 			fatal_error("config_nic_rules: action-token=%d", curr_node->action);
-
+#endif
 		case T_Listen:
 			action = ACTION_LISTEN;
 			break;
@@ -3402,7 +3355,9 @@ config_nic_rules(
 
 		add_nic_rule(match_type, if_name, prefixlen,
 			     action);
-		timer_interfacetimeout(current_time + 2);
+		if (!initializing && !scan_addrs_once) {
+			endpt_scan_timer = 1 + current_time;
+		}
 		if (if_name != NULL)
 			free(if_name);
 	}
@@ -4133,7 +4088,7 @@ config_vars(
 		case T_Driftfile:
 			if ('\0' == curr_var->value.s[0])
 				msyslog(LOG_INFO, "config: driftfile disabled");
-			stats_config(STATS_FREQ_FILE, curr_var->value.s, 0);
+			stats_config(STATS_FREQ_FILE, curr_var->value.s, TRUE);
 			break;
 
 		case T_Dscp:
@@ -4151,7 +4106,7 @@ config_vars(
 			break;
 
 		case T_Leapfile:
-		    stats_config(STATS_LEAP_FILE, curr_var->value.s, curr_var->flag);
+			stats_config(STATS_LEAP_FILE, curr_var->value.s, curr_var->flag);
 			break;
 
 #ifdef LEAP_SMEAR
@@ -5677,228 +5632,3 @@ ntp_rlimit(
 	}
 }
 #endif	/* HAVE_SETRLIMIT */
-
-
-char *
-build_iflags(
-	u_int32 iflags
-	)
-{
-	static char ifs[1024];
-
-	ifs[0] = '\0';
-
-	if (iflags & INT_UP) {
-		iflags &= ~INT_UP;
-		appendstr(ifs, sizeof ifs, "up");
-	}
-
-	if (iflags & INT_PPP) {
-		iflags &= ~INT_PPP;
-		appendstr(ifs, sizeof ifs, "ppp");
-	}
-
-	if (iflags & INT_LOOPBACK) {
-		iflags &= ~INT_LOOPBACK;
-		appendstr(ifs, sizeof ifs, "loopback");
-	}
-
-	if (iflags & INT_BROADCAST) {
-		iflags &= ~INT_BROADCAST;
-		appendstr(ifs, sizeof ifs, "broadcast");
-	}
-
-	if (iflags & INT_MULTICAST) {
-		iflags &= ~INT_MULTICAST;
-		appendstr(ifs, sizeof ifs, "multicast");
-	}
-
-	if (iflags & INT_BCASTOPEN) {
-		iflags &= ~INT_BCASTOPEN;
-		appendstr(ifs, sizeof ifs, "bcastopen");
-	}
-
-	if (iflags & INT_MCASTOPEN) {
-		iflags &= ~INT_MCASTOPEN;
-		appendstr(ifs, sizeof ifs, "mcastopen");
-	}
-
-	if (iflags & INT_WILDCARD) {
-		iflags &= ~INT_WILDCARD;
-		appendstr(ifs, sizeof ifs, "wildcard");
-	}
-
-	if (iflags & INT_MCASTIF) {
-		iflags &= ~INT_MCASTIF;
-		appendstr(ifs, sizeof ifs, "MCASTif");
-	}
-
-	if (iflags & INT_PRIVACY) {
-		iflags &= ~INT_PRIVACY;
-		appendstr(ifs, sizeof ifs, "IPv6privacy");
-	}
-
-	if (iflags & INT_BCASTXMIT) {
-		iflags &= ~INT_BCASTXMIT;
-		appendstr(ifs, sizeof ifs, "bcastxmit");
-	}
-
-	if (iflags) {
-		char string[10];
-
-		snprintf(string, sizeof string, "%0x", iflags);
-		appendstr(ifs, sizeof ifs, string);
-	}
-
-	return ifs;
-}
-
-
-char *
-build_mflags(
-	u_short mflags
-	)
-{
-	static char mfs[1024];
-
-	mfs[0] = '\0';
-
-	if (mflags & RESM_NTPONLY) {
-		mflags &= ~RESM_NTPONLY;
-		appendstr(mfs, sizeof mfs, "ntponly");
-	}
-
-	if (mflags & RESM_SOURCE) {
-		mflags &= ~RESM_SOURCE;
-		appendstr(mfs, sizeof mfs, "source");
-	}
-
-	if (mflags) {
-		char string[10];
-
-		snprintf(string, sizeof string, "%0x", mflags);
-		appendstr(mfs, sizeof mfs, string);
-	}
-
-	return mfs;
-}
-
-
-char *
-build_rflags(
-	u_short rflags
-	)
-{
-	static char rfs[1024];
-
-	rfs[0] = '\0';
-
-	if (rflags & RES_FLAKE) {
-		rflags &= ~RES_FLAKE;
-		appendstr(rfs, sizeof rfs, "flake");
-	}
-
-	if (rflags & RES_IGNORE) {
-		rflags &= ~RES_IGNORE;
-		appendstr(rfs, sizeof rfs, "ignore");
-	}
-
-	if (rflags & RES_KOD) {
-		rflags &= ~RES_KOD;
-		appendstr(rfs, sizeof rfs, "kod");
-	}
-
-	if (rflags & RES_MSSNTP) {
-		rflags &= ~RES_MSSNTP;
-		appendstr(rfs, sizeof rfs, "mssntp");
-	}
-
-	if (rflags & RES_LIMITED) {
-		rflags &= ~RES_LIMITED;
-		appendstr(rfs, sizeof rfs, "limited");
-	}
-
-	if (rflags & RES_LPTRAP) {
-		rflags &= ~RES_LPTRAP;
-		appendstr(rfs, sizeof rfs, "lptrap");
-	}
-
-	if (rflags & RES_NOMODIFY) {
-		rflags &= ~RES_NOMODIFY;
-		appendstr(rfs, sizeof rfs, "nomodify");
-	}
-
-	if (rflags & RES_NOMRULIST) {
-		rflags &= ~RES_NOMRULIST;
-		appendstr(rfs, sizeof rfs, "nomrulist");
-	}
-
-	if (rflags & RES_NOEPEER) {
-		rflags &= ~RES_NOEPEER;
-		appendstr(rfs, sizeof rfs, "noepeer");
-	}
-
-	if (rflags & RES_NOPEER) {
-		rflags &= ~RES_NOPEER;
-		appendstr(rfs, sizeof rfs, "nopeer");
-	}
-
-	if (rflags & RES_NOQUERY) {
-		rflags &= ~RES_NOQUERY;
-		appendstr(rfs, sizeof rfs, "noquery");
-	}
-
-	if (rflags & RES_DONTSERVE) {
-		rflags &= ~RES_DONTSERVE;
-		appendstr(rfs, sizeof rfs, "dontserve");
-	}
-
-	if (rflags & RES_NOTRAP) {
-		rflags &= ~RES_NOTRAP;
-		appendstr(rfs, sizeof rfs, "notrap");
-	}
-
-	if (rflags & RES_DONTTRUST) {
-		rflags &= ~RES_DONTTRUST;
-		appendstr(rfs, sizeof rfs, "notrust");
-	}
-
-	if (rflags & RES_SRVRSPFUZ) {
-		rflags &= ~RES_SRVRSPFUZ;
-		appendstr(rfs, sizeof rfs, "srvrspfuz");
-	}
-
-	if (rflags & RES_VERSION) {
-		rflags &= ~RES_VERSION;
-		appendstr(rfs, sizeof rfs, "version");
-	}
-
-	if (rflags) {
-		char string[10];
-
-		snprintf(string, sizeof string, "%0x", rflags);
-		appendstr(rfs, sizeof rfs, string);
-	}
-
-	if ('\0' == rfs[0]) {
-		appendstr(rfs, sizeof rfs, "(none)");
-	}
-
-	return rfs;
-}
-
-
-static void
-appendstr(
-	char *string,
-	size_t s,
-	const char *new
-	)
-{
-	if (*string != '\0') {
-		(void)strlcat(string, ",", s);
-	}
-	(void)strlcat(string, new, s);
-
-	return;
-}

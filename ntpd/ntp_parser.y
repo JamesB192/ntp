@@ -1446,7 +1446,12 @@ pollskew_spec
 	;
 
 pollskew_cycle
-	:	T_Integer { $$ = ($1 >= 3 && $1 <= 17) ? create_attr_rval($1, 0, 0) : NULL; }
+	:	T_Integer 
+		{ 
+			$$ = ($1 >= NTP_MINPOLL && $1 <= NTP_MAXPOLL) 
+				? create_attr_rval($1, 0, 0) 
+				: NULL;
+		}
 	|	T_Default { $$ = create_attr_rval(-1, 0, 0); }
 	;
 

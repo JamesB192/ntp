@@ -489,7 +489,7 @@ start_blocking_thread(
 
 /* --------------------------------------------------------------------
  * Create a worker thread. There are several differences between POSIX
- * and Windows, of course -- most notably the Windows thread is no
+ * and Windows, of course -- most notably the Windows thread is a
  * detached thread, and we keep the handle around until we want to get
  * rid of the thread. The notification scheme also differs: Windows
  * makes use of semaphores in both directions, POSIX uses a pipe for
@@ -520,9 +520,12 @@ start_blocking_thread_internal(
 	}
 	/* remember the thread priority is only within the process class */
 	if (!SetThreadPriority(c->thr_table[0].thnd,
-			       THREAD_PRIORITY_BELOW_NORMAL))
+			       THREAD_PRIORITY_BELOW_NORMAL)) {
 		msyslog(LOG_ERR, "Error lowering blocking thread priority: %m");
-
+	}
+	if (NULL != pSetThreadDescription) {
+		(*pSetThreadDescription)(c->thr_table[0].thnd, L"ntp_worker");
+	}
 	resumed = ResumeThread(c->thr_table[0].thnd);
 	DEBUG_INSIST(resumed);
 	c->thread_ref = &c->thr_table[0];

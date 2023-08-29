@@ -50,8 +50,6 @@ static void put_byte (unsigned char *, offsets_t, int *, unsigned char);
 
 #ifdef LIBDEBUG
 
-#include "lib_strbuf.h"
-
 static char *
 fmt_blong(
 	  unsigned long val,
