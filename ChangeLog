@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3869] Remove long-gone "calldelay" & "crypto sign" from docs.
+             Reported by PoolMUC@web.de. <hart@ntp.org>
 * [Bug 3859] Use NotifyIpInterfaceChange on Windows ntpd. <hart@ntp.org>
 * [Bug 3856] Enable Edit & Continue debugging with Visual Studio.
              <hart@ntp.org>

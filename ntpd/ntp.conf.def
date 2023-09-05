@@ -296,27 +296,15 @@ include authentication fields encrypted using the autokey scheme
 described in
 .Sx Authentication Options .
 .It Cm burst
-when the server is reachable, send a burst of eight packets
-instead of the usual one.
-The packet spacing is normally 2 s;
-however, the spacing between the first and second packets
-can be changed with the
-.Ic calldelay
-command to allow
-additional time for a modem or ISDN call to complete.
-This is designed to improve timekeeping quality
-with the
+when the server is reachable, send a burst of six packets
+instead of the usual one. The packet spacing is 2 s.
+This is designed to improve timekeeping quality with the
 .Ic server
 command and s addresses.
 .It Cm iburst
 When the server is unreachable, send a burst of eight packets
 instead of the usual one.
-The packet spacing is normally 2 s;
-however, the spacing between the first two packets can be
-changed with the
-.Ic calldelay
-command to allow
-additional time for a modem or ISDN call to complete.
+The packet spacing is 2 s.
 This is designed to speed the initial synchronization
 acquisition with the
 .Ic server
@@ -892,7 +880,6 @@ range 1 to 65,535, inclusive.
 .Op Cm leap Ar file
 .Op Cm randfile Ar file
 .Op Cm host Ar file
-.Op Cm sign Ar file
 .Op Cm gq Ar file
 .Op Cm gqpar Ar file
 .Op Cm iffpar Ar file
@@ -955,14 +942,6 @@ encrypted.
 Specifies the location of the random seed file used by the OpenSSL
 library.
 The defaults are described in the main text above.
-.It Cm sign Ar file
-Specifies the location of the optional sign key file.
-This overrides
-the link
-.Pa ntpkey_sign_ Ns Ar hostname
-in the keys directory.
-If this file is
-not found, the host key is also the sign key.
 .El
 .It Ic keys Ar keyfile
 Specifies the complete path and location of the MD5 key file
@@ -2465,10 +2444,6 @@ Typically (for Ethernet), a
 number between 0.003 and 0.007 seconds is appropriate.
 The default
 when this command is not used is 0.004 seconds.
-.It Ic calldelay Ar delay
-This option controls the delay in seconds between the first and second
-packets sent in burst or iburst mode to allow additional time for a modem
-or ISDN call to complete.
 .It Ic driftfile Ar driftfile
 This command specifies the complete path and name of the file used to
 record the frequency of the local clock oscillator.

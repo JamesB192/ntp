@@ -362,28 +362,16 @@ described in
 &lsquo;Authentication Options&rsquo;.
 </p></dd>
 <dt><code>burst</code></dt>
-<dd><p>when the server is reachable, send a burst of eight packets
-instead of the usual one.
-The packet spacing is normally 2 s;
-however, the spacing between the first and second packets
-can be changed with the
-<code>calldelay</code>
-command to allow
-additional time for a modem or ISDN call to complete.
-This is designed to improve timekeeping quality
-with the
+<dd><p>when the server is reachable, send a burst of six packets
+instead of the usual one. The packet spacing is 2 s.
+This is designed to improve timekeeping quality with the
 <code>server</code>
 command and s addresses.
 </p></dd>
 <dt><code>iburst</code></dt>
 <dd><p>When the server is unreachable, send a burst of eight packets
 instead of the usual one.
-The packet spacing is normally 2 s;
-however, the spacing between the first two packets can be
-changed with the
-<code>calldelay</code>
-command to allow
-additional time for a modem or ISDN call to complete.
+The packet spacing is 2 s.
 This is designed to speed the initial synchronization
 acquisition with the
 <code>server</code>
@@ -966,7 +954,7 @@ argument is
 the key identifier for a trusted key, where the value can be in the
 range 1 to 65,535, inclusive.
 </p></dd>
-<dt><code>crypto</code> <code>[<code>cert</code> <kbd>file</kbd>]</code> <code>[<code>leap</code> <kbd>file</kbd>]</code> <code>[<code>randfile</code> <kbd>file</kbd>]</code> <code>[<code>host</code> <kbd>file</kbd>]</code> <code>[<code>sign</code> <kbd>file</kbd>]</code> <code>[<code>gq</code> <kbd>file</kbd>]</code> <code>[<code>gqpar</code> <kbd>file</kbd>]</code> <code>[<code>iffpar</code> <kbd>file</kbd>]</code> <code>[<code>mvpar</code> <kbd>file</kbd>]</code> <code>[<code>pw</code> <kbd>password</kbd>]</code></dt>
+<dt><code>crypto</code> <code>[<code>cert</code> <kbd>file</kbd>]</code> <code>[<code>leap</code> <kbd>file</kbd>]</code> <code>[<code>randfile</code> <kbd>file</kbd>]</code> <code>[<code>host</code> <kbd>file</kbd>]</code> <code>[<code>gq</code> <kbd>file</kbd>]</code> <code>[<code>gqpar</code> <kbd>file</kbd>]</code> <code>[<code>iffpar</code> <kbd>file</kbd>]</code> <code>[<code>mvpar</code> <kbd>file</kbd>]</code> <code>[<code>pw</code> <kbd>password</kbd>]</code></dt>
 <dd><p>This command requires the OpenSSL library.
 It activates public key
 cryptography, selects the message digest and signature
@@ -1030,15 +1018,6 @@ encrypted.
 <dd><p>Specifies the location of the random seed file used by the OpenSSL
 library.
 The defaults are described in the main text above.
-</p></dd>
-<dt><code>sign</code> <kbd>file</kbd></dt>
-<dd><p>Specifies the location of the optional sign key file.
-This overrides
-the link
-<samp>ntpkey_sign_</samp><kbd>hostname</kbd>
-in the keys directory.
-If this file is
-not found, the host key is also the sign key.
 </p></dd>
 </dl>
 </dd>
@@ -2596,11 +2575,6 @@ Typically (for Ethernet), a
 number between 0.003 and 0.007 seconds is appropriate.
 The default
 when this command is not used is 0.004 seconds.
-</p></dd>
-<dt><code>calldelay</code> <kbd>delay</kbd></dt>
-<dd><p>This option controls the delay in seconds between the first and second
-packets sent in burst or iburst mode to allow additional time for a modem
-or ISDN call to complete.
 </p></dd>
 <dt><code>driftfile</code> <kbd>driftfile</kbd></dt>
 <dd><p>This command specifies the complete path and name of the file used to
