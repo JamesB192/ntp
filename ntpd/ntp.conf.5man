@@ -10,11 +10,11 @@
 .ds B-Font B
 .ds I-Font I
 .ds R-Font R
-.TH ntp.conf 5man "06 Jun 2023" "4.2.8p17" "File Formats"
+.TH ntp.conf 5man "05 Sep 2023" "4.2.8p17" "File Formats"
 .\"
 .\" EDIT THIS FILE WITH CAUTION (in-mem file)
 .\"
-.\" It has been AutoGen-ed June 6, 2023 at 04:37:45 AM by AutoGen 5.18.16
+.\" It has been AutoGen-ed September 5, 2023 at 07:46:44 PM by AutoGen 5.18.16
 .\" From the definitions ntp.conf.def
 .\" and the template file agman-cmd.tpl
 .SH NAME
@@ -291,28 +291,16 @@ described in
 \fIAuthentication\f[] \fIOptions\f[].
 .TP 7
 .NOP \f\*[B-Font]burst\f[]
-when the server is reachable, send a burst of eight packets
-instead of the usual one.
-The packet spacing is normally 2 s;
-however, the spacing between the first and second packets
-can be changed with the
-\f\*[B-Font]calldelay\f[]
-command to allow
-additional time for a modem or ISDN call to complete.
-This is designed to improve timekeeping quality
-with the
+when the server is reachable, send a burst of six packets
+instead of the usual one. The packet spacing is 2 s.
+This is designed to improve timekeeping quality with the
 \f\*[B-Font]server\f[]
 command and s addresses.
 .TP 7
 .NOP \f\*[B-Font]iburst\f[]
 When the server is unreachable, send a burst of eight packets
 instead of the usual one.
-The packet spacing is normally 2 s;
-however, the spacing between the first two packets can be
-changed with the
-\f\*[B-Font]calldelay\f[]
-command to allow
-additional time for a modem or ISDN call to complete.
+The packet spacing is 2 s.
 This is designed to speed the initial synchronization
 acquisition with the
 \f\*[B-Font]server\f[]
@@ -938,7 +926,7 @@ argument is
 the key identifier for a trusted key, where the value can be in the
 range 1 to 65,535, inclusive.
 .TP 7
-.NOP \f\*[B-Font]crypto\f[] [\f\*[B-Font]cert\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]leap\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]randfile\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]host\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]sign\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]gq\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]gqpar\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]iffpar\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]mvpar\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]pw\f[] \f\*[I-Font]password\f[]]
+.NOP \f\*[B-Font]crypto\f[] [\f\*[B-Font]cert\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]leap\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]randfile\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]host\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]gq\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]gqpar\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]iffpar\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]mvpar\f[] \f\*[I-Font]file\f[]] [\f\*[B-Font]pw\f[] \f\*[I-Font]password\f[]]
 This command requires the OpenSSL library.
 It activates public key
 cryptography, selects the message digest and signature
@@ -1003,15 +991,6 @@ encrypted.
 Specifies the location of the random seed file used by the OpenSSL
 library.
 The defaults are described in the main text above.
-.TP 7
-.NOP \f\*[B-Font]sign\f[] \f\*[I-Font]file\f[]
-Specifies the location of the optional sign key file.
-This overrides
-the link
-\fIntpkey_sign_\f[]\f\*[I-Font]hostname\f[]
-in the keys directory.
-If this file is
-not found, the host key is also the sign key.
 .RE
 .TP 7
 .NOP \f\*[B-Font]keys\f[] \f\*[I-Font]keyfile\f[]
@@ -2634,11 +2613,6 @@ Typically (for Ethernet), a
 number between 0.003 and 0.007 seconds is appropriate.
 The default
 when this command is not used is 0.004 seconds.
-.TP 7
-.NOP \f\*[B-Font]calldelay\f[] \f\*[I-Font]delay\f[]
-This option controls the delay in seconds between the first and second
-packets sent in burst or iburst mode to allow additional time for a modem
-or ISDN call to complete.
 .TP 7
 .NOP \f\*[B-Font]driftfile\f[] \f\*[I-Font]driftfile\f[]
 This command specifies the complete path and name of the file used to
