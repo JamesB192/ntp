@@ -267,5 +267,5 @@ netsnmp_daemonize(int quit_immediately, int stderr_log)
 }
 
 #else /* !NEED_NETSNMP_DAEMONIZE */
-int netsnp_daemonize_bs;
+NONEMPTY_TRANSLATION_UNIT
 #endif
