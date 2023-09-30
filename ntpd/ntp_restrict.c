@@ -98,18 +98,26 @@ static	restrict_u *	match_restrict4_addr(u_int32, u_short);
 static	restrict_u *	match_restrict6_addr(const struct in6_addr *,
 					     u_short);
 static	restrict_u *	match_restrict_entry(const restrict_u *, int);
-static	int		res_sorts_before4(restrict_u *, restrict_u *);
-static	int		res_sorts_before6(restrict_u *, restrict_u *);
-	void		dump_restricts(void);
+static inline int/*BOOL*/	mflags_sorts_before(u_short, u_short);
+static	int/*BOOL*/	res_sorts_before4(restrict_u *, restrict_u *);
+static	int/*BOOL*/	res_sorts_before6(restrict_u *, restrict_u *);
+
+typedef int (*res_sort_fn)(restrict_u *, restrict_u *);
+
+
+/* dump_restrict() & dump_restricts() are DEBUG-only */
+#ifdef DEBUG	
+static void		dump_restrict(restrict_u *, int);
+
 
 /*
- * dump_restrict - spit out a restrict_u
+ * dump_restrict - spit out a single restriction entry
  */
 static void
 dump_restrict(
 	restrict_u *	res,
 	int		is_ipv6
-	)
+)
 {
 	char as[INET6_ADDRSTRLEN];
 	char ms[INET6_ADDRSTRLEN];
@@ -118,57 +126,47 @@ dump_restrict(
 		inet_ntop(AF_INET6, &res->u.v6.addr, as, sizeof as);
 		inet_ntop(AF_INET6, &res->u.v6.mask, ms, sizeof ms);
 	} else {
-		struct in_addr	sia = { htonl(res->u.v4.addr) };
-		struct in_addr	sim = { htonl(res->u.v4.mask) };
+		struct in_addr	sia, sim;
 
+		sia.s_addr = htonl(res->u.v4.addr);
+		sim.s_addr = htonl(res->u.v4.addr);
 		inet_ntop(AF_INET, &sia, as, sizeof as);
 		inet_ntop(AF_INET, &sim, ms, sizeof ms);
 	}
-	mprintf("restrict node at %p: %s/%s count %d, rflags %08x, mflags %04x, ippeerlimit %d, expire %lu, next %p\n",
-		res, as, ms, res->count, res->rflags, res->mflags,
-		res->ippeerlimit, res->expire, res->link);
-	return;
+	printf("%s/%s: hits %u ippeerlimit %hd mflags %s rflags %s",
+		as, ms, res->count, res->ippeerlimit,
+		mflags_str(res->mflags),
+		rflags_str(res->rflags));
+	if (res->expire > 0) {
+		printf(" expire %u\n", res->expire);
+	} else {
+		printf("\n");
+	}
 }
 
 
 /*
- * dump_restricts - spit out the 'restrict' lines
+ * dump_restricts - spit out the 'restrict' entries
  */
 void
 dump_restricts(void)
 {
 	restrict_u *	res;
-	restrict_u *	next;
-
-	mprintf("dump_restrict: restrict_def4: %p\n", &restrict_def4);
-	/* Spit out 'restrict {,-4,-6} default ...' lines, if needed */
-	for (res = &restrict_def4; res != NULL; res = next) {
-		dump_restrict(res, 0);
-		next = res->link;
-	}
-
-	mprintf("dump_restrict: restrict_def6: %p\n", &restrict_def6);
-	for (res = &restrict_def6; res != NULL; res = next) {
-		dump_restrict(res, 1);
-		next = res->link;
-	}
 
 	/* Spit out the IPv4 list */
-	mprintf("dump_restrict: restrictlist4: %p\n", &restrictlist4);
-	for (res = restrictlist4; res != NULL; res = next) {
+	printf("dump_restricts: restrictlist4: %p\n", restrictlist4);
+	for (res = restrictlist4; res != NULL; res = res->link) {
 		dump_restrict(res, 0);
-		next = res->link;
 	}
 
 	/* Spit out the IPv6 list */
-	mprintf("dump_restrict: restrictlist6: %p\n", &restrictlist6);
-	for (res = restrictlist6; res != NULL; res = next) {
+	printf("dump_restricts: restrictlist6: %p\n", restrictlist6);
+	for (res = restrictlist6; res != NULL; res = res->link) {
 		dump_restrict(res, 1);
-		next = res->link;
 	}
-
-	return;
 }
+#endif /* DEBUG - dump_restrict() / dump_restricts() */
+
 
 /*
  * init_restrict - initialize the restriction data structures
@@ -198,11 +196,20 @@ init_restrict(void)
 	 *
 	 * An additional wrinkle is we may have multiple entries with
 	 * the same address and mask but differing match flags (mflags).
-	 * At present there is only one, RESM_NTPONLY.  Entries with
-	 * RESM_NTPONLY are sorted earlier so they take precedence over
-	 * any otherwise similar entry without.  Again, this is the same
-	 * behavior as but reversed implementation compared to the docs.
-	 * 
+	 * We want to never talk to ourself, so RES_IGNORE entries for
+	 * each local address are added by ntp_io.c with a host mask and
+	 * both RESM_INTERFACE and RESM_NTPONLY set.  We sort those
+	 * entries before entries without those flags to achieve this.
+	 * The remaining match flag is RESM_SOURCE, used to dynamically
+	 * set restrictions for each peer based on the prototype set by
+	 * "restrict source" in the configuration.  We want those entries
+	 * to be considered only when there is not a static host
+	 * restriction for the address in the configuration, to allow
+	 * operators to blacklist pool and manycast servers at runtime as
+	 * desired using ntpq runtime configuration.  Such static entries
+	 * have no RESM_ bits set, so the sort order for mflags is first
+	 * RESM_INTERFACE, then entries without RESM_SOURCE, finally the
+	 * remaining.
 	 */
 
 	restrict_def4.ippeerlimit = -1;		/* Cleaner if we have C99 */
@@ -398,22 +405,47 @@ match_restrict_entry(
 		cb = sizeof(pmatch->u.v4);
 	}
 
-	for (res = rlist; res != NULL; res = res->link)
+	for (res = rlist; res != NULL; res = res->link) {
 		if (res->mflags == pmatch->mflags &&
-		    !memcmp(&res->u, &pmatch->u, cb))
+		    !memcmp(&res->u, &pmatch->u, cb)) {
 			break;
+		}
+	}
 	return res;
 }
 
 
 /*
- * res_sorts_before4 - compare two restrict4 entries
+ * mflags_sorts_before - common mflags sorting code
+ * 
+ * See block comment in init_restrict() above for rationale.
+ */
+static inline int/*BOOL*/
+mflags_sorts_before(
+	u_short	m1,
+	u_short	m2
+	)
+{
+	if (    (RESM_INTERFACE & m1)
+	    && !(RESM_INTERFACE & m2)) {
+		return TRUE;
+	} else if (   !(RESM_SOURCE & m1)
+		   &&  (RESM_SOURCE & m2)) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+
+/*
+ * res_sorts_before4 - compare IPv4 restriction entries
  *
  * Returns nonzero if r1 sorts before r2.  We sort by descending
- * address, then descending mask, then descending mflags, so sorting
- * before means having a higher value.
+ * address, then descending mask, then an intricate mflags sort
+ * order explained in a block comment near the top of this file.
  */
-static int
+static int/*BOOL*/
 res_sorts_before4(
 	restrict_u *r1,
 	restrict_u *r2
@@ -421,54 +453,53 @@ res_sorts_before4(
 {
 	int r1_before_r2;
 
-	if (r1->u.v4.addr > r2->u.v4.addr)
-		r1_before_r2 = 1;
-	else if (r1->u.v4.addr < r2->u.v4.addr)
-		r1_before_r2 = 0;
-	else if (r1->u.v4.mask > r2->u.v4.mask)
-		r1_before_r2 = 1;
-	else if (r1->u.v4.mask < r2->u.v4.mask)
-		r1_before_r2 = 0;
-	else if (r1->mflags > r2->mflags)
-		r1_before_r2 = 1;
-	else
-		r1_before_r2 = 0;
+	if (r1->u.v4.addr > r2->u.v4.addr) {
+		r1_before_r2 = TRUE;
+	} else if (r1->u.v4.addr < r2->u.v4.addr) {
+		r1_before_r2 = FALSE;
+	} else if (r1->u.v4.mask > r2->u.v4.mask) {
+		r1_before_r2 = TRUE;
+	} else if (r1->u.v4.mask < r2->u.v4.mask) {
+		r1_before_r2 = FALSE;
+	} else {
+		r1_before_r2 = mflags_sorts_before(r1->mflags, r2->mflags);
+	}
 
 	return r1_before_r2;
 }
 
 
 /*
- * res_sorts_before6 - compare two restrict6 entries
+ * res_sorts_before6 - compare IPv6 restriction entries
  *
  * Returns nonzero if r1 sorts before r2.  We sort by descending
- * address, then descending mask, then descending mflags, so sorting
- * before means having a higher value.
+ * address, then descending mask, then an intricate mflags sort
+ * order explained in a block comment near the top of this file.
  */
-static int
+static int/*BOOL*/
 res_sorts_before6(
-	restrict_u *r1,
-	restrict_u *r2
-	)
+	restrict_u* r1,
+	restrict_u* r2
+)
 {
 	int r1_before_r2;
 	int cmp;
 
 	cmp = ADDR6_CMP(&r1->u.v6.addr, &r2->u.v6.addr);
-	if (cmp > 0)		/* r1->addr > r2->addr */
-		r1_before_r2 = 1;
-	else if (cmp < 0)	/* r2->addr > r1->addr */
-		r1_before_r2 = 0;
-	else {
+	if (cmp > 0) {		/* r1->addr > r2->addr */
+		r1_before_r2 = TRUE;
+	} else if (cmp < 0) {	/* r2->addr > r1->addr */
+		r1_before_r2 = FALSE;
+	} else {
 		cmp = ADDR6_CMP(&r1->u.v6.mask, &r2->u.v6.mask);
-		if (cmp > 0)		/* r1->mask > r2->mask*/
-			r1_before_r2 = 1;
-		else if (cmp < 0)	/* r2->mask > r1->mask */
-			r1_before_r2 = 0;
-		else if (r1->mflags > r2->mflags)
-			r1_before_r2 = 1;
-		else
-			r1_before_r2 = 0;
+		if (cmp > 0) {		/* r1->mask > r2->mask*/
+			r1_before_r2 = TRUE;
+		} else if (cmp < 0) {	/* r2->mask > r1->mask */
+			r1_before_r2 = FALSE;
+		} else {
+			r1_before_r2 = mflags_sorts_before(r1->mflags,
+							   r2->mflags);
+		}
 	}
 
 	return r1_before_r2;
@@ -555,7 +586,7 @@ resop_str(restrict_op op)
 {
 	switch (op) {
 	    case RESTRICT_FLAGS:	return "RESTRICT_FLAGS";
-	    case RESTRICT_UNFLAG:	return "RESTRICT_UNFLAGS";
+	    case RESTRICT_UNFLAG:	return "RESTRICT_UNFLAG";
 	    case RESTRICT_REMOVE:	return "RESTRICT_REMOVE";
 	    case RESTRICT_REMOVEIF:	return "RESTRICT_REMOVEIF";
 	}
@@ -568,7 +599,7 @@ resop_str(restrict_op op)
 /*
  * hack_restrict - add/subtract/manipulate entries on the restrict list
  */
-void
+int/*BOOL*/
 hack_restrict(
 	restrict_op	op,
 	sockaddr_u *	resaddr,
@@ -576,7 +607,7 @@ hack_restrict(
 	short		ippeerlimit,
 	u_short		mflags,
 	u_short		rflags,
-	u_long		expire
+	u_int32		expire
 	)
 {
 	int		v6;
@@ -584,25 +615,42 @@ hack_restrict(
 	restrict_u	match;
 	restrict_u *	res;
 	restrict_u **	plisthead;
+	res_sort_fn	pfn_sort;
 
-	DPRINTF(1, ("hack_restrict: op %s addr %s mask %s ippeerlimit %d "
-		    "mflags %s rflags %s\n", resop_str(op), stoa(resaddr),
-		    stoa(resmask), ippeerlimit, mflags_str(mflags),
-		    rflags_str(rflags)));
+#ifdef DEBUG
+	if (debug > 0) {
+		printf("hack_restrict: op %s addr %s mask %s",
+			resop_str(op), stoa(resaddr), stoa(resmask));
+		if (ippeerlimit >= 0) {
+			printf(" ippeerlimit %d", ippeerlimit);
+		}
+		printf(" mflags %s rflags %s", mflags_str(mflags),
+		       rflags_str(rflags));
+		if (expire) {
+			printf("lifetime %u\n",
+			       expire - (u_int32)current_time);
+		} else {
+			printf("\n");
+		}
+	}
+#endif
 
 	if (NULL == resaddr) {
 		DEBUG_REQUIRE(NULL == resmask);
 		DEBUG_REQUIRE(RESTRICT_FLAGS == op);
+		DEBUG_REQUIRE(RESM_SOURCE & mflags);
 		restrict_source_rflags = rflags;
 		restrict_source_mflags = mflags;
 		restrict_source_ippeerlimit = ippeerlimit;
 		restrict_source_enabled = TRUE;
-		return;
+		DPRINTF(1, ("restrict source template saved\n"));
+		return TRUE;
 	}
 
 	ZERO(match);
 
 	if (IS_IPV4(resaddr)) {
+		DEBUG_INVARIANT(IS_IPV4(resmask));
 		v6 = FALSE;
 		/*
 		 * Get address and mask in host byte order for easy
@@ -613,6 +661,7 @@ hack_restrict(
 		match.u.v4.addr &= match.u.v4.mask;
 	} else {
 		DEBUG_INVARIANT(IS_IPV6(resaddr));
+		DEBUG_INVARIANT(IS_IPV6(resmask));
 		v6 = TRUE;
 		/*
 		 * Get address and mask in network byte order for easy
@@ -634,12 +683,13 @@ hack_restrict(
 		 * this restriction modify it.
 		 */
 		if (NULL != res) {
-			if ((RES_LIMITED & rflags)
-				&& !(RES_LIMITED & res->rflags)) {
+			if (    (RES_LIMITED & rflags)
+			    && !(RES_LIMITED & res->rflags)) {
 
 				bump_res_limited = TRUE;
 			}
 			res->rflags |= rflags;
+			res->expire = expire;
 		} else {
 			match.rflags = rflags;
 			match.expire = expire;
@@ -648,16 +698,16 @@ hack_restrict(
 				res = alloc_res6();
 				memcpy(res, &match, V6_SIZEOF_RESTRICT_U);
 				plisthead = &restrictlist6;
+				pfn_sort = &res_sorts_before6;
 			} else {
 				res = alloc_res4();
 				memcpy(res, &match, V4_SIZEOF_RESTRICT_U);
 				plisthead = &restrictlist4;
+				pfn_sort = &res_sorts_before4;
 			}
 			LINK_SORT_SLIST(
 				*plisthead, res,
-				(v6)
-				  ? res_sorts_before6(res, L_S_S_CUR())
-				  : res_sorts_before4(res, L_S_S_CUR()),
+				(*pfn_sort)(res, L_S_S_CUR()),
 				link, restrict_u);
 			restrictcount++;
 			if (RES_LIMITED & rflags) {
@@ -667,20 +717,25 @@ hack_restrict(
 		if (bump_res_limited) {
 			inc_res_limited();
 		}
-		break;
+		return TRUE;
 
 	case RESTRICT_UNFLAG:
 		/*
 		 * Remove some bits from the rflags. If we didn't
 		 * find this one, just return.
 		 */
-		if (res != NULL) {
-			if (   (RES_LIMITED & res->rflags)
-			    && (RES_LIMITED & rflags))
-				dec_res_limited();
-			res->rflags &= ~rflags;
+		if (NULL == res) {
+			DPRINTF(1, ("No match for %s %s removing rflags %s\n",
+				    stoa(resaddr), stoa(resmask),
+				    rflags_str(rflags)));
+			return FALSE;
 		}
-		break;
+		if (   (RES_LIMITED & res->rflags)
+		    && (RES_LIMITED & rflags)) {
+			dec_res_limited();
+		}
+		res->rflags &= ~rflags;
+		return TRUE;
 
 	case RESTRICT_REMOVE:
 	case RESTRICT_REMOVEIF:
@@ -690,20 +745,20 @@ hack_restrict(
 		 * don't remove an interface entry unless asked.
 		 */
 		if (   res != NULL
-		    && (RESTRICT_REMOVEIF == op
+		    && (   RESTRICT_REMOVEIF == op
 			|| !(RESM_INTERFACE & res->mflags))
 		    && res != &restrict_def4
 		    && res != &restrict_def6) {
 
 			free_res(res, v6);
+			return TRUE;
 		}
-		break;
-
-	default:	/* unknown op */
-		INSIST(0);
-		break;
+		DPRINTF(1, ("No match removing %s %s restriction\n",
+			    stoa(resaddr), stoa(resmask)));
+		return FALSE;
 	}
-
+	/* notreached */
+	return FALSE;
 }
 
 
@@ -714,60 +769,47 @@ hack_restrict(
 void
 restrict_source(
 	sockaddr_u *	addr,
-	int		farewell,	/* 0 to add, 1 to remove */
-	u_long		expire		/* 0 is infinite, valid until */
+	int		farewell,	/* TRUE to remove */
+	u_int32		lifetime	/* seconds, 0 forever */
 	)
 {
 	sockaddr_u	onesmask;
-	restrict_u *	res;
-	int		found_specific;
+	int/*BOOL*/	success;
 
-	if (!restrict_source_enabled || SOCK_UNSPEC(addr) ||
-	    IS_MCAST(addr) || ISREFCLOCKADR(addr))
+	if (   !restrict_source_enabled || SOCK_UNSPEC(addr)
+	    || IS_MCAST(addr) || ISREFCLOCKADR(addr)) {
 		return;
+	}
 
 	REQUIRE(AF_INET == AF(addr) || AF_INET6 == AF(addr));
 
 	SET_HOSTMASK(&onesmask, AF(addr));
 	if (farewell) {
-		hack_restrict(RESTRICT_REMOVE, addr, &onesmask,
-			      -2, 0, 0, 0);
-		DPRINTF(1, ("restrict_source: %s removed", stoa(addr)));
+		success = hack_restrict(RESTRICT_REMOVE, addr, &onesmask,
+					0, RESM_SOURCE, 0, 0);
+		if (success) {
+			DPRINTF(1, ("%s %s removed", __func__,
+				    stoa(addr)));
+		} else {
+			msyslog(LOG_ERR, "%s remove %s failed",
+					 __func__, stoa(addr));
+		}
 		return;
 	}
 
-	/*
-	 * If there is a specific entry for this address, hands
-	 * off, as it is condidered more specific than "restrict
-	 * server ...".
-	 * However, if the specific entry found is a fleeting one
-	 * added by pool_xmit() before soliciting, replace it
-	 * immediately regardless of the expire value to make way
-	 * for the more persistent entry.
-	 */
-	if (IS_IPV4(addr)) {
-		res = match_restrict4_addr(SRCADR(addr), SRCPORT(addr));
-		INSIST(res != NULL);
-		found_specific = (SRCADR(&onesmask) == res->u.v4.mask);
+	success = hack_restrict(RESTRICT_FLAGS, addr, &onesmask,
+				restrict_source_ippeerlimit,
+				restrict_source_mflags,
+				restrict_source_rflags, 
+				lifetime > 0
+				    ? lifetime + current_time
+				    : 0);
+	if (success) {
+		DPRINTF(1, ("%s %s add/upd\n", __func__,
+			    stoa(addr)));
 	} else {
-		res = match_restrict6_addr(&SOCK_ADDR6(addr),
-					   SRCPORT(addr));
-		INSIST(res != NULL);
-		found_specific = ADDR6_EQ(&res->u.v6.mask,
-					  &SOCK_ADDR6(&onesmask));
+		msyslog(LOG_ERR, "%s %s failed", __func__, stoa(addr));
 	}
-	if (!expire && found_specific && res->expire) {
-		found_specific = 0;
-		free_res(res, IS_IPV6(addr));
-	}
-	if (found_specific)
-		return;
-
-	hack_restrict(RESTRICT_FLAGS, addr, &onesmask,
-		      restrict_source_ippeerlimit, 
-		      restrict_source_mflags, restrict_source_rflags, expire);
-	DPRINTF(1, ("restrict_source: %s host restriction added\n", 
-		    stoa(addr)));
 }
 
 

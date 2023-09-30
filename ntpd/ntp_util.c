@@ -363,7 +363,7 @@ stats_config(
 	int optflag
 	)
 {
-	FILE	*fp;
+	FILE	*fp = NULL;
 	const char *value;
 	size_t	len;
 	double	old_drift;
@@ -450,20 +450,21 @@ stats_config(
 		 * missing or contains errors, tell the loop to reset.
 		 */
 		if (NULL == stats_drift_file) {
-			prev_drift_comp = 0.0;
-			loop_config(LOOP_NOFREQ, prev_drift_comp);
-		}
-		else if ((fp = fopen(stats_drift_file, "r")) == NULL) {
+			goto nofreq;
+		} else if ((fp = fopen(stats_drift_file, "r")) == NULL) {
 			if (errno != ENOENT) {
 				msyslog(LOG_WARNING,
 					"cannot read frequency file %s: %m",
 					stats_drift_file);
 			}
-		}
-		else if (fscanf(fp, "%lf", &old_drift) != 1) {
+			goto nofreq;
+		} else if (fscanf(fp, "%lf", &old_drift) != 1) {
 			msyslog(LOG_ERR,
 				"format error frequency file %s",
 				stats_drift_file);
+	nofreq:
+			prev_drift_comp = 0.0;
+			loop_config(LOOP_NOFREQ, prev_drift_comp);
 		} else {
 			loop_config(LOOP_FREQ, old_drift);
 			prev_drift_comp = drift_comp;
@@ -487,7 +488,7 @@ stats_config(
 		len = strlen(value);
 		if (len > sizeof(statsdir) - 2) {
 			msyslog(LOG_ERR,
-				"statsdir %s too long (>%u)",
+				"statsdir %s too long (>%u)", value,
 				(u_int)sizeof(statsdir) - 2);
 			break;
 		}

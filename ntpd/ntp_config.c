@@ -377,11 +377,8 @@ static u_int32 get_match(const char *, struct masks *);
 static u_int32 get_logmask(const char *);
 static int/*BOOL*/ is_refclk_addr(const address_node * addr);
 
-#ifndef SIM
 static int getnetnum(const char *num, sockaddr_u *addr, int complain,
 		     enum gnn_type a_type);
-
-#endif
 
 #if defined(__GNUC__) /* this covers CLANG, too */
 static void  __attribute__((__noreturn__,format(printf,1,2))) fatal_error(const char *fmt, ...)
@@ -1002,18 +999,24 @@ dump_config_tree(
 	for (rest_node = HEAD_PFIFO(ptree->restrict_opts);
 	     rest_node != NULL;
 	     rest_node = rest_node->link) {
-		int is_default = 0;
+		int/*BOOL*/ is_default = FALSE;
+		int/*BOOL*/ omit_mask;
+		sockaddr_u mask;
+		sockaddr_u onesmask;
 
+		s = NULL;
+		atrv = HEAD_PFIFO(rest_node->flag_tok_fifo);
+		for (; atrv != NULL; atrv = atrv->link) {
+			if (   T_Integer == atrv->type
+			    && T_Source == atrv->attr) {
+				s = keyword(T_Source);
+				break;
+			}
+		}
 		if (NULL == rest_node->addr) {
-			s = "default";
-			/* Don't need to set is_default=1 here */
-			atrv = HEAD_PFIFO(rest_node->flag_tok_fifo);
-			for ( ; atrv != NULL; atrv = atrv->link) {
-				if (   T_Integer == atrv->type
-				    && T_Source == atrv->attr) {
-					s = "source";
-					break;
-				}
+			if (NULL == s) {
+				s = keyword(T_Default);
+				/* Don't need to set is_default here */
 			}
 		} else {
 			const char *ap = rest_node->addr->address;
@@ -1023,25 +1026,51 @@ dump_config_tree(
 				mp = rest_node->mask->address;
 
 			if (   rest_node->addr->type == AF_INET
-			    && !strcmp(ap, "0.0.0.0")
-			    && !strcmp(mp, "0.0.0.0")) {
-				is_default = 1;
+			    && !strcmp(mp, "0.0.0.0")
+			    && !strcmp(ap, mp)) {
+				is_default = TRUE;
 				s = "-4 default";
 			} else if (   rest_node->mask
 				   && rest_node->mask->type == AF_INET6
-				   && !strcmp(ap, "::")
-				   && !strcmp(mp, "::")) {
-				is_default = 1;
+				   && !strcmp(mp, "::")
+				   && !strcmp(ap, mp)) {
+				is_default = TRUE;
 				s = "-6 default";
 			} else {
-				s = ap;
+				if (NULL == s) {
+					s = ap;
+				} else {
+					LIB_GETBUF(s1);
+					snprintf(s1, LIB_BUFLENGTH,
+						 "%s %s",
+						 keyword(T_Source), ap);
+					s = s1;
+				}
 			}
 		}
-		fprintf(df, "restrict %s", s);
-		if (rest_node->mask != NULL && !is_default)
-			fprintf(df, " mask %s",
-				rest_node->mask->address);
-		fprintf(df, " ippeerlimit %d", rest_node->ippeerlimit);
+		fprintf(df, "%s %s",
+			keyword(rest_node->remove
+					? T_Delrestrict
+					: T_Restrict),
+			s);
+		if (rest_node->mask != NULL && !is_default) {
+			ZERO(mask);
+			AF(&mask) = AF_UNSPEC;
+			omit_mask = (0 != getnetnum(rest_node->mask->address,
+						    &mask, 0, t_UNK));
+			if (omit_mask) {
+				SET_HOSTMASK(&onesmask, AF(&mask));
+				omit_mask = SOCK_EQ(&mask, &onesmask);
+			}
+			if (!omit_mask) {
+				fprintf(df, " mask %s",
+					rest_node->mask->address);
+			}
+		}
+		if (-1 != rest_node->ippeerlimit) {
+			fprintf(df, " ippeerlimit %d",
+				rest_node->ippeerlimit);
+		}
 		atrv = HEAD_PFIFO(rest_node->flag_tok_fifo);
 		for ( ; atrv != NULL; atrv = atrv->link) {
 			if (   T_Integer == atrv->type
@@ -1049,7 +1078,7 @@ dump_config_tree(
 				fprintf(df, " %s", keyword(atrv->attr));
 			}
 		}
-		fprintf(df, "\n");            
+		fprintf(df, "\n");
 /**/
 #if 0
 msyslog(LOG_INFO, "Dumping flag_tok_fifo:");
@@ -1578,8 +1607,10 @@ create_restrict_node(
 	address_node *	mask,
 	short		ippeerlimit,
 	attr_val_fifo *	flag_tok_fifo,
-	int		nline
-	)
+	int/*BOOL*/	remove,
+	int		nline,
+	int		ncol
+)
 {
 	restrict_node *my_node;
 
@@ -1588,7 +1619,9 @@ create_restrict_node(
 	my_node->mask = mask;
 	my_node->ippeerlimit = ippeerlimit;
 	my_node->flag_tok_fifo = flag_tok_fifo;
+	my_node->remove = remove;
 	my_node->line_no = nline;
+	my_node->column = ncol;
 
 	return my_node;
 }
@@ -2186,6 +2219,7 @@ free_config_auth(
 }
 #endif	/* FREE_CFG_T */
 
+
 #ifndef SIM
 /* Configure low-level clock-related parameters. Return TRUE if the
  * clock might need adjustment like era-checking after the call, FALSE
@@ -2193,16 +2227,16 @@ free_config_auth(
  */
 static int/*BOOL*/
 config_tos_clock(
-	config_tree *ptree
-	)
+	config_tree* ptree
+)
 {
 	int		ret;
-	attr_val *	tos;
+	attr_val* tos;
 
 	ret = FALSE;
 	tos = HEAD_PFIFO(ptree->orphan_cmds);
 	for (; tos != NULL; tos = tos->link) {
-		switch(tos->attr) {
+		switch (tos->attr) {
 
 		default:
 			break;
@@ -2214,12 +2248,13 @@ config_tos_clock(
 		}
 	}
 
-	if (basedate_get_day() <= NTP_TO_UNIX_DAYS)
+	if (basedate_get_day() <= NTP_TO_UNIX_DAYS) {
 		basedate_set_day(basedate_eval_buildstamp() - 11);
-	    
+	}
 	return ret;
 }
-#endif	/* SIM */
+#endif	/* !SIM */
+
 
 static void
 config_tos(
@@ -2606,7 +2641,8 @@ config_access(
 	struct addrinfo *	ai_list;
 	struct addrinfo *	pai;
 	int			rc;
-	int			restrict_default;
+	int/*BOOL*/		success;
+	int/*BOOL*/		restrict_default;
 	u_short			rflags;
 	u_short			mflags;
 	short			ippeerlimit;
@@ -2615,9 +2651,9 @@ config_access(
 	attr_val *		dflt_psl_atr;
 	const char *		signd_warning =
 #ifdef HAVE_NTP_SIGND
-	    "MS-SNTP signd operations currently block ntpd degrading service to all clients.";
+	    "MS-SNTP signd operations currently block ntpd degrading service to all clients.\n";
 #else
-	    "mssntp restrict bit ignored, this ntpd was configured without --enable-ntp-signd.";
+	    "mssntp restrict bit ignored, this ntpd was configured without --enable-ntp-signd.\n";
 #endif
 
 	/* Configure the mru options */
@@ -2822,28 +2858,31 @@ config_access(
 		}
 
 		if ((RES_MSSNTP & rflags) && !warned_signd) {
-			warned_signd = 1;
-			fprintf(stderr, "%s\n", signd_warning);
+			warned_signd = TRUE;
+			fprintf(stderr, "%s", signd_warning);
 			msyslog(LOG_WARNING, "%s", signd_warning);
 		}
 
-		/* It would be swell if we could identify the line number */
 		if ((RES_KOD & rflags) && !(RES_LIMITED & rflags)) {
 			const char *kod_where = (my_node->addr)
 					  ? my_node->addr->address
 					  : (mflags & RESM_SOURCE)
 					    ? "source"
 					    : "default";
-			const char *kod_warn = "KOD does nothing without LIMITED.";
+			const char *kod_warn = "'kod' does nothing without 'limited'.\n";
 
-			fprintf(stderr, "restrict %s: %s\n", kod_where, kod_warn);
-			msyslog(LOG_WARNING, "restrict %s: %s", kod_where, kod_warn);
+			fprintf(stderr, "line %d col %d restrict %s: %s",
+				my_node->line_no, my_node->column, 
+				kod_where, kod_warn);
+			msyslog(LOG_WARNING, "line %d col %d restrict %s: %s",
+				my_node->line_no, my_node->column,
+				kod_where, kod_warn);
 		}
 
 		ZERO_SOCK(&addr);
 		ai_list = NULL;
 		pai = NULL;
-		restrict_default = 0;
+		restrict_default = FALSE;
 
 		if (NULL == my_node->addr) {
 			ZERO_SOCK(&mask);
@@ -2853,13 +2892,18 @@ config_access(
 				 * without a -4 / -6 qualifier, add to
 				 * both lists
 				 */
-				restrict_default = 1;
+				restrict_default = TRUE;
 			} else {
 				/* apply "restrict source ..." */
-				DPRINTF(1, ("restrict source template ippeerlimit %d mflags %x rflags %x\n",
-					ippeerlimit, mflags, rflags));
-				hack_restrict(RESTRICT_FLAGS, NULL, NULL,
-					      ippeerlimit, mflags, rflags, 0);
+				success = hack_restrict(RESTRICT_FLAGS,
+							NULL, NULL,
+							ippeerlimit,
+							mflags, rflags,
+							0);
+				if (!success) {
+					msyslog(LOG_ERR,
+						"unable to save restrict source");
+				}
 				continue;
 			}
 		} else {
@@ -2891,33 +2935,37 @@ config_access(
 						 &ai_list);
 				if (rc) {
 					msyslog(LOG_ERR,
-						"restrict: ignoring line %d, address/host '%s' unusable.",
+						"restrict: line %d col %d"
+						" address/host '%s' unusable.",
 						my_node->line_no,
+						my_node->column,
 						my_node->addr->address);
 					continue;
 				}
 				INSIST(ai_list != NULL);
 				pai = ai_list;
 				INSIST(pai->ai_addr != NULL);
-				INSIST(sizeof(addr) >=
-					   pai->ai_addrlen);
+				INSIST(sizeof(addr) >= pai->ai_addrlen);
 				memcpy(&addr, pai->ai_addr,
 				       pai->ai_addrlen);
 				INSIST(AF_INET == AF(&addr) ||
 					   AF_INET6 == AF(&addr));
 			}
 
+			/* default to all-ones mask for single address */
 			SET_HOSTMASK(&mask, AF(&addr));
 
-			/* Resolve the mask */
-			if (my_node->mask) {
+			/* Ignore mask if addr from hostname [Bug 3872] */
+			if (NULL == ai_list && my_node->mask) {
 				ZERO_SOCK(&mask);
 				AF(&mask) = my_node->mask->type;
 				if (getnetnum(my_node->mask->address,
 					      &mask, 1, t_MSK) != 1) {
 					msyslog(LOG_ERR,
-						"restrict: ignoring line %d, mask '%s' unusable.",
+						"restrict: line %d col %d"
+						" mask '%s' unusable.",
 						my_node->line_no,
+						my_node->column,
 						my_node->mask->address);
 					continue;
 				}
@@ -2928,15 +2976,43 @@ config_access(
 		if (restrict_default) {
 			AF(&addr) = AF_INET;
 			AF(&mask) = AF_INET;
-			hack_restrict(RESTRICT_FLAGS, &addr, &mask,
-				      ippeerlimit, mflags, rflags, 0);
+			success = hack_restrict(
+					RESTRICT_FLAGS,
+					&addr, 
+					&mask,
+					ippeerlimit,
+					mflags,
+					rflags,
+					0
+					);
+			if (!success) {
+				msyslog(LOG_ERR,
+					"unable to save %s %s restriction",
+					stoa(&addr), stoa(&mask));
+			}
 			AF(&addr) = AF_INET6;
 			AF(&mask) = AF_INET6;
 		}
 
 		do {
-			hack_restrict(RESTRICT_FLAGS, &addr, &mask,
-				      ippeerlimit, mflags, rflags, 0);
+			success = hack_restrict(
+					my_node->remove
+						? RESTRICT_REMOVE
+						: RESTRICT_FLAGS,
+					&addr,
+					&mask,
+					ippeerlimit,
+					mflags,
+					rflags,
+					0);
+			if (!success) {
+				msyslog(LOG_ERR,
+					"unable to %s %s %s restriction",
+					my_node->remove
+						? "delete"
+						: "save",
+					stoa(&addr), stoa(&mask));
+			}
 			if (pai != NULL &&
 			    NULL != (pai = pai->ai_next)) {
 				INSIST(pai->ai_addr != NULL);
@@ -2951,8 +3027,9 @@ config_access(
 			}
 		} while (pai != NULL);
 
-		if (ai_list != NULL)
+		if (ai_list != NULL) {
 			freeaddrinfo(ai_list);
+		}
 	}
 
 	/*
@@ -2974,7 +3051,7 @@ config_access(
 		} else if (   atrv->attr < NTP_MINPOLL
 			   || atrv->attr > NTP_MAXPOLL) {
 			msyslog(LOG_ERR,
-				"Poll %d out of bounds for pollskewlist, (%d-%d)",
+				"Poll %d out of bounds [%d-%d] for pollskewlist",
 				atrv->attr, NTP_MINPOLL, NTP_MAXPOLL);
 		}
 	}
@@ -5259,10 +5336,9 @@ normal_dtoa(
 	pch_nz = pch_e;
 	while ('0' == *pch_nz)
 		pch_nz++;
-	if (pch_nz == pch_e)
-		return buf;
-	strlcpy(pch_e, pch_nz, LIB_BUFLENGTH - (pch_e - buf));
-
+	if (pch_nz > pch_e) {
+		memmove(pch_e, pch_nz, 1 + strlen(pch_nz));
+	}
 	return buf;
 }
 
@@ -5524,12 +5600,11 @@ gettokens_netinfo (
  * returns 1 for success, and mysteriously, 0 for most failures, and
  * -1 if the address found is IPv6 and we believe IPv6 isn't working.
  */
-#ifndef SIM
 static int
 getnetnum(
 	const char *num,
 	sockaddr_u *addr,
-	int complain,
+	int complain,		/* ignored */
 	enum gnn_type a_type	/* ignored */
 	)
 {
@@ -5537,22 +5612,21 @@ getnetnum(
 		AF_INET == AF(addr) ||
 		AF_INET6 == AF(addr));
 
-	if (!is_ip_address(num, AF(addr), addr))
+	if (!is_ip_address(num, AF(addr), addr)) {
 		return 0;
-
-	if (IS_IPV6(addr) && !ipv6_works)
-		return -1;
-
+	}
 # ifdef ISC_PLATFORM_HAVESALEN
 	addr->sa.sa_len = SIZEOF_SOCKADDR(AF(addr));
 # endif
 	SET_PORT(addr, NTP_PORT);
 
-	DPRINTF(2, ("getnetnum given %s, got %s\n", num, stoa(addr)));
-
-	return 1;
+	if (IS_IPV6(addr) && !ipv6_works) {
+		return -1;
+	} else {
+		return 1;
+	}
 }
-#endif	/* !SIM */
+
 
 #if defined(HAVE_SETRLIMIT)
 void

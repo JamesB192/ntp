@@ -1296,8 +1296,8 @@ ntpdmain(
 			char *captext;
 			
 			captext = (scan_addrs_once)
-				    ? "cap_sys_time=pe";
-				    : "cap_sys_time,cap_net_bind_service=pe"
+				    ? "cap_sys_time=pe"
+				    : "cap_sys_time,cap_net_bind_service=pe";
 			caps = cap_from_text(captext);
 			if (!caps) {
 				msyslog(LOG_ERR,

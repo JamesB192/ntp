@@ -987,6 +987,7 @@ remove_interface(
 	endpt *		unlinked;
 	endpt **	pmclisthead;
 	sockaddr_u	resmask;
+	int/*BOOL*/	success;
 
 	UNLINK_SLIST(unlinked, ep_list, ep, elink, endpt);
 	if (!ep->ignore_packets && INT_MULTICAST & ep->flags) {
@@ -1007,7 +1008,9 @@ remove_interface(
 
 	if (ep->fd != INVALID_SOCKET) {
 		msyslog(LOG_INFO,
-			"Deleting interface #%d %s, %s#%d, interface stats: received=%ld, sent=%ld, dropped=%ld, active_time=%ld secs",
+			"Deleting %d %s, [%s]:%hd, stats:"
+			" received=%ld, sent=%ld, dropped=%ld,"
+			" active_time=%ld secs",
 			ep->ifnum,
 			ep->name,
 			stoa(&ep->sin),
@@ -1042,8 +1045,14 @@ remove_interface(
 
 	/* remove restrict interface entry */
 	SET_HOSTMASK(&resmask, AF(&ep->sin));
-	hack_restrict(RESTRICT_REMOVEIF, &ep->sin, &resmask, 0,
-		      RESM_NTPONLY | RESM_INTERFACE, 0, 0);
+	success = hack_restrict(RESTRICT_REMOVEIF, &ep->sin, &resmask, 0,
+				RESM_NTPONLY | RESM_INTERFACE, 0, 0);
+	if (!success) {
+		msyslog(LOG_ERR,
+			"unable to remove self-restriction for %s",
+			stoa(&ep->sin));
+	}
+
 }
 
 
@@ -2118,6 +2127,7 @@ create_interface(
 {
 	sockaddr_u	resmask;
 	endpt *		iface;
+	int/*BOOL*/	success;
 #if defined(MCAST) && defined(MULTICAST_NONEWSOCKET)
 	remaddr_t *	entry;
 	remaddr_t *	next_entry;
@@ -2156,8 +2166,13 @@ create_interface(
 	 * Blacklist our own addresses, no use talking to ourself
 	 */
 	SET_HOSTMASK(&resmask, AF(&iface->sin));
-	hack_restrict(RESTRICT_FLAGS, &iface->sin, &resmask,
-		      -4, RESM_NTPONLY | RESM_INTERFACE, RES_IGNORE, 0);
+	success = hack_restrict(RESTRICT_FLAGS, &iface->sin, &resmask,
+				-4, RESM_NTPONLY | RESM_INTERFACE,
+				RES_IGNORE, 0);
+	if (!success) {
+		msyslog(LOG_ERR,
+			"unable to self-restrict %s", stoa(&iface->sin));
+	}
 
 	/*
 	 * set globals with the first found
