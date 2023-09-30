@@ -200,7 +200,7 @@ leapsec_load(
 			ttime = strtouv64(cp, &ep, 10);
 			if (parsefail(cp, ep))
 				goto fail_read;
-				cp = skipws(ep);
+			cp = skipws(ep);
 			taiof = strtol(cp, &endp, 10);
 			if (   parsefail(cp, endp)
 			    || taiof > INT16_MAX || taiof < INT16_MIN)

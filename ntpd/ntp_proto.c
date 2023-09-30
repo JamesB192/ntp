@@ -4803,9 +4803,7 @@ pool_xmit(
 	int			rc;
 	struct interface *	lcladr;
 	sockaddr_u *		rmtadr;
-	r4addr			r4a;
 	u_short			af;
-	u_short			restrict_mask;
 	struct peer *		p;
 	l_fp			xmt_tx;
 
@@ -4859,13 +4857,10 @@ pool_xmit(
 		}
 		p = findexistingpeer(rmtadr, NULL, NULL, MODE_CLIENT, 0, NULL);
 	} while (p != NULL && pool->ai != NULL);
-	if (p != NULL)
+	if (p != NULL) {
 		return;	/* out of addresses, re-query DNS next poll */
-	restrictions(rmtadr, &r4a);
-	restrict_mask = r4a.rflags;
-	if (RES_FLAGS & restrict_mask)
-		restrict_source(rmtadr, 0,
-				current_time + POOL_SOLICIT_WINDOW + 1);
+	}
+	restrict_source(rmtadr, FALSE, 1 + POOL_SOLICIT_WINDOW);
 	lcladr = findinterface(rmtadr);
 	memset(&xpkt, 0, sizeof(xpkt));
 	xpkt.li_vn_mode = PKT_LI_VN_MODE(sys_leap, pool->version,
@@ -4879,7 +4874,6 @@ pool_xmit(
 	/* Bug 3596: What are the pros/cons of using sys_reftime here? */
 	HTONL_FP(&sys_reftime, &xpkt.reftime);
 
-	/* HMS: the following is better done after the ntp_random() calls */
 	get_systime(&xmt_tx);
 	pool->aorg = xmt_tx;
 
@@ -4898,14 +4892,14 @@ pool_xmit(
 		L_CLR(&pool->nonce);
 		HTONL_FP(&xmt_tx, &xpkt.xmt);
 	}
-	sendpkt(rmtadr, lcladr,
-		sys_ttl[(pool->ttl >= sys_ttlmax) ? sys_ttlmax : pool->ttl],
-		&xpkt, LEN_PKT_NOMAC);
 	pool->sent++;
 	pool->throttle += (1 << pool->minpoll) - 2;
 	DPRINTF(1, ("pool_xmit: at %ld %s->%s pool\n",
 		    current_time, latoa(lcladr), stoa(rmtadr)));
 	msyslog(LOG_INFO, "Soliciting pool server %s", stoa(rmtadr));
+	sendpkt(rmtadr, lcladr,
+		sys_ttl[(pool->ttl >= sys_ttlmax) ? sys_ttlmax : pool->ttl],
+		&xpkt, LEN_PKT_NOMAC);
 #endif	/* WORKER */
 }
 

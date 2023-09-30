@@ -277,13 +277,14 @@ extern	void	reset_auth_stats(void);
 /* ntp_restrict.c */
 extern	void	init_restrict	(void);
 extern	void	restrictions	(sockaddr_u *, r4addr *);
-extern	void	hack_restrict	(restrict_op op, sockaddr_u *resaddr,
-				 sockaddr_u* resmask, short ippeerlimit,
+extern	int/*BOOL*/hack_restrict(restrict_op op, sockaddr_u *resaddr,
+				 sockaddr_u *resmask, short ippeerlimit,
 				 u_short mflags, u_short rflags,
-				 u_long expire);
-extern	void	restrict_source	(sockaddr_u *, int, u_long);
-extern	void	dump_restricts	(void);
+				 u_int32 expire);
+extern	void	restrict_source	(sockaddr_u *addr, int/*BOOL*/ remove,
+				 u_int32 lifetime);
 #ifdef DEBUG
+extern	void	dump_restricts	(void);
 extern	const char *resop_str	(restrict_op op);
 extern	const char *rflags_str	(u_short rflags);
 extern	const char *mflags_str	(u_short mflags);

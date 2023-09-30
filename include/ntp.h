@@ -841,10 +841,10 @@ typedef struct restrict_u_tag	restrict_u;
 struct restrict_u_tag {
 	restrict_u *	link;		/* link to next entry */
 	u_int32		count;		/* number of packets matched */
+	u_int32		expire;		/* valid until current_time */
 	u_short		rflags;		/* restrict (accesslist) flags */
-	u_short		mflags;		/* match flags */
+	u_int32		mflags;		/* match flags */
 	short		ippeerlimit;	/* limit of associations matching */
-	u_long		expire;		/* valid until time */
 	union {				/* variant starting here */
 		res_addr4 v4;
 		res_addr6 v6;
@@ -872,10 +872,6 @@ struct r4addr_tag {
 #define	RES_NOPEER		0x0010	/* new association denied */
 #define	RES_NOEPEER		0x0020	/* new ephemeral association denied */
 #define RES_LIMITED		0x0040	/* packet rate exceeded */
-#define RES_FLAGS		(RES_IGNORE | RES_DONTSERVE |\
-				    RES_DONTTRUST | RES_VERSION |\
-				    RES_NOPEER | RES_NOEPEER | RES_LIMITED)
-
 #define	RES_NOQUERY		0x0080	/* mode 6/7 packet denied */
 #define	RES_NOMODIFY		0x0100	/* mode 6/7 modify denied */
 #define	RES_NOTRAP		0x0200	/* mode 6/7 set trap denied */
@@ -890,7 +886,10 @@ struct r4addr_tag {
 
 #define RES_UNUSED		0x0000	/* Unused flag bits (none left) */
 
-#define	RES_ALLFLAGS		(RES_FLAGS | RES_NOQUERY |	\
+#define	RES_ALLFLAGS		(RES_IGNORE | RES_DONTSERVE |	\
+				 RES_DONTTRUST | RES_VERSION |	\
+				 RES_NOPEER | RES_NOEPEER |	\
+				 RES_LIMITED | RES_NOQUERY |	\
 				 RES_NOMODIFY | RES_NOTRAP |	\
 				 RES_LPTRAP | RES_KOD |		\
 				 RES_MSSNTP | RES_FLAKE |	\

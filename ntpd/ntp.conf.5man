@@ -10,11 +10,11 @@
 .ds B-Font B
 .ds I-Font I
 .ds R-Font R
-.TH ntp.conf 5man "05 Sep 2023" "4.2.8p17" "File Formats"
+.TH ntp.conf 5man "30 Sep 2023" "4.2.8p17" "File Formats"
 .\"
 .\" EDIT THIS FILE WITH CAUTION (in-mem file)
 .\"
-.\" It has been AutoGen-ed September 5, 2023 at 07:46:44 PM by AutoGen 5.18.16
+.\" It has been AutoGen-ed September 30, 2023 at 03:20:48 AM by AutoGen 5.18.16
 .\" From the definitions ntp.conf.def
 .\" and the template file agman-cmd.tpl
 .SH NAME
@@ -1658,25 +1658,26 @@ entry representing the client request being processed
 now is 10%. Conversely, if the oldest entry is more
 than 3000 seconds old, the probability is 100%.
 .TP 7
-.NOP \f\*[B-Font]restrict\f[] \f\*[B-Font]address\f[] [\f\*[B-Font]mask\f[] \f\*[I-Font]mask\f[]] [\f\*[B-Font]ippeerlimit\f[] \f\*[I-Font]int\f[]] [\f\*[I-Font]flag\f[] \f\*[I-Font]...\f[]]
+.NOP \f\*[B-Font]restrict\f[] \f\*[I-Font]address\f[] [\f\*[B-Font]mask\f[] \f\*[I-Font]mask\f[]] [\f\*[B-Font]ippeerlimit\f[] \f\*[I-Font]int\f[]] [\f\*[I-Font]flag\f[] \f\*[I-Font]...\f[]]
 The
 \f\*[I-Font]address\f[]
 argument expressed in
-dotted-quad form is the address of a host or network.
+numeric form is the address of a host or network.
 Alternatively, the
 \f\*[I-Font]address\f[]
-argument can be a valid host DNS name.
+argument can be a valid hostname.  When a hostname
+is provided, a restriction entry is created for each
+address the hostname resolves to, and any provided
+\f\*[I-Font]mask\f[]
+is ignored and an individual host mask is
+used for each entry.
 The
 \f\*[I-Font]mask\f[]
-argument expressed in dotted-quad form defaults to
-\f\*[B-Font]255.255.255.255\f[],
-meaning that the
+argument expressed in numeric form defaults to
+all bits lit, meaning that the
 \f\*[I-Font]address\f[]
 is treated as the address of an individual host.
-A default entry (address
-\f\*[B-Font]0.0.0.0\f[],
-mask
-\f\*[B-Font]0.0.0.0\f[])
+A default entry with address and mask all zeroes
 is always included and is always the first entry in the list.
 Note that text string
 \f\*[B-Font]default\f[],
@@ -1715,12 +1716,12 @@ and
 queries.
 .TP 7
 .NOP \f\*[B-Font]kod\f[]
-If this flag is set when an access violation occurs, a kiss-o'-death
-(KoD) packet is sent.
-KoD packets are rate limited to no more than one
-per second.
-If another KoD packet occurs within one second after the
-last one, the packet is dropped.
+If this flag is set when a rate violation occurs, a kiss-o'-death
+(KoD) packet is sometimes sent.
+KoD packets are rate limited to no more than one per minimum
+average interpacket spacing, set by
+\f\*[B-Font]discard\f[] \f\*[B-Font]average\f[]
+defaulting to 8s.  Otherwise, no response is sent.
 .TP 7
 .NOP \f\*[B-Font]limited\f[]
 Deny service if the packet spacing violates the lower limits specified
@@ -1820,15 +1821,13 @@ restriction flag.
 Its presence causes the restriction entry to be
 matched only if the source port in the packet is the standard NTP
 UDP port (123).
-Both
+There can be two restriction entries with the same IP address if
+one specifies
 \f\*[B-Font]ntpport\f[]
-and
-\f\*[B-Font]non-ntpport\f[]
-may
-be specified.
+and the other does not.
 The
 \f\*[B-Font]ntpport\f[]
-is considered more specific and
+entry is considered more specific and
 is sorted later in the list.
 .TP 7
 .NOP \f\*[B-Font]serverresponse fuzz\f[]
@@ -1844,12 +1843,29 @@ Deny packets that do not match the current NTP version.
 
 Default restriction list entries with the flags ignore, interface,
 ntpport, for each of the local host's interface addresses are
-inserted into the table at startup to prevent the server
-from attempting to synchronize to its own time.
+inserted into the table at startup to prevent ntpd
+from attempting to synchronize to itself, such as with
+\f\*[B-Font]manycastclient\f[]
+when
+\f\*[B-Font]manycast\f[]
+is also specified with the same multicast address.
 A default entry is also always present, though if it is
 otherwise unconfigured; no flags are associated
 with the default entry (i.e., everything besides your own
 NTP server is unrestricted).
+.TP 7
+.NOP \f\*[B-Font]delrestrict\f[] [source] \f\*[I-Font]address\f[]
+Remove a previously-set restriction.  This is useful for
+runtime configuration via
+\fCntpq\f[]\fR(1ntpqmdoc)\f[]
+.  If
+\f\*[B-Font]source\f[]
+is specified, a dynamic restriction created from the 
+\f\*[B-Font]restrict\f[] \f\*[B-Font]source\f[]
+template at the time
+an association was added is removed.  Without
+\f\*[B-Font]source\f[]
+a static restriction is removed.
 .PP
 .SH Automatic NTP Configuration Options
 .SS Manycasting
