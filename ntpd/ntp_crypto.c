@@ -4168,5 +4168,5 @@ exten_payload_size(
 	return (u_int)data_size;
 }
 # else	/* !AUTOKEY follows */
-int ntp_crypto_bs_pubkey;
+NONEMPTY_TRANSLATION_UNIT
 # endif	/* !AUTOKEY */
