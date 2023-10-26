@@ -563,6 +563,16 @@ typedef unsigned long uintptr_t;
 #endif
 
 /*
+ * Macro to use in otherwise-empty source files to comply with ANSI C
+ * requirement that each translation unit (source file) contain some
+ * declaration.  This has commonly been done by declaring an unused
+ * global variable of type int or char.  An extern reference to abs()
+ * serves the same purpose without bloat.  We once used exit() but
+ * that can produce warnings on systems that declare exit() noreturn.
+ */
+#define	NONEMPTY_TRANSLATION_UNIT	extern int abs(int);
+
+/*
  * Below this line are includes which must happen after the bulk of
  * config.h is processed.  If you need to add another #include to this
  * file the preferred location is near the top, above the similar
