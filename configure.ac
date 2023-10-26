@@ -4432,6 +4432,18 @@ AC_DEFINE_UNQUOTED([DYNAMIC_INTERLEAVE], [$ntp_dynamic_interleave],
     [support dynamic interleave?])
 AC_MSG_RESULT([$ntp_ok])
 
+AH_BOTTOM([
+	/*
+	 * Macro to use in otherwise-empty source files to comply with ANSI C
+	 * requirement that each translation unit (source file) contain some
+	 * declaration.  This has commonly been done by declaring an unused
+	 * global variable of type int or char.  An extern reference to abs()
+	 * serves the same purpose without bloat.  We once used exit() but
+	 * that can produce warnings on systems that declare exit() noreturn.
+	 */
+	#define	NONEMPTY_TRANSLATION_UNIT	extern int abs(int);
+])
+
 NTP_UNITYBUILD
 
 NTP_PROBLEM_TESTS
