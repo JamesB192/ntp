@@ -8,12 +8,13 @@ dnl subpackage while retaining access to such test results.
 dnl
 AC_DEFUN([NTP_LIBNTP], [
 
+AC_REQUIRE([AC_PROG_SED])
 AC_REQUIRE([NTP_CROSSCOMPILE])
 
 # HMS: Save $LIBS and empty it.
 # any LIBS we add here should go in to LDADD_LIBNTP
 AC_SUBST([LDADD_LIBNTP])
-__LIBS=$LIBS
+SAVED_LIBS=$LIBS
 LIBS=
 
 dnl The contents of NTP_PROG_CC used to be here...
@@ -1176,11 +1177,16 @@ case "$ntp_warning" in
     ;;
 esac
 
+dnl Do not ensure libntp.a is up to date when building client directories
+dnl if --disable-dependency-tracking is used to save build time for one-off
+dnl build from tarball.  It's only useful when modifying libntp source code
+dnl and rebuilding in a client subdir rather than the whole package.
+AM_CONDITIONAL([LIBNTP_SUBMAKES], [test x"$enable_dependency_tracking" = x"yes"])
 
 dnl add to LDADD_LIBNTP set by ntp_compiler.m4
 LDADD_LIBNTP="$LDADD_LIBNTP $LIBS"
-LIBS=$__LIBS
-AS_UNSET([__LIBS])
+LIBS=$SAVED_LIBS
+AS_UNSET([SAVED_LIBS])
 
 ])dnl
 dnl ======================================================================

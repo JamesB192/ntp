@@ -181,7 +181,7 @@ init_util(void)
 void
 write_stats(void)
 {
-	FILE	*fp;
+	FILE	*fp = NULL;
 #ifdef DOSYNCTODR
 	struct timeval tv;
 #if !defined(VMS)
@@ -487,7 +487,7 @@ stats_config(
 		len = strlen(value);
 		if (len > sizeof(statsdir) - 2) {
 			msyslog(LOG_ERR,
-				"statsdir %s too long (>%u)",
+				"statsdir %s too long (>%u)", value,
 				(u_int)sizeof(statsdir) - 2);
 			break;
 		}

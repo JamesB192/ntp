@@ -1,4 +1,5 @@
 #! @PATH_PERL@ -w
+# @configure_input@
 # John Hay -- John.Hay@icomtek.csir.co.za / jhay@FreeBSD.org
 
 package ntptrace;
