@@ -334,7 +334,7 @@ static void config_ntpdsim(config_tree *);
 static void config_ntpd(config_tree *, int/*BOOL*/ input_from_file);
 static void config_other_modes(config_tree *);
 static void config_auth(config_tree *);
-static void attrtopsl(u_char poll, attr_val *avp);
+static void attrtopsl(u_char log2_poll, attr_val *avp);
 static void config_access(config_tree *);
 static void config_mdnstries(config_tree *);
 static void config_phone(config_tree *);
@@ -2214,9 +2214,9 @@ config_tos_clock(
 		}
 	}
 
-	if (basedate_get_day() <= NTP_TO_UNIX_DAYS)
+	if (basedate_get_day() <= NTP_TO_UNIX_DAYS) {
 		basedate_set_day(basedate_eval_buildstamp() - 11);
-	    
+	}
 	return ret;
 }
 #endif	/* SIM */
@@ -3017,26 +3017,26 @@ config_access(
 
 static void
 attrtopsl(
-	u_char		poll,
+	u_char		log2_poll,
 	attr_val *	avp
 	)
 {
-	int	pao   = poll - NTP_MINPOLL;	/* poll array offset */
+	int	pao   = log2_poll - NTP_MINPOLL;     /* poll array offset */
 	u_int32	lower = (u_short)avp->value.r.first; /* ntp_parser.y ensures */
 	u_int32	upper = (u_short)avp->value.r.last;  /* non-neg. first/last */
-	u_int	psmax = 1 << (poll - 1);
+	u_int	psmax = 1 << (log2_poll - 1);
 	u_int32	qmsk;
 
 	DEBUG_INSIST(pao >= 0 && pao < COUNTOF(psl));
 
 	if (lower > psmax) {
 		msyslog(LOG_WARNING, "pollskewlist %d lower bound reduced from %d to %d",
-			poll, lower, psmax);
+			log2_poll, lower, psmax);
 		lower = psmax;
 	}
 	if (upper > psmax) {
 		msyslog(LOG_WARNING, "pollskewlist %d upper bound reduced from %d to %d",
-			poll, upper, psmax);
+			log2_poll, upper, psmax);
 		upper = psmax;
 	}
 	psl[pao].sub = lower;
@@ -3868,7 +3868,7 @@ config_fudge(
 	sockaddr_u addr_sock;
 	address_node *addr_node;
 	struct refclockstat clock_stat;
-	char refid_str[5];
+	char refidstr[5];
 	int err_flag;
 
 	curr_fudge = HEAD_PFIFO(ptree->fudge);
@@ -3899,9 +3899,6 @@ config_fudge(
 		clock_stat.fudgeminjitter = 0.0;
 		clock_stat.fudgetime1     = 0.0;
 		clock_stat.fudgetime2     = 0.0;
-		clock_stat.p_lastcode     = NULL;
-		clock_stat.clockdesc      = NULL;
-		clock_stat.kv_list        = NULL;
 		curr_opt = HEAD_PFIFO(curr_fudge->options);
 		for (; curr_opt != NULL; curr_opt = curr_opt->link) {
 			switch (curr_opt->attr) {
@@ -3923,10 +3920,17 @@ config_fudge(
 
 			case T_Refid:
 				clock_stat.haveflags |= CLK_HAVEVAL2;
-				/* strncpy() does exactly what we want here: */
-				strncpy(refid_str, curr_opt->value.s, 
-					sizeof refid_str - 1);
-				memcpy(&clock_stat.fudgeval2, refid_str,
+				/*
+				 * strncpy() does exactly what we want
+				 * here, do not be tempted to replace
+				 * it with strlcpy(), we want it to
+				 * zero-fill refid's less than 4 chars
+				 * because we're going to stuff it
+				 * into a u_int32.
+				 */
+				strncpy(refidstr, curr_opt->value.s, 
+					sizeof refidstr - 1);
+				memcpy(&clock_stat.fudgeval2, refidstr,
 				       sizeof clock_stat.fudgeval2);
 				break;
 
