@@ -8,6 +8,8 @@
              Reported by PoolMUC@web.de. <hart@ntp.org>
 * [Bug 3868] Cannot restrict a pool peer. <hart@ntp.org>  Thanks to
              Edward McGuire for tracking down the deficiency.
+* [Bug 3864] ntpd IPv6 refid different for big-endian and little-endian.
+             <hart@ntp.org>
 * [Bug 3859] Use NotifyIpInterfaceChange on Windows ntpd. <hart@ntp.org>
 * [Bug 3856] Enable Edit & Continue debugging with Visual Studio.
              <hart@ntp.org>
