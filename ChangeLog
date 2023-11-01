@@ -22,6 +22,8 @@
 * [Bug 3850] ntpq -c apeers breaks column formatting s2 w/refclock refid.
              <hart@ntp.org>
 * [Bug 3849] ntpd --wait-sync times out. <hart@ntp.org>
+* [Bug 3847] SSL detection in configure should run-test if runpath is needed.
+             <hart@ntp.org>
 * [Bug 3846] Use -Wno-format-truncation by default. <hart@ntp.org>
 * [Bug 3845] accelerate pool clock_sync when IPv6 has only link-local access.
              <hart@ntp.org>
@@ -49,6 +51,13 @@
 * Remove dead code libntp/numtohost.c and its unit tests. <hart@ntp.org>
 * Remove class A, B, C IPv4 distinctions in netof(). <hart@ntp.org>
 * Use NONEMPTY_COMPILATION_UNIT in more conditionally-compiled files.
+* Use @configure_input@ in various *.in files to include a comment that
+  the file is generated from another pointing to the *.in. <hart@ntp.org>
+* Correct underquoting, indents in ntp_facilitynames.m4. <hart@ntp.org>
+* Clean up a few warnings seen building with older gcc. <hart@ntp.org>
+* Fix build on older FreeBSD lacking sys/procctl.h. <hart@ntp.org>
+* Disable [Bug 3627] workaround on newer FreeBSD which has the kernel fix
+  that makes it unnecessary, re-enabling ASLR stack gap. <hart@ntp.org>
 
 ---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>

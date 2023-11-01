@@ -4,8 +4,12 @@
 ## The above file has a version of this for the non-sntp portion
 ## of the NTP package.
 
+.PHONY: check-libntp
+
+if LIBNTP_SUBMAKES
 BUILT_SOURCES	+= check-libntp
 
-.PHONY: check-libntp
 check-libntp:
 	cd $(top_builddir)/../libntp && $(MAKE) $(AM_MAKEFLAGS) libntp.a
+
+endif
