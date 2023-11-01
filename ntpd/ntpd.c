@@ -135,15 +135,11 @@
 # include <seccomp.h>
 #endif /* LIBSECCOMP and KERN_SECCOMP */
 
-#ifdef __FreeBSD__
-#include <sys/procctl.h>
-#ifndef PROC_STACKGAP_CTL
-/*
- * Even if we compile on an older system we can still run on a newer one.
- */
-#define	PROC_STACKGAP_CTL	17
-#define	PROC_STACKGAP_DISABLE	0x0002
-#endif
+#if defined(__FreeBSD__) &&  __FreeBSD_version < 1400037 && defined(HAVE_SYS_PROCCTL_H)
+# include <sys/procctl.h>
+# ifdef PROC_STACKGAP_DISABLE
+#  define DISABLE_FREEBSD_STACKGAP
+# endif
 #endif
 
 #ifdef HAVE_DNSREGISTRATION
@@ -428,18 +424,24 @@ main(
 	char *argv[]
 	)
 {
-#   ifdef __FreeBSD__
-	{
-		/*
-		 * We Must disable ASLR stack gap on FreeBSD to avoid a
-		 * segfault. See PR/241421 and PR/241960.
-		 */
-		int aslr_var = PROC_STACKGAP_DISABLE;
+# ifdef DISABLE_FREEBSD_STACKGAP
+	/*
+	* We must disable ASLR stack gap on FreeBSD that has
+	* PROC_STACKGAP_DISABLE up through early FreeBSD 14
+	* versions to avoid a segfault. See:
+	* 
+	* https://bugs.ntp.org/3627
+	* https://cgit.freebsd.org/src/commit/?id=889b56c8cd84c9a9f2d9e3b019c154d6f14d9021
+	* https://cgit.freebsd.org/src/commit/?id=fc393054398ea50fb0cee52704e9385afe888b48
+	* https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=253208
+	* https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=241421
+	* https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=241960
+	*/
+	int aslr_var = PROC_STACKGAP_DISABLE;
 
-		pid_t my_pid = getpid();
-		procctl(P_PID, my_pid, PROC_STACKGAP_CTL, &aslr_var); 
-	}
-#   endif
+	procctl(P_PID, getpid(), PROC_STACKGAP_CTL, &aslr_var);
+# endif	/* DISABLE_FREEBSD_STACKGAP */
+
 	return ntpdmain(argc, argv);
 }
 #endif /* !SYS_WINNT */
@@ -573,7 +575,7 @@ set_process_priority(void)
 # ifdef HAVE_WORKING_FORK
 static void
 detach_from_terminal(
-	int pipe[2],
+	int pipes[2],
 	long wait_sync,
 	const char *logfilename
 	)
@@ -594,10 +596,10 @@ detach_from_terminal(
 			msyslog(LOG_ERR, "fork: %m");
 			exit_code = EX_OSERR;
 		} else {
-			close(pipe[1]);
-			pipe[1] = -1;
+			close(pipes[1]);
+			pipes[1] = -1;
 			exit_code = wait_child_sync_if(
-					pipe[0], wait_sync);
+					pipes[0], wait_sync);
 			if (exit_code <= 0) {
 				/* probe daemon exit code -- wait for
 				 * child process if we have an unexpected
@@ -621,8 +623,8 @@ detach_from_terminal(
 		syslog_file = NULL;
 		syslogit = TRUE;
 	}
-	close_all_except(pipe[1]);
-	pipe[0] = -1;
+	close_all_except(pipes[1]);
+	pipes[0] = -1;
 	INSIST(0 == open("/dev/null", 0) && 1 == dup2(0, 1) \
 		&& 2 == dup2(0, 2));
 

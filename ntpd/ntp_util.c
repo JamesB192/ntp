@@ -181,7 +181,7 @@ init_util(void)
 void
 write_stats(void)
 {
-	FILE	*fp;
+	FILE	*fp = NULL;
 #ifdef DOSYNCTODR
 	struct timeval tv;
 #if !defined(VMS)

@@ -1495,7 +1495,7 @@ radiostatus(
 #endif	/* UNUSED */
 
 /*
- * when - print how long its been since his last packet arrived
+ * when - return how long its been since his last packet arrived
  */
 static long
 when(
@@ -1851,7 +1851,7 @@ doprintpeers(
 			if (!decodets(value, &reftime))
 				L_CLR(&reftime);
 		} else if (!strcmp("flash", name)) {
-		    decodeuint(value, &flash);
+			decodeuint(value, &flash);
 		} else {
 			// xprintf(stderr, "UNRECOGNIZED name=%s ", name);
 		}
