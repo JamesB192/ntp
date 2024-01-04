@@ -1,3 +1,14 @@
+Note that this release changes crypto (OpenSSL or compatible) detection and
+default behavior.  Previously, crypto was supported if available unless
+the --without-crypto option was given to configure.  With this release, the
+prior behavior of falling back to a crypto-free build if usable libcrypto
+was not found has changed to instead cause configure to fail with an error.
+The --without-crypto option must be provided if a build not using libcrypto
+is desired.  (This wording could be less wordy)
+
+* [Bug 3847] SSL detection in configure should run-test if runpath is needed.
+             <hart@ntp.org>
+
 ---
 NTP 4.2.8p17 (Harlan Stenn <stenn@ntp.org>, 2023 Jun 06)
 
