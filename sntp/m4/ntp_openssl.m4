@@ -2,12 +2,15 @@ dnl ####################################################################
 dnl OpenSSL support shared by top-level and sntp/configure.ac
 dnl
 dnl Provides command-line option --with-crypto, as well as deprecated
-dnl options --with-openssl-incdir, --with-openssl-libdir, and the
-dnl latter's suboption --with-rpath.
+dnl options --with-openssl-incdir, --with-openssl-libdir..
 dnl
-dnl Specifying --with-openssl-libdir or --with-openssl-incdir causes any
-dnl pkg-config openssl information to be ignored in favor of the legacy
-dnl manual search for directories and specified library names.
+dnl Specifying --with-openssl-libdir or --with-openssl-incdir skips
+dnl pkg-config search.
+dnl
+dnl In the past, use of crypto would be silently disabled if the needed
+dnl headers and library were not found.  Now --without-crypto must be
+dnl used or configure will fail with an error.  It is now uncommon
+dnl to want to build ntpd without crypto, so don't be quiet about it.
 dnl
 dnl Output AC_DEFINEs (for config.h)
 dnl	OPENSSL		defined only if using OpenSSL
@@ -23,11 +26,19 @@ dnl			trigger a flood of warnings for each file
 dnl			including OpenSSL headers.
 dnl	CPPFLAGS_NTP	OpenSSL -Iincludedir flags added as needed.
 dnl	LDADD_NTP	OpenSSL -L and -l flags added as needed.
-dnl	LDFLAGS_NTP	Other OpenSSL link flags added as needed.
+dnl	LDFLAGS_NTP	OpenSSL runpath flags as needed.
 dnl
 dnl ####################################################################
+m4_define([NTP_OPENSSL_VERBOSE_MSG],
+    [
+	dnl Remove dnl prefix from AC_MSG_NOTICE below for debug output.
+	dnl Would prefer configure option but I don't know how to hide
+	dnl that option from configure --help.
+	dnl AC_MSG_NOTICE([$1])
+    ])
+dnl
 AC_DEFUN([NTP_OPENSSL], [
-AC_REQUIRE([AC_PROG_SED])
+AC_REQUIRE([AC_PROG_SED])dnl
 AC_REQUIRE([NTP_PKG_CONFIG])dnl
 AC_REQUIRE([NTP_VER_SUFFIX])dnl
 
@@ -64,8 +75,11 @@ ntp_openssl=no
 ntp_openssl_from_pkg_config=no
 ntp_ssl_incdir=
 ntp_ssl_cflags=
+ntp_ssl_cppflags=
 ntp_ssl_libdir=
+ntp_ssl_libs_L=
 ntp_ssl_libs_l=
+ntp_ssl_libs=
 ntp_ssl_ldflags=
 
 NTPSSL_SAVED_CFLAGS="$CFLAGS"
@@ -73,9 +87,9 @@ NTPSSL_SAVED_CPPFLAGS="$CPPFLAGS"
 NTPSSL_SAVED_LIBS="$LIBS"
 NTPSSL_SAVED_LDFLAGS="$LDFLAGS"
 
-dnl AC_MSG_NOTICE(['%with_crypto:%{PKG_CONFIG:+notempty}:%{with_openssl_libdir-notgiven}:%{with_ntp_ssl_incdir-notgiven}'])
-dnl str="$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${with_openssl_incdir-notgiven}"
-dnl AC_MSG_NOTICE([$str])
+str="$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${with_openssl_incdir-notgiven}"
+NTP_OPENSSL_VERBOSE_MSG([$str])
+AS_UNSET([str])
 
 case "$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${with_openssl_incdir-notgiven}" in
  no:*) ;;
@@ -83,22 +97,25 @@ case "$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${wit
     for pkg in `echo $with_crypto | $SED -e 's/,/ /'`; do
 	AC_MSG_CHECKING([pkg-config for $pkg])
 	if $PKG_CONFIG --exists $pkg ; then
-	    ntp_ssl_incdir="`$PKG_CONFIG --cflags-only-I $pkg`"
-	    case "$ntp_ssl_incdir=" in
+	    ntp_ssl_cppflags="`$PKG_CONFIG --cflags-only-I $pkg`"
+	    case "$ntp_ssl_incdir" in
 	     '')
+		ntp_ssl_incdir='not needed'
 		;;
 	     *)
-		ntp_ssl_incdir="`echo $ntp_ssl_incdir | $SED -e 's/-I//'`"
+		ntp_ssl_incdir="`echo $ntp_ssl_cppflags | $SED -e 's/-I//'`"
 	    esac
 	    ntp_ssl_cflags="`$PKG_CONFIG --cflags-only-other $pkg`"
-	    ntp_ssl_libdir="`$PKG_CONFIG --libs-only-L $pkg`"
-	    case "$ntp_ssl_libdir" in
+	    ntp_ssl_libs_L="`$PKG_CONFIG --libs-only-L $pkg`"
+	    case "$ntp_ssl_libs_L" in
 	     '')
+		ntp_ssl_libdir='not needed'
 		;;
 	     *)
-		ntp_ssl_libdir="`echo $ntp_ssl_libdir | $SED -e 's/-L//'`"
+		ntp_ssl_libdir="`echo $ntp_ssl_libs_L | $SED -e 's/-L//'`"
 	    esac
 	    ntp_ssl_libs_l="`$PKG_CONFIG --libs-only-l $pkg`"
+	    ntp_ssl_libs="$ntp_ssl_libs_L $ntp_ssl_libs_l"
 	    ntp_ssl_ldflags="`$PKG_CONFIG --libs-only-other $pkg`"
 	    ntp_openssl=yes
 	    ntp_openssl_from_pkg_config=yes
@@ -113,125 +130,179 @@ case "$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${wit
 	fi
 	AC_MSG_RESULT([no])
     done
+    AS_UNSET([pkg])
+esac
+case "$with_crypto" in
+ no) ;;
+ *)
+    case "$with_openssl_libdir" in
+     '') ;;
+     *)
+	ntp_ssl_libdir="$with_openssl_libdir"
+	ntp_ssl_libs_L="-L$with_openssl_libdir"
+	ntp_ssl_libs_l="-lcrypto"
+	ntp_ssl_libs="$ntp_ssl_libs_L $ntp_ssl_libs_l"
+    esac
+    case "$with_openssl_incdir" in
+     '') ;;
+     *)
+	ntp_ssl_incdir="$with_openssl_incdir"
+	ntp_ssl_cppflags="-I$with_openssl_incdir"
+    esac
 esac
 
-dnl AC_MSG_NOTICE([OpenSSL Phase I checks:])
-dnl AC_MSG_NOTICE([CPPFLAGS_NTP: $CPPFLAGS_NTP])
-dnl AC_MSG_NOTICE([CFLAGS_NTP: $CFLAGS_NTP])
-dnl AC_MSG_NOTICE([LDADD_NTP: $LDADD_NTP])
-dnl AC_MSG_NOTICE([LDFLAGS_NTP: $LDFLAGS_NTP])
-dnl AC_MSG_NOTICE([ntp_ssl_cflags: $ntp_ssl_cflags])
-dnl AC_MSG_NOTICE([ntp_openssl_from_pkg_config: $ntp_openssl_from_pkg_config])
-dnl AC_MSG_NOTICE([ntp_ssl_incdir: $ntp_ssl_incdir])
-dnl AC_MSG_NOTICE([ntp_ssl_libdir: $ntp_ssl_libdir])
-dnl AC_MSG_NOTICE([ntp_ssl_libs_l: $ntp_ssl_libs_l])
-dnl AC_MSG_NOTICE([ntp_ssl_ldflags: $ntp_ssl_ldflags])
+NTP_OPENSSL_VERBOSE_MSG([OpenSSL Phase I checks:])
+NTP_OPENSSL_VERBOSE_MSG([CPPFLAGS_NTP: ($CPPFLAGS_NTP)])
+NTP_OPENSSL_VERBOSE_MSG([CFLAGS_NTP:   ($CFLAGS_NTP)])
+NTP_OPENSSL_VERBOSE_MSG([LDADD_NTP:    ($LDADD_NTP)])
+NTP_OPENSSL_VERBOSE_MSG([LDFLAGS_NTP:  ($LDFLAGS_NTP)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_openssl_from_pkg_config: $ntp_openssl_from_pkg_config])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_incdir:   ($ntp_ssl_incdir)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_libdir:   ($ntp_ssl_libdir)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_cflags:   ($ntp_ssl_cflags)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_cppflags: ($ntp_ssl_cppflags)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_libs_L:   ($ntp_ssl_libs_L)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_libs_l:   ($ntp_ssl_libs_l)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_libs:     ($ntp_ssl_libs)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_ldflags:  ($ntp_ssl_ldflags)])
 
 case "$with_crypto" in
  no)
     ntp_openssl=no
     ;;
  *)
-    dnl ### set ntp_ssl_libdir ###
-
-    AC_MSG_CHECKING([for openssl library directory])
-
-    case "$with_openssl_libdir" in
-     '')
-	case "$ntp_ssl_libdir" in
-	 '')
-	    ntp_ssl_libdir_search="/usr/lib /usr/lib/openssl /usr/sfw/lib"
-	    ntp_ssl_libdir_search="$ntp_ssl_libdir_search /usr/local/lib"
-	    ntp_ssl_libdir_search="$ntp_ssl_libdir_search /opt/local/lib"
-	    ntp_ssl_libdir_search="$ntp_ssl_libdir_search /usr/local/ssl/lib"
-	    ntp_ssl_libdir_search="$ntp_ssl_libdir_search /lib /lib64"
-	    ;;
-	 *)
-	    ntp_ssl_libdir_search="$ntp_ssl_libdir"
-	esac
-	;;
-     *)
-	ntp_ssl_libdir_search="$with_openssl_libdir"
-    esac
-    for i in $ntp_ssl_libdir_search not_found
-    do
-	case "$host" in
-	 *-*-darwin*)
-	    test -f $i/libcrypto.dylib -a -f $i/libssl.dylib && break
-	    ;;
-	 *)
-	    test -f $i/libcrypto.so -a -f $i/libssl.so && break
-	    test -f $i/libcrypto.a -a -f $i/libssl.a && break
-	    ;;
-	esac
-    done
-    ntp_ssl_libdir=$i
-
-    AC_MSG_RESULT([$ntp_ssl_libdir])
-
+    ntp_ssl_libs_l="${ntp_ssl_libs_l:--lcrypto}"
+    ntp_ssl_libs="$ntp_ssl_libs_L $ntp_ssl_libs_l"
     case "$ntp_ssl_libdir" in
-     not_found)
-	ntp_ssl_libdir=
-	AC_MSG_WARN([libcrypto and libssl not found in any of $ntp_ssl_libdir_search])
-    esac
-
-    dnl ### set ntp_ssl_incdir ###
-
-    AC_MSG_CHECKING([for openssl include directory])
-
-    case "$with_openssl_incdir" in
      '')
-	case "$ntp_ssl_incdir" in
-	 '')
-	    ntp_ssl_incdir_search="/usr/include /usr/sfw/include"
-	    ntp_ssl_incdir_search="$ntp_ssl_incdir_search /usr/local/include"
-	    ntp_ssl_incdir_search="$ntp_ssl_incdir_search /opt/local/include"
-	    ntp_ssl_incdir_search="$ntp_ssl_incdir_search /usr/local/ssl/include"
-	    ;;
-	 *)
-	    ntp_ssl_incdir_search="$ntp_ssl_incdir"
-	esac
+	dnl ### set ntp_ssl_libdir ###
+
+	AC_MSG_NOTICE([Searching for libcrypto without -L])
+	AC_CHECK_LIB(
+	    [crypto],
+	    [EVP_MD_CTX_new],
+	    [ntp_ssl_libdir='not needed']
+	)
+	dnl unconventional, using AC_CHECK_LIB repeatedly, clear cached result.
+	AS_UNSET([ac_cv_lib_crypto_EVP_MD_CTX_new])
+    esac
+    case "$ntp_ssl_libdir" in
+     '')
+	ntp_ssl_libdir_search="/usr/lib /usr/lib/openssl /usr/sfw/lib"
+	ntp_ssl_libdir_search="$ntp_ssl_libdir_search /usr/local/lib"
+	ntp_ssl_libdir_search="$ntp_ssl_libdir_search /usr/local/ssl/lib"
+	ntp_ssl_libdir_search="$ntp_ssl_libdir_search /opt/local/lib"
+	ntp_ssl_libdir_search="$ntp_ssl_libdir_search /lib /lib64"
 	;;
      *)
-	ntp_ssl_incdir_search="$with_openssl_incdir"
+	ntp_ssl_libdir_search="$ntp_ssl_libdir"
     esac
-    for i in $ntp_ssl_incdir_search not_found
-    do
-	test -f $i/openssl/evp.h && break
-    done
-    ntp_ssl_incdir=$i
-    AS_UNSET([i])
+    case $ntp_ssl_libdir_search in
+     'not needed') ;;
+     *)
+	for i in $ntp_ssl_libdir_search not_found
+	do
+	    case "$i" in
+	     not_found) ;;
+	     *)
+		AC_MSG_NOTICE([Searching for libcrypto in $i])
+		LIBS="-L$i $NTPSSL_SAVED_LIBS"
+		AC_CHECK_LIB(
+		    [crypto],
+		    [EVP_MD_CTX_new],
+		    [break]
+		)
+		dnl unconventional, using AC_CHECK_LIB repeatedly, clear cached result.
+		AS_UNSET([ac_cv_lib_crypto_EVP_MD_CTX_new])
+	    esac
+	done
+	ntp_ssl_libdir="$i"
+	ntp_ssl_libs_L="-L$i"
+	ntp_ssl_libs="$ntp_ssl_libs_L $ntp_ssl_libs_l"
+	LIBS="$NTPSSL_SAVED_LIBS"
+	case "$ntp_ssl_libdir" in
+	 not_found)
+	    AC_MSG_ERROR([You may want to use --without-crypto, or]
+			 [ add openssl.pc/libcrypto.pc to PKG_CONFIG_PATH,]
+			 [ or use the --with-openssl-libdir=/some/path option to configure:]
+			 [ libcrypto not found in $ntp_ssl_libdir_search.])
+	esac
+	AC_MSG_NOTICE([libcrypto found in $ntp_ssl_libdir])
+    esac
 
-    AC_MSG_RESULT([$ntp_ssl_incdir])
-
+    case "$ntp_openssl_from_pkg_config:$ntp_ssl_incdir" in
+     'yes:not needed' | no:)
+	AC_MSG_NOTICE([Searching for openssl/evp.h without -I])
+	dnl force uncached AC_CHECK_HEADER
+	AS_UNSET([ac_cv_header_openssl_evp_h])
+	AC_CHECK_HEADER(
+	    [openssl/evp.h],
+	    [ntp_ssl_incdir='not needed']
+	    )
+    esac
     case "$ntp_ssl_incdir" in
-     not_found)
-	ntp_ssl_incdir=
-	AC_MSG_WARN([did not find openssl/evp.h in any of $ntp_ssl_incdir_search])
+     'not needed')
+	    ntp_ssl_incdir_search="$ntp_ssl_incdir"
+	    ;;
+     *)
+	AC_MSG_NOTICE([Searching for openssl include directory])
+	case "$with_openssl_incdir" in
+	 '')
+	    case "$ntp_ssl_incdir" in
+	     '')
+		ntp_ssl_incdir_search="/usr/include /usr/sfw/include"
+		ntp_ssl_incdir_search="$ntp_ssl_incdir_search /usr/local/include"
+		ntp_ssl_incdir_search="$ntp_ssl_incdir_search /opt/local/include"
+		ntp_ssl_incdir_search="$ntp_ssl_incdir_search /usr/local/ssl/include"
+		;;
+	     *)
+	    esac
+	    ;;
+	 *)
+	    ntp_ssl_incdir_search="$with_openssl_incdir"
+	esac
+	case $ntp_ssl_incdir_search in
+	 'not needed') ;;
+	 *)
+	    for i in $ntp_ssl_incdir_search
+	    do
+		AC_MSG_NOTICE([Searching for openssl/evp.h in $i])
+		CPPFLAGS="$NTPSSL_SAVED_CPPFLAGS $i"
+		dnl force uncached AC_CHECK_HEADER
+		AS_UNSET([ac_cv_header_openssl_evp_h])
+		AC_CHECK_HEADER(
+		    [openssl/evp.h],
+		    [ntp_ssl_incdir="$i" ; break]
+		    )
+	    done
+	    AS_UNSET([ac_cv_header_openssl_evp_h])
+	    AS_UNSET([i])
+	    CPPFLAGS="$NTPSSL_SAVED_CPPFLAGS"
+	    case "$ntp_ssl_incdir" in
+	     '')
+		AC_MSG_ERROR([You may want to use --without-crypto, or]
+			     [ add openssl.pc/libcrypto.pc to PKG_CONFIG_PATH,]
+			     [ or use the --with-openssl-incdir=/some/path option to configure:]
+			     [ usable openssl/evp.h not found in $ntp_ssl_incdir_search.])
+	    esac
+	    ntp_ssl_cppflags="-I$ntp_ssl_incdir"
+	    AC_MSG_NOTICE([Found evp.h in $ntp_ssl_incdir/openssl])
+	esac
     esac
-    if test -z "$ntp_ssl_libdir" -o -z "$ntp_ssl_incdir"
-    then
-	ntp_openssl=no
-    else
-	ntp_openssl=yes
-	ntp_ssl_cppflags="-I$ntp_ssl_incdir"
-    fi
+    ntp_openssl=yes
 esac	dnl building with SSL ($with_crypto not "no")
 
-case "$ntp_openssl" in
- yes)
-    case "$ntp_ssl_libs_l" in
-     '')
-	ntp_ssl_libs_l="-lssl -lcrypto"
-    esac
+case "$ntp_openssl:$ntp_ssl_libdir" in
+ 'yes:not needed')
+    ;;
+ yes:*)
     CFLAGS="$NTPSSL_SAVED_CFLAGS $ntp_ssl_cflags"
     CPPFLAGS="$NTPSSL_SAVED_CPPFLAGS $ntp_ssl_cppflags"
-    LIBS="$NTPSSL_SAVED_LIBS -L$ntp_ssl_libdir $ntp_ssl_libs_l"
-    LDFLAGS="$NTPSSL_SAVED_LDFLAGS $ntp_ssl_ldflags"
-    dnl test if runpath is needed for crypto
-    ntp_ssl_run_test_failed=no
+    LIBS="$ntp_ssl_libs $NTPSSL_SAVED_LIBS"
+    LDFLAGS="$ntp_ssl_ldflags $NTPSSL_SAVED_LDFLAGS"
+    dnl ### test if runpath is needed for crypto ###
     AC_CACHE_CHECK(
-	[if SSL executable works without runpath],
+	[if crypto works without runpath],
 	[ntp_cv_ssl_without_runpath],
 	[AC_RUN_IFELSE(
 	    [AC_LANG_PROGRAM(
@@ -252,10 +323,10 @@ case "$ntp_openssl" in
     case "$ntp_cv_ssl_without_runpath" in
      no)
 	AC_CACHE_CHECK(
-	    [if SSL executable needs -Wl,-rpath,],
+	    [if crypto needs -Wl,-rpath,$ntp_ssl_libdir],
 	    [ntp_cv_ssl_needs_dashWl_rpath],
 	    [
-		LDFLAGS="$NTPSSL_SAVED_LDFLAGS $ntp_ssl_ldflags -Wl,-rpath,$ntp_ssl_libdir"
+		LDFLAGS="$ntp_ssl_ldflags -Wl,-rpath,$ntp_ssl_libdir $NTPSSL_SAVED_LDFLAGS"
 		AC_RUN_IFELSE(
 		    [AC_LANG_PROGRAM(
 			[[
@@ -278,7 +349,7 @@ case "$ntp_openssl" in
 	    ;;
 	 no)
 	    AC_CACHE_CHECK(
-		[if SSL executable needs -R],
+		[if crypto needs -R$ntp_ssl_libdir],
 		[ntp_cv_ssl_needs_dashR],
 		[
 		    LDFLAGS="$NTPSSL_SAVED_LDFLAGS $ntp_ssl_ldflags -R$ntp_ssl_libdir"
@@ -304,20 +375,24 @@ case "$ntp_openssl" in
 	    esac
 	    case "$build:$ntp_cv_ssl_needs_dashR" in
 	     $host:no)
-		AC_MSG_FAILURE([Unable to run program using SSL])
+		AC_MSG_FAILURE(
+		    [Unable to run program using crypto, check openssl.pc or]
+		    [ libcrypto.pc are in PKG_CONFIG_PATH, or provide]
+		    [ --with-openssl-libdir=/some/path])
 	    esac
 	esac
     esac
 esac	dnl ntp_openssl was yes
 
-dnl AC_MSG_NOTICE([OpenSSL Phase II checks:])
-dnl AC_MSG_NOTICE([ntp_ssl_cppflags: $ntp_ssl_cppflags])
-dnl AC_MSG_NOTICE([ntp_ssl_cflags: $ntp_ssl_cflags])
-dnl AC_MSG_NOTICE([ntp_openssl_from_pkg_config: $ntp_openssl_from_pkg_config])
-dnl AC_MSG_NOTICE([ntp_ssl_incdir: $ntp_ssl_incdir])
-dnl AC_MSG_NOTICE([ntp_ssl_libdir: $ntp_ssl_libdir])
-dnl AC_MSG_NOTICE([ntp_ssl_libs_l: $ntp_ssl_libs_l])
-dnl AC_MSG_NOTICE([ntp_ssl_ldflags: $ntp_ssl_ldflags])
+NTP_OPENSSL_VERBOSE_MSG([OpenSSL Phase II checks:])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_incdir:   ($ntp_ssl_incdir)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_libdir:   ($ntp_ssl_libdir)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_cflags:   ($ntp_ssl_cflags)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_cppflags: ($ntp_ssl_cppflags)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_libs_L:   ($ntp_ssl_libs_L)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_libs_l:   ($ntp_ssl_libs_l)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_libs:     ($ntp_ssl_libs)])
+NTP_OPENSSL_VERBOSE_MSG([ntp_ssl_ldflags:  ($ntp_ssl_ldflags)])
 
 dnl check for linking with -lcrypto failure, and try -lcrypto -lz.
 dnl Helps m68k-atari-mint
@@ -332,8 +407,8 @@ case "$ntp_openssl:$ntp_openssl_from_pkg_config" in
  yes:no)
     CFLAGS="$NTPSSL_SAVED_CFLAGS $ntp_ssl_cflags"
     CPPFLAGS="$NTPSSL_SAVED_CPPFLAGS $ntp_ssl_cppflags"
-    LIBS="$NTPSSL_SAVED_LIBS -L$ntp_ssl_libdir $ntp_ssl_libs_l"
-    LDFLAGS="$NTPSSL_SAVED_LDFLAGS $ntp_ssl_ldflags"
+    LIBS="$ntp_ssl_libs $NTPSSL_SAVED_LIBS"
+    LDFLAGS="$ntp_ssl_ldflags $NTPSSL_SAVED_LDFLAGS"
     AC_CACHE_CHECK(
 	[if linking with $ntp_ssl_libs_l alone works],
 	[ntp_cv_bare_lcrypto],
@@ -352,7 +427,7 @@ case "$ntp_openssl:$ntp_openssl_from_pkg_config" in
     )
     case "$ntp_cv_bare_lcrypto" in
      no)
-	LIBS="$NTPSSL_SAVED_LIBS -L$ntp_ssl_libdir $ntp_ssl_libs -lz"
+	LIBS="-$ntp_ssl_libs -lz $NTPSSL_SAVED_LIBS"
 	AC_CACHE_CHECK(
 	    [if linking with $ntp_ssl_libs_l -lz works],
 	    [ntp_cv_lcrypto_lz],
@@ -371,7 +446,8 @@ case "$ntp_openssl:$ntp_openssl_from_pkg_config" in
 	)
 	case "$ntp_cv_lcrypto_lz" in
 	 yes)
-	     ntp_ssl_ldadd="$ntp_ssl_ldadd -lz"
+	     ntp_ssl_libs_l="$ntp_ssl_libs_l -lz"
+	     ntp_ssl_libs="$ntp_ssl_libs_L $ntp_ssl_libs_l"
 	esac
     esac	dnl linking with -lcrypto alone fails
 esac		dnl using SSL and not from pkg-config
@@ -387,10 +463,12 @@ dnl int i2d_RSA_NET(const RSA *a, unsigned char **pp,
 dnl		  int (*cb)(), int sgckey);
 dnl		  ^^^^^^^^^^^
 dnl
-openssl_triggers_warnings=unknown
 case "$ntp_openssl:$GCC" in
  yes:yes)
     CFLAGS="$NTP_SAVED_CFLAGS $ntp_ssl_cflags -Werror"
+    CPPFLAGS="$NTPSSL_SAVED_CPPFLAGS $ntp_ssl_cppflags"
+    LIBS="$ntp_ssl_libs $NTPSSL_SAVED_LIBS"
+    LDFLAGS="$ntp_ssl_ldflags $NTPSSL_SAVED_LDFLAGS"
     AC_CACHE_CHECK(
 	[If $CC supports -Werror],
 	[ntp_cv_gcc_supports_Werror],
@@ -462,38 +540,38 @@ case "$ntp_openssl" in
     AC_CHECK_FUNCS([EVP_MD_do_all_sorted])
     CPPFLAGS_NTP="$CPPFLAGS_NTP $ntp_ssl_cppflags"
     CFLAGS_NTP="$CFLAGS_NTP $ntp_ssl_cflags"
-    LDADD_NTP="$LDADD_NTP -L$ntp_ssl_libdir $ntp_ssl_libs_l $ntp_ssl_ldadd"
-    LDFLAGS_NTP="$LDFLAGS_NTP $ntp_ssl_ldflags"
+    LDADD_NTP="$ntp_ssl_libs $LDADD_NTP"
+    LDFLAGS_NTP="$ntp_ssl_ldflags $LDFLAGS_NTP"
 esac
 
-dnl AC_MSG_NOTICE([OpenSSL final checks:])
-dnl AC_MSG_NOTICE([ntp_openssl: $ntp_openssl])
-dnl AC_MSG_NOTICE([CPPFLAGS_NTP: $CPPFLAGS_NTP])
-dnl AC_MSG_NOTICE([CFLAGS_NTP: $CFLAGS_NTP])
-dnl AC_MSG_NOTICE([LDADD_NTP: $LDADD_NTP])
-dnl AC_MSG_NOTICE([LDFLAGS_NTP: $LDFLAGS_NTP])
+NTP_OPENSSL_VERBOSE_MSG([OpenSSL final checks:])
+NTP_OPENSSL_VERBOSE_MSG([ntp_openssl: $ntp_openssl])
+NTP_OPENSSL_VERBOSE_MSG([CPPFLAGS_NTP: ($CPPFLAGS_NTP)])
+NTP_OPENSSL_VERBOSE_MSG([CFLAGS_NTP:   ($CFLAGS_NTP)])
+NTP_OPENSSL_VERBOSE_MSG([LDADD_NTP:    ($LDADD_NTP)])
+NTP_OPENSSL_VERBOSE_MSG([LDFLAGS_NTP:  ($LDFLAGS_NTP)])
 
 CFLAGS="$NTPSSL_SAVED_CFLAGS"
 CPPFLAGS="$NTPSSL_SAVED_CPPFLAGS"
 LIBS="$NTPSSL_SAVED_LIBS"
 LDFLAGS="$NTPSSL_SAVED_LDFLAGS"
 
-AS_UNSET([pkg])
 AS_UNSET([NTPSSL_SAVED_CFLAGS])
 AS_UNSET([NTPSSL_SAVED_CPPFLAGS])
 AS_UNSET([NTPSSL_SAVED_LIBS])
+AS_UNSET([NTPSSL_SAVED_LDFLAGS])
 AS_UNSET([ntp_use_Wstrict_prototypes])
 AS_UNSET([ntp_openssl_from_pkg_config])
 AS_UNSET([ntp_openssl_version])
 AS_UNSET([ntp_ssl_cflags])
+AS_UNSET([ntp_ssl_cppflags])
 AS_UNSET([ntp_ssl_libdir_search])
 AS_UNSET([ntp_ssl_incdir_search])
 AS_UNSET([ntp_ssl_libdir])
 AS_UNSET([ntp_ssl_incdir])
 AS_UNSET([ntp_ssl_libs_l])
+AS_UNSET([ntp_ssl_libs_L])
 AS_UNSET([ntp_ssl_ldflags])
-AS_UNSET([ntp_ssl_run_test_failed])
-AS_UNSET([ntp_ssl_with_dashR])
 
 ])
 dnl end of AC_DEFUN([NTP_OPENSSL])

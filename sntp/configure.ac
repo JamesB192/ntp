@@ -33,7 +33,7 @@ AC_LANG([C])
 # the date YYYYMMDD optionally with -HHMM if there is more than one
 # bump in a day.
 
-sntp_configure_cache_version=20231028
+sntp_configure_cache_version=20240103
 
 # When the version of config.cache and configure do not
 # match, NTP_CACHEVERSION will flush the cache.
