@@ -294,7 +294,8 @@ init_io_completion_port(void)
 			&hNotify
 			);
 		if (NULL != hNotify) {
-			no_periodic_scan = TRUE;
+			/* some systems get notifications minutes to hours late */
+			/* no_periodic_scan = TRUE; */
 		}
 	}
 
