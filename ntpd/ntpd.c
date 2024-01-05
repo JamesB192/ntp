@@ -668,6 +668,7 @@ detach_from_terminal(
 	return;
 }
 # endif /* HAVE_WORKING_FORK */
+#endif /* !SIM && !SYS_WINNT */
 
 #ifdef HAVE_DROPROOT
 /*
@@ -806,7 +807,6 @@ set_user_group_ids(void)
 	return 1;
 }
 #endif /* HAVE_DROPROOT */
-#endif /* !SIM */
 
 /*
  * Main program.  Initialize us, disconnect us from the tty if necessary,
