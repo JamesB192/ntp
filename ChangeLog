@@ -41,9 +41,11 @@
              is disabled.  <burnicki@ntp.org>
 * [Bug 3825] Don't touch HTML files unless building inside a BK repo.
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
+* Update the copyright year.  <stenn@ntp.org>
 * Update ntp.conf documentation to add "delrestrict" and correct information
   about KoD rate limiting.  <hart@ntp.org>
 * html/clockopt.html cleanup.  <stenn@ntp.org>
+* util/lsf-times - added.  <stenn@ntp.org>
 * Add DSA, DSA-SHA, and SHA to tests/libntp/digests.c. <hart@ntp.org>
 * Provide ntpd thread names to debugger on Windows. <hart@ntp.org>
 * Remove dead code libntp/numtohost.c and its unit tests. <hart@ntp.org>
