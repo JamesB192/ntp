@@ -2646,8 +2646,6 @@ socket_multicast_disable(
 # endif
 	struct ip_mreq mreq;
 
-	ZERO(mreq);
-
 	if (find_addr_in_list(maddr) == NULL) {
 		DPRINTF(4, ("socket_multicast_disable(%s): not found\n",
 			    stoa(maddr)));
@@ -2657,6 +2655,7 @@ socket_multicast_disable(
 	switch (AF(maddr)) {
 
 	case AF_INET:
+		ZERO(mreq);
 		mreq.imr_multiaddr = SOCK_ADDR4(maddr);
 		mreq.imr_interface = SOCK_ADDR4(&iface->sin);
 		if (setsockopt(iface->fd, IPPROTO_IP,
@@ -2680,6 +2679,7 @@ socket_multicast_disable(
 		 * for other types of multicast addresses. For now let
 		 * the kernel figure it out.
 		 */
+		ZERO(mreq6);
 		mreq6.ipv6mr_multiaddr = SOCK_ADDR6(maddr);
 		mreq6.ipv6mr_interface = iface->ifindex;
 
@@ -2700,9 +2700,9 @@ socket_multicast_disable(
 	}
 
 	iface->num_mcast--;
-	if (!iface->num_mcast)
+	if (iface->num_mcast <= 0) {
 		iface->flags &= ~INT_MCASTOPEN;
-
+	}
 	return ISC_TRUE;
 }
 #endif	/* MCAST */
@@ -4055,8 +4055,9 @@ select_peerinterface(
 				stoa(srcadr)));
 	} else {
 		ep = dstadr;
-		if (NULL == ep)
+		if (NULL == ep) {
 			ep = wild;
+		}
 	}
 	/*
 	 * If it is a multicast address, findbcastinter() may not find
@@ -4064,16 +4065,19 @@ select_peerinterface(
 	 * given to us as the wildcard (ANY_INTERFACE_CHOOSE).  Either
 	 * way, try a little harder.
 	 */
-	if (wild == ep)
+	if (wild == ep) {
 		ep = findinterface(srcadr);
+	}
 	/*
 	 * we do not bind to the wildcard interfaces for output
 	 * as our (network) source address would be undefined and
 	 * crypto will not work without knowing the own transmit address
 	 */
-	if (ep != NULL && INT_WILDCARD & ep->flags)
-		if (!accept_wildcard_if_for_winnt)
+	if (ep != NULL && (INT_WILDCARD & ep->flags)) {
+		if (!accept_wildcard_if_for_winnt) {
 			ep = NULL;
+		}
+	}
 #else	/* SIM follows */
 	ep = loopback_interface;
 #endif
@@ -4108,7 +4112,7 @@ findinterface(
 
 /*
  * findlocalinterface - find local interface corresponding to addr,
- * which does not have any of flags set.  If bast is nonzero, addr is
+ * which does not have any of flags set.  If bcast is nonzero, addr is
  * a broadcast address.
  *
  * This code attempts to find the local sending address for an outgoing
@@ -4138,21 +4142,21 @@ findlocalinterface(
 	DPRINTF(4, ("Finding interface for addr %s in list of addresses\n",
 		    stoa(addr)));
 
-	/* [Bug 3437] The dummy POOL peer comes in with an AF of
-	 * zero. This is bound to fail, but on the way to nowhere it
+	/* [Bug 3437] The prototype POOL peer can be AF_UNSPEC.
+	 * This is bound to fail, but on the way to nowhere it
 	 * triggers a security incident on SELinux.
 	 *
-	 * Checking the condition and failing early is probably a good
+	 * Checking the condition and failing early is probably good
 	 * advice, and even saves us some syscalls in that case.
 	 * Thanks to Miroslav Lichvar for finding this.
 	 */
-	if (AF_UNSPEC == AF(addr))
+	if (AF_UNSPEC == AF(addr)) {
 		return NULL;
-
+	}
 	s = socket(AF(addr), SOCK_DGRAM, 0);
-	if (INVALID_SOCKET == s)
+	if (INVALID_SOCKET == s) {
 		return NULL;
-
+	}
 	/*
 	 * If we are looking for broadcast interface we need to set this
 	 * socket to allow broadcast
@@ -4193,14 +4197,14 @@ findlocalinterface(
 	 * See http://bugs.ntp.org/1184 and http://bugs.ntp.org/1683
 	 * for more background.
 	 */
-	if (NULL == iface || iface->ignore_packets)
+	if (NULL == iface || iface->ignore_packets) {
 		iface = findclosestinterface(&saddr,
 					     flags | INT_LOOPBACK);
-
+	}
 	/* Don't use an interface which will ignore replies */
-	if (iface != NULL && iface->ignore_packets)
+	if (iface != NULL && iface->ignore_packets) {
 		iface = NULL;
-
+	}
 	return iface;
 }
 
@@ -4270,47 +4274,40 @@ calc_addr_distance(
 	const sockaddr_u *	a2
 	)
 {
-	u_int32	a1val;
-	u_int32	a2val;
-	u_int32	v4dist;
-	int	found_greater;
+	u_char *pdist;
+	u_char *p1;
+	u_char *p2;
+	size_t	cb;
+	int	different;
 	int	a1_greater;
-	int	i;
+	u_int	u;
 
 	REQUIRE(AF(a1) == AF(a2));
 
 	ZERO_SOCK(dist);
 	AF(dist) = AF(a1);
 
-	/* v4 can be done a bit simpler */
 	if (IS_IPV4(a1)) {
-		a1val = SRCADR(a1);
-		a2val = SRCADR(a2);
-		v4dist = (a1val > a2val)
-			     ? a1val - a2val
-			     : a2val - a1val;
-		SET_ADDR4(dist, v4dist);
-
-		return;
+		pdist = (u_char *)&NSRCADR(dist);
+		p1 =	(u_char *)&NSRCADR(a1);
+		p2 =	(u_char *)&NSRCADR(a2);
+	} else {
+		pdist = (u_char *)&NSRCADR(dist);
+		p1 =	(u_char *)&NSRCADR(a1);
+		p2 =	(u_char *)&NSRCADR(a2);
 	}
-
-	found_greater = FALSE;
-	a1_greater = FALSE;	/* suppress pot. uninit. warning */
-	for (i = 0; i < (int)sizeof(NSRCADR6(a1)); i++) {
-		if (!found_greater &&
-		    NSRCADR6(a1)[i] != NSRCADR6(a2)[i]) {
-			found_greater = TRUE;
-			a1_greater = (NSRCADR6(a1)[i] > NSRCADR6(a2)[i]);
+	cb = SIZEOF_INADDR(AF(dist));
+	different = FALSE;
+	a1_greater = FALSE;
+	for (u = 0; u < cb; u++) {
+		if (!different && p1[u] != p2[u]) {
+			a1_greater = (p1[u] > p2[u]);
+			different = TRUE;
 		}
-		if (!found_greater) {
-			NSRCADR6(dist)[i] = 0;
+		if (a1_greater) {
+			pdist[u] = p1[u] - p2[u];
 		} else {
-			if (a1_greater)
-				NSRCADR6(dist)[i] = NSRCADR6(a1)[i] -
-						    NSRCADR6(a2)[i];
-			else
-				NSRCADR6(dist)[i] = NSRCADR6(a2)[i] -
-						    NSRCADR6(a1)[i];
+			pdist[u] = p2[u] - p1[u];
 		}
 	}
 }

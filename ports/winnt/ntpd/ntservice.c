@@ -220,6 +220,7 @@ void
 ntservice_exit(void)
 {
 	uninit_io_completion_port();
+	peer_cleanup();
 	Sleep( 200 );  	//##++ 
 
 	reset_winnt_time();

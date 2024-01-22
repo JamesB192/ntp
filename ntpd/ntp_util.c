@@ -265,12 +265,10 @@ write_stats(void)
 		 * the frequncy file. This minimizes the file writes to
 		 * nonvolaile storage.
 		 */
-#ifdef DEBUG
-		if (debug)
-			printf("write_stats: frequency %.6lf thresh %.6lf, freq %.6lf\n",
+		DPRINTF(1, ("write_stats: frequency %.6f thresh %.6f, freq %.6f\n",
 			    (prev_drift_comp - drift_comp) * 1e6, wander_resid *
-			    1e6, drift_comp * 1e6);
-#endif
+			    1e6, drift_comp * 1e6));
+
 		if (fabs(prev_drift_comp - drift_comp) < wander_resid) {
 			wander_resid *= 0.5;
 			return;
@@ -282,7 +280,7 @@ write_stats(void)
 			    stats_temp_file);
 			return;
 		}
-		fprintf(fp, "%.3f\n", drift_comp * 1e6);
+		fprintf(fp, "%.6f\n", drift_comp * 1e6);
 		(void)fclose(fp);
 		/* atomic */
 #ifdef SYS_WINNT
@@ -469,7 +467,7 @@ stats_config(
 			loop_config(LOOP_FREQ, old_drift);
 			prev_drift_comp = drift_comp;
 			msyslog(LOG_INFO,
-				"initial drift restored to %f",
+				"initial drift restored to %.6f",
 				old_drift);
 		}
 		if (NULL != fp) {
