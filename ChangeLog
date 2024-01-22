@@ -1,5 +1,10 @@
 ---
 
+* [Bug 3901] LIB_GETBUF isn't thread-safe. <hart@ntp.org>
+* [Bug 3900] fast_xmit() selects wrong local addr responding to mcast on
+             Windows. <hart@ntp.org>
+* [Bug 3888] ntpd with multiple same-subnet IPs using manycastclient creates
+             duplicate associations. <hart@ntp.org>
 * [Bug 3872] Ignore restrict mask for hostname. <hart@ntp.org>
 * [Bug 3871] 4.2.8p17 build without hopf6021 refclock enabled fails.
              Reported by Hans Mayer.  Moved NONEMPTY_TRANSLATION_UNIT
@@ -60,6 +65,15 @@
 * Fix build on older FreeBSD lacking sys/procctl.h. <hart@ntp.org>
 * Disable [Bug 3627] workaround on newer FreeBSD which has the kernel fix
   that makes it unnecessary, re-enabling ASLR stack gap. <hart@ntp.org>
+* Use NONEMPTY_COMPILATION_UNIT in more conditionally-compiled files.
+* Remove useless pointer to Windows Help from system error messages.
+* Avoid newlines within Windows error messages. <hart@ntp.org>
+* Ensure unique association IDs if wrapped. <hart@ntp.org>
+* Simplify calc_addr_distance(). <hart@ntp.org>
+* Clamp min/maxpoll in edge cases in newpeer(). <hart@ntp.org>
+* Quiet local addr change logging when unpeering. <hart@ntp.org>
+* Correct missing arg for %s printf specifier in 
+  send_blocking_resp_internal(). <hart@ntp.org>
 
 ---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>

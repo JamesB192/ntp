@@ -2461,7 +2461,7 @@ fetch_nonce(
 		return FALSE;
 	}
 
-	if ((size_t)rsize <= sizeof(nonce_eq) - 1 ||
+	if (rsize <= sizeof(nonce_eq) - 1 ||
 	    strncmp(rdata, nonce_eq, sizeof(nonce_eq) - 1)) {
 		xprintf(stderr, "unexpected nonce response format: %.*s\n",
 			(int)rsize, rdata); /* cast is wobbly */
