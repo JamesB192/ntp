@@ -468,6 +468,7 @@ struct peer {
 #endif
 #define FLAG_TSTAMP_PPS	0x10000	/* PPS source provides absolute timestamp */
 #define FLAG_LOOPNONCE	0x20000	/* Use a nonce for the loopback test */
+#define FLAG_DISABLED	0x40000	/* peer is being torn down */
 
 /*
  * Definitions for the clear() routine.  We use memset() to clear
@@ -702,6 +703,10 @@ struct pkt {
 #define	min(a,b)	(((a) < (b)) ? (a) : (b))
 #define	max(a,b)	(((a) > (b)) ? (a) : (b))
 #define	min3(a,b,c)	min(min((a),(b)), (c))
+
+/* clamp a value within a range */
+#define CLAMP(val, minval, maxval)				\
+			max((minval), min((val), (maxval)))
 
 
 /*

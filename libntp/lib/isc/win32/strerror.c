@@ -88,18 +88,45 @@ isc__strerror(int num, char *buf, size_t size) {
  */
 char *
 FormatError(int error) {
-	LPVOID lpMsgBuf = NULL;
+	char *lpMsgBuf = NULL;
+	char *pch;
+	const char boiler[] =
+		" For information about network troubleshooting, see Windows Help.";
+	size_t last;
+
 	FormatMessage( 
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | 
 		FORMAT_MESSAGE_FROM_SYSTEM | 
-		FORMAT_MESSAGE_IGNORE_INSERTS,
+		(FORMAT_MESSAGE_MAX_WIDTH_MASK - 1),
 		NULL,
 		error,
 		/* Default language */
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR) &lpMsgBuf,
+		(LPTSTR)(PVOID)&lpMsgBuf,
 		0,
 		NULL); 
+
+	/* remove useless boilerplate */
+	pch = strstr(lpMsgBuf, boiler);
+	if (pch != NULL) {
+		*pch = '\0';
+	}
+
+	/* strip any trailing CR/LF */
+	if (lpMsgBuf != NULL) {
+		last = strlen(lpMsgBuf);
+		if (last > 0) {
+			--last;
+		}
+		while ('\n' == lpMsgBuf[last] ||
+		       '\r' == lpMsgBuf[last]) {
+
+			lpMsgBuf[last] = '\0';
+			if (last > 0) {
+				--last;
+			}
+		}
+	}
 
 	return (lpMsgBuf);
 }

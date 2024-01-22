@@ -4539,14 +4539,14 @@ leap_smear_add_offs(
  */
 static void
 fast_xmit(
-	struct recvbuf *rbufp,	/* receive packet pointer */
+	struct recvbuf* rbufp,	/* receive packet pointer */
 	int	xmode,		/* receive mode */  /* XXX: HMS: really? */
 	keyid_t	xkeyid,		/* transmit key ID */
 	int	flags		/* restrict mask */
-	)
+)
 {
 	struct pkt xpkt;	/* transmit packet structure */
-	struct pkt *rpkt;	/* receive packet structure */
+	struct pkt* rpkt;	/* receive packet structure */
 	l_fp	xmt_tx, xmt_ty;
 	size_t	sendlen;
 #ifdef AUTOKEY
@@ -4560,13 +4560,26 @@ fast_xmit(
 	 * the system minimum poll (ntp_minpoll). This is for KoD rate
 	 * control and not strictly specification compliant, but doesn't
 	 * break anything.
-	 *
-	 * If the gazinta was from a multicast address, the gazoutta
-	 * must go out another way.
 	 */
 	rpkt = &rbufp->recv_pkt;
-	if (rbufp->dstadr->flags & INT_MCASTOPEN)
+	/*
+	 * If the packet was received on an endpoint open only on
+	 * a multicast address, the response needs to go out from
+	 * a unicast endpoint.
+	 */
+#ifndef MULTICAST_NONEWSOCKET
+	if (rbufp->dstadr->flags & INT_MCASTOPEN) {
 		rbufp->dstadr = findinterface(&rbufp->recv_srcadr);
+		if (NULL == rbufp->dstadr ||
+		    ANY_INTERFACE_CHOOSE(&rbufp->recv_srcadr) /* wildcard */
+		      == rbufp->dstadr) {
+			DPRINTF(2, ("No unicast local address found for"
+				    " reply to %s mcast.",
+				    stoa(&rbufp->recv_srcadr)));
+			return;
+		}
+	}
+#endif
 
 	/*
 	 * If this is a kiss-o'-death (KoD) packet, show leap
