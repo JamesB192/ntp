@@ -325,7 +325,7 @@ static endpt *	find_addr_in_list	(sockaddr_u *);
 static endpt *	find_flagged_addr_in_list(sockaddr_u *, u_int32);
 static void	delete_addr_from_list	(sockaddr_u *);
 static void	delete_interface_from_list(endpt *);
-static void	close_and_delete_fd_from_list(SOCKET);
+static void	close_and_delete_fd_from_list(SOCKET, endpt *);
 static void	add_addr_to_list	(sockaddr_u *, endpt *);
 static void	create_wildcards	(u_short);
 static endpt *	findlocalinterface	(sockaddr_u *, int, int);
@@ -645,7 +645,7 @@ add_asyncio_reader(
 }
 
 /*
- * remove asynchio_reader
+ * remove asyncio_reader
  */
 static void
 remove_asyncio_reader(
@@ -657,9 +657,9 @@ remove_asyncio_reader(
 	UNLINK_SLIST(unlinked, asyncio_reader_list, reader, link,
 	    struct asyncio_reader);
 
-	if (reader->fd != INVALID_SOCKET)
-		close_and_delete_fd_from_list(reader->fd);
-
+	if (reader->fd != INVALID_SOCKET) {
+		close_and_delete_fd_from_list(reader->fd, NULL);
+	}
 	reader->fd = INVALID_SOCKET;
 }
 #endif /* !defined(HAVE_IO_COMPLETION_PORT) && defined(HAS_ROUTING_SOCKET) */
@@ -1024,10 +1024,7 @@ remove_interface(
 			ep->sent,
 			ep->notsent,
 			current_time - ep->starttime);
-#	    ifdef HAVE_IO_COMPLETION_PORT
-		io_completion_port_remove_socket(ep->fd, ep);
-#	    endif
-		close_and_delete_fd_from_list(ep->fd);
+		close_and_delete_fd_from_list(ep->fd, ep);
 		ep->fd = INVALID_SOCKET;
 	}
 
@@ -1035,10 +1032,7 @@ remove_interface(
 		msyslog(LOG_INFO,
 			"stop listening for broadcasts to %s on interface #%d %s",
 			stoa(&ep->bcast), ep->ifnum, ep->name);
-#	    ifdef HAVE_IO_COMPLETION_PORT
-		io_completion_port_remove_socket(ep->bfd, ep);
-#	    endif
-		close_and_delete_fd_from_list(ep->bfd);
+		close_and_delete_fd_from_list(ep->bfd, ep);
 		ep->bfd = INVALID_SOCKET;
 	}
 #   ifdef HAVE_IO_COMPLETION_PORT
@@ -2837,10 +2831,7 @@ io_unsetbclient(void)
 			msyslog(LOG_INFO,
 				"stop listening for broadcasts to %s on interface #%d %s",
 				stoa(&ep->bcast), ep->ifnum, ep->name);
-#		    ifdef HAVE_IO_COMPLETION_PORT
-			io_completion_port_remove_socket(ep->bfd, ep);
-#		    endif
-			close_and_delete_fd_from_list(ep->bfd);
+			close_and_delete_fd_from_list(ep->bfd, ep);
 			ep->bfd = INVALID_SOCKET;
 		}
 		ep->flags &= ~INT_BCASTOPEN;
@@ -4274,13 +4265,13 @@ calc_addr_distance(
 	const sockaddr_u *	a2
 	)
 {
-	u_char *pdist;
-	u_char *p1;
-	u_char *p2;
-	size_t	cb;
-	int	different;
-	int	a1_greater;
-	u_int	u;
+	u_char *	pdist;
+	const u_char *	p1;
+	const u_char *	p2;
+	size_t		cb;
+	int		different;
+	int		a1_greater;
+	u_int		u;
 
 	REQUIRE(AF(a1) == AF(a2));
 
@@ -4288,13 +4279,13 @@ calc_addr_distance(
 	AF(dist) = AF(a1);
 
 	if (IS_IPV4(a1)) {
-		pdist = (u_char *)&NSRCADR(dist);
-		p1 =	(u_char *)&NSRCADR(a1);
-		p2 =	(u_char *)&NSRCADR(a2);
+		pdist = (      u_char *)&NSRCADR(dist);
+		p1 =	(const u_char *)&NSRCADR(a1);
+		p2 =	(const u_char *)&NSRCADR(a2);
 	} else {
-		pdist = (u_char *)&NSRCADR(dist);
-		p1 =	(u_char *)&NSRCADR(a1);
-		p2 =	(u_char *)&NSRCADR(a2);
+		pdist = (      u_char *)&NSRCADR(dist);
+		p1 =	(const u_char *)&NSRCADR(a1);
+		p2 =	(const u_char *)&NSRCADR(a2);
 	}
 	cb = SIZEOF_INADDR(AF(dist));
 	different = FALSE;
@@ -4566,7 +4557,7 @@ io_closeclock(
 #	    ifdef HAVE_IO_COMPLETION_PORT
 		io_completion_port_remove_clock_io(rio);
 #	    endif
-		close_and_delete_fd_from_list(rio->fd);
+		close_and_delete_fd_from_list(rio->fd, NULL);
 		purge_recv_buffers_for_fd(rio->fd);
 		rio->fd = -1;
 	}
@@ -4601,7 +4592,7 @@ kill_asyncio(
 	maxactivefd = 0;
 
 	while (fd_list != NULL)
-		close_and_delete_fd_from_list(fd_list->fd);
+		close_and_delete_fd_from_list(fd_list->fd, NULL);
 
 	UNBLOCKIO();
 }
@@ -4629,7 +4620,8 @@ add_fd_to_list(
 
 static void
 close_and_delete_fd_from_list(
-	SOCKET fd
+	SOCKET fd,
+	endpt *ep	/* req. if fd is in struct endpt */
 	)
 {
 	vsock_t *lsock;
@@ -4643,6 +4635,11 @@ close_and_delete_fd_from_list(
 	switch (lsock->type) {
 
 	case FD_TYPE_SOCKET:
+	    #ifdef HAVE_IO_COMPLETION_PORT
+		if (ep != NULL) {
+			io_completion_port_remove_socket(fd, ep);
+		}
+	    #endif
 		closesocket(lsock->fd);
 		break;
 

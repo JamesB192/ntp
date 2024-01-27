@@ -156,7 +156,8 @@ extern	void	block_io_and_alarm	(void);
 # define	UNBLOCK_IO_AND_ALARM()	do {} while (0)
 # define	BLOCK_IO_AND_ALARM()	do {} while (0)
 #endif
-#define		latoa(pif)	localaddrtoa(pif)
+#define		eptoa(pif)	localaddrtoa(pif)
+#define		latoa(pif)	eptoa(pif)
 extern const char * localaddrtoa(endpt *);
 #ifdef DEBUG
 extern const char * iflags_str(u_int32 iflags);

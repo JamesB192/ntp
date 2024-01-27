@@ -376,7 +376,7 @@ send_blocking_resp_internal(
 	{
 #	    ifdef WORK_PIPE
 		if (1 != write(c->resp_write_pipe, "", 1))
-			msyslog(LOG_WARNING, "async resolver: blocking_get%sinfo",
+			msyslog(LOG_WARNING, "async resolver: blocking_get%sinfo"
 				" failed to notify main thread!",
 				(BLOCKING_GETNAMEINFO == resp->rtype)
 				    ? "name"

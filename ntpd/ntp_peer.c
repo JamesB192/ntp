@@ -648,6 +648,24 @@ set_peerdstadr(
 		return;
 
 	/*
+	 * Do not change the local address of a link-local
+	 * peer address.
+	 */
+	if (   p->dstadr != NULL && is_linklocal(&p->dstadr->sin)
+	    && dstadr != NULL) {
+		return;
+	}
+
+	/*
+	 * Do not set the local address for a link-local IPv6 peer
+	 * to one with a different scope ID.
+	 */
+	if (   dstadr != NULL && IS_IPV6(&p->srcadr)
+	    && SCOPE(&dstadr->sin) != SCOPE(&p->srcadr)) {
+		return;
+	}
+
+	/*
 	 * Don't accept updates to a separate multicast receive-only
 	 * endpt while a BCLNT peer is running its unicast protocol.
 	 */
@@ -661,11 +679,12 @@ set_peerdstadr(
 		p->dstadr->peercnt--;
 		UNLINK_SLIST(unlinked, p->dstadr->peers, p, ilink,
 			     struct peer);
-		if (!IS_MCAST(&p->srcadr) &&!(FLAG_DISABLED & p->flags)) {
-			msyslog(LOG_INFO, "%s local addr %s -> %s",
-				stoa(&p->srcadr), latoa(p->dstadr),
-				latoa(dstadr));
-		}
+	}
+	if (   !IS_MCAST(&p->srcadr) && !(FLAG_DISABLED & p->flags)
+	    && !initializing) {
+		msyslog(LOG_INFO, "%s local addr %s -> %s",
+			stoa(&p->srcadr), eptoa(p->dstadr),
+			eptoa(dstadr));
 	}
 
 	p->dstadr = dstadr;
@@ -757,13 +776,6 @@ refresh_all_peerinterfaces(void)
 		 * they have hasn't worked for a while.
 		 */
 		if (p->dstadr != NULL && (p->reach & 0x3)) {
-			continue;
-		}
-		/*
-		 * Do not change the local address of a link-local
-		 * peer address.
-		 */
-		if (p->dstadr != NULL && is_linklocal(&p->srcadr)) {
 			continue;
 		}
 		peer_refresh_interface(p);
@@ -945,11 +957,21 @@ newpeer(
 		       select_peerinterface(peer, srcadr, dstadr));
 
 	/*
+	 * Zero for minpoll or maxpoll means use defaults.
+	 */
+	peer->maxpoll = (0 == maxpoll)
+			    ? NTP_MAXDPOLL
+			    : maxpoll;
+	peer->minpoll = (0 == minpoll)
+			    ? NTP_MINDPOLL
+			    : minpoll;
+
+	/*
 	 * Clamp maxpoll and minpoll within NTP_MINPOLL and NTP_MAXPOLL,
 	 * and further clamp minpoll less than or equal maxpoll.
 	 */
-	peer->maxpoll = CLAMP(maxpoll, NTP_MINPOLL, NTP_MAXPOLL);
-	peer->minpoll = CLAMP(minpoll, NTP_MINPOLL, peer->maxpoll);
+	peer->maxpoll = CLAMP(peer->maxpoll, NTP_MINPOLL, NTP_MAXPOLL);
+	peer->minpoll = CLAMP(peer->minpoll, NTP_MINPOLL, peer->maxpoll);
 
 	if (peer->dstadr != NULL) {
 		DPRINTF(3, ("newpeer(%s): using fd %d and our addr %s\n",

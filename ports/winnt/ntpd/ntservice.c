@@ -219,10 +219,8 @@ ntservice_systemisshuttingdown(void)
 void
 ntservice_exit(void)
 {
-	uninit_io_completion_port();
 	peer_cleanup();
-	Sleep( 200 );  	//##++ 
-
+	uninit_io_completion_port();
 	reset_winnt_time();
 
 	msyslog(LOG_INFO, "ntservice: The Network Time Protocol Service is stopping.");
