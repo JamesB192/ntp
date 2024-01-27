@@ -2469,7 +2469,7 @@ config_monitor(
 
 	/* Set the statistics directory */
 	if (ptree->stats_dir) {
-		stats_config(STATS_STATSDIR, ptree->stats_dir, 0);
+		stats_config(STATS_STATSDIR, ptree->stats_dir, TRUE);
 	}
 
 	/* NOTE:
@@ -3361,10 +3361,13 @@ config_nic_rules(
 			if_name = estrdup(if_name);
 
 		switch (curr_node->match_class) {
-#ifdef DEBUG
 		default:
+#ifdef DEBUG
 			fatal_error("config_nic_rules: match-class-token=%d", curr_node->match_class);
 #endif
+		case T_All:
+			match_type = MATCH_ALL;
+			break;
 
 		case 0:
 			/*
@@ -3395,10 +3398,6 @@ config_nic_rules(
 			}
 			break;
 
-		case T_All:
-			match_type = MATCH_ALL;
-			break;
-
 		case T_Ipv4:
 			match_type = MATCH_IPV4;
 			break;
@@ -3413,8 +3412,8 @@ config_nic_rules(
 		}
 
 		switch (curr_node->action) {
-#ifdef DEBUG
 		default:
+#ifdef DEBUG
 			fatal_error("config_nic_rules: action-token=%d", curr_node->action);
 #endif
 		case T_Listen:
@@ -5194,13 +5193,13 @@ getconfig(
 		}
 		cfgt.source.value.s = estrdup(alt_config_file);
 #endif	/* SYS_WINNT */
-	} else
+	} else {
 		cfgt.source.value.s = estrdup(config_file);
-
+	}
 
 	/*** BULK OF THE PARSER ***/
 #ifdef DEBUG
-	yydebug = !!(debug >= 5);
+	yydebug = (debug >= 9);
 #endif
 	yyparse();
 	lex_drop_stack();

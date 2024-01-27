@@ -139,7 +139,7 @@ struct IoCtx {
 		l_fp		DCDSTime;	/* PPS-hack: time of DCD ON	*/
 		l_fp		FlagTime;	/* time stamp of flag/event char*/
 		l_fp		RecvTime;	/* time stamp of callback	*/
-		DWORD		com_events;	/* buffer for COM events	*/
+		DWORD		com_events;	/* bitmask of serial events	*/
 		u_int		flTsDCDS : 1;	/* DCDSTime valid?		*/
 		u_int		flTsFlag : 1;	/* FlagTime valid?		*/
 	} aux;

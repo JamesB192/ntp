@@ -267,7 +267,7 @@ case "$with_crypto" in
 	    for i in $ntp_ssl_incdir_search
 	    do
 		AC_MSG_NOTICE([Searching for openssl/evp.h in $i])
-		CPPFLAGS="$NTPSSL_SAVED_CPPFLAGS $i"
+		CPPFLAGS="$NTPSSL_SAVED_CPPFLAGS -I$i"
 		dnl force uncached AC_CHECK_HEADER
 		AS_UNSET([ac_cv_header_openssl_evp_h])
 		AC_CHECK_HEADER(
@@ -535,6 +535,14 @@ case "$ntp_openssl" in
     VER_SUFFIX=o
     AC_CHECK_HEADERS([openssl/cmac.h openssl/hmac.h])
     AC_DEFINE([OPENSSL], [], [Use OpenSSL?])
+    dnl OpenSSL 3 deprecates a bunch of functions used by Autokey.
+    dnl Adapting our code to the bold new way is not a priority
+    dnl for us because we do not want to require OpenSSL 3 yet.
+    dnl The deprecation warnings clutter up the build output
+    dnl encouraging the habit of ignoring warninis.
+    dnl So, tell it to the hand, OpenSSL deprecation warnings...
+    AC_DEFINE([OPENSSL_SUPPRESS_DEPRECATED], [1],
+	      [Suppress OpenSSL 3 deprecation warnings])
     dnl We don't want -Werror for the EVP_MD_do_all_sorted check
     CFLAGS="$NTPSSL_SAVED_CFLAGS"
     AC_CHECK_FUNCS([EVP_MD_do_all_sorted])
