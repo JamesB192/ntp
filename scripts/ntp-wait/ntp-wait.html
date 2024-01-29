@@ -1,6 +1,6 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.6, http://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Ntp-wait User&rsquo;s Manual</title>
@@ -10,24 +10,17 @@
 <meta name="resource-type" content="document">
 <meta name="distribution" content="global">
 <meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <link href="#Top" rel="start" title="Top">
 <link href="dir.html#Top" rel="up" title="(dir)">
+<link href="dir.html#Top" rel="prev" title="(dir)">
 <style type="text/css">
 <!--
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-div.lisp {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-ul.no-bullet {list-style: none}
+kbd.kbd {font-style: oblique}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 
@@ -35,117 +28,95 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<h1 class="settitle" align="center">Ntp-wait User&rsquo;s Manual</h1>
 
 
 
 
 
-<span id="Top"></span><div class="header">
+<a class="node-id" id="Top"></a><div class="nav-panel">
 <p>
 Previous: <a href="dir.html#Top" accesskey="p" rel="prev">(dir)</a>, Up: <a href="dir.html#Top" accesskey="u" rel="up">(dir)</a> &nbsp; </p>
 </div>
-<h1 class="node-heading">Top</h1>
+<h1 class="node"><span>Top<a class="copiable-link" href="#Top"> &para;</a></span></h1>
 
-<p>This document describes the use of the NTP Project&rsquo;s <code>ntp-wait</code> program.
+<p>This document describes the use of the NTP Project&rsquo;s <code class="code">ntp-wait</code> program.
 </p>
 <p>If there are time-sensitive applications,
 the proper sequence of events is to
-run <code>ntpd -g</code> as early as possible,
+run <code class="code">ntpd -g</code> as early as possible,
 then invoke all of the non-time-sensitive process,
-run <code>ntp-wait</code> to block
+run <code class="code">ntp-wait</code> to block
 until the system&rsquo;s time has stabilized and synchronized,
 and only then start any applicaitons (like database servers) that require
 accurate and stable time.
 </p>
-<p>This document applies to version 4.2.8p17 of <code>ntp-wait</code>.
+<p>This document applies to version 4.2.8p17 of <code class="code">ntp-wait</code>.
 </p>
-<span id="SEC_Overview"></span>
-<h2 class="shortcontents-heading">Short Table of Contents</h2>
 
-<div class="shortcontents">
-<li><a id="stoc-Invoking-ntp_002dwait" href="#toc-Invoking-ntp_002dwait">1 Invoking ntp-wait</a></li>
-
-</div>
-
-
-<table class="menu" border="0" cellspacing="0">
-<tr><td align="left" valign="top">&bull; ntp-wait Description</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Description
-</td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#ntp_002dwait-Invocation" accesskey="2">ntp-wait Invocation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Invoking ntp-wait
-</td></tr>
-</table>
 
 <hr>
-<span id="ntp_002dwait-Invocation"></span><div class="header">
-<p>
-Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; </p>
+<div class="section-level-extent" id="ntp_002dwait-Invocation">
+<div class="nav-panel">
 </div>
-<span id="Invoking-ntp_002dwait"></span><h3 class="section">1 Invoking ntp-wait</h3>
-<span id="index-ntp_002dwait"></span>
-<span id="index-Wait-for-ntpd-to-stabilize-the-system-clock"></span>
+<h3 class="section" id="Invoking-ntp_002dwait"><span>1 Invoking ntp-wait<a class="copiable-link" href="#Invoking-ntp_002dwait"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-ntp_002dwait"></a>
+<a class="index-entry-id" id="index-Wait-for-ntpd-to-stabilize-the-system-clock"></a>
 
 
 
-<p><code>ntp-wait</code>
+<p><code class="code">ntp-wait</code>
 will send at most
-<kbd>num-tries</kbd>
+<kbd class="kbd">num-tries</kbd>
 queries to
-<code>ntpd(8)</code>,
+<code class="code">ntpd(8)</code>,
 sleeping for
-<kbd>secs-between-tries</kbd>
+<kbd class="kbd">secs-between-tries</kbd>
 after each status return that says
-<code>ntpd(8)</code>
+<code class="code">ntpd(8)</code>
 has not yet produced a synchronized and stable system clock.
 </p>
-<p><code>ntp-wait</code>
+<p><code class="code">ntp-wait</code>
 will do this quietly, unless the
-<code>-v</code>
+<code class="code">-v</code>
 flag is provided.
 This can be useful at boot time, to delay the boot sequence until after
-<kbd>ntpd</kbd> <kbd>-g</kbd>
+<kbd class="kbd">ntpd</kbd> <kbd class="kbd">-g</kbd>
 has set the time.
 </p>
-<p>This section was generated by <strong>AutoGen</strong>,
-using the <code>agtexi-cmd</code> template and the option descriptions for the <code>ntp-wait</code> program.
+<p>This section was generated by <strong class="strong">AutoGen</strong>,
+using the <code class="code">agtexi-cmd</code> template and the option descriptions for the <code class="code">ntp-wait</code> program.
 </p>
-<table class="menu" border="0" cellspacing="0">
-<tr><td align="left" valign="top">&bull; <a href="#ntp_002dwait-usage" accesskey="1">ntp-wait usage</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">ntp-wait help/usage (<samp>--help</samp>)
-</td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#ntp_002dwait-tries" accesskey="2">ntp-wait tries</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">tries option (-n)
-</td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#ntp_002dwait-sleep" accesskey="3">ntp-wait sleep</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">sleep option (-s)
-</td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#ntp_002dwait-verbose" accesskey="4">ntp-wait verbose</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">verbose option (-v)
-</td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#ntp_002dwait-exit-status" accesskey="5">ntp-wait exit status</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">exit status
-</td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#ntp_002dwait-Authors" accesskey="6">ntp-wait Authors</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Authors
-</td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#ntp_002dwait-Notes" accesskey="7">ntp-wait Notes</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Notes
-</td></tr>
-</table>
 
+<ul class="mini-toc">
+<li><a href="#ntp_002dwait-usage" accesskey="1">ntp-wait help/usage (<samp class="option">--help</samp>)</a></li>
+<li><a href="#ntp_002dwait-tries" accesskey="2">tries option (-n)</a></li>
+<li><a href="#ntp_002dwait-sleep" accesskey="3">sleep option (-s)</a></li>
+<li><a href="#ntp_002dwait-verbose" accesskey="4">verbose option (-v)</a></li>
+<li><a href="#ntp_002dwait-exit-status" accesskey="5">ntp-wait exit status</a></li>
+<li><a href="#ntp_002dwait-Authors" accesskey="6">ntp-wait Authors</a></li>
+<li><a href="#ntp_002dwait-Notes" accesskey="7">ntp-wait Notes</a></li>
+</ul>
 <hr>
-<span id="ntp_002dwait-usage"></span><div class="header">
+<div class="subsection-level-extent" id="ntp_002dwait-usage">
+<div class="nav-panel">
 <p>
-Next: <a href="#ntp_002dwait-tries" accesskey="n" rel="next">ntp-wait tries</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">ntp-wait Invocation</a> &nbsp; </p>
+Next: <a href="#ntp_002dwait-tries" accesskey="n" rel="next">tries option (-n)</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">Invoking ntp-wait</a> &nbsp; </p>
 </div>
-<span id="ntp_002dwait-help_002fusage-_0028_002d_002dhelp_0029"></span><h4 class="subsection">1.1 ntp-wait help/usage (<samp>--help</samp>)</h4>
-<span id="index-ntp_002dwait-help"></span>
+<h4 class="subsection" id="ntp_002dwait-help_002fusage-_0028_002d_002dhelp_0029"><span>1.1 ntp-wait help/usage (<samp class="option">--help</samp>)<a class="copiable-link" href="#ntp_002dwait-help_002fusage-_0028_002d_002dhelp_0029"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-ntp_002dwait-help"></a>
 
 <p>This is the automatically generated usage text for ntp-wait.
 </p>
-<p>The text printed is the same whether selected with the <code>help</code> option
-(<samp>--help</samp>) or the <code>more-help</code> option (<samp>--more-help</samp>).  <code>more-help</code> will print
+<p>The text printed is the same whether selected with the <code class="code">help</code> option
+(<samp class="option">--help</samp>) or the <code class="code">more-help</code> option (<samp class="option">--more-help</samp>).  <code class="code">more-help</code> will print
 the usage text by passing it through a pager program.
-<code>more-help</code> is disabled on platforms without a working
-<code>fork(2)</code> function.  The <code>PAGER</code> environment variable is
-used to select the program, defaulting to <samp>more</samp>.  Both will exit
+<code class="code">more-help</code> is disabled on platforms without a working
+<code class="code">fork(2)</code> function.  The <code class="code">PAGER</code> environment variable is
+used to select the program, defaulting to <samp class="file">more</samp>.  Both will exit
 with a status code of 0.
 </p>
 <div class="example">
-<pre class="example">ntp-wait - Wait for ntpd to stabilize the system clock - Ver. 4.2.8p17
+<pre class="example-preformatted">ntp-wait - Wait for ntpd to stabilize the system clock - Ver. 4.2.8p17
 USAGE: ntp-wait [ -&lt;flag&gt; [&lt;val&gt;] | --&lt;name&gt;[{=| }&lt;val&gt;] ]... 
 
     -n, --tries=num              Number of times to check ntpd
@@ -159,69 +130,82 @@ hyphen and the flag character.
 </pre></div>
 
 <hr>
-<span id="ntp_002dwait-tries"></span><div class="header">
-<p>
-Next: <a href="#ntp_002dwait-sleep" accesskey="n" rel="next">ntp-wait sleep</a>, Previous: <a href="#ntp_002dwait-usage" accesskey="p" rel="prev">ntp-wait usage</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">ntp-wait Invocation</a> &nbsp; </p>
 </div>
-<span id="tries-option-_0028_002dn_0029"></span><h4 class="subsection">1.2 tries option (-n)</h4>
-<span id="index-ntp_002dwait_002dtries"></span>
+<div class="subsection-level-extent" id="ntp_002dwait-tries">
+<div class="nav-panel">
+<p>
+Next: <a href="#ntp_002dwait-sleep" accesskey="n" rel="next">sleep option (-s)</a>, Previous: <a href="#ntp_002dwait-usage" accesskey="p" rel="prev">ntp-wait help/usage (<samp class="option">--help</samp>)</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">Invoking ntp-wait</a> &nbsp; </p>
+</div>
+<h4 class="subsection" id="tries-option-_0028_002dn_0029"><span>1.2 tries option (-n)<a class="copiable-link" href="#tries-option-_0028_002dn_0029"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-ntp_002dwait_002dtries"></a>
 
 <p>This is the &ldquo;number of times to check ntpd&rdquo; option.
 This option takes a number argument.
-        The maximum number of times we will check <code>ntpd</code> to see if
+        The maximum number of times we will check <code class="code">ntpd</code> to see if
         it has been able to synchronize and stabilize the system clock.
 </p><hr>
-<span id="ntp_002dwait-sleep"></span><div class="header">
-<p>
-Next: <a href="#ntp_002dwait-verbose" accesskey="n" rel="next">ntp-wait verbose</a>, Previous: <a href="#ntp_002dwait-tries" accesskey="p" rel="prev">ntp-wait tries</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">ntp-wait Invocation</a> &nbsp; </p>
 </div>
-<span id="sleep-option-_0028_002ds_0029"></span><h4 class="subsection">1.3 sleep option (-s)</h4>
-<span id="index-ntp_002dwait_002dsleep"></span>
+<div class="subsection-level-extent" id="ntp_002dwait-sleep">
+<div class="nav-panel">
+<p>
+Next: <a href="#ntp_002dwait-verbose" accesskey="n" rel="next">verbose option (-v)</a>, Previous: <a href="#ntp_002dwait-tries" accesskey="p" rel="prev">tries option (-n)</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">Invoking ntp-wait</a> &nbsp; </p>
+</div>
+<h4 class="subsection" id="sleep-option-_0028_002ds_0029"><span>1.3 sleep option (-s)<a class="copiable-link" href="#sleep-option-_0028_002ds_0029"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-ntp_002dwait_002dsleep"></a>
 
 <p>This is the &ldquo;how long to sleep between tries&rdquo; option.
-This option takes a number argument <samp>secs-between-tries</samp>.
-        We will sleep for <samp>secs-between-tries</samp> after each query
-        of <code>ntpd</code> that returns &quot;the time is not yet stable&quot;.
+This option takes a number argument <samp class="file">secs-between-tries</samp>.
+        We will sleep for <samp class="file">secs-between-tries</samp> after each query
+        of <code class="code">ntpd</code> that returns &quot;the time is not yet stable&quot;.
 </p><hr>
-<span id="ntp_002dwait-verbose"></span><div class="header">
-<p>
-Next: <a href="#ntp_002dwait-exit-status" accesskey="n" rel="next">ntp-wait exit status</a>, Previous: <a href="#ntp_002dwait-sleep" accesskey="p" rel="prev">ntp-wait sleep</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">ntp-wait Invocation</a> &nbsp; </p>
 </div>
-<span id="verbose-option-_0028_002dv_0029"></span><h4 class="subsection">1.4 verbose option (-v)</h4>
-<span id="index-ntp_002dwait_002dverbose"></span>
+<div class="subsection-level-extent" id="ntp_002dwait-verbose">
+<div class="nav-panel">
+<p>
+Next: <a href="#ntp_002dwait-exit-status" accesskey="n" rel="next">ntp-wait exit status</a>, Previous: <a href="#ntp_002dwait-sleep" accesskey="p" rel="prev">sleep option (-s)</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">Invoking ntp-wait</a> &nbsp; </p>
+</div>
+<h4 class="subsection" id="verbose-option-_0028_002dv_0029"><span>1.4 verbose option (-v)<a class="copiable-link" href="#verbose-option-_0028_002dv_0029"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-ntp_002dwait_002dverbose"></a>
 
 <p>This is the &ldquo;be verbose&rdquo; option.
-        By default, <code>ntp-wait</code> is silent.
-        With this option, <code>ntp-wait</code> will provide status information.
+        By default, <code class="code">ntp-wait</code> is silent.
+        With this option, <code class="code">ntp-wait</code> will provide status information.
 </p><hr>
-<span id="ntp_002dwait-exit-status"></span><div class="header">
-<p>
-Next: <a href="#ntp_002dwait-Authors" accesskey="n" rel="next">ntp-wait Authors</a>, Previous: <a href="#ntp_002dwait-verbose" accesskey="p" rel="prev">ntp-wait verbose</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">ntp-wait Invocation</a> &nbsp; </p>
 </div>
-<span id="ntp_002dwait-exit-status-1"></span><h4 class="subsection">1.5 ntp-wait exit status</h4>
+<div class="subsection-level-extent" id="ntp_002dwait-exit-status">
+<div class="nav-panel">
+<p>
+Next: <a href="#ntp_002dwait-Authors" accesskey="n" rel="next">ntp-wait Authors</a>, Previous: <a href="#ntp_002dwait-verbose" accesskey="p" rel="prev">verbose option (-v)</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">Invoking ntp-wait</a> &nbsp; </p>
+</div>
+<h4 class="subsection" id="ntp_002dwait-exit-status-1"><span>1.5 ntp-wait exit status<a class="copiable-link" href="#ntp_002dwait-exit-status-1"> &para;</a></span></h4>
 
 <p>One of the following exit values will be returned:
-</p><dl compact="compact">
-<dt>&lsquo;<samp>0 (EXIT_SUCCESS)</samp>&rsquo;</dt>
+</p><dl class="table">
+<dt>&lsquo;<samp class="samp">0 (EXIT_SUCCESS)</samp>&rsquo;</dt>
 <dd><p>Successful program execution.
 </p></dd>
-<dt>&lsquo;<samp>1 (EXIT_FAILURE)</samp>&rsquo;</dt>
+<dt>&lsquo;<samp class="samp">1 (EXIT_FAILURE)</samp>&rsquo;</dt>
 <dd><p>The operation failed or the command syntax was not valid.
 </p></dd>
 </dl>
 <hr>
-<span id="ntp_002dwait-Authors"></span><div class="header">
-<p>
-Next: <a href="#ntp_002dwait-Notes" accesskey="n" rel="next">ntp-wait Notes</a>, Previous: <a href="#ntp_002dwait-exit-status" accesskey="p" rel="prev">ntp-wait exit status</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">ntp-wait Invocation</a> &nbsp; </p>
 </div>
-<span id="ntp_002dwait-Authors-1"></span><h4 class="subsection">1.6 ntp-wait Authors</h4>
-<hr>
-<span id="ntp_002dwait-Notes"></span><div class="header">
+<div class="subsection-level-extent" id="ntp_002dwait-Authors">
+<div class="nav-panel">
 <p>
-Previous: <a href="#ntp_002dwait-Authors" accesskey="p" rel="prev">ntp-wait Authors</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">ntp-wait Invocation</a> &nbsp; </p>
+Next: <a href="#ntp_002dwait-Notes" accesskey="n" rel="next">ntp-wait Notes</a>, Previous: <a href="#ntp_002dwait-exit-status" accesskey="p" rel="prev">ntp-wait exit status</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">Invoking ntp-wait</a> &nbsp; </p>
 </div>
-<span id="ntp_002dwait-Notes-1"></span><h4 class="subsection">1.7 ntp-wait Notes</h4>
+<h4 class="subsection" id="ntp_002dwait-Authors-1"><span>1.6 ntp-wait Authors<a class="copiable-link" href="#ntp_002dwait-Authors-1"> &para;</a></span></h4>
 <hr>
+</div>
+<div class="subsection-level-extent" id="ntp_002dwait-Notes">
+<div class="nav-panel">
+<p>
+Previous: <a href="#ntp_002dwait-Authors" accesskey="p" rel="prev">ntp-wait Authors</a>, Up: <a href="#ntp_002dwait-Invocation" accesskey="u" rel="up">Invoking ntp-wait</a> &nbsp; </p>
+</div>
+<h4 class="subsection" id="ntp_002dwait-Notes-1"><span>1.7 ntp-wait Notes<a class="copiable-link" href="#ntp_002dwait-Notes-1"> &para;</a></span></h4>
+</div>
+</div>
 
 
 
