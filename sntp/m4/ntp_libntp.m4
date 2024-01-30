@@ -491,7 +491,10 @@ AC_DEFUN([NTP_BEFORE_HW_FUNC_VSNPRINTF], [
     AC_BEFORE([$0], [HW_FUNC_SNPRINTF])dnl
     AC_ARG_ENABLE(
 	[c99-snprintf],
-	[AS_HELP_STRING([--enable-c99-snprintf], [s force replacement])],
+	[AS_HELP_STRING(
+	    [--enable-c99-snprintf], 
+	    [s use replacement printf family]
+	)],
 	[force_c99_snprintf=$enableval],
 	[force_c99_snprintf=no]
 	)
