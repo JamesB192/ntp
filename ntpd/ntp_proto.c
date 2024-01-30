@@ -2052,7 +2052,7 @@ receive(
 
 		msyslog(LOG_INFO,
 			"receive: Got KoD %s from %s",
-			refid_str(pkt->refid, hisstratum), ntoa(&peer->srcadr));
+			refid_str(pkt->refid, -1), ntoa(&peer->srcadr));
 	} else if (peer->flip == 0) {
 		if (0) {
 		} else if (L_ISZERO(&p_org)) {

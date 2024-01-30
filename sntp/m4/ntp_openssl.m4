@@ -29,18 +29,12 @@ dnl	LDADD_NTP	OpenSSL -L and -l flags added as needed.
 dnl	LDFLAGS_NTP	OpenSSL runpath flags as needed.
 dnl
 dnl ####################################################################
-m4_define([NTP_OPENSSL_VERBOSE_MSG],
-    [
-	dnl Remove dnl prefix from AC_MSG_NOTICE below for debug output.
-	dnl Would prefer configure option but I don't know how to hide
-	dnl that option from configure --help.
-	dnl AC_MSG_NOTICE([$1])
-    ])
 dnl
 AC_DEFUN([NTP_OPENSSL], [
 AC_REQUIRE([AC_PROG_SED])dnl
 AC_REQUIRE([NTP_PKG_CONFIG])dnl
 AC_REQUIRE([NTP_VER_SUFFIX])dnl
+AC_REQUIRE([NTP_OPENSSL_VERBOSE_MSG])dnl
 
 AC_ARG_WITH(
     [crypto],
@@ -70,6 +64,15 @@ AC_ARG_WITH(
 	[+ =search likely dirs]
     )]
 )
+AC_ARG_ENABLE(
+    [verbose-ssl],
+    [AS_HELP_STRING(
+	[--enable-verbose-ssl],
+	[- show crypto lib detection details]
+    )],
+    [],
+    [enable_verbose_ssl=no]	dnl default to quiet
+)
 
 ntp_openssl=no
 ntp_openssl_from_pkg_config=no
@@ -98,7 +101,7 @@ case "$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${wit
 	AC_MSG_CHECKING([pkg-config for $pkg])
 	if $PKG_CONFIG --exists $pkg ; then
 	    ntp_ssl_cppflags="`$PKG_CONFIG --cflags-only-I $pkg`"
-	    case "$ntp_ssl_incdir" in
+	    case "$ntp_ssl_cppflags" in
 	     '')
 		ntp_ssl_incdir='not needed'
 		;;
@@ -527,7 +530,7 @@ case "$ntp_openssl:$GCC" in
     ntp_ssl_cflags="$ntp_ssl_cflags -Wstrict-prototypes"
 esac	dnl checking for gcc problems with -Werror and -Wstrict-prototypes
 
-AC_MSG_CHECKING([if we will use crypto])
+AC_MSG_CHECKING([if we will link to ssl library])
 AC_MSG_RESULT([$ntp_openssl])
 
 case "$ntp_openssl" in
@@ -539,7 +542,7 @@ case "$ntp_openssl" in
     dnl Adapting our code to the bold new way is not a priority
     dnl for us because we do not want to require OpenSSL 3 yet.
     dnl The deprecation warnings clutter up the build output
-    dnl encouraging the habit of ignoring warninis.
+    dnl encouraging the habit of ignoring warnings.
     dnl So, tell it to the hand, OpenSSL deprecation warnings...
     AC_DEFINE([OPENSSL_SUPPRESS_DEPRECATED], [1],
 	      [Suppress OpenSSL 3 deprecation warnings])
@@ -553,7 +556,7 @@ case "$ntp_openssl" in
 esac
 
 NTP_OPENSSL_VERBOSE_MSG([OpenSSL final checks:])
-NTP_OPENSSL_VERBOSE_MSG([ntp_openssl: $ntp_openssl])
+NTP_OPENSSL_VERBOSE_MSG([ntp_openssl:  $ntp_openssl])
 NTP_OPENSSL_VERBOSE_MSG([CPPFLAGS_NTP: ($CPPFLAGS_NTP)])
 NTP_OPENSSL_VERBOSE_MSG([CFLAGS_NTP:   ($CFLAGS_NTP)])
 NTP_OPENSSL_VERBOSE_MSG([LDADD_NTP:    ($LDADD_NTP)])
@@ -583,4 +586,14 @@ AS_UNSET([ntp_ssl_ldflags])
 
 ])
 dnl end of AC_DEFUN([NTP_OPENSSL])
+dnl
+AC_DEFUN(
+    [NTP_OPENSSL_VERBOSE_MSG],
+    [dnl
+	case "$enable_verbose_ssl" in
+	 yes) AC_MSG_NOTICE([$1])
+	esac
+    ]
+)
+dnl
 dnl ======================================================================

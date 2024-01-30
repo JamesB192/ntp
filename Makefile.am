@@ -83,7 +83,7 @@ BUILT_SOURCES =				\
 	@sleep 1
 	@touch $@
 
-html/.datecheck: FRC.html
+$(srcdir)/html/.datecheck: $(srcdir)/html/*.html
 	cd $(srcdir)/html && \
 	../scripts/build/checkHtmlFileDates
 

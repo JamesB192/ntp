@@ -834,7 +834,7 @@ crypto_recv(
 			 * errors.
 			 */
 			if (vallen == (u_int)EVP_PKEY_size(host_pkey)) {
-				RSA *rsa = EVP_PKEY_get0_RSA(host_pkey);
+				RSA *rsa = EVP_PKEY_get1_RSA(host_pkey);
 				u_int32 *cookiebuf = malloc(RSA_size(rsa));
 				if (!cookiebuf) {
 					rval = XEVNT_CKY;
@@ -853,6 +853,7 @@ crypto_recv(
 					cookie = ntohl(*cookiebuf);
 					free(cookiebuf);
 				}
+				RSA_free(rsa);
 			} else {
 				rval = XEVNT_CKY;
 				break;
@@ -1583,6 +1584,7 @@ crypto_encrypt(
 	)
 {
 	EVP_PKEY *pkey;		/* public key */
+	RSA* rsa;		/* public key */
 	EVP_MD_CTX *ctx;	/* signature context */
 	tstamp_t tstamp;	/* NTP timestamp */
 	u_int32	temp32;
@@ -1610,8 +1612,9 @@ crypto_encrypt(
 	vp->ptr = emalloc(vallen);
 	puch = vp->ptr;
 	temp32 = htonl(*cookie);
-	if (RSA_public_encrypt(4, (u_char *)&temp32, puch,
-	    EVP_PKEY_get0_RSA(pkey), RSA_PKCS1_OAEP_PADDING) <= 0) {
+	rsa = EVP_PKEY_get1_RSA(pkey);
+	if (RSA_public_encrypt(4, (u_char *)&temp32, puch, rsa,
+	    RSA_PKCS1_OAEP_PADDING) <= 0) {
 		msyslog(LOG_ERR, "crypto_encrypt: %s",
 		    ERR_error_string(ERR_get_error(), NULL));
 		free(vp->ptr);
@@ -1619,6 +1622,9 @@ crypto_encrypt(
 		return (XEVNT_CKY);
 	}
 	EVP_PKEY_free(pkey);
+	pkey = NULL;
+	RSA_free(rsa);
+	rsa = NULL;
 	if (tstamp == 0)
 		return (XEVNT_OK);
 
@@ -2003,7 +2009,7 @@ value_free(
  * Returns NTP seconds if in synch, 0 otherwise
  */
 tstamp_t
-crypto_time()
+crypto_time(void)
 {
 	l_fp	tstamp;		/* NTP time */
 
@@ -2075,7 +2081,7 @@ asn_to_calendar	(
 
 
 /*
- * bigdig() - compute a BIGNUM MD5 hash of a BIGNUM number.
+ * bighash() - compute a BIGNUM MD5 hash of a BIGNUM number.
  *
  * Returns void (no errors)
  */
@@ -2169,12 +2175,12 @@ crypto_alice(
 	struct value *vp	/* value pointer */
 	)
 {
-	DSA	*dsa;		/* IFF parameters */
-	BN_CTX	*bctx;		/* BIGNUM context */
-	EVP_MD_CTX *ctx;	/* signature context */
-	tstamp_t tstamp;
-	u_int	len;
-	const BIGNUM *q;
+	const DSA	*dsa;		/* IFF parameters */
+	BN_CTX		*bctx;		/* BIGNUM context */
+	EVP_MD_CTX	*ctx;	/* signature context */
+	tstamp_t	tstamp;
+	u_int		len;
+	const BIGNUM	*q;
 
 	/*
 	 * The identity parameters must have correct format and content.
@@ -2243,7 +2249,8 @@ crypto_bob(
 	struct value *vp	/* value pointer */
 	)
 {
-	DSA	*dsa;		/* IFF parameters */
+	int	retv;		/* return value */
+	const DSA *dsa;		/* IFF parameters */
 	DSA_SIG	*sdsa;		/* DSA signature context fake */
 	BN_CTX	*bctx;		/* BIGNUM context */
 	EVP_MD_CTX *ctx;	/* signature context */
@@ -2262,6 +2269,10 @@ crypto_bob(
 		msyslog(LOG_NOTICE, "crypto_bob: scheme unavailable");
 		return (XEVNT_ID);
 	}
+
+	/* Initialize pointers that may need freeing in cleanup. */
+	sdsa = NULL;
+
 	dsa = EVP_PKEY_get0_DSA(iffkey_info->pkey);
 	DSA_get0_pqg(dsa, &p, &q, &g);
 	DSA_get0_key(dsa, NULL, &priv_key);
@@ -2306,16 +2317,16 @@ crypto_bob(
 	if (len == 0) {
 		msyslog(LOG_ERR, "crypto_bob: %s",
 		    ERR_error_string(ERR_get_error(), NULL));
-		DSA_SIG_free(sdsa);
-		return (XEVNT_ERR);
+		retv = XEVNT_ERR;
+		goto cleanup;
 	}
 	if (len > MAX_VALLEN) {
 		msyslog(LOG_ERR, "crypto_bob: signature is too big: %u",
 		    len);
-		DSA_SIG_free(sdsa);
-		return (XEVNT_LEN);
+		retv = XEVNT_ERR;
+		goto cleanup;
 	}
-	memset(vp, 0, sizeof(struct value));
+	ZERO(*vp);
 	tstamp = crypto_time();
 	vp->tstamp = htonl(tstamp);
 	vp->fstamp = htonl(iffkey_info->fstamp);
@@ -2323,9 +2334,10 @@ crypto_bob(
 	ptr = emalloc(len);
 	vp->ptr = ptr;
 	i2d_DSA_SIG(sdsa, &ptr);
-	DSA_SIG_free(sdsa);
-	if (tstamp == 0)
-		return (XEVNT_OK);
+	if (0 == tstamp) {
+		retv = XEVNT_OK;
+		goto cleanup;
+	}
 
 	/* XXX: more validation to make sure the sign fits... */
 	vp->sig = emalloc(sign_siglen);
@@ -2338,7 +2350,11 @@ crypto_bob(
 		vp->siglen = htonl(len);
 	}
 	EVP_MD_CTX_free(ctx);
-	return (XEVNT_OK);
+	retv = XEVNT_OK;
+
+    cleanup:
+	DSA_SIG_free(sdsa);
+	return retv;
 }
 
 
@@ -2357,7 +2373,7 @@ crypto_iff(
 	struct peer *peer	/* peer structure pointer */
 	)
 {
-	DSA	*dsa;		/* IFF parameters */
+	const DSA *dsa;		/* IFF parameters */
 	BN_CTX	*bctx;		/* BIGNUM context */
 	DSA_SIG	*sdsa;		/* DSA parameters */
 	BIGNUM	*bn, *bk;
@@ -2501,7 +2517,7 @@ crypto_alice2(
 	struct value *vp	/* value pointer */
 	)
 {
-	RSA	*rsa;		/* GQ parameters */
+	const RSA *rsa;	/* GQ parameters */
 	BN_CTX	*bctx;		/* BIGNUM context */
 	EVP_MD_CTX *ctx;	/* signature context */
 	tstamp_t tstamp;
@@ -2573,7 +2589,7 @@ crypto_bob2(
 	struct value *vp	/* value pointer */
 	)
 {
-	RSA	*rsa;		/* GQ parameters */
+	const RSA *rsa;		/* GQ parameters */
 	DSA_SIG	*sdsa;		/* DSA parameters */
 	BN_CTX	*bctx;		/* BIGNUM context */
 	EVP_MD_CTX *ctx;	/* signature context */
@@ -2680,7 +2696,7 @@ crypto_gq(
 	struct peer *peer	/* peer structure pointer */
 	)
 {
-	RSA	*rsa;		/* GQ parameters */
+	const RSA *rsa;		/* GQ parameters */
 	BN_CTX	*bctx;		/* BIGNUM context */
 	DSA_SIG	*sdsa;		/* RSA signature context fake */
 	BIGNUM	*y, *v;
@@ -2845,7 +2861,7 @@ crypto_alice3(
 	struct value *vp	/* value pointer */
 	)
 {
-	DSA	*dsa;		/* MV parameters */
+	const DSA *dsa;		/* MV parameters */
 	BN_CTX	*bctx;		/* BIGNUM context */
 	EVP_MD_CTX *ctx;	/* signature context */
 	tstamp_t tstamp;
@@ -2916,7 +2932,7 @@ crypto_bob3(
 	struct value *vp	/* value pointer */
 	)
 {
-	DSA	*dsa;		/* MV parameters */
+	const DSA *dsa;		/* MV parameters */
 	DSA	*sdsa;		/* DSA signature context fake */
 	BN_CTX	*bctx;		/* BIGNUM context */
 	EVP_MD_CTX *ctx;	/* signature context */
@@ -3032,7 +3048,7 @@ crypto_mv(
 	struct peer *peer	/* peer structure pointer */
 	)
 {
-	DSA	*dsa;		/* MV parameters */
+	const DSA *dsa;		/* MV parameters */
 	DSA	*sdsa;		/* DSA parameters */
 	BN_CTX	*bctx;		/* BIGNUM context */
 	BIGNUM	*k, *u, *v;

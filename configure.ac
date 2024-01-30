@@ -3020,7 +3020,7 @@ AC_MSG_RESULT([$ans])
 
 NTP_CRYPTO_RAND
 
-# if we are using OpenSSL (--with-crypto), by default Autokey is enabled
+# if we are building Autokey (--with-autokey), by default Autokey is enabled
 AC_ARG_ENABLE(
     [autokey],
     AS_HELP_STRING(
@@ -3046,7 +3046,7 @@ case "$ntp_autokey" in
     esac
     ;;
 esac
-AC_MSG_CHECKING([if we want NTP Autokey protocol support])
+AC_MSG_CHECKING([if NTP Autokey protocol will be supported])
 AC_MSG_RESULT([$ntp_autokey])
 
 AC_SUBST([MAKE_CHECK_LAYOUT])
