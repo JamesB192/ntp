@@ -53,19 +53,20 @@ case "$ntp_openssl$ntp_use_openssl_random$ac_cv_func_RAND_bytes$ac_cv_func_RAND_
     AC_MSG_NOTICE([SSL library's secure random number generator unavailable.])
     case "$ntp_ssl_random_mandatory" in
      yes)
-	AC_MSG_FAILURE(
-	    [No suiteable SSL library was found and ]
-	    [--enable-openssl-random was given..  Remove ]
-	    [--enable-openssl-random if you wish to build without a ]
-	    [cryptographically secure RNG.  ]
-	    [WARNING: Use of ntp-keygen without a secure RNG may generate ]
-	    [keys that are predictable.]
+	AC_MSG_ERROR(
+[No suitable SSL library was found and
+--enable-openssl-random was given..  Remove --enable-openssl-random
+if you wish to build without a cryptographically secure random number
+generator.
+
+WARNING: Use of ntp-keygen without a secure RNG may generate
+-------  keys that are predictable.]
 	)
 	;;
      *)
 	AC_MSG_WARN(
-	    [WARNING: Use of ntp-keygen without a secure RNG may generate ]
-	    [keys that are predictable.]
+[WARNING: Use of ntp-keygen without a secure RNG may generate
+-------  keys that are predictable.]
 	)
     esac
 esac

@@ -225,10 +225,13 @@ case "$with_crypto" in
 	LIBS="$NTPSSL_SAVED_LIBS"
 	case "$ntp_ssl_libdir" in
 	 not_found)
-	    AC_MSG_ERROR([You may want to use --without-crypto, or]
-			 [ add openssl.pc/libcrypto.pc to PKG_CONFIG_PATH,]
-			 [ or use the --with-openssl-libdir=/some/path option to configure:]
-			 [ libcrypto not found in $ntp_ssl_libdir_search.])
+	    AC_MSG_ERROR(
+[You may want to use --without-crypto, or add 
+openssl.pc/libcrypto.pc to PKG_CONFIG_PATH, or use the 
+--with-openssl-libdir=/some/path option to configure.
+libcrypto not found in any of the following directories:
+$ntp_ssl_libdir_search]
+	    )
 	esac
 	AC_MSG_NOTICE([libcrypto found in $ntp_ssl_libdir])
     esac
@@ -245,8 +248,8 @@ case "$with_crypto" in
     esac
     case "$ntp_ssl_incdir" in
      'not needed')
-	    ntp_ssl_incdir_search="$ntp_ssl_incdir"
-	    ;;
+	ntp_ssl_incdir_search="$ntp_ssl_incdir"
+	;;
      *)
 	AC_MSG_NOTICE([Searching for openssl include directory])
 	case "$with_openssl_incdir" in
@@ -283,10 +286,13 @@ case "$with_crypto" in
 	    CPPFLAGS="$NTPSSL_SAVED_CPPFLAGS"
 	    case "$ntp_ssl_incdir" in
 	     '')
-		AC_MSG_ERROR([You may want to use --without-crypto, or]
-			     [ add openssl.pc/libcrypto.pc to PKG_CONFIG_PATH,]
-			     [ or use the --with-openssl-incdir=/some/path option to configure:]
-			     [ usable openssl/evp.h not found in $ntp_ssl_incdir_search.])
+		AC_MSG_ERROR(
+[You may want to use --without-crypto, or add
+openssl.pc/libcrypto.pc to PKG_CONFIG_PATH, or use the
+-with-openssl-incdir=/some/path option to configure.
+No usable openssl/evp.h found in any of the following direcotries:
+$ntp_ssl_incdir_search]
+		)
 	    esac
 	    ntp_ssl_cppflags="-I$ntp_ssl_incdir"
 	    AC_MSG_NOTICE([Found evp.h in $ntp_ssl_incdir/openssl])
@@ -379,9 +385,10 @@ case "$ntp_openssl:$ntp_ssl_libdir" in
 	    case "$build:$ntp_cv_ssl_needs_dashR" in
 	     $host:no)
 		AC_MSG_FAILURE(
-		    [Unable to run program using crypto, check openssl.pc or]
-		    [ libcrypto.pc are in PKG_CONFIG_PATH, or provide]
-		    [ --with-openssl-libdir=/some/path])
+[Unable to run program using crypto, check openssl.pc
+or libcrypto.pc are in PKG_CONFIG_PATH, or provide the
+ --with-openssl-libdir=/some/path option to configure.]
+		)
 	    esac
 	esac
     esac
