@@ -66,7 +66,7 @@ DISTCLEANFILES = .gcc-warning
 BUILT_SOURCES =				\
 	.gcc-warning			\
 	libtool				\
-	html/.datecheck			\
+	$(srcdir)/html/.datecheck	\
 	$(srcdir)/COPYRIGHT		\
 	$(srcdir)/.checkChangeLog	\
 	$(NULL)
