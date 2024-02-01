@@ -52,6 +52,7 @@
              is disabled.  <burnicki@ntp.org>
 * [Bug 3825] Don't touch HTML files unless building inside a BK repo.
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
+* Remove extraneous */ from libparse/ieee754io.c
 * Fix .datecheck target line in Makefile.am.  <stenn@ntp.org>
 * Update the copyright year.  <stenn@ntp.org>
 * Update ntp.conf documentation to add "delrestrict" and correct information

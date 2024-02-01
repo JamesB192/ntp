@@ -579,7 +579,7 @@ int main(
 #ifdef PUT_IEEE754_UNUSED_FUNC
   put_ieee754((void *)&f_p, IEEE_DOUBLE, &fp, native_off);
 /* there should be a check on *f_p (f) having the expected result here */
-#endif	/* */PUT_IEEE754_UNUSED_FUNC */
+#endif	/* PUT_IEEE754_UNUSED_FUNC */
 
   return 0;
 }
