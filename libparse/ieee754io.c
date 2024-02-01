@@ -549,7 +549,7 @@ put_ieee754(
     }
   return IEEE_OK;
 }
-#endif	/* */PUT_IEEE754_UNUSED_FUNC */
+#endif	/* PUT_IEEE754_UNUSED_FUNC */
 
 
 #if defined(DEBUG) && defined(LIBDEBUG)
