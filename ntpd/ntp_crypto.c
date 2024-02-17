@@ -3925,7 +3925,6 @@ crypto_setup(void)
 		    "crypto_setup: spurious crypto command");
 		return;
 	}
-	ssl_check_version();
 
 	/*
 	 * Load required random seed file and seed the random number

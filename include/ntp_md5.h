@@ -33,7 +33,8 @@
   typedef MD5_CTX			EVP_MD_CTX;
 
 # define NID_md5			4	/* from openssl/objects.h */
-# define EVP_MAX_MD_SIZE		64	/* from openssl/evp.h */
+# define MD5_LENGTH			16
+# define EVP_MAX_MD_SIZE		MD5_LENGTH
 # define EVP_MD_CTX_free(c)		free(c)
 # define EVP_MD_CTX_new()		calloc(1, sizeof(MD5_CTX))
 # define EVP_get_digestbynid(t)		NULL
@@ -47,7 +48,7 @@
 # define EVP_DigestFinal(c, d, pdl)	\
 	do {				\
 		MD5Final((d), (c));	\
-		*(pdl) = 16;		\
+		*(pdl) = MD5_LENGTH;	\
 	} while (0)
 # endif	/* !OPENSSL */
 #endif	/* NTP_MD5_H */
