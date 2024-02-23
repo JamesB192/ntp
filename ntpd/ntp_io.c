@@ -4811,6 +4811,7 @@ process_routing_msgs(struct asyncio_reader *reader)
 #else
 	struct rt_msghdr rtm;
 	char *p;
+	char *endp;
 #endif
 
 	if (scan_addrs_once) {
@@ -4863,8 +4864,8 @@ process_routing_msgs(struct asyncio_reader *reader)
 	{
 		msg_type = nh->nlmsg_type;
 #else
-	for (p = buffer;
-	     (p + sizeof(struct rt_msghdr)) <= (buffer + cnt);
+	for (p = buffer, endp = p + cnt;
+	     (p + sizeof(struct rt_msghdr)) <= endp;
 	     p += rtm.rtm_msglen)
 	{
 		memcpy(&rtm, p, sizeof(rtm));
