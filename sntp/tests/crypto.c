@@ -41,7 +41,7 @@ test_MakeMd5Mac(void)
 	memcpy(&md5.key_seq, "md5seq", md5.key_len);
 	strlcpy(md5.typen, "MD5", sizeof(md5.typen));
 	md5.typei = keytype_from_text(md5.typen, NULL);
-	
+
 	TEST_ASSERT_EQUAL(MD5_LENGTH,
 			  make_mac(PKT_DATA, PKT_LEN, MD5_LENGTH, &md5, actual));
 
@@ -73,11 +73,11 @@ test_MakeSHA1Mac(void)
 			  make_mac(PKT_DATA, PKT_LEN, SHA1_LENGTH, &sha1, actual));
 
 	TEST_ASSERT_EQUAL_MEMORY(EXPECTED_DIGEST, actual, SHA1_LENGTH);
-	
+
 #else
-	
+
 	TEST_IGNORE_MESSAGE("OpenSSL not found, skipping...");
-	
+
 #endif	/* OPENSSL */
 }
 
@@ -93,8 +93,8 @@ test_MakeCMac(void)
 		"\xdd\x35\xd5\xf5\x14\x23\xd9\xd6"
 		"\x38\x5d\x29\x80\xfe\x51\xb9\x6b";
 	char actual[CMAC_LENGTH];
-
 	struct key cmac;
+
 	cmac.next = NULL;
 	cmac.key_id = 30;
 	cmac.key_len = CMAC_LENGTH;
@@ -105,11 +105,11 @@ test_MakeCMac(void)
 		    make_mac(PKT_DATA, PKT_LEN, CMAC_LENGTH, &cmac, actual));
 
 	TEST_ASSERT_EQUAL_MEMORY(EXPECTED_DIGEST, actual, CMAC_LENGTH);
-	
+
 #else
-	
-	TEST_IGNORE_MESSAGE("OpenSSL not found, skipping...");
-	
+
+	TEST_IGNORE_MESSAGE("CMAC not enabled, skipping...");
+
 #endif	/* OPENSSL */
 }
 
@@ -123,8 +123,8 @@ test_VerifyCorrectMD5(void)
 	    "\xc7\x58\x99\xdd\x99\x32\x0f\x71"	/* MAC */
 	    "\x2b\x7b\xfe\x4f\xa2\x32\xcf\xac";
 	const int PKT_LEN = 12;
-
 	struct key md5;
+
 	md5.next = NULL;
 	md5.key_id = 0;
 	md5.key_len = 6;
@@ -147,21 +147,21 @@ test_VerifySHA1(void)
 	    "\xad\x07\xde\x36\x39\xa6\x77\xfa\x5b\xce"	/* MAC */
 	    "\x2d\x8a\x7d\x06\x96\xe6\x0c\xbc\xed\xe1";
 	const int PKT_LEN = 12;
-
 	struct key sha1;
+
 	sha1.next = NULL;
 	sha1.key_id = 0;
 	sha1.key_len = 7;
 	memcpy(&sha1.key_seq, "sha1key", sha1.key_len);
-	strlcpy(sha1.typen, "SHA1", sizeof(sha1.typen));	
+	strlcpy(sha1.typen, "SHA1", sizeof(sha1.typen));
 	sha1.typei = keytype_from_text(sha1.typen, NULL);
 
 	TEST_ASSERT_TRUE(auth_md5(PKT_DATA, PKT_LEN, SHA1_LENGTH, &sha1));
-	
+
 #else
-	
+
 	TEST_IGNORE_MESSAGE("OpenSSL not found, skipping...");
-	
+
 #endif	/* OPENSSL */
 }
 
@@ -192,9 +192,9 @@ VerifyOpenSSLCMAC(struct key *cmac)
 	TEST_IGNORE_MESSAGE("VerifyOpenSSLCMAC needs to be implemented, skipping...");
 
 #else
-	
-	TEST_IGNORE_MESSAGE("OpenSSL not found, skipping...");
-	
+
+	TEST_IGNORE_MESSAGE("CMAC not enabled, skipping...");
+
 #endif	/* OPENSSL */
 	return;
 }
@@ -225,8 +225,8 @@ test_VerifyFailure(void)
 	    "\xc7\x58\x99\xdd\x99\x32\x0f\x71"	/* MAC */
 	    "\x2b\x7b\xfe\x4f\xa2\x32\xcf\x00"; /* Last byte is wrong! */
 	const int PKT_LEN = 12;
-
 	struct key md5;
+
 	md5.next = NULL;
 	md5.key_id = 0;
 	md5.key_len = 6;
@@ -244,8 +244,8 @@ test_PacketSizeNotMultipleOfFourBytes(void)
 	const char* PKT_DATA = "123456";
 	const int PKT_LEN = 6;
 	char actual[MD5_LENGTH];
-
 	struct key md5;
+
 	md5.next = NULL;
 	md5.key_id = 10;
 	md5.key_len = 6;
