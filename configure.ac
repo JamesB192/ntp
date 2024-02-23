@@ -35,7 +35,7 @@ AC_PRESERVE_HELP_ORDER
 # the date YYYYMMDD optionally with -HHMM if there is more than one
 # bump in a day.
 
-ntp_configure_cache_version=20240103
+ntp_configure_cache_version=20240218
 
 # When the cache version of config.cache and configure do not
 # match, NTP_CACHEVERSION will flush the cache.
@@ -103,18 +103,6 @@ NTP_LIBEVENT_CHECK_NOBUILD([2], [sntp/libevent])
 
 NTP_LIBNTP
 
-AC_MSG_CHECKING([for deprecated --with-arlib])
-AC_ARG_WITH([arlib],
-	AS_HELP_STRING([--with-arlib], [- deprecated, arlib not distributed]),
-	[ans=$withval], [ans=no])
-AC_MSG_RESULT([$ans])
-
-case "$ans" in
- yes)
-    AC_MSG_WARN([Please do not use --with-arlib, arlib is no longer included.  In the future, --with-arlib will not be recognized.])
-    ;;
-esac
-
 dnl  we need to check for cross compile tools for vxWorks here
 AC_PROG_AWK
 AS_UNSET([ac_cv_prog_AWK])
@@ -122,7 +110,6 @@ AC_SUBST([AWK])				dnl scripts/ntpver.in
 AC_PROG_MAKE_SET
 
 AC_PROG_LN_S
-AC_ISC_POSIX
 
 
 AC_PATH_PROG([PATH_PERL], [perl])
@@ -3005,22 +2992,7 @@ case "$ntp_libparse" in
 esac
 AC_MSG_RESULT([$ans])
 
-NTP_OPENSSL
-
-AC_MSG_CHECKING([if we want to enable CMAC support])
-case "$ac_cv_header_openssl_cmac_h" in
- yes)
-    AC_DEFINE([ENABLE_CMAC], [1], [Enable CMAC support?])
-    ans="yes"
-    ;;
- *) ans="no"
-    ;;
-esac
-AC_MSG_RESULT([$ans])
-
-NTP_CRYPTO_RAND
-
-# if we are building Autokey (--with-autokey), by default Autokey is enabled
+# if we have crypto, by default Autokey is enabled
 AC_ARG_ENABLE(
     [autokey],
     AS_HELP_STRING(

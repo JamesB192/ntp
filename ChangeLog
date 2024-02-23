@@ -62,7 +62,6 @@
 * Provide ntpd thread names to debugger on Windows. <hart@ntp.org>
 * Remove dead code libntp/numtohost.c and its unit tests. <hart@ntp.org>
 * Remove class A, B, C IPv4 distinctions in netof(). <hart@ntp.org>
-* Use NONEMPTY_COMPILATION_UNIT in more conditionally-compiled files.
 * Use @configure_input@ in various *.in files to include a comment that
   the file is generated from another pointing to the *.in. <hart@ntp.org>
 * Correct underquoting, indents in ntp_facilitynames.m4. <hart@ntp.org>
@@ -89,6 +88,18 @@
 * Add configure --enable-verbose-ssl to trace SSL detection. <hart@ntp.org>
 * Add build test coverage for --disable-saveconfig to flock-build script.
   <hart@ntp.org>
+* Remove deprecated configure --with-arlib option. <hart@ntp.org>
+* Remove configure support for ISC UNIX ca. 1998. <hart@ntp.org>
+* Move NTP_OPENSSL and NTP_CRYPTO_RAND invocations from configure.ac files
+  to NTP_LIBNTP. <hart@ntp.org>
+* Move ENABLE_CMAC to ntp_openssl.m4, enabling sntp/tests CMAC unit tests.
+  <hart@ntp.org>
+* Remove dead code: HAVE_U_INT32_ONLY_WITH_DNS. <hart@ntp.org>
+* Eliminate [v]snprintf redefinition warnings on macOS. <hart@ntp.org>
+* Fix clang 14 cast increases alignment warning on Linux. <hart@ntp.org>
+* Move ENABLE_CMAC to ntp_openssl.m4, reviving sntp/tests CMAC unit tests.
+  <hart@ntp.org>
+* Use NTP_HARD_CPPFLAGS in libopts tearoff. <hart@ntp.org>
 
 ---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>

@@ -180,6 +180,8 @@ case "$with_crypto" in
      '')
 	dnl ### set ntp_ssl_libdir ###
 
+	dnl unconventional, using AC_CHECK_LIB repeatedly, clear cached result.
+	AS_UNSET([ac_cv_lib_crypto_EVP_MD_CTX_new])
 	AC_MSG_NOTICE([Searching for libcrypto without -L])
 	AC_CHECK_LIB(
 	    [crypto],
@@ -543,7 +545,15 @@ AC_MSG_RESULT([$ntp_openssl])
 case "$ntp_openssl" in
  yes)
     VER_SUFFIX=o
-    AC_CHECK_HEADERS([openssl/cmac.h openssl/hmac.h])
+    AC_CHECK_HEADERS(
+	[openssl/cmac.h],
+	[ntp_enable_cmac=yes],
+	[ntp_enable_cmac=no]
+    )
+    case "$ntp_enable_cmac" in
+     yes)
+    	AC_DEFINE([ENABLE_CMAC], [1], [Enable CMAC support?])
+    esac
     AC_DEFINE([OPENSSL], [], [Use OpenSSL?])
     dnl OpenSSL 3 deprecates a bunch of functions used by Autokey.
     dnl Adapting our code to the bold new way is not a priority
@@ -578,6 +588,7 @@ AS_UNSET([NTPSSL_SAVED_CFLAGS])
 AS_UNSET([NTPSSL_SAVED_CPPFLAGS])
 AS_UNSET([NTPSSL_SAVED_LIBS])
 AS_UNSET([NTPSSL_SAVED_LDFLAGS])
+AS_UNSET([ntp_enable_cmac])
 AS_UNSET([ntp_use_Wstrict_prototypes])
 AS_UNSET([ntp_openssl_from_pkg_config])
 AS_UNSET([ntp_openssl_version])

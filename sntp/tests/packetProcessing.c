@@ -483,7 +483,7 @@ test_CorrectAuthenticatedPacketCMAC(void)
 
 #else
 	
-	TEST_IGNORE_MESSAGE("OpenSSL CMAC not used, skipping...");
+	TEST_IGNORE_MESSAGE("CMAC not enabled, skipping...");
 	
 #endif	/* OPENSSL */
 }

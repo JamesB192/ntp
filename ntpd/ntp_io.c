@@ -4802,7 +4802,7 @@ localaddrtoa(
 static void
 process_routing_msgs(struct asyncio_reader *reader)
 {
-	static char *	buffer;
+	static void *	buffer;
 	static size_t	buffsz = 8192;
 	int		cnt, new, msg_type;
 	socklen_t	len;
@@ -4859,9 +4859,7 @@ process_routing_msgs(struct asyncio_reader *reader)
 	 * process routing message
 	 */
 #ifdef HAVE_RTNETLINK
-	for (nh = UA_PTR(struct nlmsghdr, buffer);
-	     NLMSG_OK(nh, cnt);
-	     nh = NLMSG_NEXT(nh, cnt))
+	for (nh = buffer; NLMSG_OK(nh, cnt); nh = NLMSG_NEXT(nh, cnt))
 	{
 		msg_type = nh->nlmsg_type;
 #else
@@ -4880,7 +4878,7 @@ process_routing_msgs(struct asyncio_reader *reader)
 			return;
 		}
 		msg_type = rtm.rtm_type;
-#endif
+#endif	/* !HAVE_RTNETLINK */
 		switch (msg_type) {
 #ifdef RTM_NEWADDR
 		case RTM_NEWADDR:

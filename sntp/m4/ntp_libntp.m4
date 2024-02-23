@@ -492,7 +492,7 @@ AC_DEFUN([NTP_BEFORE_HW_FUNC_VSNPRINTF], [
     AC_ARG_ENABLE(
 	[c99-snprintf],
 	[AS_HELP_STRING(
-	    [--enable-c99-snprintf], 
+	    [--enable-c99-snprintf],
 	    [s use replacement printf family]
 	)],
 	[force_c99_snprintf=$enableval],
@@ -505,15 +505,8 @@ AC_DEFUN([NTP_BEFORE_HW_FUNC_VSNPRINTF], [
     esac
     AH_VERBATIM(
 	[snprinte],dnl	sorted in config.h just before #define snprintf
-	[
-	    #if !defined(_KERNEL) && !defined(PARSESTREAM)
-	    /*
-	     * stdio.h must be included after _GNU_SOURCE is defined
-	     * but before #define snprintf rpl_snprintf
-	     */
-	    # include <stdio.h>	
-	    #endif
-	])
+	[#include "c99_snprintf.h"]
+    )
     AH_BOTTOM([
 	#if !defined(_KERNEL) && !defined(PARSESTREAM)
 	# if defined(HW_WANT_RPL_VSNPRINTF)
@@ -755,62 +748,6 @@ AH_VERBATIM([TYPEDEF_UINTPTR_T],
 typedef unsigned int	uintptr_t;
 #define HAVE_UINTPTR_T	1
 #endif])
-
-case "$ac_cv_type_int32::$ac_cv_header_resolv_h" in
- no::yes)
-    AC_CACHE_CHECK(
-	[for int32 with DNS headers included],
-	[ntp_cv_type_int32_with_dns],
-	[AC_COMPILE_IFELSE(
-	    [AC_LANG_PROGRAM(
-		[[
-		    #ifdef HAVE_ARPA_NAMESER_H
-		    # include <arpa/nameser.h>
-		    #endif
-		    #include <resolv.h>
-		]],
-		[[
-		    size_t cb = sizeof(int32);
-		]]
-	    )],
-	    [ntp_cv_type_int32_with_dns=yes],
-	    [ntp_cv_type_int32_with_dns=no]
-	)]
-    )
-    case "$ntp_cv_type_int32_with_dns" in
-     yes)
-	AC_DEFINE([HAVE_INT32_ONLY_WITH_DNS], [1],
-	    [int32 type in DNS headers, not others.])
-    esac
-esac
-
-case "$ac_cv_type_u_int32::$ac_cv_header_resolv_h" in
- no::yes)
-    AC_CACHE_CHECK(
-	[for u_int32 with DNS headers included],
-	[ntp_cv_type_u_int32_with_dns],
-	[AC_COMPILE_IFELSE(
-	    [AC_LANG_PROGRAM(
-		[[
-		    #ifdef HAVE_ARPA_NAMESER_H
-		    # include <arpa/nameser.h>
-		    #endif
-		    #include <resolv.h>
-		]],
-		[[
-		    size_t cb = sizeof(u_int32);
-		]]
-	    )],
-	    [ntp_cv_type_u_int32_with_dns=yes],
-	    [ntp_cv_type_u_int32_with_dns=no]
-	)]
-    )
-    case "$ntp_cv_type_u_int32_with_dns" in
-     yes)
-	AC_DEFINE([HAVE_U_INT32_ONLY_WITH_DNS], [1],
-	    [u_int32 type in DNS headers, not others.])
-    esac
-esac
 
 AC_CHECK_HEADERS(
     [sys/timepps.h],
@@ -1185,6 +1122,9 @@ dnl if --disable-dependency-tracking is used to save build time for one-off
 dnl build from tarball.  It's only useful when modifying libntp source code
 dnl and rebuilding in a client subdir rather than the whole package.
 AM_CONDITIONAL([LIBNTP_SUBMAKES], [test x"$enable_dependency_tracking" = x"yes"])
+
+NTP_OPENSSL
+NTP_CRYPTO_RAND
 
 dnl add to LDADD_LIBNTP set by ntp_compiler.m4
 LDADD_LIBNTP="$LDADD_LIBNTP $LIBS"
