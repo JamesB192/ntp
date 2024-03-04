@@ -21,7 +21,6 @@ typedef struct {
 	size_t		len;
 } rwbuffT;
 
-
 #if defined(OPENSSL) && defined(ENABLE_CMAC)
 static size_t
 cmac_ctx_size(
@@ -40,56 +39,33 @@ cmac_ctx_size(
 #endif	/* OPENSSL && ENABLE_CMAC */
 
 
+/*
+ * Allocate and initialize a digest context.  As a speed optimization,
+ * take an idea from ntpsec and cache the context to avoid malloc/free
+ * overhead in time-critical paths.  ntpsec also caches the algorithms
+ * with each key.
+ * This is not thread-safe, but that is
+ * not a problem at present.
+ */
 static EVP_MD_CTX *
 get_md_ctx(
-	int		type,
-	int/*BOOL*/	for_auth
+	int		nid
 	)
 {
 #ifndef OPENSSL
-	return emalloc(sizeof(MD5_CTX));
+	static MD5_CTX	md5_ctx;
+
+	DEBUG_INSIST(NID_md5 == nid);
+	MD5Init(&md5_ctx);
+
+	return &md5_ctx;
 #else
-	EVP_MD_CTX *	ctx;
-#  if OPENSSL_VERSION_NUMBER >= 0x30000000L
-	EVP_MD *	md;
-#  endif
-	const char *	md_name;
+	if (!EVP_DigestInit(digest_ctx, EVP_get_digestbynid(nid))) {
+		msyslog(LOG_ERR, "%s init failed", OBJ_nid2sn(nid));
+		exit(1);
+	}
 
-	ctx = EVP_MD_CTX_new();
-	md_name = OBJ_nid2sn(type);
-
-#  if OPENSSL_VERSION_NUMBER >= 0x30000000L
-	/*
-	 * See section FIPS Provider:
-	 * https://www.openssl.org/docs/man3.0/man7/crypto.html
-	 * for property query strings
-	 */
-	if (!for_auth && NID_md5 == type) {
-		md = EVP_MD_fetch(NULL, md_name, "fips=no");
-	} else {
-		md = EVP_MD_fetch(NULL, md_name, "");
-	}
-	if (NULL == md) {
-		msyslog(LOG_ERR, "Could not load digest %s", md_name);
-		exit(1);
-	}
-	if (!EVP_DigestInit_ex(ctx, md, NULL)) {
-		msyslog(LOG_ERR, "%s init failed", md_name);
-		exit(1);
-	}
-	EVP_MD_free(md);
-#  else	/* OPENSSL_VERSION_NUMBER < 0x30000000L follows */
-#    ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
-	if (!for_auth && NID_md5 == type) {
-		EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
-	}
-#    endif
-	if (!EVP_DigestInit_ex(ctx, EVP_get_digestbynid(type), NULL)) {
-		msyslog(LOG_ERR, "%s init failed", md_name);
-		exit(1);
-	}
-#  endif	/* OPENSSL_VERSION_NUMBER */
-	return ctx;
+	return digest_ctx;
 #endif	/* OPENSSL */
 }
 
@@ -158,7 +134,7 @@ make_mac(
 		EVP_MD_CTX *	ctx;
 		u_int		uilen = 0;
 
-		ctx = get_md_ctx(ktype, TRUE);
+		ctx = get_md_ctx(ktype);
 		if (NULL == ctx) {
 			goto mac_fail;
 		}
@@ -184,17 +160,14 @@ make_mac(
 		}
 	  mac_fail:
 		retlen = (size_t)uilen;
-
-		if (ctx)
-			EVP_MD_CTX_free(ctx);
 	}
 
 #else /* !OPENSSL follows */
 
 	if (NID_md5 == ktype) {
-		EVP_MD_CTX *	ctx = emalloc(sizeof(MD5_CTX));
-		size_t		len = 0;
+		EVP_MD_CTX *	ctx;
 
+		ctx = get_md_ctx(ktype);
 		if (digest->len < MD5_LENGTH) {
 			msyslog(LOG_ERR, "%s", "MAC encrypt: MAC md5 buf too small.");
 		} else {
@@ -202,10 +175,8 @@ make_mac(
 			MD5Update(ctx, (const void *)key->buf, key->len);
 			MD5Update(ctx, (const void *)msg->buf, msg->len);
 			MD5Final(digest->buf, ctx);
-			len = MD5_LENGTH;
+			retlen = MD5_LENGTH;
 		}
-		free(ctx);
-		retlen = len;
 	} else {
 		msyslog(LOG_ERR, "MAC encrypt: invalid key type %d", ktype);
 	}
@@ -296,28 +267,26 @@ MD5authdecrypt(
  * match the little-endian hash.  This is ugly but it seems better
  * than changing the IPv6 refid calculation on the more-common
  * systems.
+ * This is not thread safe, not a problem so far.
  */
 u_int32
 addr2refid(sockaddr_u *addr)
 {
-	u_char		digest[EVP_MAX_MD_SIZE];
-	u_int32		addr_refid;
-	EVP_MD_CTX *	ctx;
-	u_int		len;
+	static MD5_CTX	md5_ctx;
+	union u_tag {
+		u_char		digest[MD5_DIGEST_LENGTH];
+		u_int32		addr_refid;
+	} u;
 
 	if (IS_IPV4(addr)) {
 		return (NSRCADR(addr));
 	}
-	INIT_SSL();
 	/* MD5 is not used for authentication here. */
-	ctx = get_md_ctx(NID_md5, FALSE);
-	EVP_DigestUpdate(ctx, (u_char *)&SOCK_ADDR6(addr),
-			 sizeof(SOCK_ADDR6(addr)));
-	EVP_DigestFinal(ctx, digest, &len);
-	EVP_MD_CTX_free(ctx);
-	memcpy(&addr_refid, digest, sizeof(addr_refid));
+	MD5Init(&md5_ctx);
+	MD5Update(&md5_ctx, (void *)&SOCK_ADDR6(addr), sizeof(SOCK_ADDR6(addr)));
+	MD5Final(u.digest, &md5_ctx);
 #ifdef WORDS_BIGENDIAN
-	addr_refid = BYTESWAP32(addr_refid);
+	u.addr_refid = BYTESWAP32(u.addr_refid);
 #endif
-	return addr_refid;
+	return u.addr_refid;
 }

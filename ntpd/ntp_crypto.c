@@ -267,17 +267,10 @@ session_key(
 		hdlen = 10 * sizeof(u_int32);
 		break;
 	}
-	ctx = EVP_MD_CTX_new();
-#   if defined(OPENSSL) && defined(EVP_MD_CTX_FLAG_NON_FIPS_ALLOW)
-	/* [Bug 3457] set flags and don't kill them again */
-	EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
-	EVP_DigestInit_ex(ctx, EVP_get_digestbynid(crypto_nid), NULL);
-#   else
+	ctx = digest_ctx;
 	EVP_DigestInit(ctx, EVP_get_digestbynid(crypto_nid));
-#   endif
 	EVP_DigestUpdate(ctx, (u_char *)header, hdlen);
 	EVP_DigestFinal(ctx, dgst, &len);
-	EVP_MD_CTX_free(ctx);
 	memcpy(&keyid, dgst, 4);
 	keyid = ntohl(keyid);
 	if (lifetime != 0) {
@@ -389,7 +382,7 @@ make_keylist(
 	if (tstamp != 0) {
 		if (vp->sig == NULL)
 			vp->sig = emalloc(sign_siglen);
-		ctx = EVP_MD_CTX_new();
+		ctx = digest_ctx;
 		EVP_SignInit(ctx, sign_digest);
 		EVP_SignUpdate(ctx, (u_char *)vp, 12);
 		EVP_SignUpdate(ctx, vp->ptr, sizeof(struct autokey));
@@ -398,7 +391,6 @@ make_keylist(
 			vp->siglen = htonl(len);
 			peer->flags |= FLAG_ASSOC;
 		}
-		EVP_MD_CTX_free(ctx);
 	}
 	DPRINTF(1, ("make_keys: %d %08x %08x ts %u fs %u poll %d\n",
 		    peer->keynumber, keyid, cookie, ntohl(vp->tstamp),
@@ -1549,16 +1541,15 @@ crypto_verify(
 	 * signature. If the identity exchange is verified, light the
 	 * proventic bit. What a relief.
 	 */
-	ctx = EVP_MD_CTX_new();
+	ctx = digest_ctx;
 	EVP_VerifyInit(ctx, peer->digest);
-	/* XXX: the "+ 12" needs to be at least documented... */
-	EVP_VerifyUpdate(ctx, (u_char *)&ep->tstamp, vallen + 12);
+	EVP_VerifyUpdate(ctx, (u_char *)&ep->tstamp, vallen + 
+			 sizeof(ep->tstamp) + sizeof(ep->fstamp) +
+			 sizeof(ep->vallen));
 	if (EVP_VerifyFinal(ctx, (u_char *)&ep->pkt[i], siglen,
 	    pkey) <= 0) {
-		EVP_MD_CTX_free(ctx);
 		return (XEVNT_SIG);
 	}
-	EVP_MD_CTX_free(ctx);
 
 	if (peer->crypto & CRYPTO_FLAG_VRFY)
 		peer->crypto |= CRYPTO_FLAG_PROV;
@@ -1629,7 +1620,7 @@ crypto_encrypt(
 		return (XEVNT_OK);
 
 	vp->sig = emalloc(sign_siglen);
-	ctx = EVP_MD_CTX_new();
+	ctx = digest_ctx;
 	EVP_SignInit(ctx, sign_digest);
 	EVP_SignUpdate(ctx, (u_char *)&vp->tstamp, 12);
 	EVP_SignUpdate(ctx, vp->ptr, vallen);
@@ -1637,7 +1628,6 @@ crypto_encrypt(
 		INSIST(vallen <= sign_siglen);
 		vp->siglen = htonl(vallen);
 	}
-	EVP_MD_CTX_free(ctx);
 	return (XEVNT_OK);
 }
 
@@ -1855,7 +1845,7 @@ crypto_update(void)
 	if (hostval.tstamp == 0)
 		return;
 
-	ctx = EVP_MD_CTX_new();
+	ctx = digest_ctx;
 
 	/*
 	 * Sign public key and timestamps. The filestamp is derived from
@@ -1951,7 +1941,6 @@ crypto_update(void)
 	    ntohl(hostval.tstamp)); 
 	record_crypto_stats(NULL, statstr);
 	DPRINTF(1, ("crypto_update: %s\n", statstr));
-	EVP_MD_CTX_free(ctx);
 }
 
 /*
@@ -2099,17 +2088,10 @@ bighash(
 	len = BN_num_bytes(bn);
 	ptr = emalloc(len);
 	BN_bn2bin(bn, ptr);
-	ctx = EVP_MD_CTX_new();
-#   if defined(OPENSSL) && defined(EVP_MD_CTX_FLAG_NON_FIPS_ALLOW)
-	/* [Bug 3457] set flags and don't kill them again */
-	EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
-	EVP_DigestInit_ex(ctx, EVP_md5(), NULL);
-#   else
+	ctx = digest_ctx;
 	EVP_DigestInit(ctx, EVP_md5());
-#   endif
 	EVP_DigestUpdate(ctx, ptr, len);
 	EVP_DigestFinal(ctx, dgst, &len);
-	EVP_MD_CTX_free(ctx);
 	BN_bin2bn(dgst, len, bk);
 	free(ptr);
 }
@@ -2222,7 +2204,7 @@ crypto_alice(
 		return (XEVNT_OK);
 
 	vp->sig = emalloc(sign_siglen);
-	ctx = EVP_MD_CTX_new();
+	ctx = digest_ctx; 
 	EVP_SignInit(ctx, sign_digest);
 	EVP_SignUpdate(ctx, (u_char *)&vp->tstamp, 12);
 	EVP_SignUpdate(ctx, vp->ptr, len);
@@ -2230,7 +2212,6 @@ crypto_alice(
 		INSIST(len <= sign_siglen);
 		vp->siglen = htonl(len);
 	}
-	EVP_MD_CTX_free(ctx);
 	return (XEVNT_OK);
 }
 
@@ -2341,7 +2322,7 @@ crypto_bob(
 
 	/* XXX: more validation to make sure the sign fits... */
 	vp->sig = emalloc(sign_siglen);
-	ctx = EVP_MD_CTX_new();
+	ctx = digest_ctx;
 	EVP_SignInit(ctx, sign_digest);
 	EVP_SignUpdate(ctx, (u_char *)&vp->tstamp, 12);
 	EVP_SignUpdate(ctx, vp->ptr, len);
@@ -2349,7 +2330,6 @@ crypto_bob(
 		INSIST(len <= sign_siglen);
 		vp->siglen = htonl(len);
 	}
-	EVP_MD_CTX_free(ctx);
 	retv = XEVNT_OK;
 
     cleanup:
@@ -2562,7 +2542,7 @@ crypto_alice2(
 		return (XEVNT_OK);
 
 	vp->sig = emalloc(sign_siglen);
-	ctx = EVP_MD_CTX_new();
+	ctx = digest_ctx;
 	EVP_SignInit(ctx, sign_digest);
 	EVP_SignUpdate(ctx, (u_char *)&vp->tstamp, 12);
 	EVP_SignUpdate(ctx, vp->ptr, len);
@@ -2570,7 +2550,6 @@ crypto_alice2(
 		INSIST(len <= sign_siglen);
 		vp->siglen = htonl(len);
 	}
-	EVP_MD_CTX_free(ctx);
 	return (XEVNT_OK);
 }
 
@@ -2667,7 +2646,7 @@ crypto_bob2(
 		return (XEVNT_OK);
 
 	vp->sig = emalloc(sign_siglen);
-	ctx = EVP_MD_CTX_new();
+	ctx = digest_ctx;
 	EVP_SignInit(ctx, sign_digest);
 	EVP_SignUpdate(ctx, (u_char *)&vp->tstamp, 12);
 	EVP_SignUpdate(ctx, vp->ptr, len);
@@ -2675,7 +2654,6 @@ crypto_bob2(
 		INSIST(len <= sign_siglen);
 		vp->siglen = htonl(len);
 	}
-	EVP_MD_CTX_free(ctx);
 	return (XEVNT_OK);
 }
 
@@ -2906,7 +2884,7 @@ crypto_alice3(
 		return (XEVNT_OK);
 
 	vp->sig = emalloc(sign_siglen);
-	ctx = EVP_MD_CTX_new();
+	ctx = digest_ctx;
 	EVP_SignInit(ctx, sign_digest);
 	EVP_SignUpdate(ctx, (u_char *)&vp->tstamp, 12);
 	EVP_SignUpdate(ctx, vp->ptr, len);
@@ -2914,7 +2892,6 @@ crypto_alice3(
 		INSIST(len <= sign_siglen);
 		vp->siglen = htonl(len);
 	}
-	EVP_MD_CTX_free(ctx);
 	return (XEVNT_OK);
 }
 
@@ -3019,7 +2996,7 @@ crypto_bob3(
 		return (XEVNT_OK);
 
 	vp->sig = emalloc(sign_siglen);
-	ctx = EVP_MD_CTX_new();
+	ctx = digest_ctx;
 	EVP_SignInit(ctx, sign_digest);
 	EVP_SignUpdate(ctx, (u_char *)&vp->tstamp, 12);
 	EVP_SignUpdate(ctx, vp->ptr, len);
@@ -3027,7 +3004,6 @@ crypto_bob3(
 		INSIST(len <= sign_siglen);
 		vp->siglen = htonl(len);
 	}
-	EVP_MD_CTX_free(ctx);
 	return (XEVNT_OK);
 }
 
@@ -3269,7 +3245,7 @@ cert_sign(
 	vp->siglen = 0;
 	if (tstamp != 0) {
 		vp->sig = emalloc(sign_siglen);
-		ctx = EVP_MD_CTX_new();
+		ctx = digest_ctx;
 		EVP_SignInit(ctx, sign_digest);
 		EVP_SignUpdate(ctx, (u_char *)vp, 12);
 		EVP_SignUpdate(ctx, vp->ptr, len);
@@ -3277,7 +3253,6 @@ cert_sign(
 			INSIST(len <= sign_siglen);
 			vp->siglen = htonl(len);
 		}
-		EVP_MD_CTX_free(ctx);
 	}
 #ifdef DEBUG
 	if (debug > 1)

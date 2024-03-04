@@ -733,10 +733,10 @@ receive(
 	
 	hisleap = PKT_LEAP(pkt->li_vn_mode);
 	hisstratum = PKT_TO_STRATUM(pkt->stratum);
-	INSIST(0 != hisstratum); /* paranoia check PKT_TO_STRATUM result */
-
+	DEBUG_INSIST(0 != hisstratum);	/* paranoia check PKT_TO_STRATUM result */
+					/* TODO: this should be in a unit test */
 	DPRINTF(1, ("receive: at %ld %s<-%s ippeerlimit %d mode %d iflags %s "
-		    "restrict %s org 0x%8x.%08x xmt 0x%8x.%08x\n",
+		    "restrict %s org 0x%x.%08x xmt 0x%x.%08x\n",
 		    current_time, stoa(&rbufp->dstadr->sin),
 		    stoa(&rbufp->recv_srcadr), r4a.ippeerlimit, hismode,
 		    iflags_str(rbufp->dstadr->flags),
