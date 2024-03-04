@@ -3633,8 +3633,13 @@ static void configure(
 
 
 /*
- * derive_nonce - generate client-address-specific nonce value
- *		  associated with a given timestamp.
+ * derive_nonce - generate 32-bit nonce value derived from the client
+ *		  address and a request-specific timestamp.
+ *
+ * This uses MD5 for a non-authentication purpose -- the nonce is used
+ * analogous to the TCP 3-way handshake to confirm the UDP client can
+ * receive traffic from which it claims to originate, that is, to
+ * prevent spoofed requests leading to reflected amplification.
  */
 static u_int32 derive_nonce(
 	sockaddr_u *	addr,
@@ -3644,13 +3649,11 @@ static u_int32 derive_nonce(
 {
 	static u_int32	salt[4];
 	static u_long	last_salt_update;
+	MD5_CTX		ctx;
 	union d_tag {
-		u_char	digest[EVP_MAX_MD_SIZE];
+		u_char	digest[MD5_DIGEST_LENGTH];
 		u_int32 extract;
 	}		d;
-	EVP_MD_CTX	*ctx;
-	u_int		len;
-	int rc;
 
 	while (!salt[0] || current_time - last_salt_update >= 3600) {
 		salt[0] = ntp_random();
@@ -3660,32 +3663,18 @@ static u_int32 derive_nonce(
 		last_salt_update = current_time;
 	}
 
-	ctx = EVP_MD_CTX_new();
-#   if defined(OPENSSL) && defined(EVP_MD_CTX_FLAG_NON_FIPS_ALLOW)
-	/* [Bug 3457] set flags and don't kill them again */
-	EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
-	rc = EVP_DigestInit_ex(ctx, EVP_get_digestbynid(NID_md5), NULL);
-#   else
-	rc = EVP_DigestInit(ctx, EVP_get_digestbynid(NID_md5));
-#   endif
-	if (!rc) {
-		msyslog(LOG_ERR, "EVP_DigestInit failed in '%s'", __func__);
-		return (0);
+	MD5Init(&ctx);
+	MD5Update(&ctx, salt, sizeof(salt));
+	MD5Update(&ctx, &ts_i, sizeof(ts_i));
+	MD5Update(&ctx, &ts_f, sizeof(ts_f));
+	if (IS_IPV4(addr)) {
+		MD5Update(&ctx, &SOCK_ADDR4(addr), sizeof(SOCK_ADDR4(addr)));
+	} else {
+		MD5Update(&ctx, &SOCK_ADDR6(addr), sizeof(SOCK_ADDR6(addr)));
 	}
-
-	EVP_DigestUpdate(ctx, salt, sizeof(salt));
-	EVP_DigestUpdate(ctx, &ts_i, sizeof(ts_i));
-	EVP_DigestUpdate(ctx, &ts_f, sizeof(ts_f));
-	if (IS_IPV4(addr))
-		EVP_DigestUpdate(ctx, &SOCK_ADDR4(addr),
-			         sizeof(SOCK_ADDR4(addr)));
-	else
-		EVP_DigestUpdate(ctx, &SOCK_ADDR6(addr),
-			         sizeof(SOCK_ADDR6(addr)));
-	EVP_DigestUpdate(ctx, &NSRCPORT(addr), sizeof(NSRCPORT(addr)));
-	EVP_DigestUpdate(ctx, salt, sizeof(salt));
-	EVP_DigestFinal(ctx, d.digest, &len);
-	EVP_MD_CTX_free(ctx);
+	MD5Update(&ctx, &NSRCPORT(addr), sizeof(NSRCPORT(addr)));
+	MD5Update(&ctx, salt, sizeof(salt));
+	MD5Final(d.digest, &ctx);
 
 	return d.extract;
 }

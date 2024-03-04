@@ -23,34 +23,38 @@
 #  define CMAC_LENGTH	16
 #  define CMAC		"AES128CMAC"
 # endif /*HAVE_OPENSSL_CMAC_H*/
-int ssl_init_done;
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+EVP_MD_CTX *digest_ctx;
+
+
 static void
 atexit_ssl_cleanup(void)
 {
-	if (!ssl_init_done) {
+	if (NULL == digest_ctx) {
 		return;
 	}
-
-	ssl_init_done = FALSE;
+	EVP_MD_CTX_free(digest_ctx);
+	digest_ctx = NULL;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	EVP_cleanup();
 	ERR_free_strings();
-}
 #endif	/* OpenSSL < 1.1 */
+}
+
 
 void
 ssl_init(void)
 {
 	init_lib();
 
-	if ( ! ssl_init_done) {
+	if (NULL == digest_ctx) {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 		ERR_load_crypto_strings();
 		OpenSSL_add_all_algorithms();
-		atexit(&atexit_ssl_cleanup);
 #endif	/* OpenSSL < 1.1 */
-		ssl_init_done = TRUE;
+		digest_ctx = EVP_MD_CTX_new();
+		INSIST(digest_ctx != NULL);
+		atexit(&atexit_ssl_cleanup);
 	}
 }
 

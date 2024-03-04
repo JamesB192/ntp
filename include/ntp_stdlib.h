@@ -243,12 +243,13 @@ extern pset_tod_using	set_tod_using;
 #ifdef OPENSSL
 extern	void	ssl_init		(void);
 extern	void	ssl_check_version	(void);
-extern	int	ssl_init_done;
+extern	EVP_MD_CTX* digest_ctx;		/* also ssl_init_done */
 #define	INIT_SSL()				\
 	do {					\
-		if (!ssl_init_done)		\
+		if (NULL == digest_ctx)	{	\
 			ssl_init();		\
-	} while (0)
+		}				\
+	} while (FALSE)
 #else	/* !OPENSSL follows */
 #define ssl_check_version()	do {} while (0)
 #define	INIT_SSL()		do {} while (0)
