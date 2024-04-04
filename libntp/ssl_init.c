@@ -77,9 +77,6 @@ ssl_check_version(void)
 	}
 	INIT_SSL();
 }
-
-#else	/* !OPENSSL */
-# define MD5_LENGTH	16
 #endif	/* OPENSSL */
 
 

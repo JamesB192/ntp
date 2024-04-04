@@ -62,7 +62,7 @@ get_md_ctx(
 #else
 	if (!EVP_DigestInit(digest_ctx, EVP_get_digestbynid(nid))) {
 		msyslog(LOG_ERR, "%s init failed", OBJ_nid2sn(nid));
-		exit(1);
+		return NULL;
 	}
 
 	return digest_ctx;
@@ -190,7 +190,7 @@ make_mac(
 /*
  * MD5authencrypt - generate message digest
  *
- * Returns length of MAC including key ID and digest.
+ * Returns 0 on failure or length of MAC including key ID.
  */
 size_t
 MD5authencrypt(
@@ -205,13 +205,14 @@ MD5authencrypt(
 	rwbuffT digb = { digest, sizeof(digest) };
 	robuffT keyb = { key, klen };
 	robuffT msgb = { pkt, length };
-	size_t	dlen = 0;
+	size_t	dlen;
 
 	dlen = make_mac(&digb, type, &keyb, &msgb);
-	/* If the MAC is longer than the MAX then truncate it. */
-	if (dlen > MAX_MDG_LEN)
-		dlen = MAX_MDG_LEN;
-	memcpy((u_char *)pkt + length + KEY_MAC_LEN, digest, dlen);
+	if (0 == dlen) {
+		return 0;
+	}
+	memcpy((u_char *)pkt + length + KEY_MAC_LEN, digest,
+	       min(dlen, MAX_MDG_LEN));
 	return (dlen + KEY_MAC_LEN);
 }
 
@@ -239,15 +240,11 @@ MD5authdecrypt(
 	size_t	dlen = 0;
 
 	dlen = make_mac(&digb, type, &keyb, &msgb);
-
-	/* If the MAC is longer than the MAX then truncate it. */
-	if (dlen > MAX_MDG_LEN)
-		dlen = MAX_MDG_LEN;
-	if (size != (size_t)dlen + KEY_MAC_LEN) {
+	if (0 == dlen || size != dlen + KEY_MAC_LEN) {
 		msyslog(LOG_ERR,
-			"MAC decrypt: MAC length error: len=%u key=%d",
-			(u_int)size, keyno);
-		return (0);
+			"MAC decrypt: MAC length error: %u not %u for key %u",
+			(u_int)size, (u_int)(dlen + KEY_MAC_LEN), keyno);
+		return FALSE;
 	}
 	return !isc_tsmemcmp(digest,
 		 (u_char *)pkt + length + KEY_MAC_LEN, dlen);
