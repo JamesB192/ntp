@@ -4956,7 +4956,7 @@ init_async_notifications(void)
 	int fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 	struct sockaddr_nl sa;
 #else
-	int fd = socket(PF_ROUTE, SOCK_RAW, 0);
+	int fd = socket(PF_ROUTE, SOCK_RAW, AF_UNSPEC);
 #endif
 	if (fd < 0) {
 		msyslog(LOG_ERR,

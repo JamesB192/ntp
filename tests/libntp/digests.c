@@ -110,7 +110,7 @@ do {									\
 	authtrust((key), 1);						\
 									\
 	res_sz = authencrypt((key), pkt, pkt_sz);			\
-	if (KEY_MAC_LEN == res_sz) {					\
+	if (0 == res_sz) {						\
 		TEST_IGNORE_MESSAGE("Likely OpenSSL 3 failed digest "	\
 				    "init.");				\
 		return;							\
