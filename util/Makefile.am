@@ -33,6 +33,7 @@ tickadj_LDADD=	../libntp/libntp.a $(LDADD_LIBNTP) $(LIBM) $(PTHREAD_LIBS) $(LDAD
 EXTRA_DIST=				\
 	invoke-ntp-keygen.menu		\
 	invoke-ntp-keygen.texi		\
+	lsf-times.c			\
 	ntp-keygen-opts.def		\
 	ntp-keygen.1ntp-keygenman	\
 	ntp-keygen.1ntp-keygenmdoc	\
