@@ -611,8 +611,9 @@ check_leapsec(
 				}
 			} else {
 				if (leap_smear.interval) {
-				DPRINTF(1, ("*** leapsec_query: clearing leap_smear interval\n"));
-				leap_smear.interval = 0;
+					DPRINTF(1, ("*** leapsec_query: clearing leap_smear interval\n"));
+					leap_smear.interval = 0;
+				}
 			}
 
 			if (leap_smear.interval) {
