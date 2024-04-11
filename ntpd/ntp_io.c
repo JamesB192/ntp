@@ -1514,7 +1514,8 @@ refresh_interface(
 void
 interface_update(
 	interface_receiver_t	receiver,
-	void *			data)
+	void *			data
+	)
 {
 	int new_interface_found;
 
@@ -1525,9 +1526,9 @@ interface_update(
 	new_interface_found = update_interfaces(NTP_PORT, receiver, data);
 	UNBLOCKIO();
 
-	if (!new_interface_found)
+	if (!new_interface_found) {
 		return;
-
+	}
 #ifdef DEBUG
 	msyslog(LOG_DEBUG, "new interface(s) found: waking up resolver");
 #endif
@@ -1803,14 +1804,14 @@ update_interfaces(
 	sys_interphase ^= 0x1;
 
 	for (result = isc_interfaceiter_first(iter);
-	     ISC_R_SUCCESS == result;
-	     result = isc_interfaceiter_next(iter)) {
+		ISC_R_SUCCESS == result;
+		result = isc_interfaceiter_next(iter)) {
 
 		result = isc_interfaceiter_current(iter, &isc_if);
 
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			break;
-
+		}
 		/* See if we have a valid family to use */
 		family = isc_if.address.family;
 		if (AF_INET != family && AF_INET6 != family)
@@ -1958,8 +1959,9 @@ update_interfaces(
 
 			ifi.action = IFS_EXISTS;
 			ifi.ep = ep;
-			if (receiver != NULL)
+			if (receiver != NULL) {
 				(*receiver)(data, &ifi);
+			}
 		} else {
 			/*
 			 * This is new or refreshing failed - add to
@@ -2020,20 +2022,20 @@ update_interfaces(
 
 		ifi.action = IFS_DELETED;
 		ifi.ep = ep;
-		if (receiver != NULL)
+		if (receiver != NULL) {
 			(*receiver)(data, &ifi);
-
+		}
 		/* disconnect peers from deleted endpt. */
-		while (ep->peers != NULL)
+		while (ep->peers != NULL) {
 			set_peerdstadr(ep->peers, NULL);
-
+		}
 		/*
 		 * update globals in case we lose
 		 * a loopback interface
 		 */
-		if (ep == loopback_interface)
+		if (ep == loopback_interface) {
 			loopback_interface = NULL;
-
+		}
 		delete_interface(ep);
 	}
 
@@ -2045,9 +2047,9 @@ update_interfaces(
 	 */
 	refresh_all_peerinterfaces();
 
-	if (sys_bclient)
+	if (sys_bclient) {
 		io_setbclient();
-
+	}
 #ifdef MCAST
 	/*
 	 * Check multicast interfaces and try to join multicast groups if
@@ -2056,9 +2058,9 @@ update_interfaces(
 	for (ep = ep_list; ep != NULL; ep = ep->elink) {
 		remaddr_t *entry;
 
-		if (!(INT_MCASTIF & ep->flags) || (INT_MCASTOPEN & ep->flags))
+		if (!(INT_MCASTIF & ep->flags) || (INT_MCASTOPEN & ep->flags)) {
 			continue;
-
+		}
 		/* Find remote address that was linked to this interface */
 		for (entry = remoteaddr_list;
 		     entry != NULL;
@@ -4192,8 +4194,12 @@ findlocalinterface(
 		iface = findclosestinterface(&saddr,
 					     flags | INT_LOOPBACK);
 	}
-	/* Don't use an interface which will ignore replies */
-	if (iface != NULL && iface->ignore_packets) {
+	/*
+	 * Don't select an interface which will ignore replies, or one
+	 * dedicated to multicast receive.
+	 */
+	if (   iface != NULL
+	    && (iface->ignore_packets || (INT_MCASTIF & iface->flags))) {
 		iface = NULL;
 	}
 	return iface;
