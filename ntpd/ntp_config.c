@@ -3757,7 +3757,7 @@ config_trap(
 	attr_val *curr_opt;
 	sockaddr_u addr_sock;
 	sockaddr_u peeraddr;
-	struct interface *localaddr;
+	endpt *localaddr;
 	struct addrinfo hints;
 	char port_text[8];
 	settrap_parms *pstp;
@@ -3891,7 +3891,7 @@ trap_name_resolved(
 	)
 {
 	settrap_parms *pstp;
-	struct interface *localaddr;
+	endpt *localaddr;
 	sockaddr_u peeraddr;
 
 	(void)gai_errno;

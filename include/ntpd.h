@@ -71,9 +71,9 @@ extern	char *	saveconfigdir;	/* ntpq saveconfig output directory */
 
 extern	void	getconfig	(int, char **);
 extern	void	ctl_clr_stats	(void);
-extern	int	ctlclrtrap	(sockaddr_u *, struct interface *, int);
+extern	int	ctlclrtrap	(sockaddr_u *, endpt *, int);
 extern	u_short ctlpeerstatus	(struct peer *);
-extern	int	ctlsettrap	(sockaddr_u *, struct interface *, int, int);
+extern	int	ctlsettrap	(sockaddr_u *, endpt *, int, int);
 extern	u_short ctlsysstatus	(void);
 extern	void	init_control	(void);
 extern	void	process_control (struct recvbuf *, int);
@@ -218,7 +218,7 @@ extern	int	crypto_xmit	(struct peer *, struct pkt *,
 				    struct exten *, keyid_t);
 extern	keyid_t	session_key	(sockaddr_u *, sockaddr_u *, keyid_t,
 				    keyid_t, u_long);
-extern	int	make_keylist	(struct peer *, struct interface *);
+extern	int	make_keylist	(struct peer *, endpt *);
 extern	void	key_expire	(struct peer *);
 extern	void	crypto_update	(void);
 extern	void	crypto_update_taichange(void);
