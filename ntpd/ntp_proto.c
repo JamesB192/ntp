@@ -1379,6 +1379,17 @@ receive(
 		}
 
 		/*
+		 * Do not respond if the packet came into an IPv6 link-local
+		 * address on an interface where we also have a usable
+		 * global address, to avoid duplicate associations.
+		 */
+		if (INT_LL_OF_GLOB & rbufp->dstadr->flags) {
+			DPRINTF(2, ("receive: declining manycast solicitation on link-local IPv6\n"));
+			sys_declined++;
+			return;
+		}
+
+		/*
 		 * Respond only if authentication succeeds. Don't do a
 		 * crypto-NAK, as that would not be useful.
 		 */
@@ -1436,6 +1447,12 @@ receive(
 			return;
 		}
 #endif /* AUTOKEY */
+		/* Do not spin up duplicate manycast associations */
+		if (INT_LL_OF_GLOB & rbufp->dstadr->flags) {
+			DPRINTF(2, ("receive: AM_MANYCAST drop: link-local server\n"));
+			sys_declined++;
+			return;
+		}
 		if ((peer2 = findmanycastpeer(rbufp)) == NULL) {
 			DPRINTF(2, ("receive: AM_MANYCAST drop: No manycast peer\n"));
 			sys_restricted++;
@@ -3194,8 +3211,9 @@ peer_clear(
 	const char *ident		/* tally lights */
 	)
 {
-	u_char	u;
-	l_fp	bxmt = peer->bxmt;	/* bcast clients retain this! */
+	static u_long	earliest;
+	u_char		u;
+	l_fp		bxmt = peer->bxmt;	/* bcast clients retain this! */
 
 #ifdef AUTOKEY
 	/*
@@ -3272,6 +3290,11 @@ peer_clear(
 		peer->nextdate += peer_associations;
 	} else if (!(FLAG_CONFIG & peer->flags)) {
 		peer->nextdate += ntp_minpkt + 1;
+		/* space out manycastclient first polls */
+		if (peer->nextdate < earliest) {
+			peer->nextdate = earliest;
+		}
+		earliest = peer->nextdate + 1;
 	} else {
 		peer->nextdate += ntp_random() % (1 << peer->minpoll);
 	}
@@ -4816,14 +4839,14 @@ pool_xmit(
 	)
 {
 #ifdef WORKER
-	struct pkt		xpkt;	/* transmit packet structure */
-	struct addrinfo		hints;
-	int			rc;
-	struct interface *	lcladr;
-	sockaddr_u *		rmtadr;
-	u_short			af;
-	struct peer *		p;
-	l_fp			xmt_tx;
+	struct pkt	xpkt;	/* transmit packet structure */
+	struct addrinfo	hints;
+	int		rc;
+	endpt *		lcladr;
+	sockaddr_u *	rmtadr;
+	u_short		af;
+	struct peer *	p;
+	l_fp		xmt_tx;
 
 	DEBUG_REQUIRE(pool);
 	if (NULL == pool->ai) {

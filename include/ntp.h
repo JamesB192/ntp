@@ -171,8 +171,8 @@ typedef char s_char;
  * Eventually the struct tag will change from interface to endpt_tag.
  * endpt is unrelated to the select algorithm's struct endpoint.
  */
-typedef struct interface endpt;
-struct interface {
+typedef struct endpt_tag endpt;
+struct endpt_tag {
 	endpt *		elink;		/* endpt list link */
 	endpt *		mclink;		/* per-AF_* multicast list */
 	void *		ioreg_ctx;	/* IO registration context */
@@ -185,7 +185,7 @@ struct interface {
 	char		name[32];	/* name of interface */
 	u_short		family;		/* AF_INET/AF_INET6 */
 	u_short		phase;		/* phase in update cycle */
-	u_int32		flags;		/* interface flags */
+	u_int32		flags;		/* INT_ flags */
 	int		last_ttl;	/* last TTL specified */
 	u_int32		addr_refid;	/* IPv4 addr or IPv6 hash */
 #    ifdef WORDS_BIGENDIAN
@@ -215,7 +215,8 @@ struct interface {
 #define INT_WILDCARD	0x080	/* wildcard interface - usually skipped */
 #define INT_MCASTIF	0x100	/* bound directly to MCAST address */
 #define INT_PRIVACY	0x200	/* RFC 4941 IPv6 privacy address */
-#define INT_BCASTXMIT	0x400   /* socket setup to allow broadcasts */
+#define INT_BCASTXMIT	0x400	/* socket setup to allow broadcasts */
+#define INT_LL_OF_GLOB	0x800	/* IPv6 link-local duplicate of global */
 
 /*
  * Define flasher bits (tests 1 through 11 in packet procedure)
@@ -791,7 +792,7 @@ typedef struct mon_data	mon_entry;
 struct mon_data {
 	mon_entry *	hash_next;	/* next structure in hash list */
 	DECL_DLIST_LINK(mon_entry, mru);/* MRU list link pointers */
-	struct interface * lcladr;	/* address on which this arrived */
+	endpt *		lcladr;	/* address on which this arrived */
 	l_fp		first;		/* first time seen */
 	l_fp		last;		/* last time seen */
 	int		leak;		/* leaky bucket accumulator */

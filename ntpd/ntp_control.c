@@ -109,7 +109,7 @@ static	int	validate_nonce	(const char *, struct recvbuf *);
 static	void	req_nonce	(struct recvbuf *, int);
 static	void	unset_trap	(struct recvbuf *, int);
 static	struct ctl_trap *ctlfindtrap(sockaddr_u *,
-				     struct interface *);
+				     endpt *);
 
 int/*BOOL*/ is_safe_filename(const char * name);
 
@@ -803,7 +803,7 @@ static int	datalinelen;
 static int	datasent;	/* flag to avoid initial ", " */
 static int	datanotbinflag;
 static sockaddr_u *rmt_addr;
-static struct interface *lcl_inter;
+static endpt *lcl_inter;
 
 static u_char	res_authenticate;
 static u_char	res_authokay;
@@ -3178,8 +3178,8 @@ ctl_getitem(
 	    if (quiet_until <= current_time) {
 		    quiet_until = current_time + 300;
 		    msyslog(LOG_WARNING,
-			    "Possible 'ntpdx' exploit from %s#%u (possibly spoofed)",
-			    stoa(rmt_addr), SRCPORT(rmt_addr));
+			    "Possible 'ntpdx' exploit from %s (possibly spoofed)",
+			    sptoa(rmt_addr));
 	    }
 	reqpt = reqend; /* never again for this packet! */
 	return NULL;
@@ -3985,7 +3985,7 @@ static void read_mru_list(
 	int			mincount;
 	u_int			maxlstint;
 	sockaddr_u		laddr;
-	struct interface *	lcladr;
+	endpt *			lcladr;
 	u_int			count;
 	u_int			ui;
 	u_int			uf;
@@ -4786,7 +4786,7 @@ unset_trap(
 int
 ctlsettrap(
 	sockaddr_u *raddr,
-	struct interface *linter,
+	endpt *linter,
 	int traptype,
 	int version
 	)
@@ -4909,7 +4909,7 @@ ctlsettrap(
 int
 ctlclrtrap(
 	sockaddr_u *raddr,
-	struct interface *linter,
+	endpt *linter,
 	int traptype
 	)
 {
@@ -4934,7 +4934,7 @@ ctlclrtrap(
 static struct ctl_trap *
 ctlfindtrap(
 	sockaddr_u *raddr,
-	struct interface *linter
+	endpt *linter
 	)
 {
 	size_t	n;
