@@ -268,7 +268,7 @@ case "$ac_cv_c_inline" in
     AC_SUBST([HAVE_INLINE])
 esac
 
-AC_HEADER_TIME
+
 AC_CHECK_SIZEOF([time_t])
 AC_C_CHAR_UNSIGNED		dnl CROSS_COMPILE?
 AC_CHECK_SIZEOF([signed char])

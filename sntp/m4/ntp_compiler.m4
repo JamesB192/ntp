@@ -1,14 +1,9 @@
 dnl ######################################################################
 dnl Common m4sh code for compiler stuff
 AC_DEFUN([NTP_COMPILER], [
+AC_REQUIRE([AC_PROG_CC_STDC])
 
 AC_USE_SYSTEM_EXTENSIONS
-
-# Ralf Wildenhues: With per-target flags we need CC_C_O
-# AM_PROG_CC_C_O supersets AC_PROG_CC_C_O
-AM_PROG_CC_C_O
-AC_PROG_GCC_TRADITIONAL
-AC_REQUIRE([AC_PROG_CC_STDC])
 
 CC_NOFORMAT=
 CFLAGS_NTP=
