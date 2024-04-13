@@ -592,6 +592,7 @@ transmit(
 }
 
 
+#ifdef DEBUG
 const char *
 amtoa(
 	int am
@@ -615,6 +616,7 @@ amtoa(
 		return bp;
 	}
 }
+#endif	/* DEBUG */
 
 
 /*
@@ -634,7 +636,6 @@ receive(
 	r4addr	r4a;			/* address restrictions */
 	u_short	restrict_mask;		/* restrict bits */
 	const char *hm_str;		/* hismode string */
-	const char *am_str;		/* association match string */
 	int	kissCode = NOKISS;	/* Kiss Code */
 	int	has_mac;		/* length of MAC field */
 	int	authlen;		/* offset of MAC field */
@@ -650,6 +651,9 @@ receive(
 	l_fp	p_org;			/* origin timestamp */
 	l_fp	p_rec;			/* receive timestamp */
 	l_fp	p_xmt;			/* transmit timestamp */
+#ifdef DEBUG
+	const char *am_str;		/* association match string */
+#endif
 #ifdef AUTOKEY
 	char	hostname[NTP_MAXSTRLEN + 1];
 	char	*groupname = NULL;
@@ -995,7 +999,9 @@ receive(
 	NTOHL_FP(&pkt->rec, &p_rec);
 	NTOHL_FP(&pkt->xmt, &p_xmt);
 	hm_str = modetoa(hismode);
+#ifdef DEBUG
 	am_str = amtoa(retcode);
+#endif
 
 	/*
 	 * Authentication is conditioned by three switches:
@@ -2050,13 +2056,19 @@ receive(
 		/* XXX: FLAG_LOOPNONCE */
 		DEBUG_INSIST(0 == (FLAG_LOOPNONCE & peer->flags));
 
-		msyslog(LOG_INFO,
-			"receive: Got KoD %s from %s",
-			refid_str(pkt->refid, -1), ntoa(&peer->srcadr));
+		if (RATEKISS == kissCode) {
+			msyslog(LOG_INFO, "RATE KoD from %s poll %u",
+				ntoa(&peer->srcadr), 1u << pkt->ppoll);
+		} else {
+			msyslog(LOG_INFO, "KoD %s from %s",
+				refid_str(pkt->refid, -1),
+				ntoa(&peer->srcadr));
+		}
 	} else if (peer->flip == 0) {
 		if (0) {
-		} else if (L_ISZERO(&p_org)) {
-			const char *action;
+		}
+		else if (L_ISZERO(&p_org)) {
+			const char* action;
 
 #ifdef BUG3361
 			msyslog(LOG_INFO,
@@ -2066,22 +2078,22 @@ receive(
 #endif
 			/**/
 			switch (hismode) {
-			/* We allow 0org for: */
-			    case UCHAR_MAX:
+				/* We allow 0org for: */
+			case UCHAR_MAX:
 				action = "Allow";
 				break;
-			/* We disallow 0org for: */
-			    case MODE_UNSPEC:
-			    case MODE_ACTIVE:
-			    case MODE_PASSIVE:
-			    case MODE_CLIENT:
-			    case MODE_SERVER:
-			    case MODE_BROADCAST:
+				/* We disallow 0org for: */
+			case MODE_UNSPEC:
+			case MODE_ACTIVE:
+			case MODE_PASSIVE:
+			case MODE_CLIENT:
+			case MODE_SERVER:
+			case MODE_BROADCAST:
 				action = "Drop";
 				peer->bogusorg++;
 				peer->flash |= TEST2;	/* bogus */
 				break;
-			    default:
+			default:
 				action = "";	/* for cranky compilers / MSVC */
 				INSIST(!"receive(): impossible hismode");
 				break;
@@ -2091,17 +2103,19 @@ receive(
 				"receive: %s 0 origin timestamp from %s@%s xmt 0x%x.%08x",
 				action, hm_str, ntoa(&peer->srcadr),
 				ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf));
+		} else if (   L_ISZERO(&peer->aorg) && MODE_CLIENT != hismode
+			   && !memcmp("STEP", &peer->refid, 4)) {
+			/* response came in just after we stepped clock, normal */
 		} else if (!L_ISEQU(&p_org, &peer->aorg)) {
 			/* are there cases here where we should bail? */
 			/* Should we set TEST2 if we decide to try xleave? */
 			peer->bogusorg++;
 			peer->flash |= TEST2;	/* bogus */
-			msyslog(LOG_INFO,
-				"receive: Unexpected origin timestamp 0x%x.%08x does not match aorg 0x%x.%08x from %s@%s xmt 0x%x.%08x",
+			msyslog(LOG_INFO, 
+				"duplicate or replay: org 0x%x.%08x does not match 0x%x.%08x from %s@%s",
 				ntohl(pkt->org.l_ui), ntohl(pkt->org.l_uf),
 				peer->aorg.l_ui, peer->aorg.l_uf,
-				hm_str, ntoa(&peer->srcadr),
-				ntohl(pkt->xmt.l_ui), ntohl(pkt->xmt.l_uf));
+				hm_str, ntoa(&peer->srcadr));
 			if (  !L_ISZERO(&peer->dst)
 			    && L_ISEQU(&p_org, &peer->dst)) {
 				/* Might be the start of an interleave */

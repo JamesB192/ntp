@@ -1,5 +1,7 @@
 ---
 
+* [Bug 3914] Spurious "Unexpected origin timestamp" logged after time
+             stepped. <hart@ntp.org>
 * [Bug 3903] lib/isc/win32/strerror.c NTstrerror() is not thread-safe.
              <hart@ntp.org>
 * [Bug 3901] LIB_GETBUF isn't thread-safe. <hart@ntp.org>
