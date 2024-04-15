@@ -2066,9 +2066,8 @@ receive(
 		}
 	} else if (peer->flip == 0) {
 		if (0) {
-		}
-		else if (L_ISZERO(&p_org)) {
-			const char* action;
+		} else if (L_ISZERO(&p_org)) {
+			const char *action;
 
 #ifdef BUG3361
 			msyslog(LOG_INFO,
@@ -2079,21 +2078,21 @@ receive(
 			/**/
 			switch (hismode) {
 				/* We allow 0org for: */
-			case UCHAR_MAX:
+			    case UCHAR_MAX:
 				action = "Allow";
 				break;
 				/* We disallow 0org for: */
-			case MODE_UNSPEC:
-			case MODE_ACTIVE:
-			case MODE_PASSIVE:
-			case MODE_CLIENT:
-			case MODE_SERVER:
-			case MODE_BROADCAST:
+			    case MODE_UNSPEC:
+			    case MODE_ACTIVE:
+			    case MODE_PASSIVE:
+			    case MODE_CLIENT:
+			    case MODE_SERVER:
+			    case MODE_BROADCAST:
 				action = "Drop";
 				peer->bogusorg++;
 				peer->flash |= TEST2;	/* bogus */
 				break;
-			default:
+			    default:
 				action = "";	/* for cranky compilers / MSVC */
 				INSIST(!"receive(): impossible hismode");
 				break;
