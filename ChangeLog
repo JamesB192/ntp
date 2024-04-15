@@ -54,6 +54,7 @@
              is disabled.  <burnicki@ntp.org>
 * [Bug 3825] Don't touch HTML files unless building inside a BK repo.
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
+* Log failures to allocate receive buffers.  <hart@ntp.org>
 * Remove extraneous */ from libparse/ieee754io.c
 * Fix .datecheck target line in Makefile.am.  <stenn@ntp.org>
 * Update the copyright year.  <stenn@ntp.org>
