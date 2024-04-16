@@ -13,6 +13,7 @@
              Windows. <hart@ntp.org>
 * [Bug 3888] ntpd with multiple same-subnet IPs using manycastclient creates
              duplicate associations. <hart@ntp.org>
+* [Bug 3874] ntp_openssl.m4: openssl detection cleanup.  <stenn@ntp.org>
 * [Bug 3872] Ignore restrict mask for hostname. <hart@ntp.org>
 * [Bug 3871] 4.2.8p17 build without hopf6021 refclock enabled fails.
              Reported by Hans Mayer.  Moved NONEMPTY_TRANSLATION_UNIT
@@ -112,7 +113,6 @@
   <hart@ntp.org>
 * Use NTP_HARD_CPPFLAGS in libopts tearoff. <hart@ntp.org>
 * wire in --enable-build-framework-help
-* ntp_openssl.m4: openssl detection cleanup.  <stenn@ntp.org>
 
 ---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>
