@@ -55,6 +55,23 @@ AC_DEFINE_UNQUOTED([STR_SYSTEM], ["$host"],
 AC_CONFIG_HEADERS([config.h])
 dnl AC_ARG_PROGRAM
 
+AC_MSG_CHECKING([if we should enable build framework help])
+AC_ARG_ENABLE(
+    [build-framework-help],
+    [AS_HELP_STRING(
+	[--enable-build-framework-help],
+	[+ enable build framework help]
+    )],
+    [ntp_ok=$enableval],
+    [ntp_ok=yes]
+)
+case "$ntp_ok" in
+ yes)
+    ntp_cv_build_framework_help=yes ;;
+ *) ntp_cv_build_framework_help=no ;;
+esac
+AC_MSG_RESULT([$ntp_ok])
+
 ntp_atom_ok=${ntp_atom_ok=no}
 ntp_oncore_ok=${ntp_oncore_ok=no}
 ntp_parse_ok=${ntp_parse_ok=no}

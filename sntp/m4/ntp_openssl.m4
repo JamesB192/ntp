@@ -90,13 +90,128 @@ NTPSSL_SAVED_CPPFLAGS="$CPPFLAGS"
 NTPSSL_SAVED_LIBS="$LIBS"
 NTPSSL_SAVED_LDFLAGS="$LDFLAGS"
 
+AC_PATH_PROG([PATH_OPENSSL], [openssl])
+
 str="$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${with_openssl_incdir-notgiven}"
 NTP_OPENSSL_VERBOSE_MSG([$str])
 AS_UNSET([str])
 
+# Make sure neither/both --with_openssl-{inc,lib}dir are given
+case "${with_openssl_libdir-notgiven}:${with_openssl_incdir-notgiven}" in
+ notgiven:notgiven) ;;
+ *notgiven*)
+    AC_MSG_ERROR([only one of --with-openssl-{inc,lib}dir=... given - provide both or neither])
+    ;;
+esac
+
+# HMS: Today there are only 2 case options.  We probably want a third
+# *:*:notgiven:notgiven
+# and in that case we would validate the path in PKG_CONFIG_PATH.
+# Unless we can do it with 2 cases, where the 2nd case is *:*:...
+# and we do a reality check on execpath and the headers/libraries.
+#
+##
+# if $with_crypto is not "no":
+#   if --with-openssl-{inc,lib}dir are not given:
+#     we should use pkg-config to find openssl
+#     if we don't have pkg-config, if openssl is in the base OS, use that.
+##
 case "$with_crypto:${PKG_CONFIG:+notempty}:${with_openssl_libdir-notgiven}:${with_openssl_incdir-notgiven}" in
  no:*) ;;
  *:notempty:notgiven:notgiven)
+    # If PKG_CONFIG is notempty and we haven't been given openssl paths,
+    # then let's make sure that the openssl executable's path corresponds
+    # to the path in openssl.pc, and 'openssl version' matches the Version
+    # in openssl.pc.  If $PKG_CONFIG tells us an INCPATH and/or a LIBPATH,
+    # then should we reality check them?
+    ## INCPATH
+    # harlan@ntp-testbuild.tal1> openssl version
+    # OpenSSL 1.1.1t  7 Feb 2023
+    # harlan@ntp-testbuild.tal1> grep 1.1.1t /ntpbuild/include/openssl/*
+    # /ntpbuild/include/openssl/opensslv.h:# define OPENSSL_VERSION_TEXT    "OpenSSL 1.1.1t  7 Feb 2023"
+    # harlan@ntp-testbuild.tal1>
+    ## LIBPATH
+    # harlan@ntp-testbuild.tal1> strings -a /ntpbuild/lib/libcrypto.* | fgrep 1.1.1t
+    # OpenSSL 1.1.1t  7 Feb 2023
+    # OpenSSL 1.1.1t  7 Feb 2023
+    # OpenSSL 1.1.1t  7 Feb 2023
+    # harlan@ntp-testbuild.tal1> ls /ntpbuild/lib/libcrypto.*
+    # /ntpbuild/lib/libcrypto.a       /ntpbuild/lib/libcrypto.so.1.1*
+    # /ntpbuild/lib/libcrypto.so@
+    # harlan@ntp-testbuild.tal1>
+    ##
+    # Having said this, do we really care if the openssl executable that
+    # we have found is matched with the INCPATH and LIBPATH?
+    # One answer: Probably not, but we should complain on a mismatch as
+    # otherwise runtime differences could easily cause problems/drama.
+
+    ##BO
+    # ntp_cv_build_framework_help=yes
+    save_PKG_CONFIG_PATH=${PKG_CONFIG_PATH}
+    for pkg in `echo $with_crypto | $SED -e 's/,/ /'`; do
+        case "$pkg" in
+	 openssl)
+	    if $PKG_CONFIG --exists $pkg ; then
+		# Found it - yay
+		# Do we want to check we found the right one?
+		# --modver
+		# --variable={libdir,includedir} (varname)
+		overf=`openssl version`
+		overs=`echo $overf | awk '{print $2}'`
+		case "$overs" in
+		 0.*) ;;	# Should we squawk?
+		 1.0.*) ;;	# Should we squawk?
+		 1.1.*) ;;	# Should we squawk?
+		 3.*)
+		    oinc=`openssl --variable=includedir`
+		    olib=`openssl --variable=libdir`
+		    # How should we use these?
+		    ;;
+		 *) ;;	# Should we squawk?
+		esac
+		# /ntpbuild/include/openssl/opensslv.h:# define OPENSSL_VERSION_TEXT    "OpenSSL 1.1.1t  7 Feb 2023"
+		# grep 1.1.1t /ntpbuild/lib/libcrypto.a
+		# strings -a /ntpbuild/lib/libcrypto.a | grep 1.1.1t
+		# OpenSSL 1.1.1t  7 Feb 2023
+		# harlan@ntp-testbuild.tal1>
+		# which should match $overf
+		##
+		# harlan@ntp-testbuild.tal1> echo '"OpenSSL 1.1.1t  7 Feb 2023"' | cut -f 2 -d\"
+		# OpenSSL 1.1.1t  7 Feb 2023
+		# harlan@ntp-testbuild.tal1> grep OPENSSL_VERSION_TEXT /ntpbuild/include/openssl/opensslv.h
+		# # define OPENSSL_VERSION_TEXT    "OpenSSL 1.1.1t  7 Feb 2023"
+		# harlan@ntp-testbuild.tal1>
+		##
+
+	    else
+		# This is a hack, but it's reasonable.
+		pkgpath="`echo $PATH_OPENSSL | sed -e 's:/bin/openssl$::'`/lib/pkgconfig"
+		test -d "$pkgpath" || pkgpath=
+		# echo "pkgpath is <$pkgpath>"
+		# echo "PKG_CONFIG_PATH is <$PKG_CONFIG_PATH>"
+		case "$pkgpath" in
+		 '') ;;	# Nothing to see here...
+		 *) case ":$PKG_CONFIG_PATH:" in
+		     ::)
+			PKG_CONFIG_PATH=$pkgpath
+			export PKG_CONFIG_PATH
+			;;
+		     *:$pkgpath:*)
+			# Already there...
+			;;
+		     *)
+			PKG_CONFIG_PATH="$pkgpath:$PKG_CONFIG_PATH"
+			export PKG_CONFIG_PATH
+			;;
+		    esac
+		    ;;
+		esac
+	    fi
+	    ;;
+        esac
+    done
+    ##EO
+
     for pkg in `echo $with_crypto | $SED -e 's/,/ /'`; do
 	AC_MSG_CHECKING([pkg-config for $pkg])
 	if $PKG_CONFIG --exists $pkg ; then
