@@ -93,6 +93,8 @@
 * Add configure --enable-verbose-ssl to trace SSL detection. <hart@ntp.org>
 * Add build test coverage for --disable-saveconfig to flock-build script.
   <hart@ntp.org>
+* wire in --enable-build-framework-help
+* ntp_openssl.m4: openssl detection cleanup.  <stenn@ntp.org>
 
 ---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>
