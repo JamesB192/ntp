@@ -95,8 +95,7 @@ AM_PROG_AR
 
 # So far, the only shared library we might use is libopts.
 # It's a small library - we might as well use a static version of it.
-AC_DISABLE_SHARED
-AC_PROG_LIBTOOL
+LT_INIT([disable-shared])
 AC_SUBST([LIBTOOL_DEPS])
 
 # NTP has (so far) been relying on leading-edge autogen, which
@@ -104,7 +103,7 @@ AC_SUBST([LIBTOOL_DEPS])
 # Therefore, by default:
 # - use the version of libopts we ship with
 # - do not install it
-# - build a static copy (AC_DISABLE_SHARED - done earlier)
+# - build a static copy (disable-shared - done earlier)
 case "${enable_local_libopts+set}" in
  set) ;;
  *) enable_local_libopts=yes ;;

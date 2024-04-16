@@ -18,7 +18,6 @@
  */
 typedef struct IoCtx		IoCtx_t;
 typedef struct refclockio	RIO_t;
-typedef struct interface	endpt;
 typedef struct recvbuf		recvbuf_t;
 
 /* ---------------------------------------------------------------------
