@@ -1,6 +1,7 @@
 ---
 
-* [Bug 3753] ntpd fails to start with FIPS-enabled OpenSSL 3. <hart@ntp.org>
+* [Bug 3914] Spurious "Unexpected origin timestamp" logged after time
+             stepped. <hart@ntp.org>
 * [Bug 3903] lib/isc/win32/strerror.c NTstrerror() is not thread-safe.
              <hart@ntp.org>
 * [Bug 3901] LIB_GETBUF isn't thread-safe. <hart@ntp.org>
@@ -53,7 +54,12 @@
              is disabled.  <burnicki@ntp.org>
 * [Bug 3825] Don't touch HTML files unless building inside a BK repo.
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
-* [Bug 3753] ntpd won't start with FIPS-enabled OpenSSL 3.x. <hart@ntp.org>
+* Remove extraneous */ from libparse/ieee754io.c
+* Fix .datecheck target line in Makefile.am.  <stenn@ntp.org>
+* [Bug 3753] ntpd fails to start with FIPS-enabled OpenSSL 3. <hart@ntp.org>
+* Log failures to allocate receive buffers.  <hart@ntp.org>
+* Remove extraneous */ from libparse/ieee754io.c
+* Fix .datecheck target line in Makefile.am.  <stenn@ntp.org>
 * Update the copyright year.  <stenn@ntp.org>
 * Update ntp.conf documentation to add "delrestrict" and correct information
   about KoD rate limiting.  <hart@ntp.org>
@@ -101,6 +107,8 @@
 * Move ENABLE_CMAC to ntp_openssl.m4, reviving sntp/tests CMAC unit tests.
   <hart@ntp.org>
 * Use NTP_HARD_CPPFLAGS in libopts tearoff. <hart@ntp.org>
+* wire in --enable-build-framework-help
+* ntp_openssl.m4: openssl detection cleanup.  <stenn@ntp.org>
 
 ---
 (4.2.8p17) 2023/06/06 Released by Harlan Stenn <stenn@ntp.org>
