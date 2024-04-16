@@ -301,7 +301,7 @@ session_key(
 int
 make_keylist(
 	struct peer *peer,	/* peer structure pointer */
-	struct interface *dstadr /* interface */
+	endpt *dstadr		/* interface */
 	)
 {
 	EVP_MD_CTX *ctx;	/* signature context */

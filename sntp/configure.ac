@@ -62,8 +62,7 @@ AM_PROG_AR
 
 NTP_LIBNTP
 
-AC_DISABLE_SHARED
-AC_PROG_LIBTOOL
+LT_INIT([disable-shared])
 AC_SUBST([LIBTOOL_DEPS])
 
 NTP_WITHSNTP
@@ -82,7 +81,7 @@ esac
 # Therefore, by default:
 # - use the version we ship with
 # - do not install it
-# - build a static copy (AC_DISABLE_SHARED - done earlier)
+# - build a static copy (disable-shared - done earlier)
 case "${enable_local_libopts+set}" in
  set) ;;
  *) enable_local_libopts=yes ;;
