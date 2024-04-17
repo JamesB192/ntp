@@ -19,6 +19,7 @@
 * [Bug 3871] 4.2.8p17 build without hopf6021 refclock enabled fails.
              Reported by Hans Mayer.  Moved NONEMPTY_TRANSLATION_UNIT
              declaration from ntp_types.h to config.h.  <hart@ntp.org>
+* [Bug 3870] Server drops client packets with ppoll < 4.  <stenn@ntp.org>
 * [Bug 3869] Remove long-gone "calldelay" & "crypto sign" from docs.
              Reported by PoolMUC@web.de. <hart@ntp.org>
 * [Bug 3868] Cannot restrict a pool peer. <hart@ntp.org>  Thanks to

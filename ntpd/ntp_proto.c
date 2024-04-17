@@ -819,10 +819,15 @@ receive(
 	        || (NTP_MAXPOLL < pkt->ppoll)
 	       )
 	   ) {
+#ifdef BUG3870
 		DPRINTF(2, ("receive: drop: Invalid ppoll (%d) from %s\n",
 				pkt->ppoll, stoa(&rbufp->recv_srcadr)));
 		sys_badlength++;
 		return;			/* invalid packet poll */
+#else
+		DPRINTF(2, ("receive: info: Invalid ppoll (%d) from %s\n",
+				pkt->ppoll, stoa(&rbufp->recv_srcadr)));
+#endif
 	}
 
 	/*
