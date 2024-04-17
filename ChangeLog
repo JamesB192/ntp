@@ -61,6 +61,7 @@
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
 * Remove extraneous */ from libparse/ieee754io.c
 * Fix .datecheck target line in Makefile.am.  <stenn@ntp.org>
+* [Bug 3756] Improve OpenSSL-3 detection and usage.
 * [Bug 3753] ntpd fails to start with FIPS-enabled OpenSSL 3. <hart@ntp.org>
 * Log failures to allocate receive buffers.  <hart@ntp.org>
 * Remove extraneous */ from libparse/ieee754io.c
