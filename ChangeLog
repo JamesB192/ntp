@@ -4,6 +4,7 @@
              stepped. <hart@ntp.org>
 * [Bug 3913] Avoid duplicate IPv6 link-local manycast associations.
              <hart@ntp.org>
+* [Bug 3912] Avoid rare math errors in ntptrace.  <brian.utterback@oracle.com>
 * [Bug 3909] Do not select multicast local address for unicast peer.
              <hart@ntp.org>
 * [Bug 3903] lib/isc/win32/strerror.c NTstrerror() is not thread-safe.
