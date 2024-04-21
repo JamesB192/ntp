@@ -1,5 +1,6 @@
 ---
 
+* [Bug 3918] Tweak openssl header/library handling. <stenn@ntp.org>
 * [Bug 3914] Spurious "Unexpected origin timestamp" logged after time
              stepped. <hart@ntp.org>
 * [Bug 3913] Avoid duplicate IPv6 link-local manycast associations.
@@ -14,7 +15,6 @@
              Windows. <hart@ntp.org>
 * [Bug 3888] ntpd with multiple same-subnet IPs using manycastclient creates
              duplicate associations. <hart@ntp.org>
-* [Bug 3874] ntp_openssl.m4: openssl detection cleanup.  <stenn@ntp.org>
 * [Bug 3872] Ignore restrict mask for hostname. <hart@ntp.org>
 * [Bug 3871] 4.2.8p17 build without hopf6021 refclock enabled fails.
              Reported by Hans Mayer.  Moved NONEMPTY_TRANSLATION_UNIT
@@ -61,10 +61,10 @@
              is disabled.  <burnicki@ntp.org>
 * [Bug 3825] Don't touch HTML files unless building inside a BK repo.
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
+* [Bug 3756] Improve OpenSSL library/header detection.
+* [Bug 3753] ntpd fails to start with FIPS-enabled OpenSSL 3. <hart@ntp.org>
 * Remove extraneous */ from libparse/ieee754io.c
 * Fix .datecheck target line in Makefile.am.  <stenn@ntp.org>
-* [Bug 3756] Improve OpenSSL-3 detection and usage.
-* [Bug 3753] ntpd fails to start with FIPS-enabled OpenSSL 3. <hart@ntp.org>
 * Log failures to allocate receive buffers.  <hart@ntp.org>
 * Remove extraneous */ from libparse/ieee754io.c
 * Fix .datecheck target line in Makefile.am.  <stenn@ntp.org>
