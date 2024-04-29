@@ -64,6 +64,7 @@
              Fix the script checkHtmlFileDates.  <burnicki@ntp.org>
 * [Bug 3756] Improve OpenSSL library/header detection.
 * [Bug 3753] ntpd fails to start with FIPS-enabled OpenSSL 3. <hart@ntp.org>
+* [Bug 2734] TEST3 prevents initial interleave sync.  Fix from <PoolMUC@web.de>
 * Remove extraneous */ from libparse/ieee754io.c
 * Fix .datecheck target line in Makefile.am.  <stenn@ntp.org>
 * Log failures to allocate receive buffers.  <hart@ntp.org>
