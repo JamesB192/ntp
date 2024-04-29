@@ -2526,8 +2526,10 @@ receive(
 	 * more flashers. Leave if the packet is not good.
 	 */
 	process_packet(peer, pkt, rbufp->recv_length);
-	if (peer->flash & PKT_TEST_MASK)
+	/* Bug 2734: TEST3 prevents initial interleave sync */
+	if ((~TEST3 & peer->flash) & PKT_TEST_MASK) {
 		return;
+	}
 
 	/* [bug 3592] Update poll. Ideally this should not happen in a
 	 * receive branch, but too much is going on here... at least we
