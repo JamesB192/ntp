@@ -1,4 +1,5 @@
 ---
+(4.2.8p18-RC1) 2024/05/07 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Bug 3918] Tweak openssl header/library handling. <stenn@ntp.org>
 * [Bug 3914] Spurious "Unexpected origin timestamp" logged after time
