@@ -72,7 +72,7 @@ esac
 special=
 
 # prerelease can be empty, 'beta', or 'rc'.
-prerelease=rc
+prerelease=
 
 # ChangeLog starting tag (see also CommitLog-4.1.0)
 CLTAG=NTP_4_2_0
@@ -106,4 +106,4 @@ betapoint=
 # - - prerelease is emptied
 # else (not in RC)
 # - rcpoint is empty and unused (for now).
-rcpoint=GO
+rcpoint=
