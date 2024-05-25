@@ -1,4 +1,5 @@
 ---
+(4.2.8p18-RCGO) 2024/05/24 Released by Harlan Stenn <stenn@ntp.org>
 NTP 4.2.8p18 (Harlan Stenn <stenn@ntp.org>, 2024 May 24)
 
 * [Bug 3918] Tweak openssl header/library handling. <stenn@ntp.org>
