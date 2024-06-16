@@ -1,4 +1,9 @@
 ---
+* build script: Use hostname.site for NTF build hosts.  Use the full
+  hostname for the buildkey.  <stenn@ntp.org>
+* flock-build: Try to use the full hostname for the buildkey.  <stenn@ntp.org>
+
+---
 (4.2.8p18) 2024/05/25 Released by Harlan Stenn <stenn@ntp.org>
 
 * [Bug 3918] Tweak openssl header/library handling. <stenn@ntp.org>
