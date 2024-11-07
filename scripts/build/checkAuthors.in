@@ -70,15 +70,16 @@ if (! -r $A_file) {
   }
 }
 
-if (! -d $A_path) {
-  warn "$A_path is not a directory!\n";
-  ++$problem;
+{
+  my @args = ("bk", "get", "-q", $A_path);
+  unless (system(@args) == 0) {
+    warn "system @args failed: $?";
+    ++$problem;
+  }
 }
 
 die "bkroot: <$bk_root>, Fix above problems!\n" if ($problem != 0);
 
-my @args = ("bk", "get", "-q", $A_path);
-system(@args) == 0 || die "system @args failed: $?";
 
 # print "Validating '$A_path/*.txt'\n" if ($verbose);
 
