@@ -74,6 +74,9 @@ if (! -d $A_path) {
 
 die "bkroot: <$bk_root>, Fix above problems!\n" if ($problem != 0);
 
+my @args = ("bk", "get", "-q", $A_path);
+system(@args) == 0 || die "system @args failed: $?";
+
 # print "Validating '$A_path/*.txt'\n" if ($verbose);
 
 foreach my $fp (glob("$A_path/*.txt")) {
