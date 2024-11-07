@@ -156,6 +156,9 @@ BHOST=`(hostname || uname -n)`
 		echo " "; \
 	fi
 
+check-local:
+	bk version > /dev/null 2>&1 && scripts/build/checkAuthors $(top_srcdir)/BitKeeper/etc/authors.txt $(top_srcdir)/BitKeeper/etc/Authors
+
 FRC.CommitLog FRC.checkcvo FRC.checkhost FRC.distwarn FRC.html FRC.sntp:
 	@: do-nothing action prevents any default
 
