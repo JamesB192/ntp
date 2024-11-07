@@ -63,8 +63,11 @@ my $A_path = shift @ARGV;
 $problem = 0;
 
 if (! -r $A_file) {
-  warn "$A_file is not readable!\n";
-  ++$problem;
+  my @args = ("bk", "get", "-q", $A_file);
+  unless (system(@args) == 0) {
+    warn "system @args failed: $?";
+    ++$problem;
+  }
 }
 
 if (! -d $A_path) {
