@@ -1,3 +1,8 @@
+* build script: Use hostname.site for NTF build hosts.  Use the full
+  hostname for the buildkey.  <stenn@ntp.org>
+* flock-build: Try to use the full hostname for the buildkey.  <stenn@ntp.org>
+* Author attribution updates
+
 (4.3.105) 2024/05/25 Released by Harlan Stenn <stenn@ntp.org>
 From ntp-4.2.8p18:
 (4.3.104) 2024/05/21 Released by Harlan Stenn <stenn@ntp.org>
