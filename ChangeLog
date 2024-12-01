@@ -1,4 +1,5 @@
 ---
+* Add ,github to the top-level tree. <dlavigne@nwtime.org>
 * build script: Use hostname.site for NTF build hosts.  Use the full
   hostname for the buildkey.  <stenn@ntp.org>
 * flock-build: Try to use the full hostname for the buildkey.  <stenn@ntp.org>
