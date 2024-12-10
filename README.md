@@ -1,5 +1,10 @@
 # ntp
+
 Sometimes updated fast export/import of bk.ntp.org
+
+This is probably no longer quite as useful since
+https://github.com/ntp-project/ntp.git is mirorring
+the BitKeeper repository again.
 
 ## The branches are:
 - main/master
